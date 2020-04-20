@@ -11,13 +11,43 @@ import datetime
 class Condition ( ) :
 
   def __init__ ( self , uuid ) :
-    self . Uuid = uuid
+    self . Uuid    = uuid
+    self . Actions = [ ]
+    return
 
   def __del__ ( self ) :
     pass
 
+  # 檢查是否相同的條件元件
+  def __eq__ ( self , another ) :
+    return self . isEqual ( another )
+
+  # 檢查是否相同的條件元件
+  def isEqual ( self , another ) :
+    return ( self . Uuid == another . Uuid )
+
+  # 新增決策行動
+  def addAction ( self , action ) :
+    if ( action not in self . Actions ) :
+      self . Actions . append ( action )
+    return action
+
+  # 移除決策行動
+  def removeAction ( self , action ) :
+    if ( action in self . Actions ) :
+      self . Actions . remove ( action )
+    return action
+
+  # 狀態改變
+  def change ( self ) :
+    for action in self . Actions :
+      action . Execute ( )
+    return
+
+  # 狀態名稱
   def name ( self ) :
     raise NotImplementedError ( )
 
+  # 狀態值
   def value ( self ) :
     raise NotImplementedError ( )

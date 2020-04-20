@@ -97,6 +97,13 @@ class Enabler ( ) :
     self . __unleash ( )
     return value
 
+  # 移除陣列中的關鍵字
+  def remove ( self , key ) :
+    self . __lockUp  ( )
+    del self . Enablings [ key ]
+    self . __unleash ( )
+    return
+
   # 全部為真
   def isAllTrue ( self ) :
     self . __lockUp  ( )
