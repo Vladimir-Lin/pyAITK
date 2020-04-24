@@ -2,8 +2,14 @@
 
 import os
 import sys
-import time
-import datetime
-import getopt
-import logging
-import threading
+
+from   . PurePlan import PurePlan as PurePlan
+
+class Plan ( PurePlan ) :
+
+  def __init__ ( self ) :
+    super ( PurePlan , self ) . __init__ ( )
+    return
+
+  def __del__  ( self ) :
+    pass

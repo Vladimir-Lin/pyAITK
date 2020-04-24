@@ -1,33 +1,45 @@
 # -*- coding: utf-8 -*-
-
+##############################################################################
+## 語音命令編號對應
+##############################################################################
 import os
 import sys
 import time
 import datetime
 import getopt
 import json
-import logging
-import threading
+##############################################################################
 
 class CommandsMapper ( ) :
 
-  def __init__ ( self , settings = {} ) :
+  ############################################################################
+  def __init__ ( self , settings = { } )                                     :
     self . Initialize ( settings )
+    return
 
+  ############################################################################
   def __del__ ( self ) :
     pass
 
-  def Initialize ( self , settings ) :
+  ############################################################################
+  def Initialize           ( self , settings                               ) :
+    ##########################################################################
     self . Settings = settings
     self . Commands = { }
-    KEYs = settings . keys ( )
-    for k in KEYs :
+    ##########################################################################
+    KEYs = settings . keys (                                                 )
+    for k in KEYs                                                            :
+      ########################################################################
       L = settings [ k ]
-      for w in L :
+      for w in L                                                             :
         self . Commands [ w ] = k
+    ##########################################################################
     return True
 
-  def Id ( self , key ) :
-    if ( key in self . Commands ) :
-      return int ( self . Commands [ key ] )
+  ############################################################################
+  def Id         ( self , key                                              ) :
+    ##########################################################################
+    if           ( key in self . Commands                                  ) :
+      return int ( self . Commands [ key ]                                   )
+    ##########################################################################
     return -1

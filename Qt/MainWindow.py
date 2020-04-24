@@ -4,17 +4,7 @@
 
 import os
 import sys
-import getopt
 import time
-import requests
-import threading
-import gettext
-import json
-
-##############################################################################
-
-import Actions
-from   Actions                        import *
 
 ##############################################################################
 
@@ -57,7 +47,7 @@ from   PyQt5 . QtWidgets              import QMainWindow
 
 ##############################################################################
 
-from         . VirtualGui             import VirtualGui
+from         . VirtualGui             import VirtualGui as VirtualGui
 
 ##############################################################################
 

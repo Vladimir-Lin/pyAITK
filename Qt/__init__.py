@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from . AbstractGui    import *
-from . VirtualGui     import *
-from . SystemTrayIcon import *
-from . MainWindow     import *
-from . MenuManager    import *
-from . TreeWidget     import *
+from . AbstractGui    import AbstractGui    as AbstractGui
+from . VirtualGui     import VirtualGui     as VirtualGui
+from . SystemTrayIcon import SystemTrayIcon as SystemTrayIcon
+from . MenuManager    import MenuManager    as MenuManager
+from . TreeWidget     import TreeWidget     as TreeWidget
+from . MainWindow     import MainWindow     as MainWindow
 
 __all__ = [ "AbstractGui"    ,
             "VirtualGui"     ,
             "SystemTrayIcon" ,
-            "MainWindow"     ,
             "MenuManager"    ,
-            "TreeWidget"     ]
+            "TreeWidget"     ,
+            "MainWindow"     ]

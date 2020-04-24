@@ -7,405 +7,604 @@ import time
 import datetime
 import requests
 import threading
-import mysql.connector
-from   mysql.connector import Error
-from   .SqlQuery       import SqlQuery as SqlQuery
+import mysql . connector
+from   mysql . connector import Error
+from   . Query           import Query as Query
 
-class SqlConnection ( ) :
+class Connection ( ) :
 
+  ############################################################################
   def __init__ ( self ) :
+    ##########################################################################
     self . db      = False
     self . mc      = False
+    self . Error   = ""
+    self . Success = False
     self . Message = [ ]
+    ##########################################################################
+    return
 
-  # Connect to SQL Database
-  # 連線到指定資料庫
-  def ConnectTo ( self , DB ) :
+  def __del__ ( self ) :
+    pass
+
+  ############################################################################
+  def isSql ( self , parameters )                                            :
+    ##########################################################################
+    if ( len ( parameters ) < 3 )                                            :
+      return False
+    ##########################################################################
+    if ( "hostname" not in parameters )                                      :
+      return False
+    hostname = parameters [ "hostname" ]
+    if ( len ( hostname ) <= 0 )                                             :
+      return False
+    ##########################################################################
+    if ( "username" not in parameters )                                      :
+      return False
+    username = parameters [ "username" ]
+    if ( len ( username ) <= 0 )                                             :
+      return False
+    ##########################################################################
+    if ( "password" not in parameters )                                      :
+      return False
+    password = parameters [ "password" ]
+    if ( len ( password ) <= 0 )                                             :
+      return False
+    ##########################################################################
+    return True
+
+  ############################################################################
+  ## Connect to SQL Database
+  ## 連線到指定資料庫
+  ############################################################################
+  def ConnectTo ( self , DB )                                                :
+    ##########################################################################
     if ( not self . db ) :
       pass
     else :
       return False
+    ##########################################################################
     if ( not self . mc ) :
       pass
     else :
       return False
+    ##########################################################################
     self . Error   = ""
     self . Success = False
+    ##########################################################################
     hostname = ""
     if ( "hostname" in DB ) :
       hostname = DB [ "hostname" ]
     else :
       return False
+    ##########################################################################
     username = ""
     if ( "username" in DB ) :
       username = DB [ "username" ]
     else :
       return False
+    ##########################################################################
     password = ""
     if ( "password" in DB ) :
       password = DB [ "password" ]
     else :
       return False
+    ##########################################################################
     database = ""
     if ( "database" in DB ) :
       database = DB [ "database" ]
     else :
       return False
+    ##########################################################################
     port = 3306
     if ( "port" in DB ) :
       port = DB [ "port" ]
-    try :
-      self . db = mysql . connector . connect ( \
-                    host     = hostname ,       \
-                    port     = port     ,       \
-                    user     = username ,       \
-                    passwd   = password ,       \
-                    database = database         )
+    ##########################################################################
+    try                                                                      :
+      self . db = mysql . connector . connect                              ( \
+                    host     = hostname ,                                    \
+                    port     = port     ,                                    \
+                    user     = username ,                                    \
+                    passwd   = password ,                                    \
+                    database = database                                      )
       self . Success = True
-    except mysql . connector . Error as err :
+    except mysql . connector . Error as err                                  :
       self . Error = err
+    ##########################################################################
     return self . Success
 
-  # Close SQL Connection
-  # 關閉資料庫連線
-  def Close ( self ) :
-    if ( not self . mc ) :
+  ############################################################################
+  ## Close SQL Connection
+  ## 關閉資料庫連線
+  ############################################################################
+  def Close              ( self                                            ) :
+    ##########################################################################
+    if                   ( not self . mc                                   ) :
       pass
     else :
-      self . mc . close  ( )
+      self . mc . close  (                                                   )
       self . mc = False
-    if ( not self . db ) :
+    ##########################################################################
+    if                   ( not self . db                                   ) :
       pass
     else :
-      self . db . close  ( )
+      self . db . close  (                                                   )
       self . db = False
+    ##########################################################################
+    self . db      = False
+    self . mc      = False
+    self . Error   = ""
+    self . Success = False
+    self . Message = [ ]
+    ##########################################################################
     return True
 
-  # Get Current Database Cursor
-  # 取得現有資料庫讀寫位置
-  def Prepare ( self ) :
-    self . mc  = self . db . cursor ( )
+  ############################################################################
+  ## Get Current Database Cursor
+  ## 取得現有資料庫讀寫位置
+  ############################################################################
+  def Prepare                         ( self                               ) :
+    ##########################################################################
+    if                                ( not self . mc                      ) :
+      self . mc  = self . db . cursor (                                      )
+    ##########################################################################
+    return
 
-  # Execute SQL Commands
-  # 執行查詢或寫入語法
-  def Execute ( self , command ) :
-    if ( not self . mc ) :
+  ############################################################################
+  ## Execute SQL Commands
+  ## 執行查詢或寫入語法
+  ############################################################################
+  def Execute                   ( self , command                           ) :
+    if                          ( not self . mc                            ) :
       return False
-    CMD = ""
-    if ( "SqlQuery" in type ( command ) . __name__ ) :
-      CMD = command . Query ( )
-    else :
+    ##########################################################################
+    CMD   = ""
+    if                          ( "Query" in type ( command ) . __name__   ) :
+      CMD = command . Query     (                                            )
+    else                                                                     :
       CMD = command
-    if ( len ( CMD ) <= 0 ) :
+    ##########################################################################
+    if                          ( len ( CMD ) <= 0                         ) :
       return False
-    return self . mc  . execute ( CMD )
+    ##########################################################################
+    return self . mc  . execute ( CMD                                        )
 
-  def Query ( self , command ) :
-    return self . Execute ( command )
+  ############################################################################
+  def Query               ( self , command                                 ) :
+    return self . Execute (        command                                   )
 
-  def Run ( self , command ) :
-    self . Execute ( command )
-    return self . FetchAll ( )
+  ############################################################################
+  def Run                  ( self , command                                ) :
+    self . Execute         (        command                                  )
+    return self . FetchAll (                                                 )
 
-  # SQL Commit
-  def Commit ( self ) :
-    if ( not self . db ) :
+  ############################################################################
+  ## SQL Commit
+  ############################################################################
+  def Commit                  ( self                                       ) :
+    ##########################################################################
+    if                        ( not self . db                              ) :
       return False
-    return self . db . commit ( )
+    ##########################################################################
+    return self . db . commit (                                              )
 
-  # SQL Query with parameters
-  # 帶參數的查詢
-  def QueryValues ( self , command , values ) :
-    if ( not self . mc ) :
+  ############################################################################
+  ## SQL Query with parameters
+  ## 帶參數的查詢
+  ############################################################################
+  def QueryValues               ( self , command , values                  ) :
+    ##########################################################################
+    if                          ( not self . mc                            ) :
       return False
+    ##########################################################################
     CMD = ""
-    if ( "SqlQuery" in type ( command ) . __name__ ) :
-      CMD = command . Query ( )
-    else :
+    if                          ( "Query" in type ( command ) . __name__   ) :
+      CMD = command . Query     (                                            )
+    else                                                                     :
       CMD = command
-    if ( len ( CMD ) <= 0 ) :
+    ##########################################################################
+    if                          ( len ( CMD ) <= 0                         ) :
       return False
-    return self . mc  . execute ( CMD , values )
+    ##########################################################################
+    return self . mc  . execute ( CMD , values                               )
 
-  def Use ( self , Database ) :
-    SQ  = SqlQuery ( )
-    return self . Execute ( SQ . Use ( Database ) )
+  ############################################################################
+  def Use                 ( self , Database                                ) :
+    SQ  = Query           (                                                  )
+    return self . Execute ( SQ . Use ( Database )                            )
 
-  # SQL Where Uuid
-  def WhereUuid ( self , U , Tail = False ) :
-    SQ = SqlQuery       (   )
-    WU = SQ . WhereUuid ( U )
-    if ( Tail ) :
+  ############################################################################
+  ## SQL Where Uuid
+  ############################################################################
+  def WhereUuid           ( self , U , Tail = False                        ) :
+    ##########################################################################
+    SQ   = Query          (                                                  )
+    WU   = SQ . WhereUuid ( U                                                )
+    ##########################################################################
+    if                    ( Tail                                           ) :
       WU = f"{WU} ;"
+    ##########################################################################
     return WU
 
-  # SQL Where Id
-  def WhereId ( self , U , Tail = False ) :
-    SQ = SqlQuery     (   )
-    WU = SQ . WhereId ( U )
-    if ( Tail ) :
+  ############################################################################
+  ## SQL Where Id
+  ############################################################################
+  def WhereId           ( self , U , Tail = False                          ) :
+    ##########################################################################
+    SQ   = Query        (                                                    )
+    WU   = SQ . WhereId ( U                                                  )
+    if                  ( Tail                                             ) :
       WU = f"{WU} ;"
+    ##########################################################################
     return WU
 
-  def FetchOne ( self ) :
-    if ( not self . mc ) :
+  ############################################################################
+  def FetchOne                  ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . mc                            ) :
       return False
-    return self . mc . fetchone ( )
+    ##########################################################################
+    return self . mc . fetchone (                                            )
 
-  def FetchAll ( self ) :
-    if ( not self . mc ) :
+  ############################################################################
+  def FetchAll                  ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . mc                            ) :
       return False
-    return self . mc . fetchall ( )
+    ##########################################################################
+    return self . mc . fetchall (                                            )
 
-  def isConnected ( self ) :
-    if ( not self . db ) :
+  ############################################################################
+  def isConnected                   ( self                                 ) :
+    ##########################################################################
+    if                              ( not self . db                        ) :
       return False
-    return self . db . is_connected ( )
+    ##########################################################################
+    return self . db . is_connected (                                        )
 
-  def LockWrite ( self , table ) :
+  ############################################################################
+  def LockWrite                    ( self , table                          ) :
+    ##########################################################################
     answer = False
-    if ( not self . db ) :
+    ##########################################################################
+    if                             ( not self . db                         ) :
       return False
-    if ( not self . mc ) :
+    ##########################################################################
+    if                             ( not self . mc                         ) :
       return False
-    SQ = SqlQuery ( )
-    QQ = SQ . LockWrite ( table )
-    if ( len ( QQ ) > 0 ) :
-      answer = self . mc . execute ( QQ )
-      # self . db . commit ( )
+    ##########################################################################
+    SQ = Query                     (                                         )
+    QQ = SQ . LockWrite            ( table                                   )
+    if                             ( len ( QQ ) > 0                        ) :
+      answer = self . mc . execute ( QQ                                      )
+    ##########################################################################
     return answer
 
-  def LockWrites ( self , tables ) :
+  ############################################################################
+  def LockWrites                   ( self , tables                         ) :
+    ##########################################################################
     answer = False
-    if ( not self . db ) :
+    ##########################################################################
+    if                             ( not self . db                         ) :
       return False
-    if ( not self . mc ) :
+    ##########################################################################
+    if                             ( not self . mc                         ) :
       return False
-    SQ = SqlQuery ( )
-    QQ = SQ . LockWrites ( tables )
-    if ( len ( QQ ) > 0 ) :
-      answer = self . mc . execute ( QQ )
-      # self . db . commit ( )
+    ##########################################################################
+    SQ = Query                     (                                         )
+    QQ = SQ . LockWrites           ( tables                                  )
+    if                             ( len ( QQ ) > 0                        ) :
+      answer = self . mc . execute ( QQ                                      )
+    ##########################################################################
     return answer
 
-  def UnlockTables ( self ) :
-    if ( not self . mc ) :
+  ############################################################################
+  def UnlockTables             ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . mc                             ) :
       return False
-    SQ = SqlQuery ( )
-    answer = self . mc . execute ( SQ . UnlockTables ( ) )
-    # self . db . commit ( )
-    return answer
+    SQ = Query                 (                                             )
+    ##########################################################################
+    return self . mc . execute ( SQ . UnlockTables ( )                       )
 
-  # Obtain Query Results from SQL
-  # 取得查詢結果列表
-  def ObtainUuids ( self , QQ , index = 0 ) :
+  ############################################################################
+  ## Obtain Query Results from SQL
+  ## 取得查詢結果列表
+  ############################################################################
+  def ObtainUuids                ( self , QQ , index = 0                   ) :
+    ##########################################################################
     UU = [ ]
-    if ( not self . mc ) :
+    if                           ( not self . mc                           ) :
       return UU
-    self . mc . execute ( QQ )
-    Lists = self . mc . fetchall ( )
-    if ( not Lists ) :
+    self . mc . execute          ( QQ                                        )
+    Lists = self . mc . fetchall (                                           )
+    ##########################################################################
+    if                           ( not Lists                               ) :
       return UU
-    if ( index < 0 ) :
+    ##########################################################################
+    if                           ( index < 0                               ) :
       return Lists
-    for x in Lists :
-      UU . append ( x [ index ] )
+    ##########################################################################
+    for x in Lists                                                           :
+      UU . append                ( x [ index ]                               )
+    ##########################################################################
     return UU
 
-  # Obtain the lastest uuid from table
-  # 獲取最後一個物件編號
-  def LastUuid ( self , Table , Item , Heading ) :
-    SQ = SqlQuery        (            )
-    IT = SQ . AssureItem ( Item       )
-    SQ . SelectFrom      ( IT , Table )
-    SQ . OrderBy         (            )
-    SQ . Add             ( IT         )
-    SQ . Add             ( "desc"     )
-    SQ . Limit           ( 0 , 1      )
-    SQ . End             (            )
-    U  = 0
-    self . Query ( SQ . Query ( ) )
-    R = self . FetchOne ( )
-    if ( len ( R ) > 0 ) :
+  ############################################################################
+  ## Obtain the lastest uuid from table
+  ## 獲取最後一個物件編號
+  ############################################################################
+  def LastUuid             ( self , Table , Item , Heading                 ) :
+    ##########################################################################
+    SQ = Query             (                                                 )
+    IT = SQ . AssureItem   ( Item                                            )
+    SQ . SelectFrom        ( IT , Table                                      )
+    SQ . OrderBy           (                                                 )
+    SQ . Add               ( IT                                              )
+    SQ . Add               ( "desc"                                          )
+    SQ . Limit             ( 0 , 1                                           )
+    SQ . End               (                                                 )
+    ##########################################################################
+    U    = 0
+    self . Query           ( SQ . Query ( )                                  )
+    R    = self . FetchOne (                                                 )
+    ##########################################################################
+    if                     ( not R                                         ) :
+      return Heading + 1
+    elif                   ( len ( R ) > 0                                 ) :
       U  = R [ 0 ]
       U += 1
-      if ( U <= 1 ) :
+      if                   ( U <= 1                                        ) :
         U += Heading
       return U
-    SQ . Clear ( )
-    self . Query ( SQ . Count ( Table ) )
-    R = self . FetchOne ( )
+    ##########################################################################
+    SQ   . Clear           (                                                 )
+    self . Query           ( SQ . Count ( Table )                            )
+    R = self . FetchOne    (                                                 )
+    ##########################################################################
     U = R [ 0 ]
-    if ( U <= 0 ) :
+    if                     ( U <= 0                                        ) :
       U = Heading + 1
+    ##########################################################################
     return U
 
-  # Add a new object uuid
-  # 新增一個物件編號
-  def AddUuid ( self , Table , U , T ) :
-    SQ = SqlQuery   ( )
-    SQ . InsertInto ( Table )
-    SQ . Add        ( SQ . rbItems ( [ "uuid" , "type" , "used" ] ) )
-    SQ . Values     ( )
-    SQ . Add        ( SQ . RoundBracket ( f"{U} , {T} , 1" ) )
-    SQ . End        ( )
-    return self . Query ( SQ . Query ( ) )
+  ############################################################################
+  ## Add a new object uuid
+  ## 新增一個物件編號
+  ############################################################################
+  def AddUuid           ( self , Table , U , T                             ) :
+    ##########################################################################
+    SQ = Query          (                                                    )
+    SQ . InsertInto     ( Table                                              )
+    SQ . Add            ( SQ . rbItems ( [ "uuid" , "type" , "used" ] )      )
+    SQ . Values         (                                                    )
+    SQ . Add            ( SQ . RoundBracket ( f"{U} , {T} , 1" )             )
+    SQ . End            (                                                    )
+    ##########################################################################
+    return self . Query ( SQ . Query ( )                                     )
 
-  # Append a new uuid
-  # 新增一個物件編號
-  def AppendUuid        ( self , Table , U          ) :
-    SQ = SqlQuery       (                             )
+  ############################################################################
+  ## Append a new uuid
+  ## 新增一個物件編號
+  ############################################################################
+  def AppendUuid        ( self , Table , U            )                      :
+    ##########################################################################
+    SQ = Query          (                             )
     SQ . InsertInto     ( Table                       )
     SQ . Add            ( SQ . rbItems ( [ "uuid" ] ) )
     SQ . Values         (                             )
     SQ . Add            ( SQ . RoundBracket ( U )     )
     SQ . End            (                             )
+    ##########################################################################
     return self . Query ( SQ . Query ( )              )
 
-  # Delete an uuid
-  # 刪除一個物件編號
-  def DeleteUuid             ( self , Table , U ) :
-    WH = self . WhereUuid    ( U , True           )
+  ############################################################################
+  ## Delete an uuid
+  ## 刪除一個物件編號
+  ############################################################################
+  def DeleteUuid             ( self , Table , U )                            :
+    ##########################################################################
+    WH = self . WhereUuid    ( U , True )
     QQ = f"delete from {Table} {WH}"
-    return self . Query      ( QQ                 )
+    ##########################################################################
+    return self . Query      ( QQ )
 
-  def UnusedUuid ( self , Table , Item = "`uuid`" ) :
+  ############################################################################
+  def UnusedUuid ( self , Table , Item = "`uuid`" )                          :
+    ##########################################################################
     QQ = f"""select {Item} from {Table}
              where ( `used` = 0 )
              order by {Item} asc
              limit 0,1 ;"""
-    if ( not self . Query ( QQ ) ) :
+    ##########################################################################
+    if ( not self . Query ( QQ ) )                                           :
       return False
     NN = self . FetchOne ( )
-    if ( not NN ) :
+    ##########################################################################
+    if ( not NN )                                                            :
       return False
-    if ( len ( NN ) != 1 ) :
+    ##########################################################################
+    if ( len ( NN ) != 1 )                                                   :
       return False
+    ##########################################################################
     return NN [ 0 ]
 
-  def UuidUsage           ( self , Table , U , usage ) :
+  ############################################################################
+  def UuidUsage           ( self , Table , U , usage )                       :
+    ##########################################################################
     WH = self . WhereUuid ( U , True                   )
     QQ = f"update {Table} set `used` = {usage} {WH}"
+    ##########################################################################
     return self . Query   ( QQ                         )
 
-  def UseUuid ( self , Table , U ) :
+  ############################################################################
+  def UseUuid ( self , Table , U )                                           :
     return self . UuidUsage ( Table , U , 1 )
 
-  def UselessUuid ( self , Table , U ) :
+  ############################################################################
+  def UselessUuid ( self , Table , U )                                       :
     return self . UuidUsage ( Table , U , 0 )
 
-  def GetUsed ( self , Table , U ) :
-    WH = self . WhereUuid ( U , True )
-    QQ = f"select `used` from {Table} {WH}"
+  ############################################################################
+  def GetUsed ( self , Table , U )                                           :
+    ##########################################################################
+    WH   = self . WhereUuid ( U , True )
+    QQ   = f"select `used` from {Table} {WH}"
     self . Query ( QQ )
-    FC = self . FetchAll ( )
-    if ( not FC ) :
+    FC   = self . FetchAll ( )
+    ##########################################################################
+    if ( not FC )                                                            :
       return False
-    if ( len ( FC ) <= 0 ) :
+    if ( len ( FC ) <= 0 )                                                   :
       return False
+    ##########################################################################
     return FC [ 0 ] [ 0 ]
 
+  ############################################################################
   def Forget ( self , T1 , T2 , U ) :
+    ##########################################################################
     Correct = True
+    ##########################################################################
     if ( not self . UselessUuid ( T1 , U ) ) :
       Correct = False
+    ##########################################################################
     if ( not self . UselessUuid ( T2 , U ) ) :
       Correct = False
+    ##########################################################################
     return Correct
 
-  def ObtainsUuid ( self , MainTable , UuidTable ) :
+  ############################################################################
+  def ObtainsUuid ( self , MainTable , UuidTable )                           :
+    ##########################################################################
     C = True
     U = self . UnusedUuid ( MainTable )
-    if ( U > 0 ) :
-      if ( not self . UseUuid ( MainTable , U ) ) :
+    ##########################################################################
+    if ( U > 0 )                                                             :
+      if ( not self . UseUuid ( MainTable , U ) )                            :
         C = False
-      if ( C and ( not self . UseUuid ( UuidTable , U ) ) ) :
+      if ( C and ( not self . UseUuid ( UuidTable , U ) ) )                  :
         C = False
-    if ( not C ) :
+    ##########################################################################
+    if ( not C )                                                             :
       U = 0
+    ##########################################################################
     return U
 
-  # Create Tables
-  # 產生指定的表格列表
+  ############################################################################
+  def Querier    ( self                                                    ) :
+    return Query (                                                           )
+
+  ############################################################################
+  ## Create Tables
+  ## 產生指定的表格列表
+  ############################################################################
   def CreateTables ( self , Template , Parameters , all , start = 1 , gaps = 1000000 ) :
-    if ( not self . db ) :
+    ##########################################################################
+    if ( not self . db )                                                     :
       return False
-    if ( not self . mc ) :
+    ##########################################################################
+    if ( not self . mc )                                                     :
       return False
-    SQ           = SqlQuery ( )
-    id           = 1
-    PRS          =                             { \
-    "$(Engine)"  : Parameters [ "$(Engine)"  ] , \
-    "$(Options)" : Parameters [ "$(Options)" ]   \
+    ##########################################################################
+    SQ             = Query ( )
+    id             = 1
+    PRS            =                                                       { \
+      "$(Engine)"  : Parameters [ "$(Engine)"  ]                           , \
+      "$(Options)" : Parameters [ "$(Options)" ]                             \
     }
-    for t in all :
+    ##########################################################################
+    for t in all                                                             :
+      ########################################################################
       PRS [ "$(Table)" ] = t
-      PRS [ "$(Index)" ] = str ( int ( ( id * gaps ) + start ) )
-      T                  = SQ . GenerateTable ( Template , PRS )
-      self . mc . execute ( T )
-      self . db . commit  (   )
+      PRS [ "$(Index)" ] = str ( int ( ( id * gaps ) + start )               )
+      T                  = SQ . GenerateTable ( Template , PRS               )
+      self . mc . execute      ( T                                           )
       id += 1
+    ##########################################################################
     return True
 
-  # Create Group Tables
-  # 產生整群表格
+  ############################################################################
+  ## Create Group Tables
+  ## 產生整群表格
+  ############################################################################
   def CreateTableGroups ( self , DBX , Template , Parameters , ALL , start = 1 , gaps = 1000000 , SHOW = False ) :
-    if ( not self . db ) :
+    ##########################################################################
+    if ( not self . db )                                                     :
       return False
-    if ( not self . mc ) :
+    ##########################################################################
+    if ( not self . mc )                                                     :
       return False
-    SQ     = SqlQuery ( )
+    ##########################################################################
+    SQ     = Query      ( )
     KEYS   = ALL . keys ( )
     MAPS   = { }
     TBL    = [ ]
     id     = 1
-    PRS          =                             { \
-    "$(Engine)"  : Parameters [ "$(Engine)"  ] , \
-    "$(Options)" : Parameters [ "$(Options)" ]   \
+    PRS            =                                                       { \
+      "$(Engine)"  : Parameters [ "$(Engine)"  ]                           , \
+      "$(Options)" : Parameters [ "$(Options)" ]                             \
     }
-    for g in KEYS :
-      KK         = SQ . CreateTableGroup ( DBX , ALL [ g ] )
+    ##########################################################################
+    for g in KEYS                                                            :
+      ########################################################################
+      KK         = SQ . CreateTableGroup ( DBX , ALL [ g ]                   )
       MAPS [ g ] = KK
-      TBL . extend ( KK )
-      for t in KK :
+      TBL . extend                       ( KK                                )
+      ########################################################################
+      for t in KK                                                            :
+        ######################################################################
         PRS [ "$(Table)" ] = t
-        PRS [ "$(Index)" ] = str ( int ( ( id * gaps ) + start ) )
-        T                  = SQ . GenerateTable ( Template , PRS )
-        self . mc . execute ( T )
-        self . db . commit  (   )
+        PRS [ "$(Index)" ] = str ( int ( ( id * gaps ) + start )             )
+        T                  = SQ . GenerateTable ( Template , PRS             )
+        self . mc . execute      ( T                                         )
         id += 1
-        if ( SHOW ) :
-          print ( f"Create Table {t}" )
+        ######################################################################
+        if      ( SHOW                                                     ) :
+          print ( f"Create Table {t}"                                        )
+    ##########################################################################
     MAPS [ "all" ] = TBL
+    ##########################################################################
     return MAPS
 
-  # Create Merged Table
-  # 產生合併主表格
+  ############################################################################
+  ## Create Merged Table
+  ## 產生合併主表格
+  ############################################################################
   def CreateMergeGroups ( self , DBX , Template , Parameters , MAPS , SHOW = False ) :
-    if ( not self . db ) :
+    ##########################################################################
+    if ( not self . db )                                                     :
       return False
-    if ( not self . mc ) :
+    ##########################################################################
+    if ( not self . mc )                                                     :
       return False
-    SQ     = SqlQuery    ( )
-    KEYS   = MAPS . keys ( )
-    MRS    =                                 { \
-    "$(Engine)" : Parameters [ "$(Engine)" ] , \
-    "$(Index)"  : Parameters [ "$(Index)"  ]   \
+    ##########################################################################
+    SQ            = Query       ( )
+    KEYS          = MAPS . keys ( )
+    MRS           =                                                        { \
+      "$(Engine)" : Parameters [ "$(Engine)" ]                             , \
+      "$(Index)"  : Parameters [ "$(Index)"  ]                               \
     }
-    for m in KEYS :
-      TNX                  = SQ . MakeTable     ( DBX , m        )
+    ##########################################################################
+    for m in KEYS                                                            :
+      ########################################################################
+      TNX                  = SQ . MakeTable     ( DBX , m                    )
       MRS [ "$(Table)"   ] = TNX
-      MRS [ "$(Options)" ] = SQ . MergeOptions  ( MAPS [ m ]     )
-      T                    = SQ . GenerateTable ( Template , MRS )
-      self . mc . execute                       ( T              )
-      self . db . commit                        (                )
-      if ( SHOW ) :
-        print (  f"Create Merge Table {TNX}" )
+      MRS [ "$(Options)" ] = SQ . MergeOptions  ( MAPS [ m ]                 )
+      T                    = SQ . GenerateTable ( Template , MRS             )
+      ########################################################################
+      self . mc . execute                       ( T                          )
+      ########################################################################
+      if      ( SHOW                                                       ) :
+        print (  f"Create Merge Table {TNX}"                                 )
+    ##########################################################################
     return True
 
-  # Create Structured Tables
-  # 產生結構性表格
-  def CreateStructure ( self , Structures , SHOW = False ) :
+  ############################################################################
+  ## Create Structured Tables
+  ## 產生結構性表格
+  ############################################################################
+  def CreateStructure ( self , Structures , SHOW = False )                   :
+    ##########################################################################
     UT       = Structures [ "Template" ]
     ALL      = Structures [ "All"      ]
     majorDB  = Structures [ "Major"    ]
@@ -415,18 +614,26 @@ class SqlConnection ( ) :
     TMX      = Structures [ "Merger"   ]
     Starting = Structures [ "Starting" ]
     Gaps     = Structures [ "Gaps"     ]
-    if ( SHOW ) :
-      print ( "===========================================================" )
-      print ( f"Create Structure => {majorDB}" )
+    ##########################################################################
+    if      ( SHOW                                                         ) :
+      print ( "============================================================" )
+      print ( f"Create Structure => {majorDB}"                               )
+    ##########################################################################
     MAPS     = self . CreateTableGroups ( depotDB  , UT , TMI , ALL , Starting , Gaps , SHOW )
-    MAPS [ majorDB ] = MAPS . pop ( "all" )
-    self     .        CreateMergeGroups ( depotDB  , UT , TMX , MAPS , SHOW )
-    self     .        CreateMergeGroups ( masterDB , UT , TMX , MAPS , SHOW )
+    MAPS [ majorDB ] = MAPS . pop       ( "all"                              )
+    ##########################################################################
+    self     .        CreateMergeGroups ( depotDB  , UT , TMX , MAPS , SHOW  )
+    self     .        CreateMergeGroups ( masterDB , UT , TMX , MAPS , SHOW  )
+    ##########################################################################
     return True
 
-  # Create Table Structures
-  # 產生結構性表格群
-  def CreateStructures ( self , Structures , SHOW = False ) :
-    for s in Structures :
+  ############################################################################
+  ## Create Table Structures
+  ## 產生結構性表格群
+  ############################################################################
+  def CreateStructures ( self , Structures , SHOW = False )                  :
+    ##########################################################################
+    for s in Structures                                                      :
       self . CreateStructure ( s , SHOW )
+    ##########################################################################
     return True

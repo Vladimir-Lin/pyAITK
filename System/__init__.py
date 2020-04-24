@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from . import Debugger
-from . import Extract
-from . import Files
-from . import FTP
-from . import Settings
-from . import StarDate
+from . Debugger import *
+from . Extract  import *
+from . Files    import *
+from . FTP      import *
+from . Settings import *
 
 __all__ = [ "Debugger" ,
             "Extract"  ,

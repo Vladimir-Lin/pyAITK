@@ -1,22 +1,23 @@
 # -*- coding: utf-8 -*-
-#
-# 決策樹
-#
+##############################################################################
+## 決策樹
+##############################################################################
 
 import os
 import sys
 import time
 import datetime
-from   threading import Thread
-from   threading import Lock
-from   .         import Condition
-from   .         import Action
-from   .         import Table
-from   .         import Tables
+from   threading   import Thread
+from   threading   import Lock
+from   . Condition import Condition as Condition
+from   . Action    import Action    as Action
+from   . Table     import Table     as Table
+from   . Tables    import Tables    as Tables
 
 class Tree ( Tables ) :
 
   def __init__ ( self ) :
+    super ( Tables , self ) . __init__ ( )
     self . clear ( )
     pass
 

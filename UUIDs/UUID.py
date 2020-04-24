@@ -30,15 +30,16 @@ import requests
 import threading
 
 import mysql . connector
-from   mysql . connector                import Error
+from   mysql . connector             import Error
 
-from   ..      Database . SqlQuery      import SqlQuery
-from   ..      Database . SqlConnection import SqlConnection
-from   ..      Database . SqlColumns    import SqlColumns
+from   ..      Database . Query      import Query      as Query
+from   ..      Database . Connection import Connection as Connection
+from   ..      Database . Columns    import Columns    as Columns
 
-class UUID ( SqlColumns ) :
+class UUID ( Columns ) :
 
   def __init__ ( self ) :
+    super ( Columns , self ) . __init__ ( )
     self . Clear ( )
 
   def __del__ ( self ) :
@@ -118,27 +119,23 @@ class UUID ( SqlColumns ) :
     return ""
 
   def tableItems ( self ) :
-    S = [ ]
-    S . append ( "id"       )
-    S . append ( "uuid"     )
-    S . append ( "type"     )
-    S . append ( "used"     )
-    S . append ( "previous" )
-    S . append ( "states"   )
-    S . append ( "ltime"    )
-    return S
+    return [ "id"       ,
+             "uuid"     ,
+             "type"     ,
+             "used"     ,
+             "previous" ,
+             "states"   ,
+             "ltime"    ]
 
   def pair ( self , item ) :
     v = self . get ( item )
     return f"`{item}` = {v}"
 
   def valueItems ( self ) :
-    S = [ ]
-    S . append ( "type"     )
-    S . append ( "used"     )
-    S . append ( "previous" )
-    S . append ( "states"   )
-    return S
+    return [ "type"     ,
+             "used"     ,
+             "previous" ,
+             "states"   ]
 
   def obtain ( self , R ) :
     List = self . tableItems ( )

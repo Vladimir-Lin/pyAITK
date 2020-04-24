@@ -6,17 +6,7 @@
 
 import os
 import sys
-import getopt
 import time
-import requests
-import threading
-import gettext
-import json
-
-##############################################################################
-
-import Actions
-from   Actions                        import *
 
 ##############################################################################
 from   PyQt5                          import QtCore
@@ -40,8 +30,8 @@ from   PyQt5 . QtWidgets              import QSystemTrayIcon
 
 ##############################################################################
 
-from         . VirtualGui             import VirtualGui
-from         . MenuManager            import MenuManager
+from         . VirtualGui             import VirtualGui  as VirtualGui
+from         . MenuManager            import MenuManager as MenuManager
 
 ##############################################################################
 

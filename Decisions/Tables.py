@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-#
-# 決策列表
-#
+##############################################################################
+## 決策列表
+##############################################################################
 
 import os
 import sys
@@ -9,7 +9,7 @@ import time
 import datetime
 from   threading import Thread
 from   threading import Lock
-from   .         import Table
+from   . Table   import Table as Table
 
 class Tables ( ) :
 

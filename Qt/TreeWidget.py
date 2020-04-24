@@ -15,11 +15,6 @@ import json
 
 ##############################################################################
 
-import Actions
-from   Actions                        import *
-
-##############################################################################
-
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
 from   PyQt5                          import QtWidgets
@@ -46,7 +41,7 @@ from   PyQt5 . QtWidgets              import QSpinBox
 
 ##############################################################################
 
-from         . VirtualGui             import VirtualGui
+from         . VirtualGui             import VirtualGui as VirtualGui
 
 ##############################################################################
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+##############################################################################
 import os
 import sys
 import getopt
@@ -7,82 +7,131 @@ import time
 import datetime
 import requests
 import threading
+##############################################################################
 import mysql.connector
 from   mysql.connector import Error
-from   .SqlQuery       import SqlQuery as SqlQuery
+##############################################################################
+from   . Query         import Query      as Query
+from   . Connection    import Connection as Connection
+##############################################################################
 
-class ConnectionPair ( ) :
+class Pair ( ) :
 
+  ############################################################################
   def __init__ ( self ) :
+    ##########################################################################
     self . isRead  = False
     self . isWrite = False
     self . Read    = False
     self . Write   = False
     self . Message = [ ]
+    ##########################################################################
+    return
 
-  # Connect to SQL Database
-  # 連線到指定資料庫
-  def ConnectTo ( self , DB ) :
-    self . Read    = SqlConnection ( )
+  ############################################################################
+  def __del__ ( self ) :
+    pass
+
+  ############################################################################
+  ## Connect to SQL Database
+  ## 連線到指定資料庫
+  ############################################################################
+  def ConnectTo                 ( self , DB                                ) :
+    ##########################################################################
+    self . Read    = Connection (                                            )
     self . Write   = self . Read
-    if ( self . Read . ConnectTo ( DB ) ) :
+    ##########################################################################
+    if                          ( self . Read . ConnectTo ( DB )           ) :
       self . isRead  = True
       return True
+    ##########################################################################
     return False
 
-  # Connect to Both Read/Write SQL Database
-  # 連線到指定資料庫
-  def ConnectBoth ( self , reader , writer ) :
-    self . Read    = SqlConnection ( )
-    self . Write   = SqlConnection ( )
-    if ( self . Read  . ConnectTo ( reader ) ) :
+  ############################################################################
+  ## Connect to Both Read/Write SQL Database
+  ## 連線到指定資料庫
+  ############################################################################
+  def ConnectBoth               ( self , reader , writer                   ) :
+    ##########################################################################
+    self . Read    = Connection (                                            )
+    self . Write   = Connection (                                            )
+    ##########################################################################
+    if                          ( self . Read  . ConnectTo ( reader )      ) :
       self . isRead  = True
     else :
       return False
-    if ( self . Write . ConnectTo ( writer ) ) :
+    ##########################################################################
+    if                          ( self . Write . ConnectTo ( writer )      ) :
       self . isWrite = True
-    else :
-      if ( self . isRead ) :
-        self . Read . Close ( )
+    else                                                                     :
+      if                        ( self . isRead                            ) :
+        self . Read . Close     (                                            )
         self . isRead  = False
       return False
+    ##########################################################################
     return True
 
-  def isConnected ( self ) :
-    if ( ( not self . isRead ) and ( not self . isWrite ) ) :
+  ############################################################################
+  def isConnected       ( self                                             ) :
+    ##########################################################################
+    if                  ( ( not self . isRead ) and ( not self . isWrite ) ) :
       return False
-    if ( not self . Read  . isConnected ( ) ) :
+    ##########################################################################
+    if                  ( not self . Read  . isConnected ( )               ) :
       return False
-    if ( not self . Write . isConnected ( ) ) :
+    ##########################################################################
+    if                  ( not self . Write . isConnected ( )               ) :
       return False
+    ##########################################################################
     return True
 
-  def PrepareOne ( self , DB ) :
-    if ( not self . ConnectTo   ( DB ) ) :
+  ############################################################################
+  def PrepareOne           ( self , DB                                     ) :
+    ##########################################################################
+    if                     ( not self . ConnectTo   ( DB )                 ) :
       return False
-    if ( not self . isConnected (    ) ) :
+    ##########################################################################
+    if                     ( not self . isConnected (    )                 ) :
       return False
-    self . Read  . Prepare ( )
-    self . Write . Prepare ( )
+    ##########################################################################
+    self . Read  . Prepare (                                                 )
+    self . Write . Prepare (                                                 )
+    ##########################################################################
     return True
 
-  def PrepareBoth ( self , reader , writer ) :
-    if ( not self . ConnectBoth ( reader , writer ) ) :
+  ############################################################################
+  def PrepareBoth             ( self , reader , writer                     ) :
+    ##########################################################################
+    if                        ( not self . ConnectBoth ( reader , writer ) ) :
       return False
-    if ( not self . isConnected (                 ) ) :
+    ##########################################################################
+    if                        ( not self . isConnected (                 ) ) :
       return False
-    self . Read  . Prepare ( )
-    self . Write . Prepare ( )
+    ##########################################################################
+    self . Read  . Prepare    (                                              )
+    self . Write . Prepare    (                                              )
+    ##########################################################################
     return True
 
-  # Close Both SQL Connection
-  # 關閉資料庫連線
-  def Close ( self ) :
-    if ( self . isRead  ) :
-      self . Read  . Close ( )
-    if ( self . isWrite ) :
-      self . Write . Close ( )
+  ############################################################################
+  ## Close Both SQL Connection
+  ## 關閉資料庫連線
+  ############################################################################
+  def Close                ( self                                          ) :
+    ##########################################################################
+    if                     ( self . isRead                                 ) :
+      self . Read  . Close (                                                 )
+    if                     ( self . isWrite                                ) :
+      self . Write . Close (                                                 )
+    ##########################################################################
+    self . isRead  = False
+    self . isWrite = False
+    self . Read    = False
+    self . Write   = False
+    self . Message = [ ]
+    ##########################################################################
     return True
 
-  def Querier ( self ) :
-    return SqlQuery ( )
+  ############################################################################
+  def Querier    ( self                                                    ) :
+    return Query (                                                           )

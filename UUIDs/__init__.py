@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
 
-__all__ = [
-  "UUID"
-]
+from . UUID import UUID as UUID
+
+__all__ = [ "UUID" ]

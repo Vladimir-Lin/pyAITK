@@ -6,11 +6,6 @@
 
 import os
 import sys
-import getopt
-import time
-import datetime
-import requests
-import threading
 
 class Query ( ) :
 
