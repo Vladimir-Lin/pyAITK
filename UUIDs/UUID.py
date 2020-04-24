@@ -136,31 +136,3 @@ class UUID ( Columns ) :
              "used"     ,
              "previous" ,
              "states"   ]
-
-  def obtain ( self , R ) :
-    List = self . tableItems ( )
-    CNT  = 0
-    for x in List :
-      self . set ( x , R [ CNT ] )
-      CNT += 1
-    return True
-
-  def ObtainsByUuid ( self , DB , Table ) :
-    ITS = self . items ( )
-    WHS = DB . WhereUuid ( self . Uuid , True )
-    QQ = f"select {ITS} from {Table} {WHS}"
-    DB . Execute ( QQ )
-    LL = DB . FetchOne ( )
-    if ( not LL ) :
-      return False
-    return self . obtain ( LL )
-
-  def ObtainsById ( self , DB , Table ) :
-    ITS = self . items ( )
-    WHS = DB . WhereId ( self . Uuid , True )
-    QQ = f"select {ITS} from {Table} {WHS}"
-    DB . Execute ( QQ )
-    LL = DB . FetchOne ( )
-    if ( not LL ) :
-      return False
-    return self . obtain ( LL )

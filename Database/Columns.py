@@ -95,3 +95,34 @@ class Columns ( ) :
   # 查詢欄位
   def SelectColumns ( self , Table , Options = "" , Limits = "" ) :
     return self . SelectItems ( Table , self . Columns , Options , Limits )
+
+  # 取得欄位
+  def obtain ( self , R ) :
+    List = self . tableItems ( )
+    CNT  = 0
+    for x in List :
+      self . set ( x , R [ CNT ] )
+      CNT += 1
+    return True
+
+  # 透過uuid取得數據
+  def ObtainsByUuid ( self , DB , Table ) :
+    ITS = self . items ( )
+    WHS = DB . WhereUuid ( self . Uuid , True )
+    QQ = f"select {ITS} from {Table} {WHS}"
+    DB . Execute ( QQ )
+    LL = DB . FetchOne ( )
+    if ( not LL ) :
+      return False
+    return self . obtain ( LL )
+
+  # 透過id取得數據
+  def ObtainsById ( self , DB , Table ) :
+    ITS = self . items ( )
+    WHS = DB . WhereId ( self . Uuid , True )
+    QQ = f"select {ITS} from {Table} {WHS}"
+    DB . Execute ( QQ )
+    LL = DB . FetchOne ( )
+    if ( not LL ) :
+      return False
+    return self . obtain ( LL )
