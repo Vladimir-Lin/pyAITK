@@ -84,7 +84,8 @@ class Query ( ) :
     self . Add ( "set" )
 
   def Use ( self , Database ) :
-    return f"use {Database} ;"
+    X = self . AssureItem ( Database ) ;
+    return f"use {X} ;"
 
   # SQL item pair
   def Pair ( self , item , value ) :
