@@ -215,3 +215,19 @@ class TLD ( Columns ) :
              "domains" ,
              "hosts"   ,
              "pages"   ]
+
+  def toJson ( self ) :
+    return { "id"      : self . Id      ,
+             "uuid"    : self . Uuid    ,
+             "used"    : self . Used    ,
+             "type"    : self . Type    ,
+             "owner"   : self . Owner   ,
+             "name"    : self . Name    ,
+             "reverse" : self . Reverse ,
+             "iana"    : self . IANA    ,
+             "explain" : self . Explain ,
+             "sld"     : self . SLD     ,
+             "domains" : self . Domains ,
+             "hosts"   : self . Hosts   ,
+             "pages"   : self . Pages   ,
+             "ltime"   : self . Update  }

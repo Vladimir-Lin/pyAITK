@@ -136,3 +136,12 @@ class UUID ( Columns ) :
              "used"     ,
              "previous" ,
              "states"   ]
+
+  def toJson ( self ) :
+    return { "id"       : self . Id       ,
+             "uuid"     : self . Uuid     ,
+             "type"     : self . Type     ,
+             "used"     : self . Used     ,
+             "previous" : self . Previous ,
+             "states"   : self . States   ,
+             "ltime"    : self . Update   }

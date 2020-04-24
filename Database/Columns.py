@@ -37,6 +37,10 @@ class Columns ( ) :
   def set ( self , item , value ) :
     raise NotImplementedError ( )
 
+  # 轉成JSON格式
+  def toJson ( self ) :
+    raise NotImplementedError ( )
+
   # 指定讀取欄位列表
   def tableItems ( self ) :
     raise NotImplementedError ( )
@@ -119,7 +123,7 @@ class Columns ( ) :
   # 透過id取得數據
   def ObtainsById ( self , DB , Table ) :
     ITS = self . items ( )
-    WHS = DB . WhereId ( self . Uuid , True )
+    WHS = DB . WhereId ( self . Id , True )
     QQ = f"select {ITS} from {Table} {WHS}"
     DB . Execute ( QQ )
     LL = DB . FetchOne ( )
