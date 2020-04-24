@@ -5,7 +5,8 @@ __all__ = [ "Calendars"  ,
             "Database"   ,
             "Documents"  ,
             "Essentials" ,
+            "UUIDs"      ,
             "Foundation" ,
-            "Qt"         ,
             "System"     ,
-            "UUIDs"      ]
+            "Qt"         ,
+            "Widgets"    ]
