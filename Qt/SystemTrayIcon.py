@@ -38,11 +38,18 @@ from         . MenuManager            import MenuManager as MenuManager
 class SystemTrayIcon ( QSystemTrayIcon , VirtualGui ) :
 
   ############################################################################
+  emitShowMessage = pyqtSignal       ( str , str                             )
+  emitSetIcon     = pyqtSignal       ( str                                   )
+  ############################################################################
 
   def __init__ ( self , icon , parent = None ) :
     ##########################################################################
     QSystemTrayIcon . __init__ ( self , icon , parent )
     super ( VirtualGui  , self ) . Initialize ( self   )
+    ##########################################################################
+    self . activated       . connect ( self . doTrayActivated                )
+    self . emitShowMessage . connect ( self . doShowMessage                  )
+    self . emitSetIcon     . connect ( self . doSetIcon                      )
     ##########################################################################
     self . Configure ( parent )
     ##########################################################################
@@ -51,6 +58,54 @@ class SystemTrayIcon ( QSystemTrayIcon , VirtualGui ) :
 
   def Configure ( self , parent ) :
     raise NotImplementedError ( )
+
+  ############################################################################
+
+  def PrepareMenu                    ( self , parent                       ) :
+    raise NotImplementedError        (                                       )
+
+  ############################################################################
+
+  def AboutToShow                    ( self                                ) :
+    raise NotImplementedError        (                                       )
+
+  ############################################################################
+
+  def RaiseMenu                      ( self , action                       ) :
+    raise NotImplementedError        (                                       )
+
+  ############################################################################
+
+  def doTrayActivated                ( self , reason                       ) :
+    if                               ( reason == 3                         ) :
+      self . AboutToShow             (                                       )
+      a = self . Menu . exec_        ( QCursor . pos ( )                     )
+      self . RaiseMenu               ( a                                     )
+    return True
+
+  ############################################################################
+
+  def SendMessage                    ( self , TITLE , MESSAGE              ) :
+    self . emitShowMessage . emit    (        TITLE , MESSAGE                )
+    return True
+
+  ############################################################################
+
+  def doShowMessage                  ( self , TITLE , MESSAGE              ) :
+    self . showMessage               (        TITLE , MESSAGE                )
+    return True
+
+  ############################################################################
+
+  def SetIcon                        ( self , iconfile                     ) :
+    self . emitSetIcon . emit        (        iconfile                       )
+    return True
+
+  ############################################################################
+
+  def doSetIcon                      ( self , iconfile                     ) :
+    self . setIcon                   ( QIcon ( iconfile )                    )
+    return True
 
   ############################################################################
 
