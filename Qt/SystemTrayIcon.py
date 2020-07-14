@@ -76,11 +76,39 @@ class SystemTrayIcon ( QSystemTrayIcon , VirtualGui ) :
 
   ############################################################################
 
+  def DoubleClickIcon                ( self                                ) :
+    raise NotImplementedError        (                                       )
+
+  ############################################################################
+
+  def TriggerIcon                    ( self                                ) :
+    self . AboutToShow             (                                       )
+    a = self . Menu . exec_        ( QCursor . pos ( )                     )
+    self . RaiseMenu               ( a                                     )
+    return
+
+  ############################################################################
+
+  def MiddleIcon                     ( self                                ) :
+    raise NotImplementedError        (                                       )
+
+  ############################################################################
+
   def doTrayActivated                ( self , reason                       ) :
-    if                               ( reason == 3                         ) :
+    ## Context
+    if                               ( reason == 1                         ) :
       self . AboutToShow             (                                       )
       a = self . Menu . exec_        ( QCursor . pos ( )                     )
       self . RaiseMenu               ( a                                     )
+    ## DoubleClick
+    elif                             ( reason == 2                         ) :
+      self . DoubleClickIcon         (                                       )
+    ## Trigger
+    elif                             ( reason == 3                         ) :
+      self . TriggerIcon             (                                       )
+    ## MiddleClick
+    elif                             ( reason == 4                         ) :
+      self . MiddleIcon              (                                       )
     return True
 
   ############################################################################
