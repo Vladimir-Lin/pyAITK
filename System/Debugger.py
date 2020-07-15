@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+##############################################################################
+## 除錯機制
+##############################################################################
 import os
 import sys
 import getopt
@@ -8,53 +10,88 @@ import datetime
 import logging
 import requests
 import threading
-
-def GetDebuggerLevel ( DBG ) :
+##############################################################################
+## 轉換除錯等級
+##############################################################################
+def GetDebuggerLevel ( DBG                                                 ) :
   LEVEL     = logging . NOTSET
-  if   ( "NOTSET"     == DBG ) :
+  if                 ( "NOTSET"   == DBG                                   ) :
     LEVEL = logging . NOTSET
-  elif   ( "DEBUG"    == DBG ) :
+  elif               ( "DEBUG"    == DBG                                   ) :
     LEVEL = logging . DEBUG
-  elif   ( "INFO"     == DBG ) :
+  elif               ( "INFO"     == DBG                                   ) :
     LEVEL = logging . INFO
-  elif   ( "WARNING"  == DBG ) :
+  elif               ( "WARNING"  == DBG                                   ) :
     LEVEL = logging . WARNING
-  elif   ( "ERROR"    == DBG ) :
+  elif               ( "ERROR"    == DBG                                   ) :
     LEVEL = logging . ERROR
-  elif   ( "CRITICAL" == DBG ) :
+  elif               ( "CRITICAL" == DBG                                   ) :
     LEVEL = logging . CRITICAL
   return LEVEL
-
-def ChangeDebuggerLevel        ( DBG   ) :
-  LEVEL  = GetDebuggerLevel    ( DBG   )
-  Logger = logging . getLogger (       )
-  Logger . setLevel            ( LEVEL )
-
-def ConfigureDebugger ( settings = { } ) :
-  DBG       = "NOTSET"
-  LOG       = ""
-  isConsole = False
-  LEVEL     = logging . NOTSET
-  if ( "Debug" in settings ) :
-    DBG       = settings [ "Debug"   ]
-  if ( "LOG" in settings ) :
-    LOG       = settings [ "LOG"     ]
-  if ( "Console" in settings ) :
-    isConsole = settings [ "Console" ]
-  LEVEL = GetDebuggerLevel ( DBG )
-  # 規劃除錯訊息
-  logging . basicConfig                                 (
-    level   = LEVEL                                     ,
-    format  = '%(asctime)s %(levelname)-8s %(message)s' ,
-    datefmt = '%Y/%m/%d %H:%M:%S'                       ,
-  )
-  # 設定記錄檔
-  if ( len ( LOG ) > 0 ) :
-    Logger     = logging . getLogger ( )
-    fileh      = logging . FileHandler ( LOG , 'a' )
-    if ( not isConsole ) :
-      for hdlr in Logger . handlers [ : ] :
-        Logger . removeHandler ( hdlr )
-    formatter  = logging . Formatter ( '%(asctime)s %(levelname)-8s %(message)s' , '%Y/%m/%d %H:%M:%S' )
-    fileh      . setFormatter ( formatter )
-    Logger     . addHandler   ( fileh )
+##############################################################################
+## 改變除錯等級
+##############################################################################
+def ChangeDebuggerLevel        ( DBG                                       ) :
+  LEVEL  = GetDebuggerLevel    ( DBG                                         )
+  Logger = logging . getLogger (                                             )
+  Logger . setLevel            ( LEVEL                                       )
+  return
+##############################################################################
+## 設置紀錄器
+##############################################################################
+def ConfigureDebugger          ( settings = { }                            ) :
+  ############################################################################
+  DBG          = "NOTSET"
+  LOG          = ""
+  isConsole    = False
+  LEVEL        = logging . NOTSET
+  ############################################################################
+  if                           ( "Debug" in settings                       ) :
+    DBG        = settings      [ "Debug"                                     ]
+  if                           ( "LOG"   in settings                       ) :
+    LOX        = settings      [ "LOG"                                       ]
+  if                           ( "Console" in settings                     ) :
+    isConsole  = settings      [ "Console"                                   ]
+  LEVEL = GetDebuggerLevel     ( DBG                                         )
+  ############################################################################
+  ## 規劃除錯訊息
+  ############################################################################
+  MSGFMT       = u"%(asctime)s %(levelname)-8s %(message)s"
+  DATEFMT      = "%Y/%m/%d %H:%M:%S"
+  logging      . basicConfig                                                  (
+    level      = LEVEL                                                        ,
+    format     = MSGFMT                                                       ,
+    datefmt    = DATEFMT                                                      )
+  ############################################################################
+  ## 設定記錄檔
+  ############################################################################
+  if                           ( len ( LOX ) > 0                           ) :
+    ##########################################################################
+    Logger     = logging . getLogger   (                                     )
+    ##########################################################################
+    fileh      = logging . FileHandler ( LOX , mode = 'a' , encoding='utf-8' )
+    ##########################################################################
+    if                                 ( not isConsole                     ) :
+      for hdlr in Logger . handlers [ : ]                                    :
+        Logger . removeHandler         ( hdlr                                )
+    ##########################################################################
+    formatter  = logging . Formatter   ( MSGFMT , DATEFMT                    )
+    fileh      . setFormatter          ( formatter                           )
+    Logger     . addHandler            ( fileh                               )
+    ##########################################################################
+  return
+##############################################################################
+## 顯示訊息
+##############################################################################
+def LOG                        ( Message                                   ) :
+  ############################################################################
+  global SHOW
+  ############################################################################
+  Logger = logging . getLogger (                                             )
+  Logger . info                ( Message                                     )
+  ############################################################################
+  if                           ( SHOW                                      ) :
+    print                      ( Message                                     )
+  ############################################################################
+  return
+##############################################################################
