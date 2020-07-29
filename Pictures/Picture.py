@@ -202,7 +202,7 @@ class Picture     (                                                        ) :
       DB  . QueryValues ( QQ , VAL )
       ########################################################################
       QQ  = f"update {PRETAB} set `position` = {PREFER} where ( `uuid` = {UUIX} ) ;"
-      DB  . QueryValues ( QQ )
+      DB  . Query ( QQ )
       ########################################################################
     DB     . UnlockTables (     )
     return True
