@@ -204,5 +204,11 @@ class Picture     (                                                        ) :
       QQ  = f"update {PRETAB} set `position` = {PREFER} where ( `uuid` = {UUIX} ) ;"
       DB  . Query ( QQ )
       ########################################################################
+    else                                                                     :
+      ########################################################################
+      UUIX = LL [ 0 ] [ 0 ]
+      QQ  = f"update {PRETAB} set `position` = {PREFER} where ( `uuid` = {UUIX} ) ;"
+      DB  . Query ( QQ )
+      ########################################################################
     DB     . UnlockTables (     )
     return True
