@@ -90,12 +90,12 @@ class TLDs ( ) :
         ######################################################################
         self . Names    . append ( NAME    )
         self . Reverses . append ( REVERSE )
-        ////////////////////////////////////////////////////////////////////////
+        ######################################################################
         self . NamesToIds      [ NAME    ] = ID
         self . NamesToUuids    [ NAME    ] = UUID
         self . IdsToNames      [ ID      ] = NAME
         self . UuidsToNames    [ UUID    ] = NAME
-        ////////////////////////////////////////////////////////////////////////
+        ######################################################################
         self . ReversesToIds   [ REVERSE ] = ID
         self . ReversesToUuids [ REVERSE ] = UUID
         self . IdsToReverses   [ ID      ] = REVERSE
