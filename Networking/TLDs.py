@@ -29,18 +29,36 @@ class TLDs ( ) :
   ############################################################################
   def Clear ( self )                                                         :
     ##########################################################################
-    self . Items    = { }
-    self . Names    = { }
-    self . Reverses = { }
+    self . Names           = [ ]
+    self . Reverses        = [ ]
+    ##########################################################################
+    self . NamesToIds      = { }
+    self . NamesToUuids    = { }
+    self . IdsToNames      = { }
+    self . UuidsToNames    = { }
+    ##########################################################################
+    self . ReversesToIds   = { }
+    self . ReversesToUuids = { }
+    self . IdsToReverses   = { }
+    self . UuidsToReverses = { }
     ##########################################################################
     return
 
   ############################################################################
   def assign ( self , item )                                                 :
     ##########################################################################
-    self . Items    = item . Items
-    self . Names    = item . Names
-    self . Reverses = item . Reverses
+    self . Names           = item . Names
+    self . Reverses        = item . Reverses
+    ##########################################################################
+    self . NamesToIds      = item . NamesToIds
+    self . NamesToUuids    = item . NamesToUuids
+    self . IdsToNames      = item . IdsToNames
+    self . UuidsToNames    = item . UuidsToNames
+    ##########################################################################
+    self . ReversesToIds   = item . ReversesToIds
+    self . ReversesToUuids = item . ReversesToUuids
+    self . IdsToReverses   = item . IdsToReverses
+    self . UuidsToReverses = item . UuidsToReverses
     ##########################################################################
     return
 
@@ -53,45 +71,62 @@ class TLDs ( ) :
     return uuid - 8300000000001000000
 
   ############################################################################
-  def IDs ( self )                                                           :
-    return self . Items . keys ( )
-
-  ############################################################################
-  def keys( self )                                                           :
-    return self . Names . keys ( )
-
-  ############################################################################
-  def __getitem__ ( self , id                                              ) :
-    if            ( id not in self . Items                                 ) :
-      return False
-    return self . Items [ id ]
-
-  ############################################################################
-  def ByName ( self , name                                                 ) :
-    if       ( name not in self . Names                                    ) :
-      return -1
-    return self . Names [ name ]
-
-  ############################################################################
-  def ByReverse ( self , reverse                                           ) :
-    if          ( reverse not in self . Reverses                           ) :
-      return -1
-    return self . Reverses [ reverse ]
-
-  ############################################################################
-  def Fetch ( self , DB , Table )                                            :
+  def obtains ( self , DB , Table )                                          :
     ##########################################################################
     self . Clear ( )
-    QQ   = f"select `id` from {Table} order by `id` asc ;"
-    IDs  = DB . ObtainUuids ( QQ )
     ##########################################################################
-    for id in IDs                                                            :
-      tld = TLD ( )
-      tld . Id = id
-      if ( tld . ObtainsById ( DB , Table ) ) :
-        self   . Items    [ tld . Id      ] = tld
-        if ( len ( tld . Name ) > 0 ) :
-          self . Names    [ tld . Name    ] = tld . Id
-          self . Reverses [ tld . Reverse ] = tld . Id
+    QQ    = f"select `id`,`uuid`,`name`,`reverse` from {Table} where ( `used` > 0 ) order by `id` asc ;"
+    DB    . Query         ( QQ )
+    RR    = DB . FetchAll (    )
+    if ( not ( ( RR == None ) or ( len ( RR ) <= 0 ) ) )                     :
+      for R in RR                                                            :
+        ######################################################################
+        ID      = R [ 0 ]
+        UUID    = R [ 1 ]
+        N       = R [ 2 ]
+        X       = R [ 3 ]
+        NAME    = N . lower ( )
+        REVERSE = X . lower ( )
+        ######################################################################
+        self . Names    . append ( NAME    )
+        self . Reverses . append ( REVERSE )
+        ////////////////////////////////////////////////////////////////////////
+        self . NamesToIds      [ NAME    ] = ID
+        self . NamesToUuids    [ NAME    ] = UUID
+        self . IdsToNames      [ ID      ] = NAME
+        self . UuidsToNames    [ UUID    ] = NAME
+        ////////////////////////////////////////////////////////////////////////
+        self . ReversesToIds   [ REVERSE ] = ID
+        self . ReversesToUuids [ REVERSE ] = UUID
+        self . IdsToReverses   [ ID      ] = REVERSE
+        self . UuidsToReverses [ UUID    ] = REVERSE
     ##########################################################################
     return True
+
+  ############################################################################
+  def IdByName ( self , name                                               ) :
+    n = name . lower ( )
+    if         ( n not in self . Names                                     ) :
+      return 0
+    return self . NamesToIds [ n ]
+
+  ############################################################################
+  def UuidByName ( self , name                                             ) :
+    n = name . lower ( )
+    if         ( n not in self . Names                                     ) :
+      return 0
+    return self . NamesToUuids [ n ]
+
+  ############################################################################
+  def IdByReverse ( self , name                                            ) :
+    n = name . lower ( )
+    if         ( n not in self . Reverses                                  ) :
+      return 0
+    return self . ReversesToIds [ n ]
+
+  ############################################################################
+  def IdByReverse ( self , name                                            ) :
+    n = name . lower ( )
+    if         ( n not in self . Reverses                                  ) :
+      return 0
+    return self . ReversesToUuids [ n ]

@@ -231,3 +231,7 @@ class TLD ( Columns ) :
              "hosts"   : self . Hosts   ,
              "pages"   : self . Pages   ,
              "ltime"   : self . Update  }
+
+  def isMatch ( self , tld ) :
+    T = tld . lower ( )
+    return ( self . Name == T )
