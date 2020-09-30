@@ -7,9 +7,10 @@ import sys
 import datetime
 import os . path
 import pickle
-from   googleapiclient.discovery      import build            as GoogleBuild
-from   google_auth_oauthlib.flow      import InstalledAppFlow as InstallGoogle
-from   google.auth.transport.requests import Request          as RequestGoogle
+import googleapiclient
+from   googleapiclient . discovery          import build            as GoogleBuild
+from   google_auth_oauthlib . flow          import InstalledAppFlow as InstallGoogle
+from   google . auth . transport . requests import Request          as RequestGoogle
 ##############################################################################
 class Calendar    (                                                        ) :
   ############################################################################
@@ -53,7 +54,8 @@ class Calendar    (                                                        ) :
         self . Service = GoogleBuild                                         (
                            "calendar"                                        ,
                            "v3"                                              ,
-                           credentials = self . Creds                        )
+                           credentials     = self . Creds                    ,
+                           cache_discovery = False                           )
         return True
       except                                                                 :
         pass
@@ -87,7 +89,8 @@ class Calendar    (                                                        ) :
         self . Service = GoogleBuild                                         (
                            "calendar"                                        ,
                            "v3"                                              ,
-                           credentials = self . Creds                        )
+                           credentials = self . Creds                        ,
+                           cache_discovery = False                           )
         return True
       except googleapiclient . errors . HttpError as err                     :
         pass
@@ -190,6 +193,7 @@ class Calendar    (                                                        ) :
         iCalUID                 = iCalUID                      ) . execute ( )
       return Result . get ( "items" , [ ]                                    )
     except googleapiclient . errors . HttpError as err                       :
+      print ( str ( err ) )
       pass
     ##########################################################################
     return False
@@ -337,6 +341,95 @@ class Calendar    (                                                        ) :
       return True
     except googleapiclient . errors . HttpError as err                       :
       pass
+    ##########################################################################
+    return False
+  ############################################################################
+  ## -| Delete |-
+  ############################################################################
+  ## +| Watch |+
+  ############################################################################
+  def Watch ( self , calendarId , Body = { } , options = { } )               :
+    ##########################################################################
+    if ( self . Service == None )                                            :
+      return False
+    ##########################################################################
+    maxAttendees            = None
+    privateExtendedProperty = None
+    q                       = None
+    updatedMin              = None
+    maxResults              = None
+    timeMin                 = None
+    orderBy                 = None
+    singleEvents            = None
+    timeMax                 = None
+    syncToken               = None
+    timeZone                = None
+    pageToken               = None
+    sharedExtendedProperty  = None
+    showHiddenInvitations   = None
+    alwaysIncludeEmail      = None
+    iCalUID                 = None
+    showDeleted             = None
+    ##########################################################################
+    if ( "maxAttendees"            in options                              ) :
+      maxAttendees            = options [ "maxAttendees"                     ]
+    if ( "privateExtendedProperty" in options                              ) :
+      privateExtendedProperty = options [ "privateExtendedProperty"          ]
+    if ( "q"                       in options                              ) :
+      q                       = options [ "q"                                ]
+    if ( "updatedMin"              in options                              ) :
+      updatedMin              = options [ "updatedMin"                       ]
+    if ( "maxResults"              in options                              ) :
+      maxResults              = options [ "maxResults"                       ]
+    if ( "timeMin"                 in options                              ) :
+      timeMin                 = options [ "timeMin"                          ]
+    if ( "orderBy"                 in options                              ) :
+      orderBy                 = options [ "orderBy"                          ]
+    if ( "singleEvents"            in options                              ) :
+      singleEvents            = options [ "singleEvents"                     ]
+    if ( "timeMax"                 in options                              ) :
+      timeMax                 = options [ "timeMax"                          ]
+    if ( "syncToken"               in options                              ) :
+      syncToken               = options [ "syncToken"                        ]
+    if ( "timeZone"                in options                              ) :
+      timeZone                = options [ "timeZone"                         ]
+    if ( "pageToken"               in options                              ) :
+      pageToken               = options [ "pageToken"                        ]
+    if ( "sharedExtendedProperty"  in options                              ) :
+      sharedExtendedProperty  = options [ "sharedExtendedProperty"           ]
+    if ( "showHiddenInvitations"   in options                              ) :
+      showHiddenInvitations   = options [ "showHiddenInvitations"            ]
+    if ( "alwaysIncludeEmail"      in options                              ) :
+      alwaysIncludeEmail      = options [ "alwaysIncludeEmail"               ]
+    if ( "iCalUID"                 in options                              ) :
+      iCalUID                 = options [ "iCalUID"                          ]
+    if ( "showDeleted"             in options                              ) :
+      showDeleted             = options [ "showDeleted"                      ]
+    ##########################################################################
+    try                                                                      :
+      self . Service . events ( ) . watch                                    (
+        calendarId              = calendarId                                 ,
+        body                    = Body                                       ,
+        maxAttendees            = maxAttendees                               ,
+        privateExtendedProperty = privateExtendedProperty                    ,
+        q                       = q                                          ,
+        updatedMin              = updatedMin                                 ,
+        maxResults              = maxResults                                 ,
+        timeMin                 = timeMin                                    ,
+        orderBy                 = orderBy                                    ,
+        singleEvents            = singleEvents                               ,
+        timeMax                 = timeMax                                    ,
+        syncToken               = syncToken                                  ,
+        timeZone                = timeZone                                   ,
+        pageToken               = pageToken                                  ,
+        sharedExtendedProperty  = sharedExtendedProperty                     ,
+        showHiddenInvitations   = showHiddenInvitations                      ,
+        alwaysIncludeEmail      = alwaysIncludeEmail                         ,
+        iCalUID                 = iCalUID                                    ,
+        showDeleted             = showDeleted                  ) . execute ( )
+      return True
+    except googleapiclient . errors . HttpError as err                       :
+      print ( str ( err ) )
     ##########################################################################
     return False
   ############################################################################
