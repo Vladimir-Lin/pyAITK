@@ -407,7 +407,7 @@ class Calendar    (                                                        ) :
       showDeleted             = options [ "showDeleted"                      ]
     ##########################################################################
     try                                                                      :
-      self . Service . events ( ) . watch                                    (
+      return self . Service . events ( ) . watch                             (
         calendarId              = calendarId                                 ,
         body                    = Body                                       ,
         maxAttendees            = maxAttendees                               ,
@@ -427,11 +427,33 @@ class Calendar    (                                                        ) :
         alwaysIncludeEmail      = alwaysIncludeEmail                         ,
         iCalUID                 = iCalUID                                    ,
         showDeleted             = showDeleted                  ) . execute ( )
+    except googleapiclient . errors . HttpError as err                       :
+      print ( str ( err ) )
+    ##########################################################################
+    return False
+  ############################################################################
+  ## -| Watch |-
+  ############################################################################
+  ## +| Stop |+
+  ############################################################################
+  def Stop ( self , id , resource , address )                                :
+    ##########################################################################
+    if ( self . Service == None )                                            :
+      return False
+    ##########################################################################
+    try                                                                      :
+      self . Service . channels ( ) . stop ( body =                          {
+        "id"           : id                                                , \
+        "type"         : "web_hook"                                        , \
+        "address"      : address                                           , \
+        "kind"         : "api#channel"                                     , \
+        "resourceId"   : resource                                          , \
+      }                                                        ) . execute ( )
       return True
     except googleapiclient . errors . HttpError as err                       :
       print ( str ( err ) )
     ##########################################################################
     return False
   ############################################################################
-  ## -| Delete |-
+  ## -| Stop |-
   ############################################################################
