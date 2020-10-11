@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## 時間區段物件
+## 變數物件
 ##############################################################################
 import os
 import sys
-import getopt
 import time
 import datetime
-import requests
-import threading
 ##############################################################################
 import mysql . connector
 from   mysql . connector              import Error
@@ -23,56 +20,50 @@ from   AITK . Database  . Columns     import Columns
 ##############################################################################
 class Variables ( Columns )                                                  :
   ############################################################################
-  def __init__ ( self ) :
+  def __init__ ( self )                                                      :
     self . Clear ( )
+    return
   ############################################################################
-  def __del__ ( self ) :
-    pass
+  def __del__ ( self )                                                       :
+    return
   ############################################################################
-  def Clear ( self ) :
+  def Clear ( self )                                                         :
     self . Columns   = [ ]
     self . Id        = -1
     self . Uuid      =  0
     self . Type      =  1
-    self . Used      =  1
-    self . Start     =  0
-    self . End       =  0
-    self . States    =  1
+    self . Name      =  ""
+    self . Value     =  ""
     self . ltime     =  0
-    self . TermCount =  0
+    return
   ############################################################################
-  def assign ( self , item ) :
-    self . Columns   = item . Columns
-    self . Id        = item . Id
-    self . Uuid      = item . Uuid
-    self . Type      = item . Type
-    self . Used      = item . Used
-    self . Start     = item . Start
-    self . End       = item . End
-    self . States    = item . States
-    self . ltime     = item . ltime
-    self . TermCount = item . TermCount
+  def assign ( self , item )                                                 :
+    self . Columns = item . Columns
+    self . Id      = item . Id
+    self . Uuid    = item . Uuid
+    self . Type    = item . Type
+    self . Name    = item . Name
+    self . Value   = item . Value
+    self . ltime   = item . ltime
+    return
   ############################################################################
-  def set ( self , item , value ) :
-    a = item.lower()
+  def set ( self , item , value )                                            :
+    a = item . lower ( )
     if ( "id"     == a ) :
       self . Id     = value
     if ( "uuid"   == a ) :
       self . Uuid   = value
     if ( "type"   == a ) :
       self . Type   = value
-    if ( "used"   == a ) :
-      self . Used   = value
-    if ( "start"  == a ) :
-      self . Start  = value
-    if ( "end"    == a ) :
-      self . End    = value
-    if ( "states" == a ) :
-      self . States = value
+    if ( "name"   == a ) :
+      self . Name   = value
+    if ( "value"  == a ) :
+      self . Value  = value
     if ( "ltime"  == a ) :
       self . ltime  = value
+    return
   ############################################################################
-  def get ( self , item ) :
+  def get ( self , item )                                                    :
     a = item.lower()
     if ( "id"     == a ) :
       return self . Id
@@ -80,40 +71,56 @@ class Variables ( Columns )                                                  :
       return self . Uuid
     if ( "type"   == a ) :
       return self . Type
-    if ( "used"   == a ) :
-      return self . Used
-    if ( "start"  == a ) :
-      return self . Start
-    if ( "end"    == a ) :
-      return self . End
-    if ( "states" == a ) :
-      return self . States
+    if ( "name"   == a ) :
+      return self . Name
+    if ( "value"  == a ) :
+      return self . Value
     if ( "ltime"  == a ) :
       return self . ltime
     return ""
   ############################################################################
-  def tableItems ( self ) :
-    S = [ ]
-    S . append ( "id"     )
-    S . append ( "uuid"   )
-    S . append ( "type"   )
-    S . append ( "used"   )
-    S . append ( "start"  )
-    S . append ( "end"    )
-    S . append ( "states" )
-    S . append ( "ltime"  )
-    return S
+  def tableItems ( self )                                                    :
+    return [ "id"                                                            ,
+             "uuid"                                                          ,
+             "type"                                                          ,
+             "name"                                                          ,
+             "value"                                                         ,
+             "ltime"                                                         ]
   ############################################################################
-  def pair ( self , item ) :
+  def pair ( self , item )                                                   :
     v = self . get ( item )
     return f"`{item}` = {v}"
   ############################################################################
-  def valueItems ( self ) :
-    S = [ ]
-    S . append ( "type"   )
-    S . append ( "used"   )
-    S . append ( "start"  )
-    S . append ( "end"    )
-    S . append ( "states" )
-    return S
+  def valueItems ( self )                                                    :
+    return [ "type"                                                          ,
+             "name"                                                          ,
+             "value"                                                         ]
+  ############################################################################
+  def GetValue    ( self , DB , TABLE )                                      :
+    ##########################################################################
+    U  = self . Uuid
+    T  = self . Type
+    N  = self . Name
+    ##########################################################################
+    QQ = f"""select `value` from {TABLE}
+             where ( `uuid` = {U} )
+             and ( `type` = {T} )
+             and ( `name` = '{N}' )
+             order by `id` desc
+             limit 0,1 ;"""
+    DB . Query ( QQ )
+    ##########################################################################
+    RR = DB . FetchOne ( )
+    if ( RR == None ) :
+      return None
+    if ( len ( RR ) <= 0 ) :
+      return None
+    ##########################################################################
+    return RR [ 0 ]
+  ############################################################################
+  def AssureValue ( self , DB , TABLE )                                      :
+    ##########################################################################
+    VAL = ( self . Uuid , self . Type , self . Name , self . Value )
+    QQ  = f"replace into {TABLE} ( `uuid`,`type`,`name`,`value` ) values ( %s,%s,%s,%s ) ;"
+    return DB  . Query ( QQ )
 ##############################################################################

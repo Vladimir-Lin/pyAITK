@@ -23,97 +23,100 @@ from   AITK . Database  . Columns     import Columns
 ##############################################################################
 class Notes  ( Columns )                                                     :
   ############################################################################
-  def __init__ ( self ) :
+  def __init__ ( self )                                                      :
     self . Clear ( )
   ############################################################################
-  def __del__ ( self ) :
+  def __del__  ( self )                                                      :
     pass
   ############################################################################
-  def Clear ( self ) :
-    self . Columns   = [ ]
-    self . Id        = -1
-    self . Uuid      =  0
-    self . Type      =  1
-    self . Used      =  1
-    self . Start     =  0
-    self . End       =  0
-    self . States    =  1
-    self . ltime     =  0
-    self . TermCount =  0
+  def Clear    ( self )                                                      :
+    self . Columns = [ ]
+    self . Id      = -1
+    self . Uuid    =  0
+    self . Name    =  ""
+    self . Prefer  =  1
+    self . Note    =  ""
+    self . Title   =  ""
+    self . Comment =  ""
+    self . Extra   =  ""
+    self . ltime   =  0
   ############################################################################
-  def assign ( self , item ) :
-    self . Columns   = item . Columns
-    self . Id        = item . Id
-    self . Uuid      = item . Uuid
-    self . Type      = item . Type
-    self . Used      = item . Used
-    self . Start     = item . Start
-    self . End       = item . End
-    self . States    = item . States
-    self . ltime     = item . ltime
-    self . TermCount = item . TermCount
+  def assign ( self , item )                                                 :
+    self . Columns = item . Columns
+    self . Id      = item . Id
+    self . Uuid    = item . Uuid
+    self . Name    = item . Name
+    self . Prefer  = item . Prefer
+    self . Note    = item . Note
+    self . Title   = item . Title
+    self . Comment = item . Comment
+    self . Extra   = item . Extra
+    self . ltime   = item . ltime
   ############################################################################
-  def set ( self , item , value ) :
-    a = item.lower()
+  def set ( self , item , value )                                            :
+    a = item . lower ( )
     if ( "id"     == a ) :
-      self . Id     = value
+      self . Id      = value
     if ( "uuid"   == a ) :
-      self . Uuid   = value
-    if ( "type"   == a ) :
-      self . Type   = value
-    if ( "used"   == a ) :
-      self . Used   = value
-    if ( "start"  == a ) :
-      self . Start  = value
-    if ( "end"    == a ) :
-      self . End    = value
-    if ( "states" == a ) :
-      self . States = value
+      self . Uuid    = value
+    if ( "name"   == a ) :
+      self . Name    = value
+    if ( "prefer"   == a ) :
+      self . Prefer  = value
+    if ( "note"  == a ) :
+      self . Note    = value
+    if ( "title"    == a ) :
+      self . Title   = value
+    if ( "comment" == a ) :
+      self . Comment = value
+    if ( "extra" == a ) :
+      self . Extra   = value
     if ( "ltime"  == a ) :
-      self . ltime  = value
+      self . ltime   = value
   ############################################################################
-  def get ( self , item ) :
+  def get ( self , item )                                                    :
     a = item.lower()
     if ( "id"     == a ) :
       return self . Id
     if ( "uuid"   == a ) :
       return self . Uuid
-    if ( "type"   == a ) :
-      return self . Type
-    if ( "used"   == a ) :
-      return self . Used
-    if ( "start"  == a ) :
-      return self . Start
-    if ( "end"    == a ) :
-      return self . End
-    if ( "states" == a ) :
-      return self . States
+    if ( "name"   == a ) :
+      return self . Name
+    if ( "prefer"   == a ) :
+      return self . Prefer
+    if ( "note"  == a ) :
+      return self . Note
+    if ( "title"    == a ) :
+      return self . Title
+    if ( "comment" == a ) :
+      return self . Comment
+    if ( "extra" == a ) :
+      return self . Extra
     if ( "ltime"  == a ) :
       return self . ltime
     return ""
   ############################################################################
-  def tableItems ( self ) :
-    S = [ ]
-    S . append ( "id"     )
-    S . append ( "uuid"   )
-    S . append ( "type"   )
-    S . append ( "used"   )
-    S . append ( "start"  )
-    S . append ( "end"    )
-    S . append ( "states" )
-    S . append ( "ltime"  )
-    return S
+  def tableItems ( self )                                                    :
+    return [ "id"                                                            ,
+             "uuid"                                                          ,
+             "name"                                                          ,
+             "prefer"                                                        ,
+             "note"                                                          ,
+             "title"                                                         ,
+             "comment"                                                       ,
+             "extra"                                                         ,
+             "ltime"                                                         ]
   ############################################################################
-  def pair ( self , item ) :
+  def pair ( self , item )                                                   :
     v = self . get ( item )
     return f"`{item}` = {v}"
   ############################################################################
-  def valueItems ( self ) :
-    S = [ ]
-    S . append ( "type"   )
-    S . append ( "used"   )
-    S . append ( "start"  )
-    S . append ( "end"    )
-    S . append ( "states" )
-    return S
+  def valueItems ( self )                                                    :
+    return [ "uuid"                                                          ,
+             "name"                                                          ,
+             "prefer"                                                        ,
+             "note"                                                          ,
+             "title"                                                         ,
+             "comment"                                                       ,
+             "extra"                                                         ]
 ##############################################################################

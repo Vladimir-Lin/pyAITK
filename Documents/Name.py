@@ -23,97 +23,113 @@ from   AITK . Database  . Columns     import Columns
 ##############################################################################
 class Name  ( Columns )                                                      :
   ############################################################################
-  def __init__ ( self ) :
+  def __init__ ( self )                                                      :
     self . Clear ( )
+    return
   ############################################################################
-  def __del__ ( self ) :
-    pass
+  def __del__  ( self )                                                      :
+    return
   ############################################################################
-  def Clear ( self ) :
+  def Clear    ( self )                                                      :
     self . Columns   = [ ]
     self . Id        = -1
     self . Uuid      =  0
-    self . Type      =  1
-    self . Used      =  1
-    self . Start     =  0
-    self . End       =  0
-    self . States    =  1
+    self . Locality  =  1001
+    self . Priority  =  1
+    self . Relevance =  0
+    self . Flags     =  0
+    self . Utf8      =  0
+    self . Length    =  0
+    self . Name      =  ""
     self . ltime     =  0
-    self . TermCount =  0
+    return
   ############################################################################
   def assign ( self , item ) :
     self . Columns   = item . Columns
     self . Id        = item . Id
     self . Uuid      = item . Uuid
-    self . Type      = item . Type
-    self . Used      = item . Used
-    self . Start     = item . Start
-    self . End       = item . End
-    self . States    = item . States
+    self . Locality  = item . Locality
+    self . Priority  = item . Priority
+    self . Relevance = item . Relevance
+    self . Flags     = item . Flags
+    self . Utf8      = item . Utf8
+    self . Length    = item . Length
+    self . Name      = item . Name
     self . ltime     = item . ltime
-    self . TermCount = item . TermCount
+    return
   ############################################################################
-  def set ( self , item , value ) :
-    a = item.lower()
-    if ( "id"     == a ) :
-      self . Id     = value
-    if ( "uuid"   == a ) :
-      self . Uuid   = value
-    if ( "type"   == a ) :
-      self . Type   = value
-    if ( "used"   == a ) :
-      self . Used   = value
-    if ( "start"  == a ) :
-      self . Start  = value
-    if ( "end"    == a ) :
-      self . End    = value
-    if ( "states" == a ) :
-      self . States = value
-    if ( "ltime"  == a ) :
-      self . ltime  = value
+  def set ( self , item , value )                                            :
+    a = item . lower ( )
+    if ( "id"        == a ) :
+      self . Id        = value
+    if ( "uuid"      == a ) :
+      self . Uuid      = value
+    if ( "locality"  == a ) :
+      self . Locality  = value
+    if ( "priority"  == a ) :
+      self . Priority  = value
+    if ( "relevance" == a ) :
+      self . Relevance = value
+    if ( "flags"     == a ) :
+      self . Flags     = value
+    if ( "utf8"      == a ) :
+      self . Utf8      = value
+    if ( "length"    == a ) :
+      self . Length    = value
+    if ( "name"      == a ) :
+      self . Name      = value
+    if ( "ltime"     == a ) :
+      self . ltime     = value
   ############################################################################
   def get ( self , item ) :
-    a = item.lower()
-    if ( "id"     == a ) :
+    a = item . lower ( )
+    if ( "id"        == a ) :
       return self . Id
-    if ( "uuid"   == a ) :
+    if ( "uuid"      == a ) :
       return self . Uuid
-    if ( "type"   == a ) :
-      return self . Type
-    if ( "used"   == a ) :
-      return self . Used
-    if ( "start"  == a ) :
-      return self . Start
-    if ( "end"    == a ) :
-      return self . End
-    if ( "states" == a ) :
-      return self . States
-    if ( "ltime"  == a ) :
+    if ( "locality"  == a ) :
+      return self . Locality
+    if ( "priority"  == a ) :
+      return self . Priority
+    if ( "relevance" == a ) :
+      return self . Relevance
+    if ( "flags"     == a ) :
+      return self . Flags
+    if ( "utf8"      == a ) :
+      return self . Utf8
+    if ( "length"    == a ) :
+      return self . Length
+    if ( "name"      == a ) :
+      return self . Name
+    if ( "ltime"     == a ) :
       return self . ltime
     return ""
   ############################################################################
-  def tableItems ( self ) :
-    S = [ ]
-    S . append ( "id"     )
-    S . append ( "uuid"   )
-    S . append ( "type"   )
-    S . append ( "used"   )
-    S . append ( "start"  )
-    S . append ( "end"    )
-    S . append ( "states" )
-    S . append ( "ltime"  )
-    return S
+  def tableItems ( self )                                                    :
+    return [ "id"                                                            ,
+             "uuid"                                                          ,
+             "locality"                                                      ,
+             "priority"                                                      ,
+             "relevance"                                                     ,
+             "flags"                                                         ,
+             "utf8"                                                          ,
+             "length"                                                        ,
+             "name"                                                          ,
+             "ltime"                                                         ]
   ############################################################################
-  def pair ( self , item ) :
+  def pair ( self , item )                                                   :
     v = self . get ( item )
     return f"`{item}` = {v}"
   ############################################################################
-  def valueItems ( self ) :
-    S = [ ]
-    S . append ( "type"   )
-    S . append ( "used"   )
-    S . append ( "start"  )
-    S . append ( "end"    )
-    S . append ( "states" )
-    return S
+  def valueItems ( self )                                                    :
+    return [ "id"                                                            ,
+             "uuid"                                                          ,
+             "locality"                                                      ,
+             "priority"                                                      ,
+             "relevance"                                                     ,
+             "flags"                                                         ,
+             "utf8"                                                          ,
+             "length"                                                        ,
+             "name"                                                          ,
+             "ltime"                                                         ]
 ##############################################################################
