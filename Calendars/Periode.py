@@ -142,13 +142,6 @@ class Periode  ( Columns )                                                   :
     v = self . get ( item )
     return f"`{item}` = {v}"
   ############################################################################
-  def Values ( self , items ) :
-    I = [ ]
-    for x in items :
-      I . append ( self . pair ( x ) )
-    L = " , " . join ( I )
-    return L
-  ############################################################################
   def valueItems ( self ) :
     S = [ ]
     S . append ( "type"   )
@@ -210,23 +203,6 @@ class Periode  ( Columns )                                                   :
         return True
     return False
   ############################################################################
-  def obtain ( self , R ) :
-    List = self . tableItems ( )
-    CNT  = 0
-    for x in List :
-      self . set ( x , R [ CNT ] )
-      CNT += 1
-    return True
-  ############################################################################
-  def ObtainsByUuid ( self , DB , Table ) :
-    ITS = self . items ( )
-    WHS = DB . WhereUuid ( self . Uuid , True )
-    QQ = f"select {ITS} from {Table} {WHS}"
-    DB . Execute ( QQ )
-    LL = DB . FetchOne ( )
-    self . obtain ( LL )
-    return True
-  ############################################################################
   def GetUuid ( self , DB , Table , Main ) :
     global Types
     BASE = 3500000000000000000
@@ -237,17 +213,4 @@ class Periode  ( Columns )                                                   :
     DB . AddUuid ( Table , self . Uuid , self . Type )
     DB . AddUuid ( Main  , self . Uuid , TYPE )
     return self . Uuid
-  ############################################################################
-  def UpdateItems ( self , DB , Table , Items ) :
-    PS = self . Values ( Items )
-    WH = DB . WhereUuid ( self . Uuid )
-    QQ = f"update {Table} set {PS} {WH} ;"
-    return DB . Query ( QQ )
-  ############################################################################
-  def Update ( self , DB , Table ) :
-    ITEMS = self . valueItems (             )
-    PS    = self . Values     ( ITEMS       )
-    WH    = DB   . WhereUuid  ( self . Uuid )
-    QQ    = f"update {Table} set {PS} {WH} ;"
-    return DB . Query ( QQ )
 ##############################################################################

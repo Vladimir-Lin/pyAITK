@@ -95,6 +95,15 @@ class Columns ( ) :
     L = " and " . join ( I )
     return L
   ############################################################################
+  ## 欄位值列表
+  ############################################################################
+  def Values ( self , items )                                                :
+    I = [ ]
+    for x in items                                                           :
+      I . append ( self . pair ( x ) )
+    L = " , " . join ( I )
+    return L
+  ############################################################################
   ## 過濾欄位語法
   ############################################################################
   def QueryItems ( self , items , Options = "" , Limits = "" )               :
@@ -156,4 +165,17 @@ class Columns ( ) :
       return False
     ##########################################################################
     return self . obtain ( LL )
+  ############################################################################
+  def UpdateItems ( self , DB , Table , Items )                              :
+    PS = self . Values ( Items )
+    WH = DB . WhereUuid ( self . Uuid )
+    QQ = f"update {Table} set {PS} {WH} ;"
+    return DB . Query ( QQ )
+  ############################################################################
+  def UpdateColumns ( self , DB , Table )                                    :
+    ITEMS = self . valueItems (             )
+    PS    = self . Values     ( ITEMS       )
+    WH    = DB   . WhereUuid  ( self . Uuid )
+    QQ    = f"update {Table} set {PS} {WH} ;"
+    return DB . Query ( QQ )
 ##############################################################################
