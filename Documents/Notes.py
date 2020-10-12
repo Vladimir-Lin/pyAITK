@@ -31,7 +31,7 @@ class Notes  ( Columns )                                                     :
     self . Id      = -1
     self . Uuid    =  0
     self . Name    =  ""
-    self . Prefer  =  1
+    self . Prefer  =  0
     self . Note    =  ""
     self . Title   =  ""
     self . Comment =  ""
@@ -57,17 +57,17 @@ class Notes  ( Columns )                                                     :
     if ( "uuid"   == a ) :
       self . Uuid    = value
     if ( "name"   == a ) :
-      self . Name    = value
+      self . Name    = str ( value )
     if ( "prefer"   == a ) :
       self . Prefer  = value
     if ( "note"  == a ) :
-      self . Note    = value
+      self . Note    = str ( value )
     if ( "title"    == a ) :
-      self . Title   = value
+      self . Title   = str ( value )
     if ( "comment" == a ) :
-      self . Comment = value
+      self . Comment = str ( value )
     if ( "extra" == a ) :
-      self . Extra   = value
+      self . Extra   = str ( value )
     if ( "ltime"  == a ) :
       self . ltime   = value
   ############################################################################
@@ -108,7 +108,7 @@ class Notes  ( Columns )                                                     :
     v = self . get ( item )
     return f"`{item}` = {v}"
   ############################################################################
-  def valueItems ( self )                                                    :
+  def valueItems ( self                                                    ) :
     return [ "uuid"                                                          ,
              "name"                                                          ,
              "prefer"                                                        ,
@@ -116,4 +116,176 @@ class Notes  ( Columns )                                                     :
              "title"                                                         ,
              "comment"                                                       ,
              "extra"                                                         ]
+  ############################################################################
+  def setOwner        ( self , UUID , NAME                                 ) :
+    self . Uuid =              UUID
+    self . Name = str (               NAME                                   )
+    return
+  ############################################################################
+  def WhereClause     ( self , PREFER = ""                                 ) :
+    P    = str        (        PREFER                                        )
+    W    = ""
+    U    = self . Uuid
+    N    = str        ( self . Name                                          )
+    if                ( len ( P ) > 0                                      ) :
+      W  =  f""" where `uuid` = {U} and `name` = '{N}' and `prefer` = {P} ;"""
+    else                                                                     :
+      W  =  f""" where `uuid` = {U} and `name` = '{N}' order by `prefer` desc limit 0,1 ;"""
+    return W
+  ############################################################################
+  def Select                ( self , TABLE , PREFER = ""                   ) :
+    WC = self . WhereClause ( PREFER                                         )
+    return f"select `note` from {TABLE}{WC}"
+  ############################################################################
+  def Delete                ( self , TABLE , PREFER = ""                   ) :
+    WC = self . WhereClause ( PREFER                                         )
+    return f"delete from {TABLE}{WC}"
+  ############################################################################
+  def Insert                ( self , DB , TABLE                            ) :
+    CUID   = self . Uuid
+    NAME   = self . Name
+    PREFER = self . Prefer
+    NOTE   = self . Note
+    QQ     = f"""insert into {TABLE}
+                 (`uuid`,`name`,`prefer`,`note` ) values
+                 ( {CUID} , '{NAME}' , {PREFER} , %s ) ;"""
+    VAL    =                ( NOTE ,                                         )
+    return DB . QueryValues ( QQ , VAL                                       )
+  ############################################################################
+  def UpdateNote            ( self , DB , TABLE                            ) :
+    CUID   = self . Uuid
+    NAME   = self . Name
+    PREFER = self . Prefer
+    NOTE   = self . Note
+    QQ     = f"""update {TABLE}
+                 set `note` = %s
+                 where ( `uuid` = {CUID} )
+                 and ( `name` = '{NAME}' )
+                 and ( `prefer` = {PREFER} ) ;"""
+    VAL    =                ( NOTE ,                                         )
+    return DB . QueryValues ( QQ , VAL                                       )
+  ############################################################################
+  def UpdateColumn          ( self , DB , TABLE , COLUMN , VALUE           ) :
+    CUID   = self . Uuid
+    NAME   = self . Name
+    PREFER = self . Prefer
+    QQ     = f"""update {TABLE}
+                 set `{COLUMN}` = %s
+                 where ( `uuid` = {CUID} )
+                 and ( `name` = '{NAME}' )
+                 and ( `prefer` = {PREFER} ) ;"""
+    VAL    =                ( VALUE ,                                        )
+    return DB . QueryValues ( QQ , VAL                                       )
+  ############################################################################
+  def Obtains               ( self , DB , TABLE , PREFER = ""              ) :
+    self . Note = ""
+    QQ   = self . Select    ( TABLE , PREFER                                 )
+    DB   . Query            ( QQ                                             )
+    RR   = DB . FetchOne    (                                                )
+    if                      ( RR == None                                   ) :
+      return self . Note
+    if                      ( len ( RR ) <= 0                              ) :
+      return self . Note
+    self          . Note = RR [ 0 ]
+    return self   . Note
+  ############################################################################
+  def ObtainsAll            ( self , DB , TABLE , PREFER = ""              ) :
+    self . Note    = ""
+    self . Title   = ""
+    self . Comment = ""
+    self . Extra   = ""
+    WH             = self . WhereClause ( PREFER                             )
+    QQ             = f"select `note`,`title`,`comment`,`extra` from {TABLE} {WH}"
+    DB   . Query            ( QQ                                             )
+    RR   = DB . FetchOne    (                                                )
+    if                      ( RR == None                                   ) :
+      return self . Note
+    if                      ( len ( RR ) <= 0                              ) :
+      return self . Note
+    self          . Note    = RR [ 0 ]
+    self          . Title   = RR [ 1 ]
+    self          . Comment = RR [ 2 ]
+    self          . Extra   = RR [ 3 ]
+    return self   . Note
+  ############################################################################
+  def ObtainByOwner        ( self , DB , TABLE , UUID , NAME , PREFER = "" ) :
+    self . setOwner        (                     UUID , NAME                 )
+    return self . Obtains  (        DB , TABLE ,               PREFER        )
+  ############################################################################
+  def ObtainIDs          ( self , DB , TABLE , ITEM = "id" , ORDER = "asc" ) :
+    U  = self . Uuid
+    N  = self . Name
+    QQ = f"""select `{ITEM}` from {TABLE}
+             where ( `uuid` = {U} )
+             and ( `name` = '{N}' )
+             order by `prefer` {ORDER} ;"""
+    return DB . ObtainUuids ( QQ )
+  ############################################################################
+  def ObtainStrings         ( self , DB , TABLE ,          ORDER = "asc"   ) :
+    return self . ObtainIDs (        DB , TABLE , "note" , ORDER             )
+  ############################################################################
+  def ObtainMaps            ( self , DB , TABLE , ORDER = "asc"            ) :
+    IDs = { }
+    U   = self . Uuid
+    N   = self . Name
+    QQ  = f"""select `note`,`prefer` from {TABLE}
+              where ( `uuid` = {U} ) and ( `name` = 'N' )
+              order by `prefer` {ORDER} ;"""
+    DB  . Query             ( QQ                                             )
+    RR  = DB . FetchAll     (                                                )
+    if                      ( RR == None                                   ) :
+      return IDs
+    if                      ( len ( RR ) <= 0                              ) :
+      return IDs
+    for p in RR                                                              :
+      ID   = p              [ 0                                              ]
+      NOTE = p              [ 1                                              ]
+      IDs [ ID ] = NOTE
+    return IDs
+  ############################################################################
+  def assureNote            ( self , DB , TABLE                            ) :
+    self . Prefer = 0
+    DB   . Query            ( self . Delete ( TABLE )                        )
+    return self . Insert    (        DB , TABLE                              )
+  ############################################################################
+  def appendNote            ( self , DB , TABLE                            ) :
+    self . Prefer = -1
+    U    = self . Uuid
+    N    = self . Name
+    QQ   = f"""select `prefer` from {TABLE}
+               where ( `uuid` = {U} )
+               and ( `name` = '{N}' )
+               order by `prefer` desc limit 0,1 ;"""
+    DB   . Query ( QQ )
+    RR   = DB . FetchOne    (                                                )
+    if                      ( ( RR != None ) and ( len ( RR ) > 0 )        ) :
+      self . Prefer = RR [ 0 ]
+    self . Prefer = self . Prefer + 1
+    return self . Insert    ( DB , TABLE                                     )
+  ############################################################################
+  def Editing               ( self , DB , TABLE                            ) :
+    if                      ( self . Prefer < 0                            ) :
+      if                    ( len ( self . Note ) > 0                      ) :
+        self . appendNote   ( DB , TABLE                                     )
+    else                                                                     :
+      if                    ( len ( self . Note ) > 0                      ) :
+        self . UpdateNote   ( DB , TABLE                                     )
+      else                                                                   :
+        DB   . Query        ( self . Delete ( TABLE )                        )
+    return
+  ############################################################################
+  def Ordering              ( self , DB , TABLE , IDs                      ) :
+    if                      ( len ( IDs ) <= 0                             ) :
+      return False
+    CC     = 0
+    for ID in IDs                                                            :
+      QQ   = f"update {TABLE} set `prefer` = {CC} where ( `id` = {ID} ) ;"
+      DB   . Query          ( QQ                                             )
+      CC   = CC + 1
+    return True
+  ############################################################################
+  def Organize              ( self , DB , TABLE                            ) :
+    IDs  = self . ObtainIDs (        DB , TABLE                              )
+    self . Ordering         (        DB , TABLE , IDs                        )
+    return
 ##############################################################################
