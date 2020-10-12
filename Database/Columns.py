@@ -109,8 +109,7 @@ class Columns ( ) :
   def QueryItems ( self , items , Options = "" , Limits = "" )               :
     IS    = self . pairs ( items )
     TAILs = self . tail  ( Options , Limits )
-    QQ    = f" where {IS} {TAILs}"
-    return QQ
+    return f" where {IS} {TAILs}"
   ############################################################################
   ## 查詢欄位語法
   ############################################################################

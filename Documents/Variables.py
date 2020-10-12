@@ -13,7 +13,6 @@ from   mysql . connector              import Error
 import AITK
 from   AITK . Database  . Query       import Query
 from   AITK . Database  . Connection  import Connection
-from   AITK . Database  . Pair        import Pair
 from   AITK . Database  . Columns     import Columns
 ##############################################################################
 ## 變數元件
@@ -21,7 +20,8 @@ from   AITK . Database  . Columns     import Columns
 class Variables ( Columns )                                                  :
   ############################################################################
   def __init__ ( self )                                                      :
-    self . Clear ( )
+    super ( Columns , self ) . __init__ ( )
+    self                     . Clear    ( )
     return
   ############################################################################
   def __del__ ( self )                                                       :

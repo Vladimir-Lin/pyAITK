@@ -58,7 +58,8 @@ create table `periods` (
 class Periode  ( Columns )                                                   :
   ############################################################################
   def __init__ ( self ) :
-    self . Clear ( )
+    super ( Columns , self ) . __init__ ( )
+    self                     . Clear    ( )
   ############################################################################
   def __del__ ( self ) :
     pass

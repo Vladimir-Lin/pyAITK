@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## 時間區段物件
+## 附記元件
 ##############################################################################
 import os
 import sys
-import getopt
 import time
 import datetime
-import requests
-import threading
 ##############################################################################
 import mysql . connector
 from   mysql . connector              import Error
@@ -16,7 +13,6 @@ from   mysql . connector              import Error
 import AITK
 from   AITK . Database  . Query       import Query
 from   AITK . Database  . Connection  import Connection
-from   AITK . Database  . Pair        import Pair
 from   AITK . Database  . Columns     import Columns
 ##############################################################################
 ## 附記元件
@@ -24,7 +20,8 @@ from   AITK . Database  . Columns     import Columns
 class Notes  ( Columns )                                                     :
   ############################################################################
   def __init__ ( self )                                                      :
-    self . Clear ( )
+    super ( Columns , self ) . __init__ ( )
+    self                     . Clear    ( )
   ############################################################################
   def __del__  ( self )                                                      :
     pass
