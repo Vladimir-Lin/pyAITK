@@ -362,7 +362,7 @@ class Name  ( Columns )                                                      :
                set `name` = %s ,
                `locality` = {LX} ,
                `utf8` = {PT} ,
-               `length` = {$PX}
+               `length` = {PX}
                where `id` = {ID} ;"""
     QQ   = QQ  . replace           ( "\n" , ""                               )
     QQ   = " " . join              ( QQ . split ( )                          )
