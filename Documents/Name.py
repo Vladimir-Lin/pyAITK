@@ -212,7 +212,7 @@ class Name  ( Columns )                                                      :
     ##########################################################################
     return NAMEs
   ############################################################################
-  def Insert                     ( self , DB , TABLE                       ) :
+  def Insert                     ( self , TABLE                            ) :
     PU   = self . Uuid
     PL   = self . Locality
     PP   = self . Priority

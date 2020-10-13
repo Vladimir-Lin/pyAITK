@@ -106,7 +106,10 @@ class Calendar    (                                                        ) :
     if ( self . Service == None )                                            :
       return False
     ##########################################################################
-    calendarsResult = self . Service . calendarList ( ) . list ( ) . execute()
+    try                                                                      :
+      calendarsResult = self . Service . calendarList ( ) . list ( ) . execute()
+    except Exception as ex                                                   :
+      return False
     return calendarsResult . get ( "items" , [ ] )
   ############################################################################
   ## -| GetCalendars |-

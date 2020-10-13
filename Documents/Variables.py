@@ -120,7 +120,7 @@ class Variables ( Columns )                                                  :
   ############################################################################
   def AssureValue ( self , DB , TABLE )                                      :
     ##########################################################################
-    VAL = ( self . Uuid , self . Type , self . Name , self . Value )
+    VAL = ( self . Uuid , self . Type , self . Name , self . Value , )
     QQ  = f"replace into {TABLE} ( `uuid`,`type`,`name`,`value` ) values ( %s,%s,%s,%s ) ;"
-    return DB  . Query ( QQ )
+    return DB  . QueryValues ( QQ , VAL )
 ##############################################################################

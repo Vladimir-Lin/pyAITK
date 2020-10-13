@@ -245,7 +245,7 @@ class Notes  ( Columns )                                                     :
   ############################################################################
   def assureNote            ( self , DB , TABLE                            ) :
     self . Prefer = 0
-    DB   . Query            ( self . Delete ( TABLE )                        )
+    DB   . Query            ( self . Delete ( TABLE , self . Prefer        ) )
     return self . Insert    (        DB , TABLE                              )
   ############################################################################
   def appendNote            ( self , DB , TABLE                            ) :
