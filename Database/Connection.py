@@ -101,11 +101,12 @@ class Connection ( )                                                         :
     ##########################################################################
     try                                                                      :
       self . db = mysql . connector . connect                              ( \
-                    host     = hostname ,                                    \
-                    port     = port     ,                                    \
-                    user     = username ,                                    \
-                    passwd   = password ,                                    \
-                    database = database                                      )
+                    host       = hostname ,                                  \
+                    port       = port     ,                                  \
+                    user       = username ,                                  \
+                    passwd     = password ,                                  \
+                    database   = database ,                                  \
+                    autocommit = True                                        )
       self . Success = True
     except mysql . connector . Error as err                                  :
       self . Error = err
