@@ -21,6 +21,7 @@ class FoxmanRobot (                                                        ) :
   def __init__   ( self                                                    ) :
     self . DebugLogger = None
     self . Talk        = None
+    self . State       = 0
     return
   ############################################################################
   def __del__    ( self                                                    ) :
@@ -56,5 +57,33 @@ class FoxmanRobot (                                                        ) :
     return True
   ############################################################################
   def Reply                        ( self , beau , message                 ) :
+    if                             ( self . State == 0                     ) :
+      IdleState                    (        beau , message                   )
+    elif                           ( self . State == 1                     ) :
+      BasicMode                    (        beau , message                   )
+    return True
+  ############################################################################
+  def IdleState                    ( self , beau , message                 ) :
+    ##########################################################################
+    s    = message . lower         (                                         )
+    beau = "Idle"
+    ##########################################################################
+    if                             ( s == "interactive"                    ) :
+      self . State = 1
+      MSG          = "I am here to serve you, Sir!"
+      self . TalkTo                ( beau , MSG                              )
+    ##########################################################################
+    return True
+  ############################################################################
+  def BasicMode                    ( self , beau , message                 ) :
+    ##########################################################################
+    s    = message . lower         (                                         )
+    beau = "Basic"
+    ##########################################################################
+    if                             ( s == "finish"                         ) :
+      self . State = 0
+      MSG          = "I will be waiting for you"
+      self . TalkTo                ( beau , MSG                              )
+    ##########################################################################
     return True
 ##############################################################################
