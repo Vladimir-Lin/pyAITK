@@ -5,7 +5,6 @@
 import os
 import sys
 import subprocess
-import commands
 import getopt
 import time
 import datetime
@@ -199,7 +198,7 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     L     = "\n" . join ( [ f for f in os . listdir ( ) ] )
     T     = L . decode              ( "utf-8"                                )
-    self . TalkTo                   ( "files" , self . CurrentDir            )
+    self . TalkTo                   ( "files" , T                            )
     ##########################################################################
     return
   ############################################################################
@@ -217,17 +216,22 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def RunCommand                    ( self , command                       ) :
+  def RunCommand                       ( self , command                    ) :
     ##########################################################################
-    if                              ( len ( command ) <= 0                 ) :
+    if                                 ( len ( command ) <= 0              ) :
       return
     ##########################################################################
-    ( status , output ) = commands . getstatusoutput ( command               )
+    r = subprocess . Popen             ( command                           , \
+                                        shell  = True                      , \
+                                        stdout = subprocess . PIPE         , \
+                                        stderr = subprocess . STDOUT         )
+    L = r . stdout . readlines         (                                     )
+    r . stdout . close                 (                                     )
     ##########################################################################
-    text  = output . decode         ( "utf-8"                                )
-    stext = f"Status code : {status}\n"
-    r     = stext + text
-    self . TalkTo                   ( "command" , self . CurrentDir          )
+    T     = "\n" . join                ( L                                   )
+    T     = T . decode                 ( "utf-8"                             )
+    ##########################################################################
+    self  . TalkTo                     ( "command" , T                       )
     ##########################################################################
     return
 ##############################################################################
