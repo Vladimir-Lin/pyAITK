@@ -66,6 +66,7 @@ class FoxmanRobot (                                                        ) :
   def IdleState                    ( self , beau , message                 ) :
     ##########################################################################
     s    = message . lower         (                                         )
+    s    = s       . rstrip        (                                         )
     self . debug ( s )
     beau = "Idle"
     ##########################################################################
@@ -79,6 +80,7 @@ class FoxmanRobot (                                                        ) :
   def BasicMode                    ( self , beau , message                 ) :
     ##########################################################################
     s    = message . lower         (                                         )
+    s    = s       . rstrip        (                                         )
     self . debug ( s )
     beau = "Basic"
     ##########################################################################
