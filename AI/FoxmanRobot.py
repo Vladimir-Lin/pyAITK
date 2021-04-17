@@ -24,6 +24,7 @@ class FoxmanRobot (                                                        ) :
     self . DebugLogger = None
     self . Talk        = None
     self . Reboot      = None
+    self . StopIt      = None
     self . State       = 0
     self . CurrentDir  = ""
     self . Beau        = "Foxman"
@@ -117,6 +118,10 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     if                             ( s == "reboot"                         ) :
       self . Reboot                (                                         )
+      return True
+    ##########################################################################
+    if                             ( s == "stop"                           ) :
+      self . StopIt                (                                         )
       return True
     ##########################################################################
     if                             ( s == "finish"                         ) :
