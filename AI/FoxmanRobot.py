@@ -5,6 +5,7 @@
 import os
 import sys
 import subprocess
+import commands
 import getopt
 import time
 import datetime
@@ -137,6 +138,8 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     elif                           ( L [ 0 ] == "cwd"                      ) :
       self     . OsGetCWD          (                                         )
+    elif                           ( L [ 0 ] == "pwd"                      ) :
+      self     . OsGetCWD          (                                         )
     ##########################################################################
     elif                           ( L [ 0 ] == "chdir"                    ) :
       self . OsChdir               ( message [ 6 : ]                         )
@@ -144,9 +147,11 @@ class FoxmanRobot (                                                        ) :
       self . OsChdir               ( message [ 3 : ]                         )
     ##########################################################################
     elif                           ( L [ 0 ] == "dir"                      ) :
-      pass
+      threading . Thread           ( target = self . ListFiles   ) . start ( )
     elif                           ( L [ 0 ] == "ls"                       ) :
-      pass
+      threading . Thread           ( target = self . ListFiles   ) . start ( )
+    elif                           ( L [ 0 ] == "files"                    ) :
+      threading . Thread           ( target = self . ListFiles   ) . start ( )
     ##########################################################################
     elif                           ( L [ 0 ] == "push"                     ) :
       threading . Thread           ( target = self . PushSystem  ) . start ( )
@@ -190,6 +195,14 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     return
   ############################################################################
+  def ListFiles                     ( self                                 ) :
+    ##########################################################################
+    L     = "\n" . join ( [ f for f in os . listdir ( ) ] )
+    T     = L . decode              ( "utf-8"                                )
+    self . TalkTo                   ( "files" , self . CurrentDir            )
+    ##########################################################################
+    return
+  ############################################################################
   def PullSystem                    ( self                                 ) :
     return self . RunCommand        ( PullCommand                            )
   ############################################################################
@@ -206,7 +219,15 @@ class FoxmanRobot (                                                        ) :
   ############################################################################
   def RunCommand                    ( self , command                       ) :
     ##########################################################################
-    self . debug ( command )
+    if                              ( len ( command ) <= 0                 ) :
+      return
+    ##########################################################################
+    ( status , output ) = commands . getstatusoutput ( command               )
+    ##########################################################################
+    text  = output . decode         ( "utf-8"                                )
+    stext = f"Status code : {status}\n"
+    r     = stext + text
+    self . TalkTo                   ( "command" , self . CurrentDir          )
     ##########################################################################
     return
 ##############################################################################
