@@ -57,10 +57,13 @@ class FoxmanRobot (                                                        ) :
     return True
   ############################################################################
   def Reply                        ( self , beau , message                 ) :
+    ##########################################################################
     if                             ( self . State == 0                     ) :
-      IdleState                    (        beau , message                   )
+      self . IdleState             (        beau , message                   )
+    ##########################################################################
     elif                           ( self . State == 1                     ) :
-      BasicMode                    (        beau , message                   )
+      self . BasicMode             (        beau , message                   )
+    ##########################################################################
     return True
   ############################################################################
   def IdleState                    ( self , beau , message                 ) :
