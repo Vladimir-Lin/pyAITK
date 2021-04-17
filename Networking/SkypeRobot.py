@@ -295,10 +295,18 @@ class SkypeRobot (                                                         ) :
       if                          ( not self . IMS . conn . connected      ) :
         continue
       ########################################################################
+      Events   = [ ]
+      try                                                                    :
+        Events = self . IMS . getEvents (                                    )
+      except                                                                 :
+        continue
+      ########################################################################
+      if                          ( len ( Events ) <= 0                    ) :
+        continue
+      ########################################################################
       self . lock                 (                                          )
       ########################################################################
       try                                                                    :
-        Events = self . IMS . getEvents (                                    )
         for E in Events                                                      :
           if   ( type ( E ) . __name__ == "SkypeNewMessageEvent"           ) :
             ID        = E . msg . user . id
