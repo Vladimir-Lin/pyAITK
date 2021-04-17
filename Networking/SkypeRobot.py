@@ -143,6 +143,9 @@ class SkypeWatcher            ( BaseHTTPRequestHandler                     ) :
     if                        ( "/System" == Path                          ) :
       return self . DoSystem  ( JSON                                         )
     ##########################################################################
+    if                      ( self . Robot . HttpPlugin != None            ) :
+      return self . Robot . HttpPlugin ( Path , Headers , JSON               )
+    ##########################################################################
     return { "Answer" : 200 , "Response" : { "Answer" : "Yes" }              }
   ############################################################################
   def DoMessage             ( self , JSON                                  ) :
@@ -183,6 +186,7 @@ class SkypeRobot (                                                         ) :
     self . Password     = Password
     self . Reply        = None
     self . SendTo       = None
+    self . HttpPlugin   = None
     self . SetOptions ( Options )
     return
   ############################################################################
