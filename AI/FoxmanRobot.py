@@ -37,19 +37,46 @@ class FoxmanRobot (                                                        ) :
   def __del__    ( self                                                    ) :
     return
   ############################################################################
-  def Configure  ( self , jsonFile = ""                                    ) :
+  def Configure                 ( self , jsonFile = ""                     ) :
     ##########################################################################
-    self . JsonFile    = f"{jsonFile}"
-    self . JSON        = { }
+    self  . JsonFile = f"{jsonFile}"
+    self  . JSON     = { }
+    J                = self  . JsonFile
     ##########################################################################
-    if           ( len ( self . JsonFile ) <= 0                            ) :
+    if                          ( len ( J ) <= 0                           ) :
       return False
     ##########################################################################
+    if                          ( not os . path . isfile ( J )             ) :
+      return False
+    ##########################################################################
+    T     = ""
+    try                                                                      :
+      with open                 ( J , "rb" ) as F                            :
+        T = F . read            (                                            )
+    except                                                                   :
+      return False
+    ##########################################################################
+    if                          ( len ( T ) <= 0                           ) :
+      return False
+    ##########################################################################
+    BODY     = T . decode       ( "utf-8"                                    )
+    if                          ( len ( BODY ) <= 0                        ) :
+      return False
+    ##########################################################################
+    self  . JSON = json . loads ( BODY                                       )
     ##########################################################################
     return True
   ############################################################################
   def StoreJSON  ( self                                                    ) :
     ##########################################################################
+    if           ( len ( self . JsonFile ) <= 0                            ) :
+      return False
+    ##########################################################################
+    try                                                                      :
+      with     open ( self . JsonFile , 'w' , encoding = 'utf-8' ) as f      :
+        json . dump ( self  . JSON , f , ensure_ascii = False , indent = 2   )
+    except                                                                   :
+      return False
     ##########################################################################
     return True
   ############################################################################
@@ -128,6 +155,11 @@ class FoxmanRobot (                                                        ) :
       self . State = 0
       MSG          = "I will be waiting for you"
       self . TalkTo                ( beau , MSG                              )
+      return True
+    ##########################################################################
+    if                             ( s == "settings"                       ) :
+      MSG          = json . dumps  ( self . JSON                             )
+      self . TalkTo                ( "settings" , MSG                        )
       return True
     ##########################################################################
     if                             ( CNT <= 0                              ) :
