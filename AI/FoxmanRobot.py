@@ -251,16 +251,16 @@ class FoxmanRobot (                                                        ) :
     return
   ############################################################################
   def PullSystem                    ( self                                 ) :
-    return self . RunCommand        ( PullCommand                            )
+    return self . RunCommand        ( self . PullCommand                     )
   ############################################################################
   def PushSystem                    ( self                                 ) :
     ##########################################################################
-    return self . RunCommand        ( PushCommand                            )
+    return self . RunCommand        ( self . PushCommand                     )
   ############################################################################
   def SyncSystem                    ( self                                 ) :
     ##########################################################################
-    self . RunCommand               ( PushCommand                            )
-    self . RunCommand               ( PullCommand                            )
+    self . RunCommand               ( self . PushCommand                     )
+    self . RunCommand               ( self . PullCommand                     )
     ##########################################################################
     return
   ############################################################################
