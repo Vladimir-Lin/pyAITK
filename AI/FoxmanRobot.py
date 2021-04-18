@@ -37,11 +37,16 @@ class FoxmanRobot (                                                        ) :
   def __del__    ( self                                                    ) :
     return
   ############################################################################
-  def Configure                 ( self , jsonFile = ""                     ) :
+  def Configure            ( self , jsonFile = ""                          ) :
     ##########################################################################
-    self  . JsonFile = f"{jsonFile}"
-    self  . JSON     = { }
-    J                = self  . JsonFile
+    self . JsonFile = f"{jsonFile}"
+    ##########################################################################
+    return self . LoadJSON (                                                 )
+  ############################################################################
+  def LoadJSON   ( self                                                    ) :
+    ##########################################################################
+    self  . JSON = { }
+    J            = self  . JsonFile
     ##########################################################################
     if                          ( len ( J ) <= 0                           ) :
       return False
@@ -128,9 +133,9 @@ class FoxmanRobot (                                                        ) :
     s    = s       . rstrip        (                                         )
     beau = "Idle"
     ##########################################################################
-    if                             ( s == "interactive"                    ) :
+    if ( s in self . JSON [ "Commands" ] [ "Startup" ] [ "Allows" ] )        :
       self . State = 1
-      MSG          = "I am here to serve you, Sir!"
+      MSG          = self . JSON [ "Commands" ] [ "Startup" ] [ "Welcome" ]
       self . TalkTo                ( self . Beau , MSG                       )
     ##########################################################################
     return True
@@ -143,21 +148,21 @@ class FoxmanRobot (                                                        ) :
     CNT  = len                     ( L                                       )
     beau = "Basic"
     ##########################################################################
-    if                             ( s == "reboot"                         ) :
+    if ( s in self . JSON [ "Commands" ] [ "Reboot" ] [ "Allows" ] )         :
       self . Reboot                (                                         )
       return True
     ##########################################################################
-    if                             ( s == "stop" ) and ( CNT == 1          ) :
+    if ( CNT == 1 ) and ( s in self . JSON [ "Commands" ] [ "Stop" ] [ "Allows" ] ) :
       self . StopIt                (                                         )
       return True
     ##########################################################################
-    if                             ( s == "finish"                         ) :
+    if ( s in self . JSON [ "Commands" ] [ "Finish" ] [ "Allows" ]         ) :
       self . State = 0
-      MSG          = "I will be waiting for you"
+      MSG          = self . JSON [ "Commands" ] [ "Finish" ] [ "Welcome" ]
       self . TalkTo                ( beau , MSG                              )
       return True
     ##########################################################################
-    if                             ( s == "settings"                       ) :
+    if ( s in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ]       ) :
       MSG          = json . dumps  ( self . JSON                             )
       self . TalkTo                ( "settings" , MSG                        )
       return True
@@ -172,9 +177,7 @@ class FoxmanRobot (                                                        ) :
         if                         ( L [ 1 ] == "directory"                ) :
           self . OsGetCWD          (                                         )
     ##########################################################################
-    elif                           ( L [ 0 ] == "cwd"                      ) :
-      self     . OsGetCWD          (                                         )
-    elif                           ( L [ 0 ] == "pwd"                      ) :
+    elif ( L [ 0 ] in self . JSON [ "Commands" ] [ "PWD" ] [ "Allows" ]    ) :
       self     . OsGetCWD          (                                         )
     ##########################################################################
     elif                           ( L [ 0 ] == "chdir"                    ) :
@@ -214,6 +217,13 @@ class FoxmanRobot (                                                        ) :
       cmd       = message          [ 8:                                      ]
       threading . Thread           ( target = self . RunCommand            , \
                                      args = ( cmd , )            ) . start ( )
+    ##########################################################################
+    elif ( L [ 0 ] in self . JSON [ "Commands" ] [ "Load" ] [ "Allows" ]   ) :
+      if ( CNT > 1 ) and ( L [ 1 ] in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ] ) :
+        threading . Thread         ( target = self . LoadJSON    ) . start ( )
+    elif ( L [ 0 ] in self . JSON [ "Commands" ] [ "Save" ] [ "Allows" ]   ) :
+      if ( CNT > 1 ) and ( L [ 1 ] in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ] ) :
+        threading . Thread         ( target = self . StoreJSON   ) . start ( )
     ##########################################################################
     return True
   ############################################################################
