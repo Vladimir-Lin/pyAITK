@@ -164,6 +164,7 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ]       ) :
       MSG          = json . dumps  ( self . JSON                             )
+      MSG          = MSG . decode  ( "utf-8"                                 )
       self . TalkTo                ( "settings" , MSG                        )
       return True
     ##########################################################################
