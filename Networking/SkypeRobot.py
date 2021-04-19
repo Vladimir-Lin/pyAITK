@@ -265,7 +265,7 @@ class SkypeRobot (                                                         ) :
     ##########################################################################
     try                                                                      :
       CH    = self . IMS . contacts [ ACCOUNT ] . chat
-      CH    . sendMsg ( MESSAGE                                              )
+      CH    . sendMsg ( MESSAGE , me = False , rich = True                   )
       MSG   = f"Send Message to {ACCOUNT} for {BEAU}"
       self  . debug   ( MSG                                                  )
       if              ( self . SendTo != None                              ) :
