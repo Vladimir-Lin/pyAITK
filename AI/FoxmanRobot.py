@@ -131,6 +131,9 @@ class FoxmanRobot (                                                        ) :
     elif                           ( self . State == 11                    ) :
       self . tblMode               (        beau , message                   )
     ##########################################################################
+    elif                           ( self . State == 12                    ) :
+      self . tblBettings           (        beau , message                   )
+    ##########################################################################
     return True
   ############################################################################
   def IdleState                    ( self , beau , message                 ) :
@@ -265,6 +268,29 @@ class FoxmanRobot (                                                        ) :
         J  = R                      [ "JSON"                                 ]
         self . tblSerial = J        [ "Serial"                               ]
       return True
+    ##########################################################################
+    if ( s in self . JSON [ "Commands" ] [ "Prediction" ] [ "Allows" ]     ) :
+      JSON = {}
+      JSON [ "Action" ] = "Prediction"
+      self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      return True
+    ##########################################################################
+    if ( s in self . JSON [ "Commands" ] [ "Bettings" ] [ "Allows" ]       ) :
+      self . State = 12
+      if ( len ( L ) > 1 )                                                   :
+        self . tblSerial = L [ 1 ]
+      return True
+    ##########################################################################
+    return True
+  ############################################################################
+  def tblBettings                  ( self , beau , message                 ) :
+    ##########################################################################
+    self . State        = 11
+    JSON                = { }
+    JSON [ "Action"   ] = "Bettings"
+    JSON [ "Serial"   ] = self . tblSerial
+    JSON [ "Bettings" ] = message
+    self . SendRPC                  ( self . tblHost , "TBL" , JSON          )
     ##########################################################################
     return True
   ############################################################################
