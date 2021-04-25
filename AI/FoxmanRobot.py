@@ -263,7 +263,7 @@ class FoxmanRobot (                                                        ) :
       JSON [ "Action" ] = "Serial"
       R    = self . GetJsonFromRPC  ( self . tblHost , "TBL" , JSON          )
       if                            ( not R                                ) :
-        pass
+        print ( "Wrong" )
       else                                                                   :
         J  = R                      [ "JSON"                                 ]
         print ( json.dumps(J) )
