@@ -329,9 +329,12 @@ class FoxmanRobot (                                                        ) :
                                  headers = Headers                           )
     except                                                                   :
       return False
+    print ( status . text )
+    J = json . loads ( status . text )
+    print ( json.dumps(J) )
     ##########################################################################
     return { "Status" : status . status_code                                 ,
-             "JSON"   : json   . loads ( status . text )                     }
+             "JSON"   : J                                                    }
   ############################################################################
   def SendRPC                       ( self , HOST , Command , JSON         ) :
     ##########################################################################
