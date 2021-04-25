@@ -30,6 +30,8 @@ class FoxmanRobot (                                                        ) :
     self . Beau        = "Foxman"
     self . PullCommand = ""
     self . PushCommand = ""
+    self . tblHost     = "http://insider.actions.com.tw:8364"
+    self . sohoHost    = "http://soho.actions.com.tw:8364"
     self . Configure   (        jsonFile                                     )
     ##########################################################################
     return
@@ -119,11 +121,14 @@ class FoxmanRobot (                                                        ) :
   ############################################################################
   def Reply                        ( self , beau , message                 ) :
     ##########################################################################
-    if                             ( self . State == 0                     ) :
+    if                             ( self . State ==  0                    ) :
       self . IdleState             (        beau , message                   )
     ##########################################################################
-    elif                           ( self . State == 1                     ) :
+    elif                           ( self . State ==  1                    ) :
       self . BasicMode             (        beau , message                   )
+    ##########################################################################
+    elif                           ( self . State == 11                    ) :
+      self . tblMode               (        beau , message                   )
     ##########################################################################
     return True
   ############################################################################
@@ -132,10 +137,17 @@ class FoxmanRobot (                                                        ) :
     s    = message . lower         (                                         )
     s    = s       . rstrip        (                                         )
     beau = "Idle"
+    STAS = "Startup"
+    TBLS = "Taiwan-Big-Lottery"
     ##########################################################################
-    if ( s in self . JSON [ "Commands" ] [ "Startup" ] [ "Allows" ] )        :
+    if   ( s in self . JSON [ "Commands" ] [ STAS ] [ "Allows" ] )           :
       self . State = 1
-      MSG          = self . JSON [ "Commands" ] [ "Startup" ] [ "Welcome" ]
+      MSG          = self . JSON [ "Commands" ] [ STAS ] [ "Welcome" ]
+      self . TalkTo                ( self . Beau , MSG                       )
+    ##########################################################################
+    elif ( s in self . JSON [ "Commands" ] [ TBLS ] [ "Allows" ] )           :
+      self . State = 11
+      MSG          = self . JSON [ "Commands" ] [ TBLS ] [ "Welcome" ]
       self . TalkTo                ( self . Beau , MSG                       )
     ##########################################################################
     return True
@@ -227,6 +239,29 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     return True
   ############################################################################
+  def tblMode                      ( self , beau , message                 ) :
+    ##########################################################################
+    s    = message . lower         (                                         )
+    s    = s       . rstrip        (                                         )
+    L    = s       . split         ( ' '                                     )
+    CNT  = len                     ( L                                       )
+    beau = "Lottery"
+    ##########################################################################
+    if ( s in self . JSON [ "Commands" ] [ "Finish" ] [ "Allows" ]         ) :
+      self . State = 0
+      MSG          = self . JSON [ "Commands" ] [ "Finish" ] [ "Welcome" ]
+      self . TalkTo                ( beau , MSG                              )
+      return True
+    ##########################################################################
+    SERIALID = "Current-Serial"
+    if ( s in self . JSON [ "Commands" ] [ SERIALID ] [ "Allows" ]         ) :
+      JSON = {}
+      JSON [ "Action" ] = "Serial"
+      self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      return True
+    ##########################################################################
+    return True
+  ############################################################################
   def OsGetCWD                      ( self                                 ) :
     ##########################################################################
     self . CurrentDir = os . getcwd (                                        )
@@ -244,11 +279,24 @@ class FoxmanRobot (                                                        ) :
   def ListFiles                     ( self                                 ) :
     ##########################################################################
     L     = "\n" . join ( [ f for f in os . listdir ( ) ] )
-    ## T     = L . decode              ( "utf-8"                                )
     T     = L
     self . TalkTo                   ( "files" , T                            )
     ##########################################################################
     return
+  ############################################################################
+  def SendRPC                       ( self , HOST , Command , JSON         ) :
+    ##########################################################################
+    CMD      = f"{HOST}/{Command}"
+    Headers  = { "Username" : "foxman"                                       ,
+                 "Password" : "actionsfox2019"                               }
+    try                                                                      :
+      status = requests . post ( CMD                                         ,
+                                 data    = json . dumps ( JSON )             ,
+                                 headers = Headers                           )
+    except                                                                   :
+      return False
+    ##########################################################################
+    return status . status_code
   ############################################################################
   def PullSystem                    ( self                                 ) :
     return self . RunCommand        ( self . PullCommand                     )
