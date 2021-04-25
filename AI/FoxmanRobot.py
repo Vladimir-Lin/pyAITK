@@ -318,7 +318,7 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def GetJsonFromRPC                ( self , HOST , Command , JSON         ) :
+  def GetJsonFromRPC           ( self , HOST , Command , JSON              ) :
     ##########################################################################
     CMD      = f"{HOST}/{Command}"
     Headers  = { "Username" : "foxman"                                       ,
@@ -329,12 +329,12 @@ class FoxmanRobot (                                                        ) :
                                  headers = Headers                           )
     except                                                                   :
       return False
-    print ( status . text )
-    J = json . loads ( status . text )
-    print ( json.dumps(J) )
+    ##########################################################################
+    KK       = status . text
+    KK       = KK . replace    ( "'" , "\""                                  )
     ##########################################################################
     return { "Status" : status . status_code                                 ,
-             "JSON"   : J                                                    }
+             "JSON"   : json . loads ( K )                                   }
   ############################################################################
   def SendRPC                       ( self , HOST , Command , JSON         ) :
     ##########################################################################
