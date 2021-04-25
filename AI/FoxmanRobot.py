@@ -328,6 +328,8 @@ class FoxmanRobot (                                                        ) :
                                  headers = Headers                           )
     except                                                                   :
       return False
+    print ( "Status : " , status . status_code )
+    print ( "JSON : " , json . dumps ( status . json ( ) ) )
     ##########################################################################
     return { "Status" : status . status_code                                 ,
              "JSON"   : status . json ( )                                    }
