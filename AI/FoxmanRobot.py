@@ -32,6 +32,7 @@ class FoxmanRobot (                                                        ) :
     self . PushCommand = ""
     self . tblHost     = "http://insider.actions.com.tw:8364"
     self . sohoHost    = "http://soho.actions.com.tw:8364"
+    self . tblSerial   = ""
     self . Configure   (        jsonFile                                     )
     ##########################################################################
     return
@@ -257,8 +258,12 @@ class FoxmanRobot (                                                        ) :
     if ( s in self . JSON [ "Commands" ] [ SERIALID ] [ "Allows" ]         ) :
       JSON = {}
       JSON [ "Action" ] = "Serial"
-      print ( "Lottery Serial" )
-      self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      R    = self . GetJsonFromRPC  ( self . tblHost , "TBL" , JSON          )
+      if                            ( not R                                ) :
+        pass
+      else                                                                   :
+        J  = R                      [ "JSON"                                 ]
+        self . tblSerial = J        [ "Serial"                               ]
       return True
     ##########################################################################
     return True
@@ -285,6 +290,21 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     return
   ############################################################################
+  def GetJsonFromRPC                ( self , HOST , Command , JSON         ) :
+    ##########################################################################
+    CMD      = f"{HOST}/{Command}"
+    Headers  = { "Username" : "foxman"                                       ,
+                 "Password" : "actionsfox2019"                               }
+    try                                                                      :
+      status = requests . post ( CMD                                         ,
+                                 data    = json . dumps ( JSON )             ,
+                                 headers = Headers                           )
+    except                                                                   :
+      return False
+    ##########################################################################
+    return { "Status" : status . status_code                                 ,
+             "JSON"   : status . json                                        }
+  ############################################################################
   def SendRPC                       ( self , HOST , Command , JSON         ) :
     ##########################################################################
     CMD      = f"{HOST}/{Command}"
@@ -294,9 +314,7 @@ class FoxmanRobot (                                                        ) :
       status = requests . post ( CMD                                         ,
                                  data    = json . dumps ( JSON )             ,
                                  headers = Headers                           )
-      print ( "Send Requests" )
     except                                                                   :
-      print ( "Requests Fail" )
       return False
     ##########################################################################
     return status . status_code
