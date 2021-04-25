@@ -263,7 +263,8 @@ class FoxmanRobot (                                                        ) :
       JSON [ "Action" ] = "Serial"
       R    = self . GetJsonFromRPC  ( self . tblHost , "TBL" , JSON          )
       if                            ( not R                                ) :
-        print ( "Wrong" )
+        MSG = self . JSON [ "Commands" ] [ SERIALID ] [ "Failure" ]
+        self . TalkTo               ( "Lottery" , MSG                        )
       else                                                                   :
         print ( json.dumps(R) )
         J  = R                      [ "JSON"                                 ]
@@ -328,11 +329,9 @@ class FoxmanRobot (                                                        ) :
                                  headers = Headers                           )
     except                                                                   :
       return False
-    print ( "Status : " , status . status_code )
-    print ( "JSON : " , status . text )
     ##########################################################################
     return { "Status" : status . status_code                                 ,
-             "JSON"   : status . json ( )                                    }
+             "JSON"   : json   . loads ( status . text )                     }
   ############################################################################
   def SendRPC                       ( self , HOST , Command , JSON         ) :
     ##########################################################################
