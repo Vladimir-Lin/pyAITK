@@ -266,6 +266,7 @@ class FoxmanRobot (                                                        ) :
         pass
       else                                                                   :
         J  = R                      [ "JSON"                                 ]
+        print ( json.dumps(J) )
         self . tblSerial = J        [ "Serial"                               ]
       return True
     ##########################################################################
