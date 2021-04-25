@@ -265,8 +265,8 @@ class FoxmanRobot (                                                        ) :
       if                            ( not R                                ) :
         print ( "Wrong" )
       else                                                                   :
-        J  = R                      [ "JSON"                                 ]
         print ( json.dumps(R) )
+        J  = R                      [ "JSON"                                 ]
         self . tblSerial = J        [ "Serial"                               ]
       return True
     ##########################################################################
