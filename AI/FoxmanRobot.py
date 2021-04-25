@@ -329,7 +329,7 @@ class FoxmanRobot (                                                        ) :
     except                                                                   :
       return False
     print ( "Status : " , status . status_code )
-    print ( "JSON : " , json . dumps ( status . json ( ) ) )
+    print ( "JSON : " , status . text )
     ##########################################################################
     return { "Status" : status . status_code                                 ,
              "JSON"   : status . json ( )                                    }
