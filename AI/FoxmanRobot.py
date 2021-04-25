@@ -266,7 +266,6 @@ class FoxmanRobot (                                                        ) :
         MSG = self . JSON [ "Commands" ] [ SERIALID ] [ "Failure" ]
         self . TalkTo               ( "Lottery" , MSG                        )
       else                                                                   :
-        print ( json.dumps(R) )
         J  = R                      [ "JSON"                                 ]
         self . tblSerial = J        [ "Serial"                               ]
       return True
