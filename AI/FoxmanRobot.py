@@ -257,6 +257,7 @@ class FoxmanRobot (                                                        ) :
     if ( s in self . JSON [ "Commands" ] [ SERIALID ] [ "Allows" ]         ) :
       JSON = {}
       JSON [ "Action" ] = "Serial"
+      print ( "Lottery Serial" )
       self . SendRPC                ( self . tblHost , "TBL" , JSON          )
       return True
     ##########################################################################
@@ -293,7 +294,9 @@ class FoxmanRobot (                                                        ) :
       status = requests . post ( CMD                                         ,
                                  data    = json . dumps ( JSON )             ,
                                  headers = Headers                           )
+      print ( "Send Requests" )
     except                                                                   :
+      print ( "Requests Fail" )
       return False
     ##########################################################################
     return status . status_code
