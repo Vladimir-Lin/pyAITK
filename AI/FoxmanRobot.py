@@ -276,6 +276,12 @@ class FoxmanRobot (                                                        ) :
       self . SendRPC                ( self . tblHost , "TBL" , JSON          )
       return True
     ##########################################################################
+    if ( s in self . JSON [ "Commands" ] [ "Rewards" ] [ "Allows" ]        ) :
+      JSON = {}
+      JSON [ "Action" ] = "Rewards"
+      self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      return True
+    ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Bettings" ] [ "Allows" ]       ) :
       self . State = 12
       if ( len ( L ) > 1 )                                                   :
