@@ -270,6 +270,17 @@ class FoxmanRobot (                                                        ) :
         self . tblSerial = J        [ "Serial"                               ]
       return True
     ##########################################################################
+    ASSIGNID = "Assign-Serial"
+    if                              ( CNT > 1                              ) :
+      if ( L [ 0 ] in self . JSON [ "Commands" ] [ ASSIGNID ] [ "Allows" ] ) :
+        self . tblSerial = L [ 1 ]
+        MSG  = self . JSON [ "Commands" ] [ ASSIGNID ] [ "Current" ]
+        MSG  = MSG + self . tblSerial
+        self . TalkTo               ( "Lottery" , MSG                        )
+    elif ( s in self . JSON [ "Commands" ] [ ASSIGNID ] [ "Allows" ]       ) :
+      MSG  = self . JSON [ "Commands" ] [ ASSIGNID ] [ "Failure" ]
+      self   . TalkTo               ( "Lottery" , MSG                        )
+    ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Prediction" ] [ "Allows" ]     ) :
       JSON = {}
       JSON [ "Action" ] = "Prediction"
@@ -279,6 +290,13 @@ class FoxmanRobot (                                                        ) :
     if ( s in self . JSON [ "Commands" ] [ "Rewards" ] [ "Allows" ]        ) :
       JSON = {}
       JSON [ "Action" ] = "Rewards"
+      self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      return True
+    ##########################################################################
+    if ( s in self . JSON [ "Commands" ] [ "CancelBets" ] [ "Allows" ]     ) :
+      JSON = {}
+      JSON [ "Action" ] = "CancelBets"
+      JSON [ "Serial" ] = self . tblSerial
       self . SendRPC                ( self . tblHost , "TBL" , JSON          )
       return True
     ##########################################################################
