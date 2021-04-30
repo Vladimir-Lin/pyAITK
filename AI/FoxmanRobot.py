@@ -369,7 +369,7 @@ class FoxmanRobot (                                                        ) :
         H   = self . tblPaperH
         L   = self . tblPaperL
         T   = self . tblPaperText
-        MSG = f"{CMD}\nX偏移植：{X} mm\nY偏移植：{X} mm\nGap每區間隔：{X} mm\nWidth每格間隔：{X} mm\nHeight高度間隔：{X} mm\nLength填充長度：{L} mm\nText文字高度：{T} mm"
+        MSG = f"{CMD}\n\nX偏移植：{X} mm\nY偏移植：{Y} mm\nGap每區間隔：{GAP} mm\nWidth每格間隔：{W} mm\nHeight高度間隔：{H} mm\nLength填充長度：{L} mm\nText文字高度：{T} mm"
         self   . TalkTo             ( "Lottery" , MSG                        )
         return True
     ##########################################################################
