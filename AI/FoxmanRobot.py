@@ -33,7 +33,16 @@ class FoxmanRobot (                                                        ) :
     self . tblHost     = "http://insider.actions.com.tw:8364"
     self . sohoHost    = "http://soho.actions.com.tw:8364"
     self . tblSerial   = ""
+    ##########################################################################
     self . Configure   (        jsonFile                                     )
+    ##########################################################################
+    self . tblPaperX    = self . JSON [ "Paper" ] [ "X"      ]
+    self . tblPaperY    = self . JSON [ "Paper" ] [ "Y"      ]
+    self . tblPaperGap  = self . JSON [ "Paper" ] [ "Gap"    ]
+    self . tblPaperW    = self . JSON [ "Paper" ] [ "Width"  ]
+    self . tblPaperH    = self . JSON [ "Paper" ] [ "Height" ]
+    self . tblPaperL    = self . JSON [ "Paper" ] [ "Length" ]
+    self . tblPaperText = self . JSON [ "Paper" ] [ "Text"   ]
     ##########################################################################
     return
   ############################################################################
@@ -307,16 +316,62 @@ class FoxmanRobot (                                                        ) :
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "PrintBets" ] [ "Allows" ]      ) :
-      JSON = {}
+      JSON              = { }
       JSON [ "Action" ] = "PrintBets"
+      JSON [ "X"      ] = self . tblPaperX
+      JSON [ "Y"      ] = self . tblPaperY
+      JSON [ "Gap"    ] = self . tblPaperGap
+      JSON [ "W"      ] = self . tblPaperW
+      JSON [ "H"      ] = self . tblPaperH
+      JSON [ "L"      ] = self . tblPaperL
+      JSON [ "Text"   ] = self . tblPaperText
       self . SendRPC                ( self . tblHost , "TBL" , JSON          )
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Bettings" ] [ "Allows" ]       ) :
       self . State = 12
-      if ( len ( L ) > 1 )                                                   :
+      if ( len ( L ) > 1 ) :
         self . tblSerial = L [ 1 ]
       return True
+    ##########################################################################
+    if ( L [ 0 ] in self . JSON [ "Commands" ] [ "Paper" ] [ "Allows" ]    ) :
+      if                            ( CNT == 8                             ) :
+        ######################################################################
+        self . tblPaperX    = float ( L [ 1 ]                                )
+        self . tblPaperY    = float ( L [ 2 ]                                )
+        self . tblPaperGap  = float ( L [ 3 ]                                )
+        self . tblPaperW    = float ( L [ 4 ]                                )
+        self . tblPaperH    = float ( L [ 5 ]                                )
+        self . tblPaperL    = float ( L [ 6 ]                                )
+        self . tblPaperText = float ( L [ 7 ]                                )
+        ######################################################################
+        self . JSON [ "Paper" ] [ "X"      ] = self . tblPaperX
+        self . JSON [ "Paper" ] [ "Y"      ] = self . tblPaperY
+        self . JSON [ "Paper" ] [ "Gap"    ] = self . tblPaperGap
+        self . JSON [ "Paper" ] [ "Width"  ] = self . tblPaperW
+        self . JSON [ "Paper" ] [ "Height" ] = self . tblPaperH
+        self . JSON [ "Paper" ] [ "Length" ] = self . tblPaperL
+        self . JSON [ "Paper" ] [ "Text"   ] = self . tblPaperText
+        ######################################################################
+        self . StoreJSON (                                                   )
+        ######################################################################
+        MSG  = "已經儲存紙張設定"
+        self . TalkTo               ( "Lottery" , MSG                        )
+        return True
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        CMD = self . JSON [ "Commands" ] [ "Paper" ] [ "Comment" ]
+        X   = self . tblPaperX
+        Y   = self . tblPaperY
+        GAP = self . tblPaperGap
+        W   = self . tblPaperW
+        H   = self . tblPaperH
+        L   = self . tblPaperL
+        T   = self . tblPaperText
+        MSG = f"{CMD}\nX偏移植：{X} mm\nY偏移植：{X} mm\nGap每區間隔：{X} mm\nWidth每格間隔：{X} mm\nHeight高度間隔：{X} mm\nLength填充長度：{L} mm\nText文字高度：{T} mm"
+        self   . TalkTo             ( "Lottery" , MSG                        )
+        return True
     ##########################################################################
     return True
   ############################################################################
