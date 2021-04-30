@@ -33,6 +33,12 @@ class FoxmanRobot (                                                        ) :
     self . tblHost     = "http://insider.actions.com.tw:8364"
     self . sohoHost    = "http://soho.actions.com.tw:8364"
     self . tblSerial   = ""
+    self . tblPaperX   = 4.2
+    self . tblPaperY   = 25.3
+    self . tblPaperGap = 28.0
+    self . tblPaperW   = 6.35
+    self . tblPaperH   = 5.15
+    self . tblPaperL   = 3.0
     self . Configure   (        jsonFile                                     )
     ##########################################################################
     return
