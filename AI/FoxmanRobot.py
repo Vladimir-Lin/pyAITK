@@ -21,18 +21,19 @@ class FoxmanRobot (                                                        ) :
   ############################################################################
   def __init__         ( self , jsonFile = ""                              ) :
     ##########################################################################
-    self . DebugLogger = None
-    self . Talk        = None
-    self . Reboot      = None
-    self . StopIt      = None
-    self . State       = 0
-    self . CurrentDir  = ""
-    self . Beau        = "Foxman"
-    self . PullCommand = ""
-    self . PushCommand = ""
-    self . tblHost     = "http://insider.actions.com.tw:8364"
-    self . sohoHost    = "http://soho.actions.com.tw:8364"
-    self . tblSerial   = ""
+    self . DebugLogger  = None
+    self . Talk         = None
+    self . Reboot       = None
+    self . StopIt       = None
+    self . State        = 0
+    self . CurrentDir   = ""
+    self . Beau         = "Foxman"
+    self . PullCommand  = ""
+    self . PushCommand  = ""
+    self . tblHost      = "http://insider.actions.com.tw:8364"
+    self . sohoHost     = "http://soho.actions.com.tw:8364"
+    self . tblSerial    = ""
+    self . CalendarJson = { }
     ##########################################################################
     self . Configure   (        jsonFile                                     )
     ##########################################################################
@@ -133,15 +134,23 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     if                             ( self . State ==  0                    ) :
       self . IdleState             (        beau , message                   )
+      return True
     ##########################################################################
-    elif                           ( self . State ==  1                    ) :
+    if                             ( self . State ==  1                    ) :
       self . BasicMode             (        beau , message                   )
+      return True
     ##########################################################################
-    elif                           ( self . State == 11                    ) :
+    if                             ( self . State == 11                    ) :
       self . tblMode               (        beau , message                   )
+      return True
     ##########################################################################
-    elif                           ( self . State == 12                    ) :
+    if                             ( self . State == 12                    ) :
       self . tblBettings           (        beau , message                   )
+      return True
+    ##########################################################################
+    if                             ( self . State == 21                    ) :
+      self . CalendarMode          (        beau , message                   )
+      return True
     ##########################################################################
     return True
   ############################################################################
@@ -151,17 +160,30 @@ class FoxmanRobot (                                                        ) :
     s    = s       . rstrip        (                                         )
     beau = "Idle"
     STAS = "Startup"
+    CALS = "Calendars"
     TBLS = "Taiwan-Big-Lottery"
     ##########################################################################
     if   ( s in self . JSON [ "Commands" ] [ STAS ] [ "Allows" ] )           :
+      ########################################################################
       self . State = 1
       MSG          = self . JSON [ "Commands" ] [ STAS ] [ "Welcome" ]
       self . TalkTo                ( self . Beau , MSG                       )
+      ########################################################################
+      return True
     ##########################################################################
-    elif ( s in self . JSON [ "Commands" ] [ TBLS ] [ "Allows" ] )           :
+    if ( s in self . JSON [ "Commands" ] [ CALS ] [ "Allows" ] )             :
+      ########################################################################
+      self . State = 21
+      MSG          = self . JSON [ "Commands" ] [ CALS ] [ "Welcome" ]
+      self . TalkTo                ( self . Beau , MSG                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if ( s in self . JSON [ "Commands" ] [ TBLS ] [ "Allows" ] )             :
       self . State = 11
       MSG          = self . JSON [ "Commands" ] [ TBLS ] [ "Welcome" ]
       self . TalkTo                ( self . Beau , MSG                       )
+      return True
     ##########################################################################
     return True
   ############################################################################
@@ -174,22 +196,30 @@ class FoxmanRobot (                                                        ) :
     beau = "Basic"
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Reboot" ] [ "Allows" ] )         :
+      ########################################################################
       self . Reboot                (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if ( CNT == 1 ) and ( s in self . JSON [ "Commands" ] [ "Stop" ] [ "Allows" ] ) :
+      ########################################################################
       self . StopIt                (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Finish" ] [ "Allows" ]         ) :
+      ########################################################################
       self . State = 0
       MSG          = self . JSON [ "Commands" ] [ "Finish" ] [ "Welcome" ]
       self . TalkTo                ( beau , MSG                              )
+      ########################################################################
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ]       ) :
+      ########################################################################
       MSG = json . dumps           ( self . JSON , ensure_ascii = False      )
       self . TalkTo                ( "settings" , MSG                        )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( CNT <= 0                              ) :
@@ -199,7 +229,7 @@ class FoxmanRobot (                                                        ) :
       ########################################################################
       if                           ( CNT > 1                               ) :
         ######################################################################
-        if                         ( L [ 1 ] == "directory"                ) :
+        if                         ( L [ 1 ] in [ "directory" ]            ) :
           self . OsGetCWD          (                                         )
           return True
     ##########################################################################
@@ -215,35 +245,19 @@ class FoxmanRobot (                                                        ) :
       self . OsChdir               ( message [ 3 : ]                         )
       return True
     ##########################################################################
-    if                             ( L [ 0 ] == "dir"                      ) :
+    if                             ( L [ 0 ] in [ "dir" , "ls" , "files" ] ) :
       threading . Thread           ( target = self . ListFiles   ) . start ( )
       return True
     ##########################################################################
-    if                             ( L [ 0 ] == "ls"                       ) :
-      threading . Thread           ( target = self . ListFiles   ) . start ( )
-      return True
-    ##########################################################################
-    if                             ( L [ 0 ] == "files"                    ) :
-      threading . Thread           ( target = self . ListFiles   ) . start ( )
-      return True
-    ##########################################################################
-    if                             ( L [ 0 ] == "push"                     ) :
+    if                             ( L [ 0 ] in [ "push" , "commit" ]      ) :
       threading . Thread           ( target = self . PushSystem  ) . start ( )
       return True
     ##########################################################################
-    if                             ( L [ 0 ] == "commit"                   ) :
-      threading . Thread           ( target = self . PushSystem  ) . start ( )
-      return True
-    ##########################################################################
-    if                             ( L [ 0 ] == "pull"                     ) :
+    if                             ( L [ 0 ] in [ "pull" , "upgrade" ]     ) :
       threading . Thread           ( target = self . PullSystem  ) . start ( )
       return True
     ##########################################################################
-    if                             ( L [ 0 ] == "upgrade"                  ) :
-      threading . Thread           ( target = self . PullSystem  ) . start ( )
-      return True
-    ##########################################################################
-    if                             ( L [ 0 ] == "sync"                     ) :
+    if                             ( L [ 0 ] in [ "sync" ]                 ) :
       threading . Thread           ( target = self . SyncSystem  ) . start ( )
       return True
     ##########################################################################
@@ -318,13 +332,16 @@ class FoxmanRobot (                                                        ) :
     beau = "Lottery"
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Finish" ] [ "Allows" ]         ) :
+      ########################################################################
       self . State = 0
       MSG          = self . JSON [ "Commands" ] [ "Finish" ] [ "Welcome" ]
       self . TalkTo                ( beau , MSG                              )
+      ########################################################################
       return True
     ##########################################################################
     SERIALID = "Current-Serial"
     if ( s in self . JSON [ "Commands" ] [ SERIALID ] [ "Allows" ]         ) :
+      ########################################################################
       JSON = {}
       JSON [ "Action" ] = "Serial"
       R    = self . GetJsonFromRPC  ( self . tblHost , "TBL" , JSON          )
@@ -334,45 +351,62 @@ class FoxmanRobot (                                                        ) :
       else                                                                   :
         J  = R                      [ "JSON"                                 ]
         self . tblSerial = J        [ "Serial"                               ]
+      ########################################################################
       return True
     ##########################################################################
     ASSIGNID = "Assign-Serial"
     if                              ( CNT > 1                              ) :
       if ( L [ 0 ] in self . JSON [ "Commands" ] [ ASSIGNID ] [ "Allows" ] ) :
+        ######################################################################
         self . tblSerial = L [ 1 ]
         MSG  = self . JSON [ "Commands" ] [ ASSIGNID ] [ "Current" ]
         MSG  = MSG + self . tblSerial
         self . TalkTo               ( "Lottery" , MSG                        )
-    elif ( s in self . JSON [ "Commands" ] [ ASSIGNID ] [ "Allows" ]       ) :
+        ######################################################################
+        return True
+    ##########################################################################
+    if ( s in self . JSON [ "Commands" ] [ ASSIGNID ] [ "Allows" ]         ) :
+      ########################################################################
       MSG  = self . JSON [ "Commands" ] [ ASSIGNID ] [ "Failure" ]
       self   . TalkTo               ( "Lottery" , MSG                        )
+      ########################################################################
+      return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Prediction" ] [ "Allows" ]     ) :
+      ########################################################################
       JSON = {}
       JSON [ "Action" ] = "Prediction"
       self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      ########################################################################
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Rewards" ] [ "Allows" ]        ) :
+      ########################################################################
       JSON = {}
       JSON [ "Action" ] = "Rewards"
       self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      ########################################################################
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "CancelBets" ] [ "Allows" ]     ) :
+      ########################################################################
       JSON = {}
       JSON [ "Action" ] = "CancelBets"
       JSON [ "Serial" ] = self . tblSerial
       self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      ########################################################################
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "CurrentBets" ] [ "Allows" ]    ) :
+      ########################################################################
       JSON = {}
       JSON [ "Action" ] = "CurrentBets"
       self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      ########################################################################
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "PrintBets" ] [ "Allows" ]      ) :
+      ########################################################################
       JSON              = { }
       JSON [ "Action" ] = "PrintBets"
       JSON [ "X"      ] = self . tblPaperX
@@ -383,12 +417,15 @@ class FoxmanRobot (                                                        ) :
       JSON [ "L"      ] = self . tblPaperL
       JSON [ "Text"   ] = self . tblPaperText
       self . SendRPC                ( self . tblHost , "TBL" , JSON          )
+      ########################################################################
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "Bettings" ] [ "Allows" ]       ) :
+      ########################################################################
       self . State = 12
       if ( len ( L ) > 1 ) :
         self . tblSerial = L [ 1 ]
+      ########################################################################
       return True
     ##########################################################################
     if ( L [ 0 ] in self . JSON [ "Commands" ] [ "Paper" ] [ "Allows" ]    ) :
@@ -428,6 +465,7 @@ class FoxmanRobot (                                                        ) :
         T   = self . tblPaperText
         MSG = f"{CMD}\n\nX偏移植：{X} mm\nY偏移植：{Y} mm\nGap每區間隔：{GAP} mm\nWidth每格間隔：{W} mm\nHeight高度間隔：{H} mm\nLength填充長度：{L} mm\nText文字高度：{T} mm"
         self   . TalkTo             ( "Lottery" , MSG                        )
+        ######################################################################
         return True
     ##########################################################################
     return True
@@ -440,6 +478,25 @@ class FoxmanRobot (                                                        ) :
     JSON [ "Serial"   ] = self . tblSerial
     JSON [ "Bettings" ] = message
     self . SendRPC                  ( self . tblHost , "TBL" , JSON          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def CalendarMode                 ( self , beau , message                 ) :
+    ##########################################################################
+    s    = message . lower         (                                         )
+    s    = s       . rstrip        (                                         )
+    L    = s       . split         ( ' '                                     )
+    CNT  = len                     ( L                                       )
+    beau = "Calendars"
+    ##########################################################################
+    if ( s in self . JSON [ "Commands" ] [ "Finish" ] [ "Allows" ]         ) :
+      ########################################################################
+      self . State = 0
+      MSG          = self . JSON [ "Commands" ] [ "Finish" ] [ "Welcome" ]
+      self . TalkTo                ( beau , MSG                              )
+      ########################################################################
+      return True
+    ##########################################################################
     ##########################################################################
     return True
   ############################################################################
