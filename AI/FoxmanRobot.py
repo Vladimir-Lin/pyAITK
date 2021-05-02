@@ -201,54 +201,111 @@ class FoxmanRobot (                                                        ) :
         ######################################################################
         if                         ( L [ 1 ] == "directory"                ) :
           self . OsGetCWD          (                                         )
+          return True
     ##########################################################################
-    elif ( L [ 0 ] in self . JSON [ "Commands" ] [ "PWD" ] [ "Allows" ]    ) :
+    if ( L [ 0 ] in self . JSON [ "Commands" ] [ "PWD" ] [ "Allows" ]      ) :
       self     . OsGetCWD          (                                         )
+      return True
     ##########################################################################
-    elif                           ( L [ 0 ] == "chdir"                    ) :
+    if                             ( L [ 0 ] == "chdir"                    ) :
       self . OsChdir               ( message [ 6 : ]                         )
-    elif                           ( L [ 0 ] == "cd"                       ) :
+      return True
+    ##########################################################################
+    if                             ( L [ 0 ] == "cd"                       ) :
       self . OsChdir               ( message [ 3 : ]                         )
+      return True
     ##########################################################################
-    elif                           ( L [ 0 ] == "dir"                      ) :
+    if                             ( L [ 0 ] == "dir"                      ) :
       threading . Thread           ( target = self . ListFiles   ) . start ( )
-    elif                           ( L [ 0 ] == "ls"                       ) :
-      threading . Thread           ( target = self . ListFiles   ) . start ( )
-    elif                           ( L [ 0 ] == "files"                    ) :
-      threading . Thread           ( target = self . ListFiles   ) . start ( )
+      return True
     ##########################################################################
-    elif                           ( L [ 0 ] == "push"                     ) :
+    if                             ( L [ 0 ] == "ls"                       ) :
+      threading . Thread           ( target = self . ListFiles   ) . start ( )
+      return True
+    ##########################################################################
+    if                             ( L [ 0 ] == "files"                    ) :
+      threading . Thread           ( target = self . ListFiles   ) . start ( )
+      return True
+    ##########################################################################
+    if                             ( L [ 0 ] == "push"                     ) :
       threading . Thread           ( target = self . PushSystem  ) . start ( )
-    elif                           ( L [ 0 ] == "commit"                   ) :
+      return True
+    ##########################################################################
+    if                             ( L [ 0 ] == "commit"                   ) :
       threading . Thread           ( target = self . PushSystem  ) . start ( )
+      return True
     ##########################################################################
-    elif                           ( L [ 0 ] == "pull"                     ) :
+    if                             ( L [ 0 ] == "pull"                     ) :
       threading . Thread           ( target = self . PullSystem  ) . start ( )
-    elif                           ( L [ 0 ] == "upgrade"                  ) :
-      threading . Thread           ( target = self . PullSystem  ) . start ( )
+      return True
     ##########################################################################
-    elif                           ( L [ 0 ] == "sync"                     ) :
+    if                             ( L [ 0 ] == "upgrade"                  ) :
+      threading . Thread           ( target = self . PullSystem  ) . start ( )
+      return True
+    ##########################################################################
+    if                             ( L [ 0 ] == "sync"                     ) :
       threading . Thread           ( target = self . SyncSystem  ) . start ( )
+      return True
     ##########################################################################
-    elif                           ( L [ 0 ] == "dos"                      ) :
+    if                             ( L [ 0 ] == "dos"                      ) :
       cmd       = message          [ 4:                                      ]
       threading . Thread           ( target = self . RunCommand            , \
                                      args = ( cmd , )            ) . start ( )
-    elif                           ( L [ 0 ] == "run"                      ) :
+      return True
+    ##########################################################################
+    if                             ( L [ 0 ] == "run"                      ) :
       cmd       = message          [ 4:                                      ]
       threading . Thread           ( target = self . RunCommand            , \
                                      args = ( cmd , )            ) . start ( )
-    elif                           ( L [ 0 ] == "command"                  ) :
+      return True
+    ##########################################################################
+    if                             ( L [ 0 ] == "command"                  ) :
       cmd       = message          [ 8:                                      ]
       threading . Thread           ( target = self . RunCommand            , \
                                      args = ( cmd , )            ) . start ( )
+      return True
     ##########################################################################
-    elif ( L [ 0 ] in self . JSON [ "Commands" ] [ "Load" ] [ "Allows" ]   ) :
+    if ( L [ 0 ] in self . JSON [ "Commands" ] [ "Load" ] [ "Allows" ]     ) :
       if ( CNT > 1 ) and ( L [ 1 ] in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ] ) :
         threading . Thread         ( target = self . LoadJSON    ) . start ( )
-    elif ( L [ 0 ] in self . JSON [ "Commands" ] [ "Save" ] [ "Allows" ]   ) :
+        return True
+    ##########################################################################
+    if ( L [ 0 ] in self . JSON [ "Commands" ] [ "Save" ] [ "Allows" ]     ) :
       if ( CNT > 1 ) and ( L [ 1 ] in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ] ) :
         threading . Thread         ( target = self . StoreJSON   ) . start ( )
+        return True
+    ##########################################################################
+    if ( L [ 0 ] in self . JSON [ "Commands" ] [ "CommandQueues" ] [ "Allows" ] ) :
+      if ( CNT > 1                                                           )
+        ######################################################################
+        if   ( L [ 1 ] in self . JSON [ "Commands" ] [ "TurnOn"  ] [ "Allows" ] ) :
+          ####################################################################
+          JSON = {}
+          JSON [ "Action" ] = "On"
+          self . SendRPC           ( self . tblHost , "Tasks" , JSON         )
+          ####################################################################
+          return True
+        ######################################################################
+        if ( L [ 1 ] in self . JSON [ "Commands" ] [ "TurnOff" ] [ "Allows" ] ) :
+          ####################################################################
+          JSON = {}
+          JSON [ "Action" ] = "Off"
+          self . SendRPC           ( self . tblHost , "Tasks" , JSON         )
+          ####################################################################
+          return True
+        ######################################################################
+        KS  = L [ 0 ]
+        KS  = f"{KS} "
+        CMD = message [ len(KS): ]
+        if                         ( len ( CMD ) > 1                       ) :
+          ####################################################################
+          JSON = {}
+          JSON [ "Action"  ] = "Queue"
+          JSON [ "Command" ] = CMD
+          JSON [ "Delay"   ] = 3.0
+          self . SendRPC           ( self . tblHost , "Tasks" , JSON         )
+          ####################################################################
+          return True
     ##########################################################################
     return True
   ############################################################################
