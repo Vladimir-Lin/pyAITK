@@ -542,6 +542,7 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     if                                    ( self . Scheduler == None       ) :
       self . Scheduler = ScheduleNotifier ( self . CalendarsFile             )
+      self . Scheduler . Talk = self . Talk
     ##########################################################################
     return
   ############################################################################
