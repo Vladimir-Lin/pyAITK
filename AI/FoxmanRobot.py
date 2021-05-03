@@ -23,20 +23,20 @@ class FoxmanRobot (                                                        ) :
   ############################################################################
   def __init__         ( self , jsonFile = ""                              ) :
     ##########################################################################
-    self . DebugLogger  = None
-    self . Talk         = None
-    self . Reboot       = None
-    self . StopIt       = None
-    self . State        = 0
-    self . CurrentDir   = ""
-    self . Beau         = "Foxman"
-    self . PullCommand  = ""
-    self . PushCommand  = ""
-    self . tblHost      = "http://insider.actions.com.tw:8364"
-    self . sohoHost     = "http://soho.actions.com.tw:8364"
-    self . tblSerial    = ""
-    self . CalendarJson = { }
-    self . Scheduler    = None
+    self . DebugLogger   = None
+    self . Talk          = None
+    self . Reboot        = None
+    self . StopIt        = None
+    self . State         = 0
+    self . CurrentDir    = ""
+    self . Beau          = "Foxman"
+    self . PullCommand   = ""
+    self . PushCommand   = ""
+    self . tblHost       = "http://insider.actions.com.tw:8364"
+    self . sohoHost      = "http://soho.actions.com.tw:8364"
+    self . tblSerial     = ""
+    self . CalendarsFile = ""
+    self . Scheduler     = None
     ##########################################################################
     self . Configure   (        jsonFile                                     )
     ##########################################################################
@@ -534,13 +534,14 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     return True
   ############################################################################
-  def StartCalendar                ( self                                  ) :
+  def StartCalendar                       ( self                           ) :
     ##########################################################################
     self . State = 21
     MSG  = self . JSON [ "Commands" ] [ "Calendars" ] [ "Welcome" ]
-    self . TalkTo                ( self . Beau , MSG                       )
+    self . TalkTo                         ( self . Beau , MSG                )
     ##########################################################################
-    ## self . CalendarJson [ "Current" ] =
+    if                                    ( self . Scheduler == None       ) :
+      self . Scheduler = ScheduleNotifier ( self . CalendarsFile             )
     ##########################################################################
     return
   ############################################################################
@@ -559,6 +560,9 @@ class FoxmanRobot (                                                        ) :
       self . TalkTo                ( beau , MSG                              )
       ########################################################################
       return True
+    ##########################################################################
+    if                             ( self . Scheduler == None              ) :
+      return False
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "CalendarList" ] [ "Allows" ]   ) :
       ########################################################################
