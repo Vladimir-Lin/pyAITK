@@ -179,7 +179,9 @@ class ScheduleNotifier (                                                   ) :
       Calendars = self . Calendar . GetCalendars (                           )
       ########################################################################
       for calendar in Calendars                                              :
+        print ( str(calendar) )
         NAME = calendar                 [ "summary"                          ]
+        print ( NAME )
         if                              ( len ( NAME ) > 0                 ) :
           NAMES . append                ( NAME                               )
       self . CalendarLocker . release   (                                    )
