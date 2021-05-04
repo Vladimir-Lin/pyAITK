@@ -151,7 +151,7 @@ class ScheduleNotifier (                                                   ) :
     for K in KEYs                                                            :
       ########################################################################
       CNT   = CNT + 1
-      NAME  = K                   [ "summary"                                ]
+      NAME  = Groups [ K ] [ "summary" ]
       N     = f"{CNT}. {NAME}"
       NAMES . append              ( N                                        )
     ##########################################################################
