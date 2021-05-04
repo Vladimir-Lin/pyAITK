@@ -156,8 +156,11 @@ class ScheduleNotifier (                                                   ) :
       return
     ##########################################################################
     self   . CurrentCalendar = KEYs [ ID                                     ]
+    print ( self   . CurrentCalendar )
     NAME   = Groups [ self . CurrentCalendar ] [ "summary" ]
+    print ( NAME )
     TT     = self . JSON [ "Google" ] [ "Messages" ] [ "Picking" ]
+    print ( TT )
     ##########################################################################
     MSG   = f"{TT}:{NAME}"
     self  . TalkTo                  ( "Calendars" , MSG                      )
