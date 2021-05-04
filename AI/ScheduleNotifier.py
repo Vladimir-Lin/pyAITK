@@ -140,6 +140,68 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return
   ############################################################################
+  def SyncCalendars             ( self , Calendars                         ) :
+    ##########################################################################
+    if                          ( len ( Calendars ) <= 0                   ) :
+      return False
+    ##########################################################################
+    CHANGED   = False
+    NAMES  =                          [                                    ]
+    Groups    = self . JSON [ "Google" ] [ "Groups" ]
+    for calendar in Calendars                                              :
+      ######################################################################
+      KIND = calendar                 [ "kind"                             ]
+      ID   = calendar                 [ "id"                               ]
+      NAME = calendar                 [ "summary"                          ]
+      ######################################################################
+      if ( KIND != "calendar#calendarListEntry" )                          :
+        continue
+      ######################################################################
+      if                              ( len ( NAME ) > 0                 ) :
+        NAMES . append                ( NAME                               )
+      ######################################################################
+      if                              ( ID not in Groups                 ) :
+        self . JSON [ "Google" ] [ "Groups" ] [ ID ] = calendar
+        CHANGED = True
+      else                                                                 :
+        pass
+    ##########################################################################
+    if                                ( CHANGED                          ) :
+      ######################################################################
+      if                              ( len ( NAMES ) > 0                ) :
+        KK    = "\n" . join           ( NAMES                              )
+        MSG   = f"行事曆群組列表\n\n{KK}"
+        self  . TalkTo                ( "Calendars" , MSG                  )
+      ######################################################################
+      self . StoreJSON                (                                    )
+    ##########################################################################
+    ########################################################################
+    ## REPLACEMENTS = [ ]
+    ##########################################################################
+    """
+    NOW    . Now                       (                                     )
+    BASE   = NOW    . Stardate
+    for c in OriphaseSettings [ "Channels" ]                                 :
+      CID   = OriphaseSettings [ "Channels" ] [ c ] [ "CalendarId" ]
+      if   ( CID in OriphaseSettings [ "Watch" ]                           ) :
+        p   = OriphaseSettings [ "Watch" ] [ CID ]
+        if ( c == p [ "id" ]                                               ) :
+          e  = OriphaseSettings [ "Watch" ] [ CID ] [ "expiration" ]
+          NOW . setTime ( int ( int ( e ) / 1000 ) )
+          DT = int ( NOW . Stardate ) - BASE
+          if ( DT < 43200 ) :
+            if ( c not in REPLACEMENTS ) :
+              REPLACEMENTS . append ( c )
+    if                                 ( len ( REPLACEMENTS ) > 0          ) :
+      for r in REPLACEMENTS                                                  :
+        CID   = OriphaseSettings [ "Channels" ] [ r ] [ "CalendarId" ]
+        JSOX  = { "CalendarId" : CID }
+        RemoveWatchChannel             ( JSOX                                )
+        WatchChannel                   ( JSOX                                )
+    """
+    ##########################################################################
+    return True
+  ############################################################################
   def GoogleMonitor                     ( self                             ) :
     ##########################################################################
     self . addWorking                   (                                    )
@@ -174,64 +236,14 @@ class ScheduleNotifier (                                                   ) :
       ########################################################################
       SDT    = int ( NOW . Stardate ) + 600
       ########################################################################
-      NAMES  =                          [                                    ]
-      self . CalendarLocker . acquire   (                                    )
+      self   . CalendarLocker . acquire (                                    )
       Calendars = self . Calendar . GetCalendars (                           )
       ########################################################################
-      CHANGED   = False
-      Groups    = self . JSON [ "Google" ] [ "Groups" ]
-      for calendar in Calendars                                              :
-        ID   = calendar                 [ "id"                               ]
-        NAME = calendar                 [ "summary"                          ]
-        ######################################################################
-        if                              ( len ( NAME ) > 0                 ) :
-          NAMES . append                ( NAME                               )
-        ######################################################################
-        if                              ( ID not in Groups                 ) :
-          self . JSON [ "Google" ] [ "Groups" ] [ ID ] = calendar
-          CHANGED = True
-        else                                                                 :
-          pass
+      self   . SyncCalendars            ( Calendars                          )
       ########################################################################
-      self . CalendarLocker . release   (                                    )
-      ########################################################################
-      if                                ( CHANGED                          ) :
-        ######################################################################
-        if                              ( len ( NAMES ) > 0                ) :
-          KK    = "\n" . join           ( NAMES                              )
-          MSG   = f"行事曆群組列表\n\n{KK}"
-          self  . TalkTo                ( "Calendars" , MSG                  )
-        ######################################################################
-        self . StoreJSON                (                                    )
-      ########################################################################
-      ## REPLACEMENTS = [ ]
-      ##########################################################################
-      """
-      NOW    . Now                       (                                     )
-      BASE   = NOW    . Stardate
-      for c in OriphaseSettings [ "Channels" ]                                 :
-        CID   = OriphaseSettings [ "Channels" ] [ c ] [ "CalendarId" ]
-        if   ( CID in OriphaseSettings [ "Watch" ]                           ) :
-          p   = OriphaseSettings [ "Watch" ] [ CID ]
-          if ( c == p [ "id" ]                                               ) :
-            e  = OriphaseSettings [ "Watch" ] [ CID ] [ "expiration" ]
-            NOW . setTime ( int ( int ( e ) / 1000 ) )
-            DT = int ( NOW . Stardate ) - BASE
-            if ( DT < 43200 ) :
-              if ( c not in REPLACEMENTS ) :
-                REPLACEMENTS . append ( c )
-      """
-      ##########################################################################
-      """
-      if                                 ( len ( REPLACEMENTS ) > 0          ) :
-        for r in REPLACEMENTS                                                  :
-          CID   = OriphaseSettings [ "Channels" ] [ r ] [ "CalendarId" ]
-          JSOX  = { "CalendarId" : CID }
-          RemoveWatchChannel             ( JSOX                                )
-          WatchChannel                   ( JSOX                                )
-      """
+      self   . CalendarLocker . release (                                    )
     ##########################################################################
-    self . removeWorking            (                                        )
+    self . removeWorking                (                                    )
     ##########################################################################
     return
   ############################################################################
