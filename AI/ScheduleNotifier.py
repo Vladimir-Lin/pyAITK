@@ -146,6 +146,8 @@ class ScheduleNotifier (                                                   ) :
     print ( "PickCalendar " + str ( ID ) )
     Groups = self . JSON [ "Google" ] [ "Groups" ]
     KEYs   = Groups . keys          (                                        )
+    print ( json.dumps(Groups) )
+    print ( json.dumps(KEYs) )
     ##########################################################################
     if                              ( ID > len ( KEYs )                    ) :
       return
