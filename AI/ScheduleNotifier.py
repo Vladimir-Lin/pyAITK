@@ -150,18 +150,14 @@ class ScheduleNotifier (                                                   ) :
     for G in Groups                                                          :
       ########################################################################
       CNT  = CNT + 1
-      print ( G )
       ########################################################################
       if                            ( CNT == ID                            ) :
         ######################################################################
         self . CurrentCalendar = G
-        print ( self   . CurrentCalendar )
         NAME = Groups [ G ] [ "summary" ]
-        print ( NAME )
         TT   = self . JSON [ "Google" ] [ "Messages" ] [ "Picking" ]
-        print ( TT )
         ######################################################################
-        MSG  = f"{TT}:{NAME}"
+        MSG  = f"{TT} : {NAME}"
         self . TalkTo               ( "Calendars" , MSG                      )
     ##########################################################################
     return
