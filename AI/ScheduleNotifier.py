@@ -178,18 +178,31 @@ class ScheduleNotifier (                                                   ) :
       self . CalendarLocker . acquire   (                                    )
       Calendars = self . Calendar . GetCalendars (                           )
       ########################################################################
+      CHANGED   = False
+      Groups    = self . JSON [ "Google" ] [ "Groups" ]
       for calendar in Calendars                                              :
-        print ( str(calendar) )
+        ID   = calendar                 [ "id"                               ]
         NAME = calendar                 [ "summary"                          ]
-        print ( NAME )
+        ######################################################################
         if                              ( len ( NAME ) > 0                 ) :
           NAMES . append                ( NAME                               )
+        ######################################################################
+        if                              ( ID not in Groups                 ) :
+          self . JSON [ "Google" ] [ "Groups" ] [ ID ] = calendar
+          CHANGED = True
+        else                                                                 :
+          pass
+      ########################################################################
       self . CalendarLocker . release   (                                    )
       ########################################################################
-      if                                ( len ( NAMES ) > 0                ) :
-        KK   = "\n" . join              ( NAMES                              )
-        MSG  = f"行事曆群組列表\n\n{KK}"
-        self . TalkTo                   ( "Calendars" , MSG                  )
+      if                                ( CHANGED                          ) :
+        ######################################################################
+        if                              ( len ( NAMES ) > 0                ) :
+          KK    = "\n" . join           ( NAMES                              )
+          MSG   = f"行事曆群組列表\n\n{KK}"
+          self  . TalkTo                ( "Calendars" , MSG                  )
+        ######################################################################
+        self . StoreJSON                (                                    )
       ########################################################################
       ## REPLACEMENTS = [ ]
       ##########################################################################
