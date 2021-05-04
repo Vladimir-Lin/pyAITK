@@ -143,23 +143,23 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def ReportCalendars             ( self                                   ) :
     ##########################################################################
-    Groups      = self . JSON [ "Google" ] [ "Groups" ]
-    KEYs        = Groups . keys   (                                          )
-    CNT         = 0
-    NAMES       =                 [                                          ]
+    Groups  = self . JSON [ "Google" ] [ "Groups" ]
+    KEYs    = Groups . keys       (                                          )
+    CNT     = 0
+    NAMES   =                     [                                          ]
     ##########################################################################
     for K in KEYs                                                            :
       ########################################################################
-      CNT       = CNT + 1
-      NAME      = K               [ "summary"                                ]
-      N         = f"{CNT}. {NAME}"
-      NAMES     . append          ( N                                        )
+      CNT   = CNT + 1
+      NAME  = K                   [ "summary"                                ]
+      N     = f"{CNT}. {NAME}"
+      NAMES . append              ( N                                        )
     ##########################################################################
     if                            ( len ( NAMES ) > 0                      ) :
-      KK        = "\n" . join     ( NAMES                                    )
-      TT        = self    . JSON [ "Google" ] [ "Messages" ] [ "Groups" ] =
-      MSG       = f"{TT}\n\n{KK}"
-      self      . TalkTo          ( "Calendars" , MSG                        )
+      KK    = "\n" . join         ( NAMES                                    )
+      TT    = self . JSON [ "Google" ] [ "Messages" ] [ "Groups" ]
+      MSG   = f"{TT}\n\n{KK}"
+      self  . TalkTo              ( "Calendars" , MSG                        )
     ##########################################################################
     return
   ############################################################################
