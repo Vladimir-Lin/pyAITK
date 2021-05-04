@@ -15,16 +15,36 @@ import gettext
 import shutil
 import json
 ##############################################################################
+import AITK
+##############################################################################
+from   AITK  . Documents  . Name       import Name       as NameItem
+from   AITK  . Documents  . Name       import Naming     as Naming
+from   AITK  . Documents  . Notes      import Notes      as NoteItem
+from   AITK  . Documents  . Variables  import Variables  as VariableItem
+##############################################################################
+from   AITK  . Database   . Connection import Connection as Connection
+##############################################################################
+from   AITK  . Calendars  . StarDate   import StarDate   as StarDate
+from   AITK  . Calendars  . Periode    import Periode    as Periode
+##############################################################################
+from   AITK  . Google     . Calendar   import Calendar   as GCalendar
+##############################################################################
 class ScheduleNotifier (                                                   ) :
   ############################################################################
   def __init__         ( self , jsonFile = ""                              ) :
     ##########################################################################
-    self . DebugLogger = None
-    self . Talk        = None
-    self . Beau        = "Scheduler"
-    self . JSON        = { }
+    self . DebugLogger    = None
+    self . Talk           = None
+    self . Beau           = "Scheduler"
+    self . JSON           = { }
+    self . Calendar       = None
+    self . Running        = False
+    self . Working        = 0
+    self . CalendarLocker = threading . Lock ( )
     ##########################################################################
     self . Configure   (        jsonFile                                     )
+    ##########################################################################
+    self . AITKDB         = self . JSON [ "Database" ]
     ##########################################################################
     return
   ############################################################################
@@ -106,5 +126,104 @@ class ScheduleNotifier (                                                   ) :
   def TalkTo                       ( self , beau , message                 ) :
     threading . Thread             ( target = self . ActualTalkTo          , \
                                      args = ( beau , message , ) ) . start ( )
+    return True
+  ############################################################################
+  def addWorking                   ( self                                  ) :
+    ##########################################################################
+    self . Working = self . Working + 1
+    ##########################################################################
+    return
+  ############################################################################
+  def removeWorking                ( self                                  ) :
+    ##########################################################################
+    self . Working = self . Working - 1
+    ##########################################################################
+    return
+  ############################################################################
+  def GoogleMonitor                     ( self                             ) :
+    ##########################################################################
+    self . addWorking                   (                                    )
+    ##########################################################################
+    CONNECTED       = False
+    ORIPHASE        = self . JSON [ "Calendars" ] [ "OAuth"  ]
+    GTOKENS         = self . JSON [ "Calendars" ] [ "Pickle" ]
+    GJSON           = { "Secrets" : ORIPHASE , "Authorized" : GTOKENS        }
+    self . Calendar = GCalendar         ( GJSON                              )
+    ##########################################################################
+    NOW             = StarDate          (                                    )
+    NOW             . Now               (                                    )
+    SDT             = int ( NOW . Stardate ) - 1
+    ##########################################################################
+    while                               ( self . Running                   ) :
+      ########################################################################
+      NOW    . Now                      (                                    )
+      if                                ( int ( NOW . Stardate ) < SDT     ) :
+        time . sleep                    ( 0.1                                )
+        continue
+      ########################################################################
+      if                                ( not CONNECTED                    ) :
+        ######################################################################
+        self . CalendarLocker . acquire (                                    )
+        if                              ( self . Calendar . Connect ( )    ) :
+          CONNECTED = True
+        ######################################################################
+        self . CalendarLocker . release (                                    )
+        ######################################################################
+        if                              ( not CONNECTED                    ) :
+          continue
+      ########################################################################
+      SDT    = int ( NOW . Stardate ) + 600
+      ########################################################################
+      self . CalendarLocker . acquire   (                                    )
+      Calendars = self . Calendar . GetCalendars (                           )
+      for calendar in Calendars                                              :
+        print ( str ( calendar ) )
+        ## pass
+      self . CalendarLocker . release   (                                    )
+      ########################################################################
+      ## REPLACEMENTS = [ ]
+      ##########################################################################
+      """
+      NOW    . Now                       (                                     )
+      BASE   = NOW    . Stardate
+      for c in OriphaseSettings [ "Channels" ]                                 :
+        CID   = OriphaseSettings [ "Channels" ] [ c ] [ "CalendarId" ]
+        if   ( CID in OriphaseSettings [ "Watch" ]                           ) :
+          p   = OriphaseSettings [ "Watch" ] [ CID ]
+          if ( c == p [ "id" ]                                               ) :
+            e  = OriphaseSettings [ "Watch" ] [ CID ] [ "expiration" ]
+            NOW . setTime ( int ( int ( e ) / 1000 ) )
+            DT = int ( NOW . Stardate ) - BASE
+            if ( DT < 43200 ) :
+              if ( c not in REPLACEMENTS ) :
+                REPLACEMENTS . append ( c )
+      """
+      ##########################################################################
+      """
+      if                                 ( len ( REPLACEMENTS ) > 0          ) :
+        for r in REPLACEMENTS                                                  :
+          CID   = OriphaseSettings [ "Channels" ] [ r ] [ "CalendarId" ]
+          JSOX  = { "CalendarId" : CID }
+          RemoveWatchChannel             ( JSOX                                )
+          WatchChannel                   ( JSOX                                )
+      """
+    ##########################################################################
+    self . removeWorking            (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def Start                      ( self                                    ) :
+    ##########################################################################
+    self . Running = True
+    threading . Thread           ( target = self . GoogleMonitor ) . start ( )
+    ##########################################################################
+    return True
+  ############################################################################
+  def Stop                       ( self                                    ) :
+    ##########################################################################
+    self . Running = False
+    while                        ( self . Working > 0                      ) :
+      time . sleep               ( 0.1                                       )
+    ##########################################################################
     return True
 ##############################################################################
