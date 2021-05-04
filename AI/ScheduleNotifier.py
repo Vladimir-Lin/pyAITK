@@ -33,14 +33,15 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def __init__         ( self , jsonFile = ""                              ) :
     ##########################################################################
-    self . DebugLogger    = None
-    self . Talk           = None
-    self . Beau           = "Scheduler"
-    self . JSON           = { }
-    self . Calendar       = None
-    self . Running        = False
-    self . Working        = 0
-    self . CalendarLocker = threading . Lock ( )
+    self . DebugLogger     = None
+    self . Talk            = None
+    self . Beau            = "Scheduler"
+    self . JSON            = { }
+    self . Calendar        = None
+    self . Running         = False
+    self . Working         = 0
+    self . CalendarLocker  = threading . Lock ( )
+    self . CurrentCalendar = ""
     ##########################################################################
     self . Configure   (        jsonFile                                     )
     ##########################################################################
@@ -140,31 +141,44 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return
   ############################################################################
-  def SyncCalendars              ( self , Calendars                        ) :
+  def ReportCalendars             ( self                                   ) :
     ##########################################################################
-    if                           ( len ( Calendars ) <= 0                  ) :
+    Groups      = self . JSON [ "Google" ] [ "Groups" ]
+    KEYs        = Groups . keys   (                                          )
+    CNT         = 0
+    NAMES       =                 [                                          ]
+    ##########################################################################
+    for K in KEYs                                                            :
+      ########################################################################
+      CNT       = CNT + 1
+      NAME      = K               [ "summary"                                ]
+      N         = f"{CNT}. {NAME}"
+      NAMES     . append          ( N                                        )
+    ##########################################################################
+    if                            ( len ( NAMES ) > 0                      ) :
+      KK        = "\n" . join     ( NAMES                                    )
+      TT        = self    . JSON [ "Google" ] [ "Messages" ] [ "Groups" ] =
+      MSG       = f"{TT}\n\n{KK}"
+      self      . TalkTo          ( "Calendars" , MSG                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def SyncCalendars               ( self , Calendars                       ) :
+    ##########################################################################
+    if                            ( len ( Calendars ) <= 0                 ) :
       return False
     ##########################################################################
     CHANGED       = False
-    CNT           = 0
-    NAMES         =              [                                           ]
     Groups        = self . JSON [ "Google" ] [ "Groups" ]
     for calendar in Calendars                                                :
       ########################################################################
-      KIND        = calendar     [ "kind"                                    ]
-      ID          = calendar     [ "id"                                      ]
-      NAME        = calendar     [ "summary"                                 ]
+      KIND        = calendar      [ "kind"                                   ]
+      ID          = calendar      [ "id"                                     ]
       ########################################################################
-      if                         ( KIND != "calendar#calendarListEntry"    ) :
+      if                          ( KIND != "calendar#calendarListEntry"   ) :
         continue
       ########################################################################
-      if                         ( len ( NAME ) > 0                        ) :
-        ######################################################################
-        CNT       = CNT + 1
-        N         = f"{CNT}. {NAME}"
-        NAMES     . append       ( N                                         )
-      ########################################################################
-      if                         ( ID not in Groups                        ) :
+      if                          ( ID not in Groups                       ) :
         ######################################################################
         self      . JSON [ "Google" ] [ "Groups" ] [ ID ] = calendar
         CHANGED   = True
@@ -172,22 +186,18 @@ class ScheduleNotifier (                                                   ) :
       else                                                                   :
         ######################################################################
         J         = self . JSON [ "Google" ] [ "Groups" ] [ ID ]
-        A         = json . dumps ( calendar , sort_keys = True               )
-        B         = json . dumps ( J        , sort_keys = True               )
+        A         = json . dumps  ( calendar , sort_keys = True              )
+        B         = json . dumps  ( J        , sort_keys = True              )
         ######################################################################
-        if                       ( A != B                                  ) :
+        if                        ( A != B                                 ) :
           ####################################################################
           self    . JSON [ "Google" ] [ "Groups" ] [ ID ] = calendar
           CHANGED = True
     ##########################################################################
-    if                           ( CHANGED                                 ) :
+    if                            ( CHANGED                                ) :
       ########################################################################
-      if                         ( len ( NAMES ) > 0                       ) :
-        KK        = "\n" . join  ( NAMES                                     )
-        MSG       = f"行事曆群組列表\n\n{KK}"
-        self      . TalkTo       ( "Calendars" , MSG                         )
-      ########################################################################
-      self . StoreJSON           (                                           )
+      self . ReportCalendars      (                                          )
+      self . StoreJSON            (                                          )
     ##########################################################################
     ## REPLACEMENTS = [ ]
     ##########################################################################
@@ -246,6 +256,8 @@ class ScheduleNotifier (                                                   ) :
         ######################################################################
         if                              ( not CONNECTED                    ) :
           continue
+        else                                                                 :
+          pass
       ########################################################################
       SDT    = int ( NOW . Stardate ) + 600
       ########################################################################
