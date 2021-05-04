@@ -45,7 +45,7 @@ class ScheduleNotifier (                                                   ) :
     self . Configure   (        jsonFile                                     )
     ##########################################################################
     self . AITKDB          = self . JSON [ "Database" ]
-    self . CurrentCalendar = self . JSON [ "Options" ] [ "Pick" ]
+    self . CurrentCalendar = self . JSON [ "Google" ] [ "Options" ] [ "Pick" ]
     ##########################################################################
     return
   ############################################################################
@@ -143,7 +143,6 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def ReportCurrentCalendar   ( self                                       ) :
     ##########################################################################
-    print ( "Current : " + self . CurrentCalendar )
     if                        ( len ( self . CurrentCalendar ) <= 0        ) :
       return
     ##########################################################################
@@ -178,7 +177,7 @@ class ScheduleNotifier (                                                   ) :
         MSG  = f"{TT} : {NAME}"
         self . TalkTo               ( "Calendars" , MSG                      )
         ######################################################################
-        self . JSON [ "Options" ] [ "Pick" ] = self . CurrentCalendar
+        self . JSON [ "Google" ] [ "Options" ] [ "Pick" ] = self . CurrentCalendar
         self . StoreJSON            (                                        )
     ##########################################################################
     return
