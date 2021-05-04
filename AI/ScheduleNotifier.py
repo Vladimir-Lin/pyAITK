@@ -143,29 +143,26 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def PickCalendar                  ( self , ID                            ) :
     ##########################################################################
-    print ( "PickCalendar " + str ( ID ) )
+    CNT    = 0
+    ID     = int                    ( ID                                     )
     Groups = self . JSON [ "Google" ] [ "Groups" ]
-    print ( json.dumps(Groups) )
-    KEYs   = Groups . keys          (                                        )
-    print ( "=> ... " + json.dumps(KEYs) )
     ##########################################################################
-    if                              ( ID > len ( KEYs )                    ) :
-      return
-    ##########################################################################
-    ID     = int                    ( ID - 1                                 )
-    ##########################################################################
-    if                              ( ID < 0                               ) :
-      return
-    ##########################################################################
-    self   . CurrentCalendar = KEYs [ ID                                     ]
-    print ( self   . CurrentCalendar )
-    NAME   = Groups [ self . CurrentCalendar ] [ "summary" ]
-    print ( NAME )
-    TT     = self . JSON [ "Google" ] [ "Messages" ] [ "Picking" ]
-    print ( TT )
-    ##########################################################################
-    MSG   = f"{TT}:{NAME}"
-    self  . TalkTo                  ( "Calendars" , MSG                      )
+    for G in Groups                                                          :
+      ########################################################################
+      CNT  = CNT + 1
+      print ( G )
+      ########################################################################
+      if                            ( CNT == ID                            ) :
+        ######################################################################
+        self . CurrentCalendar = G
+        print ( self   . CurrentCalendar )
+        NAME = Groups [ G ] [ "summary" ]
+        print ( NAME )
+        TT   = self . JSON [ "Google" ] [ "Messages" ] [ "Picking" ]
+        print ( TT )
+        ######################################################################
+        MSG  = f"{TT}:{NAME}"
+        self . TalkTo               ( "Calendars" , MSG                      )
     ##########################################################################
     return
   ############################################################################
