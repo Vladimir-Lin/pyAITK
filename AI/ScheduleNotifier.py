@@ -15,6 +15,20 @@ import gettext
 import shutil
 import json
 ##############################################################################
+import AITK
+##############################################################################
+from   AITK  . Documents  . Name       import Name       as NameItem
+from   AITK  . Documents  . Name       import Naming     as Naming
+from   AITK  . Documents  . Notes      import Notes      as NoteItem
+from   AITK  . Documents  . Variables  import Variables  as VariableItem
+##############################################################################
+from   AITK  . Database   . Connection import Connection as Connection
+##############################################################################
+from   AITK  . Calendars  . StarDate   import StarDate   as StarDate
+from   AITK  . Calendars  . Periode    import Periode    as Periode
+##############################################################################
+from   AITK  . Google     . Calendar   import Calendar   as GCalendar
+##############################################################################
 class ScheduleNotifier (                                                   ) :
   ############################################################################
   def __init__         ( self , jsonFile = ""                              ) :

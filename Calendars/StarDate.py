@@ -1,43 +1,43 @@
 # -*- coding: utf-8 -*-
-
+##############################################################################
 import os
 import sys
 import getopt
 import time
 import datetime
 import pytz
-
-class StarDate ( ) :
-
-  def __init__ ( self ) :
+##############################################################################
+class StarDate (                                                           ) :
+  ############################################################################
+  def __init__ ( self                                                      ) :
     self . Stardate = 0
-
-  def isValid ( self ) :
+  ############################################################################
+  def isValid  ( self                                                      ) :
     return ( self . Stardate > 0 )
-
+  ############################################################################
   def set ( self , sd ) :
     self . Stardate = sd
     return self . Stardate
-
+  ############################################################################
   def Seconds ( self , D , H , M , S ) :
     return self . Days    ( D ) + \
            self . Hours   ( H ) + \
            self . Minutes ( M ) + \
                             S     ;
-
+  ############################################################################
   def Minutes ( self , M ) :
     return M * 60
-
+  ############################################################################
   def Hours ( self , H ) :
     return H * 3600
-
+  ############################################################################
   def Days ( self , D ) :
     return D * 84600
-
+  ############################################################################
   def Add ( self , S ) :
     self . Stardate += S
     return self . Stardate
-
+  ############################################################################
   def AddDuration ( self , S ) :
     SS   = S . split ( ":" )
     CNT  = len ( SS )
@@ -52,27 +52,27 @@ class StarDate ( ) :
       II = II + 1
     self . Add ( TT )
     return self . Stardate
-
+  ############################################################################
   def Subtract ( self , S ) :
     self . Stardate -= S
     return self . Stardate
-
+  ############################################################################
   def Timestamp ( self ) :
     return self . Stardate - 1420092377704080000
-
+  ############################################################################
   def secondsTo ( self , SD ) :
     return SD . Stardate - self . Stardate
-
+  ############################################################################
   def setTime ( self , ut ) :
     self . Stardate = ut   + 1420092377704080000
     return self . Stardate
-
+  ############################################################################
   def fromDateTime ( self , dt ) :
     return self . setTime ( int ( dt . timestamp ( ) ) )
-
+  ############################################################################
   def Now ( self ) :
     return self . fromDateTime ( datetime . datetime . now ( ) )
-
+  ############################################################################
   def fromFormat ( self , dtString , TZ = "" ) :
     if ( len ( TZ ) > 0 ) :
       tzs = pytz . timezone ( TZ )
@@ -80,7 +80,7 @@ class StarDate ( ) :
     else :
       dt = datetime . datetime . strptime ( dtString , "%Y/%m/%d %H:%M:%S" )
     return self . fromDateTime ( dt )
-
+  ############################################################################
   def fromInput ( self , inpString , TZ = "" ) :
     dtString = inpString
     dtString = dtString . replace ( "T" , " " )
@@ -91,60 +91,55 @@ class StarDate ( ) :
     if ( cnt == 1 ) :
       dtString = dtString + ":00"    ;
     return self . fromFormat ( dtString , TZ )
-
+  ############################################################################
   def ShrinkMinute ( self ) :
     TS = self . Timestamp ( )
     TS = TS % 60
     self . Stardate -= TS
     return self . Stardate
-
+  ############################################################################
   def ShrinkHour ( self ) :
     return self . Subtract ( self . Timestamp ( ) % 3600 )
-
+  ############################################################################
   def toDateTime ( self , TZ = "" ) :
     if ( len ( TZ ) > 0 ) :
       tzs = pytz . timezone ( TZ )
       return datetime . datetime . fromtimestamp ( self . Timestamp ( ) , tz = tzs )
     else :
       return datetime . datetime . fromtimestamp ( self . Timestamp ( ) )
-
+  ############################################################################
   def Weekday ( self , TZ = "" ) :
     DT = self . toDateTime ( TZ )
     return DT . weekday ( ) + 1
-
+  ############################################################################
   def isPM ( self , TZ = "" ) :
     DT   = self . toDateTime ( TZ )
     hour = DT   . today ( ) . weekday ( )
     if ( hour < 12 ) :
       return 0
     return 1
-
+  ############################################################################
   def toDateString ( self , TZ , FMT = "%Y/%m/%d" ) :
     DT = self . toDateTime ( TZ  )
     return DT . strftime   ( FMT )
-
+  ############################################################################
   def toTimeString ( self , TZ , FMT = "%H:%M:%S" ) :
     DT = self . toDateTime ( TZ  )
     return DT . strftime   ( FMT )
-
+  ############################################################################
   def toDateTimeString ( self , TZ , JOIN ="T" , DateFormat = "%Y-%m-%d" , TimeFormat = "%H:%M:%S" ) :
     DS  = self . toDateString ( TZ , DateFormat )
     DT  = self . toTimeString ( TZ , TimeFormat )
     return DS + JOIN + DT
-
+  ############################################################################
   def SecondsOfDay ( self , TZ = "" ) :
     DX = self . toDateString ( TZ , "%Y-%m-%d" )
     DX = f"{DX}T00:00:00"
     XS = StarDate ( )
     XS . Stardate = XS . fromInput ( DX )
     return XS . secondsTo ( self )
-
-
-
-
-
+##############################################################################
 """
-
 datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 public function toLongString($TZ,$DateFormat="Y-m-d",$TimeFormat="H:i:s")
@@ -235,3 +230,4 @@ public static function UntilToday($DATE,$TZ,$YEARSTR,$MONTHSTR)
 }
 
 """
+##############################################################################
