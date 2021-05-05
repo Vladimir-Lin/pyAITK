@@ -264,17 +264,17 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return True
   ############################################################################
-  def SyncEntries                 ( self , Entries                         ) :
+  def SyncEntries                  ( self , Entries                        ) :
     ##########################################################################
-    if                            ( len ( Entries ) <= 0                   ) :
+    if                             ( len ( Entries ) <= 0                  ) :
       return False
     ##########################################################################
-    DB = Connection               (                                          )
+    DB = Connection                (                                         )
     ##########################################################################
-    if                            ( not DB . ConnectTo ( self . AITKDB )   ) :
+    if                             ( not DB . ConnectTo ( self . AITKDB )  ) :
       return
-    DB . Prepare                  (                                          )
-    DB . LockWrites               ( [ "`tags`"                             , \
+    DB . Prepare                   (                                         )
+    DB . LockWrites                ( [ "`tags`"                            , \
                                       "`variables`"                        , \
                                       "`names_others`"                     ] )
     ##########################################################################
@@ -283,11 +283,11 @@ class ScheduleNotifier (                                                   ) :
       UUID     = self . JSON [ "Google" ] [ "Groups" ] [ ID ] [ "Uuid"  ]
       ENTRY    = self . JSON [ "Google" ] [ "Groups" ] [ ID ] [ "Entry" ]
       ########################################################################
-      UUID     = int              ( UUID                                     )
-      if                          ( UUID > 0                               ) :
-        UpdateCalendarEntry       ( DB , ID , UUID , ENTRY                   )
+      UUID     = int               ( UUID                                    )
+      if                           ( UUID > 0                              ) :
+        self . UpdateCalendarEntry ( DB , ID , UUID , ENTRY                  )
       else                                                                   :
-        AppendCalendarEntry       ( DB , ID ,        ENTRY                   )
+        self . AppendCalendarEntry ( DB , ID ,        ENTRY                  )
     ##########################################################################
     """
     NOW    . Now                       (                                     )
@@ -311,8 +311,8 @@ class ScheduleNotifier (                                                   ) :
         WatchChannel                   ( JSOX                                )
     """
     ##########################################################################
-    DB . UnlockTables             (                                          )
-    DB . Close                    (                                          )
+    DB . UnlockTables              (                                         )
+    DB . Close                     (                                         )
     ##########################################################################
     return True
   ############################################################################
