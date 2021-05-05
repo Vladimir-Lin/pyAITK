@@ -40,6 +40,7 @@ class ScheduleNotifier (                                                   ) :
     self . Calendar        = None
     self . Running         = False
     self . Working         = 0
+    self . Locality        = 1002
     self . CalendarLocker  = threading . Lock ( )
     ##########################################################################
     self . Configure   (        jsonFile                                     )
@@ -141,6 +142,49 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return
   ############################################################################
+  def assureName             ( self                                        , \
+                               DB                                          , \
+                               UUID                                        , \
+                               NAME                                        , \
+                               TABLE = "`names_others`"                    , \
+                               Flags = 1                                   ) :
+    ##########################################################################
+    N = NameItem             (                                               )
+    N . Uuid      = UUID
+    N . Locality  = self . Locality
+    N . Priority  = 0
+    N . Relevance = 0
+    N . Flags     = Flags
+    N . Name      = NAME
+    N . Editing              ( DB , TABLE                                    )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ObtainTaskUuid         ( self , DB , TABLE = "`tags`"                ) :
+    ##########################################################################
+    UUID = DB . LastUuid     ( TABLE , "uuid" , 2800000000000000000          )
+    DB   . AddUuid           ( TABLE , UUID   , 92                           )
+    ##########################################################################
+    return UUID
+  ############################################################################
+  def AssureVariables        ( self                                        , \
+                               DB                                          , \
+                               UUID                                        , \
+                               TYPE                                        , \
+                               NAME                                        , \
+                               VALUE                                       , \
+                               TABLE = "`variables`"                       ) :
+    ##########################################################################
+    V         = VariableItem (                                               )
+    V . Uuid  = UUID
+    V . Type  = TYPE
+    V . Name  = NAME
+    V . Value = VALUE
+    ##########################################################################
+    V . AssureValue          ( DB , TABLE                                    )
+    ##########################################################################
+    return
+  ############################################################################
   def ReportCurrentCalendar   ( self                                       ) :
     ##########################################################################
     if                        ( len ( self . CurrentCalendar ) <= 0        ) :
@@ -192,7 +236,7 @@ class ScheduleNotifier (                                                   ) :
     for K in KEYs                                                            :
       ########################################################################
       CNT   = CNT + 1
-      NAME  = Groups [ K ] [ "summary" ]
+      NAME  = Groups [ K ] [ "Entry" ] [ "summary" ]
       N     = f"{CNT}. {NAME}"
       NAMES . append              ( N                                        )
     ##########################################################################
@@ -204,43 +248,46 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return
   ############################################################################
-  def SyncCalendars               ( self , Calendars                       ) :
+  def AppendCalendarEntry         ( self , DB , ID , ENTRY                 ) :
     ##########################################################################
-    if                            ( len ( Calendars ) <= 0                 ) :
+    UUID = self . ObtainTaskUuid  ( DB                                       )
+    self . AssureVariables        ( DB , UUID , 75 , "Calendar" , ID         )
+    self . assureName             ( DB , UUID , ENTRY [ "summary" ]          )
+    ##########################################################################
+    self . JSON [ "Google" ] [ "Groups" ] [ ID ] [ "Uuid"  ] = UUID
+    ##########################################################################
+    return True
+  ############################################################################
+  def UpdateCalendarEntry         ( self , DB , ID , UUID , ENTRY          ) :
+    ##########################################################################
+    self . assureName             ( DB , UUID , ENTRY [ "summary" ]          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def SyncEntries                 ( self , Entries                         ) :
+    ##########################################################################
+    if                            ( len ( Entries ) <= 0                   ) :
       return False
     ##########################################################################
-    CHANGED       = False
-    Groups        = self . JSON [ "Google" ] [ "Groups" ]
-    for calendar in Calendars                                                :
+    DB = Connection               (                                          )
+    ##########################################################################
+    if                            ( not DB . ConnectTo ( self . AITKDB )   ) :
+      return
+    DB . Prepare                  (                                          )
+    DB . LockWrites               ( [ "`tags`"                             , \
+                                      "`variables`"                        , \
+                                      "`names_others`"                     ] )
+    ##########################################################################
+    for ID in Entries                                                        :
       ########################################################################
-      KIND        = calendar      [ "kind"                                   ]
-      ID          = calendar      [ "id"                                     ]
+      UUID     = self . JSON [ "Google" ] [ "Groups" ] [ ID ] [ "Uuid"  ]
+      ENTRY    = self . JSON [ "Google" ] [ "Groups" ] [ ID ] [ "Entry" ]
       ########################################################################
-      if                          ( KIND != "calendar#calendarListEntry"   ) :
-        continue
-      ########################################################################
-      if                          ( ID not in Groups                       ) :
-        ######################################################################
-        self      . JSON [ "Google" ] [ "Groups" ] [ ID ] = calendar
-        CHANGED   = True
-        ######################################################################
+      UUID     = int              ( UUID                                     )
+      if                          ( UUID > 0                               ) :
+        UpdateCalendarEntry       ( DB , ID , UUID , ENTRY                   )
       else                                                                   :
-        ######################################################################
-        J         = self . JSON [ "Google" ] [ "Groups" ] [ ID ]
-        A         = json . dumps  ( calendar , sort_keys = True              )
-        B         = json . dumps  ( J        , sort_keys = True              )
-        ######################################################################
-        if                        ( A != B                                 ) :
-          ####################################################################
-          self    . JSON [ "Google" ] [ "Groups" ] [ ID ] = calendar
-          CHANGED = True
-    ##########################################################################
-    if                            ( CHANGED                                ) :
-      ########################################################################
-      self . ReportCalendars      (                                          )
-      self . StoreJSON            (                                          )
-    ##########################################################################
-    ## REPLACEMENTS = [ ]
+        AppendCalendarEntry       ( DB , ID ,        ENTRY                   )
     ##########################################################################
     """
     NOW    . Now                       (                                     )
@@ -264,6 +311,54 @@ class ScheduleNotifier (                                                   ) :
         WatchChannel                   ( JSOX                                )
     """
     ##########################################################################
+    DB . UnlockTables             (                                          )
+    DB . Close                    (                                          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def SyncCalendars               ( self , Calendars                       ) :
+    ##########################################################################
+    if                            ( len ( Calendars ) <= 0                 ) :
+      return False
+    ##########################################################################
+    CHANGED       = False
+    Groups        = self . JSON [ "Google" ] [ "Groups" ]
+    REPLACEMENTS  = [ ]
+    ##########################################################################
+    for calendar in Calendars                                                :
+      ########################################################################
+      KIND        = calendar      [ "kind"                                   ]
+      ID          = calendar      [ "id"                                     ]
+      ########################################################################
+      if                          ( KIND != "calendar#calendarListEntry"   ) :
+        continue
+      ########################################################################
+      if                          ( ID not in Groups                       ) :
+        ######################################################################
+        ENTRY     = { "Uuid" : 0 , "Options" : {} , "Entry" : calendar }
+        self      . JSON [ "Google" ] [ "Groups" ] [ ID ] = ENTRY
+        CHANGED   = True
+        REPLACEMENTS . append     ( ID                                       )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        J         = self . JSON [ "Google" ] [ "Groups" ] [ ID ] [ "Entry" ]
+        A         = json . dumps  ( calendar , sort_keys = True              )
+        B         = json . dumps  ( J        , sort_keys = True              )
+        ######################################################################
+        if                        ( A != B                                 ) :
+          ####################################################################
+          self    . JSON [ "Google" ] [ "Groups" ] [ ID ] [ "Entry" ] = calendar
+          CHANGED = True
+          REPLACEMENTS . append   ( ID                                       )
+    ##########################################################################
+    if                            ( not CHANGED                            ) :
+      return False
+    ##########################################################################
+    self . SyncEntries            ( REPLACEMENTS                             )
+    self . ReportCalendars        (                                          )
+    self . StoreJSON              (                                          )
+    ##########################################################################
     return True
   ############################################################################
   def GoogleMonitor                     ( self                             ) :
@@ -279,6 +374,7 @@ class ScheduleNotifier (                                                   ) :
     NOW             = StarDate          (                                    )
     NOW             . Now               (                                    )
     SDT             = int ( NOW . Stardate ) - 1
+    UDT             = 0
     ##########################################################################
     while                               ( self . Running                   ) :
       ########################################################################
@@ -287,11 +383,19 @@ class ScheduleNotifier (                                                   ) :
         time . sleep                    ( 0.1                                )
         continue
       ########################################################################
+      if                                ( NOW . Stardate > UDT             ) :
+        CONNECTED = False
+      ########################################################################
       if                                ( not CONNECTED                    ) :
         ######################################################################
         self . CalendarLocker . acquire (                                    )
         if                              ( self . Calendar . Connect ( )    ) :
+          ####################################################################
           CONNECTED = True
+          NOW       . Now               (                                    )
+          UDT       = NOW . Stardate
+          UDT       = int               ( UDT                                )
+          UDT       = UDT +             ( 86400 * 7                          )
         ######################################################################
         self . CalendarLocker . release (                                    )
         ######################################################################

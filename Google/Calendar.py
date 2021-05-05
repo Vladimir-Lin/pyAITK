@@ -96,7 +96,7 @@ class Calendar    (                                                        ) :
                            cache_discovery = False                           )
         return True
       except googleapiclient . errors . HttpError as err                     :
-        pass
+        return False
     ##########################################################################
     return False
   ############################################################################
