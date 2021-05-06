@@ -261,7 +261,7 @@ class ScheduleNotifier (                                                   ) :
     TZ   = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
     self . CalendarLocker . acquire (                                        )
     ##########################################################################
-    events       = OriphaseCalendar . GetEvents                              (
+    events       = self . Calendar . GetEvents                               (
       calendarId = CID                                                       ,
       options    = { "timeZone" : TZ }                                       )
     ##########################################################################
