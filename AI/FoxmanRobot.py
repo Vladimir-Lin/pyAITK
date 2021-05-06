@@ -575,19 +575,19 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "CalendarList" ] [ "Allows" ]   ) :
       ########################################################################
-      self . Scheduler . ReportCalendars       (                             )
+      threading . Thread ( target = self . Scheduler . ReportCalendars ) . start ( )
       ########################################################################
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "CurrentCalendar" ] [ "Allows" ] ) :
       ########################################################################
-      self . Scheduler . ReportCurrentCalendar (                             )
+      threading . Thread ( target = self . Scheduler . ReportCurrentCalendar ) . start ( )
       ########################################################################
       return True
     ##########################################################################
     if ( s in self . JSON [ "Commands" ] [ "CurrentEvents" ] [ "Allows" ] )  :
       ########################################################################
-      self . Scheduler . ReportCurrentEvents (                               )
+      threading . Thread ( target = self . Scheduler . ReportCurrentEvents ) . start ( )
       ########################################################################
       return True
     ##########################################################################
@@ -598,7 +598,8 @@ class FoxmanRobot (                                                        ) :
       ########################################################################
       try                                                                    :
         ID = int ( L [ 1 ] )
-        self . Scheduler . PickCalendar (  ID                                )
+        threading . Thread ( target = self . Scheduler . PickCalendar      , \
+                             args   = ( ID , )                   ) . start ( )
         return True
       except                                                                 :
         return False
