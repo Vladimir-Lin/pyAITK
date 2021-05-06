@@ -194,7 +194,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     if                        ( G in self . JSON [ "Google" ] [ "Groups" ] ) :
       ########################################################################
-      NAME = self . JSON [ "Google" ] [ "Groups" ] [ G ] [ "summary" ]
+      NAME = self . JSON [ "Google" ] [ "Groups" ] [ G ] [ "Entry" ] [ "summary" ]
       TT   = self . JSON [ "Google" ] [ "Messages" ] [ "Picking" ]
       ########################################################################
       MSG  = f"{TT} : {NAME}"
@@ -215,7 +215,7 @@ class ScheduleNotifier (                                                   ) :
       if                            ( CNT == ID                            ) :
         ######################################################################
         self . CurrentCalendar = G
-        NAME = Groups [ G ] [ "summary" ]
+        NAME = Groups [ G ] [ "Entry" ] [ "summary" ]
         TT   = self . JSON [ "Google" ] [ "Messages" ] [ "Picking" ]
         ######################################################################
         MSG  = f"{TT} : {NAME}"
