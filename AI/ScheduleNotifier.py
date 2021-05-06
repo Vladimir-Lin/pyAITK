@@ -262,7 +262,7 @@ class ScheduleNotifier (                                                   ) :
     self . CalendarLocker . acquire (                                        )
     ##########################################################################
     events       = self . Calendar . GetEvents                               (
-      calendarId = CID                                                       ,
+      calendarId = G                                                         ,
       options    = { "timeZone" : TZ }                                       )
     ##########################################################################
     self . CalendarLocker . release (                                        )
