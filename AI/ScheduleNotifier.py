@@ -35,20 +35,28 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def __init__         ( self , jsonFile = ""                              ) :
     ##########################################################################
-    self . DebugLogger     = None
-    self . Talk            = None
-    self . Beau            = "Scheduler"
-    self . JSON            = { }
-    self . Calendar        = None
-    self . Running         = False
-    self . Working         = 0
-    self . Locality        = 1002
-    self . CalendarLocker  = threading . Lock ( )
+    self . DebugLogger        = None
+    self . Talk               = None
+    self . Beau               = "Scheduler"
+    self . JSON               = { }
+    self . Calendar           = None
+    self . Running            = False
+    self . Working            = 0
+    self . Locality           = 1002
+    self . CalendarLocker     = threading . Lock ( )
     ##########################################################################
     self . Configure   (        jsonFile                                     )
     ##########################################################################
-    self . AITKDB          = self . JSON [ "Database" ]
-    self . CurrentCalendar = self . JSON [ "Google" ] [ "Options" ] [ "Pick" ]
+    self . AITKDB             = self . JSON [ "Database" ]
+    self . CurrentCalendar    = self . JSON [ "Google" ] [ "Options" ] [ "Pick"   ]
+    self . CurrentTask        = self . JSON [ "Google" ] [ "Options" ] [ "Task"   ]
+    self . CurrentEvent       = self . JSON [ "Google" ] [ "Options" ] [ "Event"  ]
+    self . CurrentPeriod      = self . JSON [ "Google" ] [ "Options" ] [ "Period" ]
+    ##########################################################################
+    self . CurrentTitle       = ""
+    self . CurrentDescription = ""
+    self . CurrentStart       = 0
+    self . CurrentEnd         = 0
     ##########################################################################
     return
   ############################################################################
@@ -320,7 +328,6 @@ class ScheduleNotifier (                                                   ) :
     CNT   = 0
     ##########################################################################
     for e in events                                                          :
-      print ( json.dumps(e) )
       CNT   = CNT + 1
       ITEM  = self . EventToSkypeRTF ( e                                     )
       if                             ( len ( ITEM ) > 0                    ) :
@@ -600,6 +607,178 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     DB . UnlockTables              (                                         )
     DB . Close                     (                                         )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ReportPeriodBrief          ( self , DB , PUID                        ) :
+    ##########################################################################
+    PRDTAB   = "`periods`"
+    NAMTAB   = "`names_others`"
+    TZ       = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
+    MSG      = ""
+    WRONG    = "時段編號錯誤"
+    NOTFOUND = "找不到時段資訊"
+    ##########################################################################
+    PRD      = Periode           (                                           )
+    NOW      = StarDate          (                                           )
+    ##########################################################################
+    if                           ( not PRD . ObtainsByUuid ( DB , PRDTAB ) ) :
+      self   . TalkTo            ( "Calendars" , NOTFOUND                    )
+      return False
+    ##########################################################################
+    NX       = Naming            ( DB , NAMTAB , PUID , self . Locality      )
+    ##########################################################################
+    NOW      . Stardate = PRD . Start
+    SDT      = NOW . toLongDateTimeString ( TZ , "%Y/%m/%d" , "%H:%M:%S"     )
+    ##########################################################################
+    NOW      . Stardate = PRD . End
+    EDT      = NOW . toLongDateTimeString ( TZ , "%Y/%m/%d" , "%H:%M:%S"     )
+    ##########################################################################
+    PXID     = PRD . toString    (                                           )
+    MSG      = f"時段 : {NX}\n編號:{PXID}\n開始時間:{SDT}\n結束時間:{EDT}"
+    ##########################################################################
+    self   . TalkTo              ( "Calendars" , MSG                         )
+    ##########################################################################
+    return True
+  ############################################################################
+  def AssignCurrentPeriod         ( self , PERIOD                          ) :
+    ##########################################################################
+    PERIOD   = f"{PERIOD}"
+    WRONG    = "時段編號錯誤"
+    PUID     = 0
+    ##########################################################################
+    PRD      = Periode            (                                          )
+    ##########################################################################
+    if                            ( len ( PERIOD ) == 12                   ) :
+      ########################################################################
+      PUID   = PRD . fromString   ( PERIOD                                   )
+      if                          ( PUID <= 0                              ) :
+        self . TalkTo             ( "Calendars" , WRONG                      )
+        return False
+      ########################################################################
+    elif                          ( len ( PERIOD ) == 19                   ) :
+      ########################################################################
+      try                                                                    :
+        PUID = int                ( PERIOD                                   )
+        PRD  . Uuid = PUID
+      except                                                                 :
+        ######################################################################
+        self . TalkTo             ( "Calendars" , WRONG                      )
+        return False
+      ########################################################################
+    else                                                                     :
+      self   . TalkTo             ( "Calendars" , WRONG                      )
+      return False
+    ##########################################################################
+    DB       = Connection         (                                          )
+    ##########################################################################
+    if                            ( not DB . ConnectTo ( self . AITKDB )   ) :
+      return False
+    DB       . Prepare            (                                          )
+    ##########################################################################
+    if                            ( self . ReportPeriodBrief ( DB , PUID ) ) :
+      self . CurrentPeriod = PUID
+    ##########################################################################
+    DB       . Close              (                                          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ReportCurrentPeriod          ( self                                  ) :
+    ##########################################################################
+    if                             ( self . CurrentPeriod <= 0             ) :
+      MSG    = "尚未指定時段"
+      self   . TalkTo              ( "Calendars" , MSG                       )
+    ##########################################################################
+    DB = Connection                (                                         )
+    ##########################################################################
+    if                             ( not DB . ConnectTo ( self . AITKDB )  ) :
+      return
+    DB       . Prepare             (                                         )
+    ##########################################################################
+    self     . ReportPeriodBrief   ( DB , self . CurrentPeriod               )
+    ##########################################################################
+    DB       . Close               (                                         )
+    ##########################################################################
+    return True
+  ############################################################################
+  def AssignStartTime              ( self , DTIME                          ) :
+    ##########################################################################
+    TZ       = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
+    NOW      = StarDate            (                                         )
+    NOW      . fromInput           ( DTIME , TZ                              )
+    ##########################################################################
+    self . CurrentStart = NOW . Stardate
+    ##########################################################################
+    if                             ( NOW . Stardate <= 0                   ) :
+      return True
+    ##########################################################################
+    SDT      = NOW . toLongDateTimeString ( TZ , "%Y/%m/%d" , "%H:%M:%S"     )
+    MSG      = f"開始時間 : {SDT}"
+    self . TalkTo                  ( "Calendars" , MSG                       )
+    ##########################################################################
+    return True
+  ############################################################################
+  def AssignEndTime                ( self , DTIME                          ) :
+    ##########################################################################
+    TZ       = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
+    NOW      = StarDate            (                                         )
+    NOW      . fromInput           ( DTIME , TZ                              )
+    ##########################################################################
+    self . CurrentEnd = NOW . Stardate
+    ##########################################################################
+    if                             ( NOW . Stardate <= 0                   ) :
+      return True
+    ##########################################################################
+    EDT      = NOW . toLongDateTimeString ( TZ , "%Y/%m/%d" , "%H:%M:%S"     )
+    MSG      = f"結束時間 : {EDT}"
+    self . TalkTo                  ( "Calendars" , MSG                       )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ReportCurrentSettings             ( self                             ) :
+    ##########################################################################
+    TZ       = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
+    TITLE    = self . CurrentTitle
+    DESCRIPT = self . CurrentDescription
+    MSG      = ""
+    ##########################################################################
+    NOW      = StarDate            (                                         )
+    ##########################################################################
+    if                             ( self . CurrentStart > 0               ) :
+      NOW    . Stardate = self . CurrentStart
+      SDT    = NOW . toLongDateTimeString ( TZ , "%Y/%m/%d" , "%H:%M:%S"     )
+      MSG    = f"開始時間 : {SDT}"
+    ##########################################################################
+    if                             ( self . CurrentEnd   > 0               ) :
+      NOW    . Stardate = self . CurrentEnd
+      EDT    = NOW . toLongDateTimeString ( TZ , "%Y/%m/%d" , "%H:%M:%S"     )
+      MSGK   = f"結束時間 : {EDT}"
+      if                           ( len ( MSG ) > 0                       ) :
+        MSG  = f"{MSG}\n{MSGK}"
+      else                                                                   :
+        MSG = MSGK
+    ##########################################################################
+    if                             ( len ( TITLE ) > 0                     ) :
+      TSGK  = f"標題 : \n{TITLE}"
+      if                           ( len ( MSG ) > 0                       ) :
+        MSG  = f"{MSG}\n{TSGK}"
+      else                                                                   :
+        MSG = TSGK
+    ##
+    ##########################################################################
+    if                             ( len ( DESCRIPT ) > 0                  ) :
+      DSGK  = f"內容 : \n{DESCRIPT}"
+      if                           ( len ( MSG ) > 0                       ) :
+        MSG  = f"{MSG}\n{DSGK}"
+      else                                                                   :
+        MSG = DSGK
+    ##########################################################################
+    self . TalkTo                  ( "Calendars" , MSG                       )
+    ##########################################################################
+    return True
+  ############################################################################
+  def AppendCurrentPeriod               ( self                             ) :
+    ##########################################################################
     ##########################################################################
     return True
   ############################################################################

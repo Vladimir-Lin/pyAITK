@@ -132,6 +132,22 @@ class StarDate (                                                           ) :
     DT  = self . toTimeString ( TZ , TimeFormat )
     return DS + JOIN + DT
   ############################################################################
+  def toLongDateTimeString ( self , TZ , DateFormat = "%Y-%m-%d" , TimeFormat = "%H:%M:%S" ) :
+    WD   = self . Weekday          ( TZ                                      )
+    WD   = int                     ( WD                                      )
+    WS   = {  1 : "Monday"                                                 , \
+              2 : "Tuesday"                                                , \
+              3 : "Wednesday"                                              , \
+              4 : "Thursday"                                               , \
+              5 : "Friday"                                                 , \
+              6 : "Saturday"                                               , \
+              7 : "Sunday"                                                   }
+    JOIZ = " "
+    if                             ( WD in [ 1 , 2 , 3 , 4 , 5 , 6 , 7 ]   ) :
+      KS   = WS [ WD ]
+      JOIZ = f" {KS} "
+    return self . toDateTimeString ( TZ , JOIZ , DateFormat , TimeFormat     )
+  ############################################################################
   def SecondsOfDay ( self , TZ = "" ) :
     DX = self . toDateString ( TZ , "%Y-%m-%d" )
     DX = f"{DX}T00:00:00"

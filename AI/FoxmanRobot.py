@@ -155,6 +155,14 @@ class FoxmanRobot (                                                        ) :
       self . CalendarMode          (        beau , message                   )
       return True
     ##########################################################################
+    if                             ( self . State == 22                    ) :
+      self . CalendarTitle         (        beau , message                   )
+      return True
+    ##########################################################################
+    if                             ( self . State == 23                    ) :
+      self . CalendarDescription   (        beau , message                   )
+      return True
+    ##########################################################################
     return True
   ############################################################################
   def IdleState                    ( self , beau , message                 ) :
@@ -612,6 +620,46 @@ class FoxmanRobot (                                                        ) :
       ########################################################################
       pass
     ##########################################################################
+    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Append" ] [ "Allows" ] ) :
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Period" ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . AppendCurrentPeriod ) . start ( )
+        return True
+    ##########################################################################
+    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Assign" ] [ "Allows" ] ) :
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Period" ] [ "Allows" ] ) :
+        if ( CNT > 2 )                                                       :
+          threading . Thread ( target = self . Scheduler . AssignCurrentPeriod , \
+                               args   = ( L [ 2 ] , )            ) . start ( )
+          return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "StartTime" ] [ "Allows" ] ) :
+        if ( CNT > 2 )                                                       :
+          TT = L [ 2 ]
+          if ( CNT > 3 ) :
+            TT = TT + " " + L [ 3 ]
+          threading . Thread ( target = self . Scheduler . AssignStartTime , \
+                               args   = ( TT , )                 ) . start ( )
+          return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "EndTime" ] [ "Allows" ] ) :
+        if ( CNT > 2 )                                                       :
+          TT = L [ 2 ]
+          if ( CNT > 3 ) :
+            TT = TT + " " + L [ 3 ]
+          threading . Thread ( target = self . Scheduler . AssignEndTime ,   \
+                               args   = ( TT , )                 ) . start ( )
+          return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Title" ] [ "Allows" ] ) :
+        self . State = 22
+        return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Description" ] [ "Allows" ] ) :
+        self . State = 23
+        return True
+    ##########################################################################
     if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "SyncSystem" ] [ "Allows" ] ) :
       ########################################################################
       if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Periods"    ] [ "Allows" ] ) :
@@ -625,6 +673,30 @@ class FoxmanRobot (                                                        ) :
     if ( L [ 0 ] in self . JSON [ "Commands" ] [ "TurnOff" ] [ "Allows" ] )  :
       ########################################################################
       pass
+    ##########################################################################
+    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Current" ] [ "Allows" ] ) :
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Period"  ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . ReportCurrentPeriod ) . start ( )
+        return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Settings"  ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . ReportCurrentSettings ) . start ( )
+        return True
+    ##########################################################################
+    return True
+  ############################################################################
+  def CalendarTitle                ( self , beau , message                 ) :
+    ##########################################################################
+    self . State        = 21
+    self . Scheduler . CurrentTitle = message
+    ##########################################################################
+    return True
+  ############################################################################
+  def CalendarDescription          ( self , beau , message                 ) :
+    ##########################################################################
+    self . State        = 21
+    self . Scheduler . CurrentDescription = message
     ##########################################################################
     return True
   ############################################################################
