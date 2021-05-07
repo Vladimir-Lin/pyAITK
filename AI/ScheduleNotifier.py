@@ -193,9 +193,16 @@ class ScheduleNotifier (                                                   ) :
     TZ      = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
     NOW     = StarDate          (                                              )
     ##########################################################################
-    TITLE   = event [ "summary" ]
-    SDATE   = event [ "start"   ] [ "dateTime" ]
-    EDATE   = event [ "end"     ] [ "dateTime" ]
+    TITLE   = ""
+    DESCR   = ""
+    ##########################################################################
+    if                          ( "summary"     in event                   ) :
+      TITLE = event             [ "summary"                                  ]
+    if                          ( "description" in event                   ) :
+      DESCR = event             [ "description"                              ]
+    ##########################################################################
+    SDATE   = event [ "start" ] [ "dateTime" ]
+    EDATE   = event [ "end"   ] [ "dateTime" ]
     ##########################################################################
     SDATE   = SDATE             [ : 19                                       ]
     NOW     . fromInput         ( SDATE , TZ                                 )
@@ -205,9 +212,9 @@ class ScheduleNotifier (                                                   ) :
     NOW     . fromInput         ( EDATE , TZ                                 )
     ENDST   = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"    )
     ##########################################################################
-    print ( json.dumps(event) )
-    ##########################################################################
-    MSG = f"<i>{TITLE}</i>\n開始時間:<b>{START}</b>\n結束時間:<b>{ENDST}</b>"
+    MSG     = f"<u>{TITLE}</u>\n開始時間:<b>{START}</b>\n結束時間:<b>{ENDST}</b>"
+    if                          ( len ( DESCR ) > 0                        ) :
+      MSG   = f"{MSG}\n{DESCR}"
     ##########################################################################
     return MSG
   ############################################################################
@@ -303,7 +310,7 @@ class ScheduleNotifier (                                                   ) :
         ITEM  = f"{CNT}. {ITEM}"
         ITEMs . append               ( ITEM                                  )
     ##########################################################################
-    MSG     = "\n" . join            ( ITEMs                                 )
+    MSG     = "\n\n" . join          ( ITEMs                                 )
     MSG     = f"總計有{CNT}個行事曆事件\n\n{MSG}"
     self    . TalkTo                 ( "Calendars" , MSG                     )
     ##########################################################################
