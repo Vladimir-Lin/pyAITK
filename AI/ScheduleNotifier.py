@@ -463,7 +463,7 @@ class ScheduleNotifier (                                                   ) :
     NAMTAB  = "`names_others`"
     ##########################################################################
     TZ      = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
-    TUID    = self . JSON [ "Google" ] [ "Groups"  ] [ CalendarId ]
+    TUID    = self . JSON [ "Google" ] [ "Groups"  ] [ CalendarId ] [ "Uuid" ]
     ##########################################################################
     NOW     = StarDate          (                                            )
     PRD     = Periode           (                                            )
@@ -504,8 +504,6 @@ class ScheduleNotifier (                                                   ) :
       NOX   . Note      = DESCRIPTION
       NOX   . Editing           ( DB , NOXTAB                                )
     ##########################################################################
-    print ( TUID )
-    print ( PUID )
     REL     . set               ( "first"  , f"{TUID}"                       )
     REL     . set               ( "second" , f"{PUID}"                       )
     REL     . setT1             ( "Tag"                                      )
