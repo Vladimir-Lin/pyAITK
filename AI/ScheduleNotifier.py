@@ -429,8 +429,8 @@ class ScheduleNotifier (                                                   ) :
     VAX     . Value     = ID
     VAX     . AssureValue       ( DB , VARTAB                                )
     ##########################################################################
-    REL     . set               ( "first"  , TUID                            )
-    REL     . set               ( "second" , PUID                            )
+    REL     . set               ( "first"  , f"{TUID}"                       )
+    REL     . set               ( "second" , f"{PUID}"                       )
     REL     . setT1             ( "Tag"                                      )
     REL     . setT2             ( "Period"                                   )
     REL     . setRelation       ( "Contains"                                 )
@@ -504,8 +504,8 @@ class ScheduleNotifier (                                                   ) :
       NOX   . Note      = DESCRIPTION
       NOX   . Editing           ( DB , NOXTAB                                )
     ##########################################################################
-    REL     . set               ( "first"  , TUID                            )
-    REL     . set               ( "second" , PUID                            )
+    REL     . set               ( "first"  , f"{TUID}"                       )
+    REL     . set               ( "second" , f"{PUID}"                       )
     REL     . setT1             ( "Tag"                                      )
     REL     . setT2             ( "Period"                                   )
     REL     . setRelation       ( "Contains"                                 )
