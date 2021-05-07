@@ -448,6 +448,111 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return True
   ############################################################################
+  def AppendPeriodItem          ( self                                     , \
+                                  DB                                       , \
+                                  CalendarId                               , \
+                                  TITLE                                    , \
+                                  START                                    , \
+                                  END                                      , \
+                                  DESCRIPTION                              ) :
+    ##########################################################################
+    PRDTAB  = "`periods`"
+    NOXTAB  = "`notes`"
+    VARTAB  = "`variables`"
+    RELTAB  = "`relations_others`"
+    NAMTAB  = "`names_others`"
+    ##########################################################################
+    TZ      = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
+    TUID    = self . JSON [ "Google" ] [ "Groups"  ] [ CalendarId ]
+    ##########################################################################
+    NOW     = StarDate          (                                            )
+    PRD     = Periode           (                                            )
+    REL     = Relation          (                                            )
+    NOX     = NoteItem          (                                            )
+    NIT     = NameItem          (                                            )
+    VAX     = VariableItem      (                                            )
+    ##########################################################################
+    PUID    = PRD . GetUuid     ( DB , PRDTAB                                )
+    ##########################################################################
+    PRD     . Start = START
+    PRD     . End   = END
+    ##########################################################################
+    PRD     . Type   = 4
+    PRD     . Used   = 1
+    PRD     . Realm  = 0
+    PRD     . Role   = 0
+    PRD     . Item   = 196833
+    PRD     . States = 3
+    ##########################################################################
+    PRD     . UpdateColumns     ( DB , PRDTAB                                )
+    ##########################################################################
+    if                          ( len ( TITLE ) > 0                        ) :
+      ########################################################################
+      NIT   . Uuid      = PUID
+      NIT   . Locality  = self . Locality
+      NIT   . Priority  = 0
+      NIT   . Relevance = 0
+      NIT   . Flags     = 1
+      NIT   . Name      = TITLE
+      NIT   . Editing           ( DB , NAMTAB                                )
+    ##########################################################################
+    if                          ( len ( DESCRIPTION ) > 0                  ) :
+      ########################################################################
+      NOX   . Uuid      = PUID
+      NOX   . Name      = "Description"
+      NOX   . Prefer    = -1
+      NOX   . Note      = DESCRIPTION
+      NOX   . Editing           ( DB , NOXTAB                                )
+    ##########################################################################
+    REL     . set               ( "first"  , TUID                            )
+    REL     . set               ( "second" , PUID                            )
+    REL     . setT1             ( "Tag"                                      )
+    REL     . setT2             ( "Period"                                   )
+    REL     . setRelation       ( "Contains"                                 )
+    REL     . Append            ( DB , RELTAB                                )
+    ##########################################################################
+    NOW     . Stardate = START
+    SDTX    = NOW . toDateTimeString ( TZ )
+    SDTX    = SDTX + "+08:00"
+    ##########################################################################
+    NOW     . Stardate = END
+    EDTX    = NOW . toDateTimeString ( TZ )
+    EDTX    = EDTX + "+08:00"
+    ##########################################################################
+    E       = { "kind"              : "calendar#event"                       ,
+               "summary"            : NAME                                   ,
+               "description"        : DESCRIPTION                            ,
+               "start"              :                                        {
+                 "timeZone"         : TZ                                     ,
+                 "dateTime"         : SDTX                                   ,
+               }                                                             ,
+               "end"                :                                        {
+                 "timeZone"         : TZ                                     ,
+                 "dateTime"         : EDTX                                 } ,
+               "extendedProperties" :                                        {
+                 "private"          :                                        {
+                   "Uuid"           : PUID                                   ,
+                   "Tag"            : TUID                                   ,
+                 }                                                           ,
+               }                                                             }
+    z  = self . Calendar . Append ( calendarId = CalendarId , Body = E       )
+    ##########################################################################
+    if                            ( not z                                  ) :
+      return False
+    ##########################################################################
+    print ( json.dumps(z) )
+    if                            ( "id" in z                              ) :
+      ########################################################################
+      ID    = z [ "id" ]
+      ########################################################################
+      VAX   . Uuid      = PUID
+      VAX   . Type      = 196833
+      VAX   . Name      = "GoogleCalendar"
+      VAX   . Value     = ID
+      VAX   . AssureValue         ( DB , VARTAB                              )
+      ########################################################################
+    return True
+  ############################################################################
   def SyncEntries                  ( self , Entries                        ) :
     ##########################################################################
     if                             ( len ( Entries ) <= 0                  ) :
@@ -778,8 +883,36 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return True
   ############################################################################
-  def AppendCurrentPeriod               ( self                             ) :
+  def AppendCurrentPeriod     ( self                                       ) :
     ##########################################################################
+    FAIL   = "資訊不足以新增時段"
+    ##########################################################################
+    if                        ( len ( self . CurrentTitle ) <= 0           ) :
+      self . TalkTo           ( "Calendars" , FAIL                           )
+      return False
+    ##########################################################################
+    if                        ( self . CurrentStart <= 0                   ) :
+      self . TalkTo           ( "Calendars" , FAIL                           )
+      return False
+    ##########################################################################
+    if                        ( self . CurrentEnd   <= 0                   ) :
+      self . TalkTo           ( "Calendars" , FAIL                           )
+      return False
+    ##########################################################################
+    DB     = Connection       (                                              )
+    ##########################################################################
+    if                        ( not DB . ConnectTo ( self . AITKDB )       ) :
+      return
+    DB     . Prepare          (                                              )
+    ##########################################################################
+    self   . AppendPeriodItem ( DB                                         , \
+                                self . CurrentCalendar                     , \
+                                self . CurrentTitle                        , \
+                                self . CurrentStart                        , \
+                                self . CurrentEnd                          , \
+                                self . CurrentDescription                  ) :
+    ##########################################################################
+    DB     . Close            (                                              )
     ##########################################################################
     return True
   ############################################################################
