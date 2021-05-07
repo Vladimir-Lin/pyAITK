@@ -11,105 +11,256 @@ import requests
 import threading
 ##############################################################################
 import mysql . connector
-from   mysql . connector                   import Error
+from   mysql . connector              import Error
 ##############################################################################
-import Actions
-from   Actions . Database . SqlQuery       import SqlQuery
-from   Actions . Database . SqlConnection  import SqlConnection
-from   Actions . Database . SqlConnection  import ConnectionPair
-from   Actions . System   . StarDate       import StarDate
+import AITK
+from   AITK . Database  . Query       import Query
+from   AITK . Database  . Connection  import Connection
+from   AITK . Database  . Columns     import Columns
 ##############################################################################
-from   . Columns                           import Columns
-##############################################################################
-Relations         =      { \
-  "Ignore"        :  0   , \
-  "Subordination" :  1   , \
-  "Icon"          :  2   , \
-  "Sexuality"     :  3   , \
-  "Trigger"       :  4   , \
-  "StartTrigger"  :  5   , \
-  "FinalTrigger"  :  6   , \
-  "Action"        :  7   , \
-  "Condition"     :  8   , \
-  "Synonymous"    :  9   , \
-  "Equivalent"    : 10   , \
-  "Contains"      : 11   , \
-  "Using"         : 12   , \
-  "Possible"      : 13   , \
-  "Originate"     : 14   , \
-  "Capable"       : 15   , \
-  "Estimate"      : 16   , \
-  "Alias"         : 17   , \
-  "Counterpart"   : 18   , \
-  "Explain"       : 19   , \
-  "Fuzzy"         : 20   , \
-  "Greater"       : 21   , \
-  "Less"          : 22   , \
-  "Before"        : 23   , \
-  "After"         : 24   , \
-  "Tendency"      : 25   , \
-  "Different"     : 26   , \
-  "Acting"        : 27   , \
-  "Forgotten"     : 28   , \
-  "Google"        : 29   , \
-  "Facebook"      : 30   , \
-  "End"           : 31   , \
+Relations         =                                                        { \
+  "Ignore"        :  0                                                     , \
+  "Subordination" :  1                                                     , \
+  "Icon"          :  2                                                     , \
+  "Sexuality"     :  3                                                     , \
+  "Trigger"       :  4                                                     , \
+  "StartTrigger"  :  5                                                     , \
+  "FinalTrigger"  :  6                                                     , \
+  "Action"        :  7                                                     , \
+  "Condition"     :  8                                                     , \
+  "Synonymous"    :  9                                                     , \
+  "Equivalent"    : 10                                                     , \
+  "Contains"      : 11                                                     , \
+  "Using"         : 12                                                     , \
+  "Possible"      : 13                                                     , \
+  "Originate"     : 14                                                     , \
+  "Capable"       : 15                                                     , \
+  "Estimate"      : 16                                                     , \
+  "Alias"         : 17                                                     , \
+  "Counterpart"   : 18                                                     , \
+  "Explain"       : 19                                                     , \
+  "Fuzzy"         : 20                                                     , \
+  "Greater"       : 21                                                     , \
+  "Less"          : 22                                                     , \
+  "Before"        : 23                                                     , \
+  "After"         : 24                                                     , \
+  "Tendency"      : 25                                                     , \
+  "Different"     : 26                                                     , \
+  "Acting"        : 27                                                     , \
+  "Forgotten"     : 28                                                     , \
+  "Google"        : 29                                                     , \
+  "Facebook"      : 30                                                     , \
+  "End"           : 31                                                     , \
 }
 ##############################################################################
-Types                 =      { \
-  "None"              :   0  , \
-  "Type"              :   1  , \
-  "Picture"           :   9  , \
-  "Video"             :  11  , \
-  "PlainText"         :  12  , \
-  "File"              :  14  , \
-  "Schedule"          :  15  , \
-  "Task"              :  16  , \
-  "Subgroup"          :  17  , \
-  "Account"           :  18  , \
-  "TopLevelDomain"    :  23  , \
-  "SecondLevelDomain" :  24  , \
-  "DomainName"        :  26  , \
-  "Username"          :  27  , \
-  "ITU"               :  28  , \
-  "Nation"            :  43  , \
-  "Currency"          :  45  , \
-  "Tag"               :  75  , \
-  "SqlConnection"     :  81  , \
-  "Division"          :  91  , \
-  "Period"            :  92  , \
-  "Variable"          :  93  , \
-  "CountryCode"       :  97  , \
-  "AreaCode"          :  98  , \
-  "Language"          : 101  , \
-  "Place"             : 102  , \
-  "People"            : 103  , \
-  "Station"           : 104  , \
-  "Organization"      : 105  , \
-  "Role"              : 106  , \
-  "Relevance"         : 107  , \
-  "Locality"          : 108  , \
-  "Group"             : 109  , \
-  "Course"            : 110  , \
-  "Lesson"            : 111  , \
-  "IMApp"             : 112  , \
-  "InstantMessage"    : 113  , \
-  "Phone"             : 114  , \
-  "Occupation"        : 115  , \
-  "TimeZone"          : 116  , \
-  "IPA"               : 117  , \
-  "Address"           : 118  , \
-  "EMail"             : 119  , \
-  "Description"       : 120  , \
-  "SqlServer"         : 121  , \
-  "Lecture"           : 122  , \
-  "Trade"             : 123  , \
-  "Token"             : 124  , \
-  "BankAccount"       : 125  , \
-  "Class"             : 126  , \
-  "Fragment"          : 127  , \
-  "AgeGroup"          : 128  , \
-  "Proficiency"       : 129  , \
+Types                 =                                                    { \
+  "None"              :   0                                                , \
+  "Type"              :   1                                                , \
+  "Language"          :   2                                                , \
+  "Name"              :   3                                                , \
+  "Locality"          :   4                                                , \
+  "Action"            :   5                                                , \
+  "Relevance"         :   6                                                , \
+  "People"            :   7                                                , \
+  "Resource"          :   8                                                , \
+  "Picture"           :   9                                                , \
+  "Audio"             :  10                                                , \
+  "Video"             :  11                                                , \
+  "PlainText"         :  12                                                , \
+  "XML"               :  13                                                , \
+  "File"              :  14                                                , \
+  "Schedule"          :  15                                                , \
+  "Task"              :  16                                                , \
+  "Acupuncture"       :  17                                                , \
+  "DataTypes"         :  18                                                , \
+  "Eyes"              :  19                                                , \
+  "Hairs"             :  20                                                , \
+  "Meridian"          :  21                                                , \
+  "Star"              :  22                                                , \
+  "TopLevelDomain"    :  23                                                , \
+  "SecondLevelDomain" :  24                                                , \
+  "Keyword"           :  25                                                , \
+  "DomainName"        :  26                                                , \
+  "Username"          :  27                                                , \
+  "Encoding"          :  28                                                , \
+  "KeywordRelation"   :  29                                                , \
+  "URL"               :  30                                                , \
+  "EMail"             :  31                                                , \
+  "IPv4"              :  32                                                , \
+  "IPv6"              :  33                                                , \
+  "Race"              :  34                                                , \
+  "Particle"          :  35                                                , \
+  "Composite"         :  36                                                , \
+  "Paper"             :  37                                                , \
+  "Organization"      :  38                                                , \
+  "NeuralTypes"       :  39                                                , \
+  "Occupation"        :  40                                                , \
+  "Meaning"           :  41                                                , \
+  "MimeTypes"         :  42                                                , \
+  "Nation"            :  43                                                , \
+  "Administrative"    :  44                                                , \
+  "Currency"          :  45                                                , \
+  "CurrencyPair"      :  46                                                , \
+  "Flow"              :  47                                                , \
+  "Document"          :  48                                                , \
+  "DecisionTable"     :  49                                                , \
+  "DecisionTree"      :  50                                                , \
+  "Equipment"         :  51                                                , \
+  "Face"              :  52                                                , \
+  "OperationSystem"   :  53                                                , \
+  "ParamentType"      :  54                                                , \
+  "Parameter"         :  55                                                , \
+  "Surname"           :  56                                                , \
+  "VCF"               :  57                                                , \
+  "Script"            :  58                                                , \
+  "Source"            :  59                                                , \
+  "Palette"           :  60                                                , \
+  "Knowledge"         :  61                                                , \
+  "Field"             :  62                                                , \
+  "KnowledgeBase"     :  63                                                , \
+  "Gallery"           :  64                                                , \
+  "Continent"         :  65                                                , \
+  "Point"             :  66                                                , \
+  "Contour"           :  67                                                , \
+  "Line"              :  68                                                , \
+  "Surface"           :  69                                                , \
+  "MeaningTypes"      :  70                                                , \
+  "Project"           :  71                                                , \
+  "ProjectType"       :  72                                                , \
+  "MathType"          :  73                                                , \
+  "MathObject"        :  74                                                , \
+  "Tag"               :  75                                                , \
+  "Album"             :  76                                                , \
+  "Sexuality"         :  77                                                , \
+  "SqlDataType"       :  78                                                , \
+  "Coding"            :  79                                                , \
+  "Compound"          :  80                                                , \
+  "RNA"               :  81                                                , \
+  "DNA"               :  82                                                , \
+  "Location"          :  83                                                , \
+  "Chromosome"        :  84                                                , \
+  "Statistics"        :  85                                                , \
+  "DocumentFile"      :  86                                                , \
+  "Calendar"          :  87                                                , \
+  "Panel"             :  88                                                , \
+  "Execution"         :  89                                                , \
+  "GroupRelation"     :  90                                                , \
+  "Division"          :  91                                                , \
+  "Period"            :  92                                                , \
+  "Variable"          :  93                                                , \
+  "Body"              :  94                                                , \
+  "Organ"             :  95                                                , \
+  "Phone"             :  96                                                , \
+  "CountryCode"       :  97                                                , \
+  "AreaCode"          :  98                                                , \
+  "Trigger"           :  99                                                , \
+  "Rectangle"         : 100                                                , \
+  "Painting"          : 101                                                , \
+  "Graphics"          : 102                                                , \
+  "Length"            : 103                                                , \
+  "Shapes"            : 104                                                , \
+  "Manifolds"         : 105                                                , \
+  "POSet"             : 106                                                , \
+  "SetMember"         : 107                                                , \
+  "Condition"         : 108                                                , \
+  "Indicator"         : 109                                                , \
+  "Commodity"         : 110                                                , \
+  "Package"           : 111                                                , \
+  "Version"           : 112                                                , \
+  "Camera"            : 113                                                , \
+  "Light"             : 114                                                , \
+  "IPA"               : 115                                                , \
+  "SqlConnection"     : 116                                                , \
+  "SqlItem"           : 117                                                , \
+  "SqlTable"          : 118                                                , \
+  "SqlPlan"           : 119                                                , \
+  "Enumeration"       : 120                                                , \
+  "SqlServer"         : 121                                                , \
+  "Weight"            : 122                                                , \
+  "Energy"            : 123                                                , \
+  "Area"              : 124                                                , \
+  "DNS"               : 125                                                , \
+  "Newsgroup"         : 126                                                , \
+  "Celestial"         : 127                                                , \
+  "Equation"          : 128                                                , \
+  "Component"         : 129                                                , \
+  "SqlConstraint"     : 130                                                , \
+  "Matrix"            : 131                                                , \
+  "Sentence"          : 132                                                , \
+  "Paragraph"         : 133                                                , \
+  "Acoustic"          : 134                                                , \
+  "Terminology"       : 135                                                , \
+  "Array"             : 136                                                , \
+  "Bound"             : 137                                                , \
+  "Consanguinity"     : 138                                                , \
+  "Kinship"           : 139                                                , \
+  "Genealogy"         : 140                                                , \
+  "Sketch"            : 141                                                , \
+  "CppState"          : 142                                                , \
+  "Spreadsheet"       : 143                                                , \
+  "Nucleus"           : 144                                                , \
+  "ClfType"           : 145                                                , \
+  "RuleBase"          : 146                                                , \
+  "Potential"         : 147                                                , \
+  "SetsAlgebra"       : 148                                                , \
+  "ColorGroup"        : 149                                                , \
+  "InternetDomain"    : 150                                                , \
+  "CCD"               : 151                                                , \
+  "Obsolete"          : 152                                                , \
+  "Pending"           : 153                                                , \
+  "Coroutine"         : 154                                                , \
+  "Semantic"          : 155                                                , \
+  "Concept"           : 156                                                , \
+  "Ideograph"         : 157                                                , \
+  "Subgroup"          : 158                                                , \
+  "FaceShape"         : 159                                                , \
+  "Culture"           : 160                                                , \
+  "Phoneme"           : 161                                                , \
+  "EyesShape"         : 162                                                , \
+  "StyleSheet"        : 163                                                , \
+  "Stroke"            : 164                                                , \
+  "Grapheme"          : 165                                                , \
+  "Emotion"           : 166                                                , \
+  "Entry"             : 167                                                , \
+  "Reference"         : 168                                                , \
+  "Constant"          : 169                                                , \
+  "StellarSpectrum"   : 170                                                , \
+  "EarthSpot"         : 171                                                , \
+  "Account"           : 172                                                , \
+  "FutureIndex"       : 173                                                , \
+  "StockSecurity"     : 174                                                , \
+  "EconomicIndex"     : 175                                                , \
+  "VideoNote"         : 176                                                , \
+  "Description"       : 177                                                , \
+  "Reality"           : 178                                                , \
+  "Model"             : 179                                                , \
+  "MusicAlbum"        : 180                                                , \
+  "HistoryType"       : 181                                                , \
+  "History"           : 182                                                , \
+  "ITU"               : 183                                                , \
+  "Place"             : 184                                                , \
+  "Station"           : 185                                                , \
+  "Role"              : 186                                                , \
+  "Course"            : 187                                                , \
+  "Lesson"            : 188                                                , \
+  "IMApp"             : 189                                                , \
+  "InstantMessage"    : 190                                                , \
+  "TimeZone"          : 191                                                , \
+  "Address"           : 192                                                , \
+  "Lecture"           : 193                                                , \
+  "Trade"             : 194                                                , \
+  "Token"             : 195                                                , \
+  "Class"             : 196                                                , \
+  "Fragment"          : 197                                                , \
+  "AgeGroup"          : 198                                                , \
+  "Proficiency"       : 199                                                , \
+  "BankAccount"       : 200                                                , \
+  "Taxonomy"          : 201                                                , \
+  "Species"           : 202                                                , \
+  "Blood"             : 203                                                , \
+  "BloodGroup"        : 204                                                , \
+  "NationType"        : 205                                                , \
+  "FileExtension"     : 206                                                , \
 }
 ##############################################################################
 ##
@@ -138,6 +289,7 @@ class Relation       ( Columns                                             ) :
     self . Prefer      = 0
     self . Membership  = 0
     self . Description = 0
+    self . Operator    = 0
   ############################################################################
   def assign ( self , item ) :
     self . Columns     = item . Columns
@@ -152,6 +304,7 @@ class Relation       ( Columns                                             ) :
     self . Prefer      = item . Prefer
     self . Membership  = item . Membership
     self . Description = item . Description
+    self . Operator    = item . Operator
   ############################################################################
   def set ( self , item , value ) :
     a = item . lower ( )
@@ -177,6 +330,8 @@ class Relation       ( Columns                                             ) :
       self . Membership  = value
     if ( "description"  == a ) :
       self . Description = value
+    if ( "operator"     == a ) :
+      self . Operator    = value
   ############################################################################
   def get ( self , item ) :
     a = item.lower()
@@ -202,6 +357,8 @@ class Relation       ( Columns                                             ) :
       return self . Membership
     if ( "description" == a ) :
       return self . Description
+    if ( "operator"    == a ) :
+      return self . Operator
     return ""
   ############################################################################
   def Value ( self , item ) :
@@ -226,6 +383,7 @@ class Relation       ( Columns                                             ) :
     S . append ( "prefer"      )
     S . append ( "membership"  )
     S . append ( "description" )
+    S . append ( "operator"    )
     return S
   ############################################################################
   def pair ( self , item ) :

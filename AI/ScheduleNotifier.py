@@ -17,15 +17,17 @@ import json
 ##############################################################################
 import AITK
 ##############################################################################
+from   AITK  . Database   . Connection import Connection as Connection
+##############################################################################
 from   AITK  . Documents  . Name       import Name       as NameItem
 from   AITK  . Documents  . Name       import Naming     as Naming
 from   AITK  . Documents  . Notes      import Notes      as NoteItem
 from   AITK  . Documents  . Variables  import Variables  as VariableItem
 ##############################################################################
-from   AITK  . Database   . Connection import Connection as Connection
-##############################################################################
 from   AITK  . Calendars  . StarDate   import StarDate   as StarDate
 from   AITK  . Calendars  . Periode    import Periode    as Periode
+##############################################################################
+from   AITK  . Essentials . Relation   import Relation   as Relation
 ##############################################################################
 from   AITK  . Google     . Calendar   import Calendar   as GCalendar
 ##############################################################################
@@ -346,17 +348,85 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return True
   ############################################################################
-  def AppendEventEntry            ( self , DB , TUID , EVENT               ) :
+  def AppendEventEntry          ( self , DB , TUID , EVENT                 ) :
     ##########################################################################
-    """
-    DB . LockWrites                ( [ "`periods`"                         , \
-                                       "`notes`"                           , \
-                                       "`variables`"                       , \
-                                       "`relations_others`"                , \
-                                       "`names_others`"                    ] )
-    """
+    if                          ( EVENT [ "kind" ] != "calendar#event"     ) :
+      return False
     ##########################################################################
-    print ( json.dumps(EVENT) )
+    PRDTAB  = "`periods`"
+    NOXTAB  = "`notes`"
+    VARTAB  = "`variables`"
+    RELTAB  = "`relations_others`"
+    NAMTAB  = "`names_others`"
+    ##########################################################################
+    TZ      = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
+    NOW     = StarDate          (                                            )
+    PRD     = Periode           (                                            )
+    REL     = Relation          (                                            )
+    NOX     = NoteItem          (                                            )
+    NIT     = NameItem          (                                            )
+    VAX     = VariableItem      (                                            )
+    ##########################################################################
+    PUID    = PRD . GetUuid     ( DB , PRDTAB                                )
+    ID      = EVENT             [ "id"                                       ]
+    TITLE   = ""
+    DESCR   = ""
+    ##########################################################################
+    if                          ( "summary"     in EVENT                   ) :
+      TITLE = EVENT             [ "summary"                                  ]
+    if                          ( "description" in EVENT                   ) :
+      DESCR = EVENT             [ "description"                              ]
+    ##########################################################################
+    SDATE   = EVENT [ "start" ] [ "dateTime" ]
+    EDATE   = EVENT [ "end"   ] [ "dateTime" ]
+    ##########################################################################
+    SDATE   = SDATE             [ : 19                                       ]
+    NOW     . fromInput         ( SDATE , TZ                                 )
+    PRD     . Start = NOW . Stardate
+    ##########################################################################
+    EDATE   = EDATE             [ : 19                                       ]
+    NOW     . fromInput         ( EDATE , TZ                                 )
+    PRD     . End   = NOW . Stardate
+    ##########################################################################
+    PRD     . Type   = 4
+    PRD     . Used   = 1
+    PRD     . Realm  = 0
+    PRD     . Role   = 0
+    PRD     . Item   = 196833
+    PRD     . States = 3
+    ##########################################################################
+    PRD     . UpdateColumns     ( DB , PRDTAB                                )
+    ##########################################################################
+    if                          ( len ( TITLE ) > 0                        ) :
+      ########################################################################
+      NIT   . Uuid      = PUID
+      NIT   . Locality  = self . Locality
+      NIT   . Priority  = 0
+      NIT   . Relevance = 0
+      NIT   . Flags     = 1
+      NIT   . Name      = TITLE
+      NIT   . Editing           ( DB , NAMTAB                                )
+    ##########################################################################
+    if                          ( len ( DESCR ) > 0                        ) :
+      ########################################################################
+      NOX   . Uuid      = PUID
+      NOX   . Name      = "Description"
+      NOX   . Prefer    = -1
+      NOX   . Note      = DESCR
+      NOX   . Editing           ( DB , NOXTAB                                )
+    ##########################################################################
+    VAX     . Uuid      = PUID
+    VAX     . Type      = 196833
+    VAX     . Name      = "GoogleCalendar"
+    VAX     . Value     = ID
+    VAX     . AssureValue       ( DB , VARTAB                                )
+    ##########################################################################
+    REL     . set               ( "first"  , TUID                            )
+    REL     . set               ( "second" , PUID                            )
+    REL     . setT1             ( "Tag"                                      )
+    REL     . setT2             ( "Period"                                   )
+    REL     . setRelation       ( "Contains"                                 )
+    REL     . Append            ( DB , RELTAB                                )
     ##########################################################################
     return True
   ############################################################################
