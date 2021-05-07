@@ -680,6 +680,10 @@ class FoxmanRobot (                                                        ) :
         threading . Thread ( target = self . Scheduler . ReportCurrentPeriod ) . start ( )
         return True
       ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Periods" ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . ReportCurrentPeriods ) . start ( )
+        return True
+      ########################################################################
       if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Settings"  ] [ "Allows" ] ) :
         threading . Thread ( target = self . Scheduler . ReportCurrentSettings ) . start ( )
         return True
