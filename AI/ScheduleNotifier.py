@@ -504,6 +504,8 @@ class ScheduleNotifier (                                                   ) :
       NOX   . Note      = DESCRIPTION
       NOX   . Editing           ( DB , NOXTAB                                )
     ##########################################################################
+    print ( TUID )
+    print ( PUID )
     REL     . set               ( "first"  , f"{TUID}"                       )
     REL     . set               ( "second" , f"{PUID}"                       )
     REL     . setT1             ( "Tag"                                      )
