@@ -520,21 +520,21 @@ class ScheduleNotifier (                                                   ) :
     EDTX    = EDTX + "+08:00"
     ##########################################################################
     E       = { "kind"              : "calendar#event"                       ,
-               "summary"            : NAME                                   ,
-               "description"        : DESCRIPTION                            ,
-               "start"              :                                        {
-                 "timeZone"         : TZ                                     ,
-                 "dateTime"         : SDTX                                   ,
-               }                                                             ,
-               "end"                :                                        {
-                 "timeZone"         : TZ                                     ,
-                 "dateTime"         : EDTX                                 } ,
-               "extendedProperties" :                                        {
-                 "private"          :                                        {
-                   "Uuid"           : PUID                                   ,
-                   "Tag"            : TUID                                   ,
-                 }                                                           ,
-               }                                                             }
+                "summary"            : TITLE                                 ,
+                "description"        : DESCRIPTION                           ,
+                "start"              :                                       {
+                  "timeZone"         : TZ                                    ,
+                  "dateTime"         : SDTX                                  ,
+                }                                                            ,
+                "end"                :                                       {
+                  "timeZone"         : TZ                                    ,
+                  "dateTime"         : EDTX                                } ,
+                "extendedProperties" :                                       {
+                  "private"          :                                       {
+                    "Uuid"           : PUID                                  ,
+                    "Tag"            : TUID                                  ,
+                  }                                                          ,
+                }                                                            }
     z  = self . Calendar . Append ( calendarId = CalendarId , Body = E       )
     ##########################################################################
     if                            ( not z                                  ) :
