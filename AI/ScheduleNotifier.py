@@ -297,7 +297,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportCurrentEvents            ( self                                ) :
+  def ReportCurrentPeriods           ( self                                ) :
     ##########################################################################
     if                               ( len ( self . CurrentCalendar ) <= 0 ) :
       return False
@@ -320,6 +320,7 @@ class ScheduleNotifier (                                                   ) :
     CNT   = 0
     ##########################################################################
     for e in events                                                          :
+      print ( json.dumps(e) )
       CNT   = CNT + 1
       ITEM  = self . EventToSkypeRTF ( e                                     )
       if                             ( len ( ITEM ) > 0                    ) :
@@ -545,7 +546,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return True
   ############################################################################
-  def SyncEvents                     ( self                                ) :
+  def SyncPeriods                    ( self                                ) :
     ##########################################################################
     if                               ( len ( self . CurrentCalendar ) <= 0 ) :
       return False
@@ -584,7 +585,18 @@ class ScheduleNotifier (                                                   ) :
                                        "`names_others`"                    ] )
     ##########################################################################
     for e in events                                                          :
-      self . AppendEventEntry      ( DB , G , TUID , e                       )
+      ########################################################################
+      APPENDING = True
+      ########################################################################
+      if                           ( "extendedProperties" in e             ) :
+        P     = e                  [ "extendedProperties"                    ]
+        if                         ( "private" in P                        ) :
+          R   = P                  [ "private"                               ]
+          if                       ( ( "Uuid" in R ) and ( "Tag" in R )    ) :
+            APPENDING = False
+      ########################################################################
+      if                           ( APPENDING                             ) :
+        self . AppendEventEntry    ( DB , G , TUID , e                       )
     ##########################################################################
     DB . UnlockTables              (                                         )
     DB . Close                     (                                         )

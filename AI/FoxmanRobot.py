@@ -585,9 +585,9 @@ class FoxmanRobot (                                                        ) :
       ########################################################################
       return True
     ##########################################################################
-    if ( s in self . JSON [ "Commands" ] [ "CurrentEvents" ] [ "Allows" ] )  :
+    if ( s in self . JSON [ "Commands" ] [ "CurrentPeriods" ] [ "Allows" ] )  :
       ########################################################################
-      threading . Thread ( target = self . Scheduler . ReportCurrentEvents ) . start ( )
+      threading . Thread ( target = self . Scheduler . ReportCurrentPeriods ) . start ( )
       ########################################################################
       return True
     ##########################################################################
@@ -614,8 +614,8 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "SyncSystem" ] [ "Allows" ] ) :
       ########################################################################
-      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Events"     ] [ "Allows" ] ) :
-        threading . Thread ( target = self . Scheduler . SyncEvents ) . start ( )
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Periods"    ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . SyncPeriods ) . start ( )
         return True
     ##########################################################################
     if ( L [ 0 ] in self . JSON [ "Commands" ] [ "TurnOn"  ] [ "Allows" ] )  :
