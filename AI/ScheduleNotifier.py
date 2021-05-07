@@ -348,7 +348,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return True
   ############################################################################
-  def AppendEventEntry          ( self , DB , TUID , EVENT                 ) :
+  def AppendEventEntry          ( self , DB , CalendarId , TUID , EVENT    ) :
     ##########################################################################
     if                          ( EVENT [ "kind" ] != "calendar#event"     ) :
       return False
@@ -427,6 +427,16 @@ class ScheduleNotifier (                                                   ) :
     REL     . setT2             ( "Period"                                   )
     REL     . setRelation       ( "Contains"                                 )
     REL     . Append            ( DB , RELTAB                                )
+    ##########################################################################
+    EVENT [ "extendedProperties" ] =                                         {
+      "private"                    :                                         {
+        "Uuid"                     : PUID                                    ,
+        "Tag"                      : TUID                                    ,
+    }                                                                        }
+    ##########################################################################
+    self    . Calendar . Update ( calendarId = CalendarId                    ,
+                                  eventId    = ID                            ,
+                                  Body       = EVENT                         )
     ##########################################################################
     return True
   ############################################################################
@@ -574,7 +584,7 @@ class ScheduleNotifier (                                                   ) :
                                        "`names_others`"                    ] )
     ##########################################################################
     for e in events                                                          :
-      self . AppendEventEntry      ( DB , TUID , e                           )
+      self . AppendEventEntry      ( DB , G , TUID , e                       )
     ##########################################################################
     DB . UnlockTables              (                                         )
     DB . Close                     (                                         )
