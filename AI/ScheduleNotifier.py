@@ -622,6 +622,7 @@ class ScheduleNotifier (                                                   ) :
     PRD      = Periode           (                                           )
     NOW      = StarDate          (                                           )
     ##########################################################################
+    PRD      . Uuid = PUID
     if                           ( not PRD . ObtainsByUuid ( DB , PRDTAB ) ) :
       self   . TalkTo            ( "Calendars" , NOTFOUND                    )
       return False
