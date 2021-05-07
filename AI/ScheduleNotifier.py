@@ -910,7 +910,7 @@ class ScheduleNotifier (                                                   ) :
                                 self . CurrentTitle                        , \
                                 self . CurrentStart                        , \
                                 self . CurrentEnd                          , \
-                                self . CurrentDescription                  ) :
+                                self . CurrentDescription                    )
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################
