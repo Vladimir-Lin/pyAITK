@@ -960,7 +960,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     PUID   = DB . LastUuid    ( TSKTAB , "uuid" , 7303000000000000000        )
     if                        ( PUID > 0                                   ) :
-      DB   . AddUuid          ( EVNTAB , PUID , 196833                       )
+      DB   . AddUuid          ( TSKTAB , PUID , 196833                       )
       self . assureName       ( DB , PUID , self . CurrentTitle , NAMTAB , 1 )
     ##########################################################################
     DB     . Close            (                                              )
