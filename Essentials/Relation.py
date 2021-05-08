@@ -532,7 +532,6 @@ class Relation       ( Columns                                             ) :
   ############################################################################
   def Append ( self , DB , Table ) :
     QQ = self . Insert ( Table )
-    print ( QQ )
     return DB . Query  ( QQ    )
   ############################################################################
   def Join ( self , DB , Table ) :
