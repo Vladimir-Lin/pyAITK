@@ -865,6 +865,7 @@ class ScheduleNotifier (                                                   ) :
     VARTAB  = "`variables`"
     NOXTAB  = "`notes`"
     NAMTAB  = "`names_others`"
+    ##########################################################################
     PUID    = self . CurrentPeriod
     GID     = ""
     ##########################################################################
@@ -881,14 +882,14 @@ class ScheduleNotifier (                                                   ) :
       return False
     DB      . Prepare            (                                           )
     ##########################################################################
+    DB      . LockWrites         ( [ PRDTAB , VARTAB , NOXTAB , NAMTAB     ] )
+    ##########################################################################
     PRD     . Uuid = PUID
     ##########################################################################
     if                           ( PRD . ObtainsByUuid ( DB , PRDTAB )     ) :
       ########################################################################
       PRD   . Start = self . CurrentStart
       PRD   . End   = self . CurrentEnd
-      ########################################################################
-      PRD   . UpdateColumns      ( DB , PRDTAB                               )
       ########################################################################
       self  . assureName         ( DB                                      , \
                                    PUID                                    , \
@@ -909,34 +910,51 @@ class ScheduleNotifier (                                                   ) :
                                    196833                                  , \
                                    "GoogleCalendar"                        , \
                                    VARTAB                                    )
+      ########################################################################
+      if                         ( ( GID != None ) and ( len ( GID ) > 0 ) ) :
+        ######################################################################
+        self . CalendarLocker . acquire (                                    )
+        ######################################################################
+        Z    = False
+        E    = self . Calendar . Get    ( self . CurrentCalendar , GID       )
+        if                       ( E != False                              ) :
+          ####################################################################
+          NOW  . Stardate = PRD . Start
+          SDTX            = NOW . toDateTimeString ( TZ )
+          SDTX            = SDTX + TZE
+          ####################################################################
+          NOW  . Stardate = PRD . End
+          EDTX            = NOW . toDateTimeString ( TZ )
+          EDTX            = EDTX + TZE
+          ####################################################################
+          E [ "summary"                    ] = self . CurrentTitle
+          E [ "description"                ] = self . CurrentDescription
+          E [ "start"       ] [ "timeZone" ] = TZ
+          E [ "start"       ] [ "dateTime" ] = SDTX
+          E [ "end"         ] [ "timeZone" ] = TZ
+          E [ "end"         ] [ "dateTime" ] = EDTX
+          ####################################################################
+          Z = self . Calendar . Update ( self . CurrentCalendar , GID , Body = E )
+        ######################################################################
+        self  . CalendarLocker . release (                                   )
+        ######################################################################
+        if                       ( Z != False                              ) :
+          ####################################################################
+          CDATE = Z [ "created" ]
+          MDATE = Z [ "updated" ]
+          ####################################################################
+          CDATE = CDATE          [ : 19                                      ]
+          NOW   . fromInput      ( CDATE , TZ                                )
+          PRD   . Creation = NOW . Stardate
+          ####################################################################
+          MDATE = MDATE          [ : 19                                      ]
+          NOW   . fromInput      ( MDATE , TZ                                )
+          PRD   . Modified = NOW . Stardate
+      ########################################################################
+      PRD   . UpdateColumns      ( DB , PRDTAB                               )
     ##########################################################################
+    DB      . UnlockTables       (                                           )
     DB      . Close              (                                           )
-    ##########################################################################
-    if                           ( ( GID != None ) and ( len ( GID ) > 0 ) ) :
-      ########################################################################
-      self  . CalendarLocker . acquire (                                     )
-      ########################################################################
-      E     = self . Calendar . Get    ( self . CurrentCalendar , GID        )
-      if                        ( E != False                               ) :
-        ######################################################################
-        NOW     . Stardate = PRD . Start
-        SDTX    = NOW . toDateTimeString ( TZ )
-        SDTX    = SDTX + TZE
-        ######################################################################
-        NOW     . Stardate = PRD . End
-        EDTX    = NOW . toDateTimeString ( TZ )
-        EDTX    = EDTX + TZE
-        ######################################################################
-        E [ "summary"                    ] = self . CurrentTitle
-        E [ "description"                ] = self . CurrentDescription
-        E [ "start"       ] [ "timeZone" ] = TZ
-        E [ "start"       ] [ "dateTime" ] = SDTX
-        E [ "end"         ] [ "timeZone" ] = TZ
-        E [ "end"         ] [ "dateTime" ] = EDTX
-        ######################################################################
-        self . Calendar . Update ( self . CurrentCalendar , GID , Body = E   )
-      ########################################################################
-      self  . CalendarLocker . release (                                     )
     ##########################################################################
     return True
   ############################################################################
