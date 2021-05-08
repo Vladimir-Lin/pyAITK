@@ -708,6 +708,34 @@ class FoxmanRobot (                                                        ) :
         threading . Thread ( target = self . Scheduler . ReportCurrentSettings ) . start ( )
         return True
     ##########################################################################
+    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Modify" ] [ "Allows" ] ) :
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Period"  ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . ModifyCurrentPeriod ) . start ( )
+        return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Event"  ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . ModifyCurrentEvent ) . start ( )
+        return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Task"  ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . ModifyCurrentTask ) . start ( )
+        return True
+    ##########################################################################
+    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Inventory" ] [ "Allows" ] ) :
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Period"  ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . InventoryCurrentPeriods ) . start ( )
+        return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Events"  ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . InventoryCurrentEvents ) . start ( )
+        return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Tasks"  ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . InventoryCurrentTasks ) . start ( )
+        return True
+    ##########################################################################
     if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Clear"    ] [ "Allows" ] ) :
       ########################################################################
       if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ] ) :
