@@ -272,9 +272,45 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return True
   ############################################################################
-  def ReportCurrentCalendar   ( self                                       ) :
+  def hasCurrentCalendarId    ( self                                       ) :
     ##########################################################################
     if                        ( len ( self . CurrentCalendar ) <= 0        ) :
+      FAIL = "請先指定行事曆"
+      self . TalkTo           ( "Calendars" , FAIL                           )
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def hasCurrentPeriod          ( self                                     ) :
+    ##########################################################################
+    if                          ( self . CurrentPeriod <= 0                ) :
+      FAIL = "請先指定時段編號"
+      self . TalkTo             ( "Calendars" , FAIL                         )
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def hasCompletePeriodDetails  ( self                                     ) :
+    ##########################################################################
+    FAIL   = "資訊不足以新增時段"
+    ##########################################################################
+    if                           ( len ( self . CurrentTitle ) <= 0        ) :
+      self . TalkTo              ( "Calendars" , FAIL                        )
+      return False
+    ##########################################################################
+    if                           ( self . CurrentStart <= 0                ) :
+      self . TalkTo              ( "Calendars" , FAIL                        )
+      return False
+    ##########################################################################
+    if                           ( self . CurrentEnd   <= 0                ) :
+      self . TalkTo              ( "Calendars" , FAIL                        )
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def ReportCurrentCalendar   ( self                                       ) :
+    ##########################################################################
+    if                        ( not self . hasCurrentCalendarId ( )        ) :
       return
     ##########################################################################
     G      = self . CurrentCalendar
@@ -337,8 +373,8 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def ReportCurrentPeriods           ( self                                ) :
     ##########################################################################
-    if                               ( len ( self . CurrentCalendar ) <= 0 ) :
-      return False
+    if                               ( not self . hasCurrentCalendarId ( ) ) :
+      return
     ##########################################################################
     G      = self . CurrentCalendar
     ##########################################################################
@@ -816,6 +852,91 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def ModifyCurrentPeriod        ( self                                    ) :
     ##########################################################################
+    if                           ( not self . hasCurrentCalendarId     ( ) ) :
+      return False
+    ##########################################################################
+    if                           ( not self . hasCurrentPeriod         ( ) ) :
+      return False
+    ##########################################################################
+    if                           ( not self . hasCompletePeriodDetails ( ) ) :
+      return False
+    ##########################################################################
+    PRDTAB  = "`periods`"
+    VARTAB  = "`variables`"
+    NOXTAB  = "`notes`"
+    NAMTAB  = "`names_others`"
+    PUID    = self . CurrentPeriod
+    GID     = ""
+    ##########################################################################
+    TZ      = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
+    TZE     = self . JSON [ "Google" ] [ "Options" ] [ "TZextend" ]
+    ##########################################################################
+    NOW     = StarDate          (                                            )
+    PRD     = Periode           (                                            )
+    NOX     = NoteItem          (                                            )
+    ##########################################################################
+    DB      = Connection         (                                           )
+    ##########################################################################
+    if                           ( not DB . ConnectTo ( self . AITKDB )    ) :
+      return False
+    DB      . Prepare            (                                           )
+    ##########################################################################
+    PRD     . Uuid = PUID
+    ##########################################################################
+    if                           ( PRD . ObtainsByUuid ( DB , PRDTAB )     ) :
+      ########################################################################
+      PRD   . Start = self . CurrentStart
+      PRD   . End   = self . CurrentEnd
+      ########################################################################
+      PRD   . UpdateColumns      ( DB , PRDTAB                               )
+      ########################################################################
+      self  . assureName         ( DB                                      , \
+                                   PUID                                    , \
+                                   self . CurrentTitle                     , \
+                                   NAMTAB                                  , \
+                                   1                                         )
+      ########################################################################
+      if                         ( len ( self . CurrentDescription ) > 0   ) :
+        ######################################################################
+        NOX . Uuid      = PUID
+        NOX . Name      = "Description"
+        NOX . Prefer    = -1
+        NOX . Note      = self . CurrentDescription
+        NOX . Editing            ( DB , NOXTAB                               )
+      ########################################################################
+      GID   = self . GetVariable ( DB                                      , \
+                                   PUID                                    , \
+                                   196833                                  , \
+                                   "GoogleCalendar"                        , \
+                                   VARTAB                                    )
+    ##########################################################################
+    DB      . Close              (                                           )
+    ##########################################################################
+    if                           ( ( GID != None ) and ( len ( GID ) > 0 ) ) :
+      ########################################################################
+      self  . CalendarLocker . acquire (                                     )
+      ########################################################################
+      E     = self . Calendar . Get    ( self . CurrentCalendar , GID        )
+      if                        ( E != False                               ) :
+        ######################################################################
+        NOW     . Stardate = PRD . Start
+        SDTX    = NOW . toDateTimeString ( TZ )
+        SDTX    = SDTX + TZE
+        ######################################################################
+        NOW     . Stardate = PRD . End
+        EDTX    = NOW . toDateTimeString ( TZ )
+        EDTX    = EDTX + TZE
+        ######################################################################
+        E [ "summary"                    ] = self . CurrentTitle
+        E [ "description"                ] = self . CurrentDescription
+        E [ "start"       ] [ "timeZone" ] = TZ
+        E [ "start"       ] [ "dateTime" ] = SDTX
+        E [ "end"         ] [ "timeZone" ] = TZ
+        E [ "end"         ] [ "dateTime" ] = EDTX
+        ######################################################################
+        self . Calendar . Update ( self . CurrentCalendar , GID , Body = E   )
+      ########################################################################
+      self  . CalendarLocker . release (                                     )
     ##########################################################################
     return True
   ############################################################################
@@ -960,9 +1081,8 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def ReportCurrentPeriod          ( self                                  ) :
     ##########################################################################
-    if                             ( self . CurrentPeriod <= 0             ) :
-      MSG    = "尚未指定時段"
-      self   . TalkTo              ( "Calendars" , MSG                       )
+    if                             ( not self . hasCurrentPeriod ( )       ) :
+      return False
     ##########################################################################
     DB = Connection                (                                         )
     ##########################################################################
@@ -1093,18 +1213,7 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def AppendCurrentPeriod     ( self                                       ) :
     ##########################################################################
-    FAIL   = "資訊不足以新增時段"
-    ##########################################################################
-    if                        ( len ( self . CurrentTitle ) <= 0           ) :
-      self . TalkTo           ( "Calendars" , FAIL                           )
-      return False
-    ##########################################################################
-    if                        ( self . CurrentStart <= 0                   ) :
-      self . TalkTo           ( "Calendars" , FAIL                           )
-      return False
-    ##########################################################################
-    if                        ( self . CurrentEnd   <= 0                   ) :
-      self . TalkTo           ( "Calendars" , FAIL                           )
+    if                           ( not self . hasCompletePeriodDetails ( ) ) :
       return False
     ##########################################################################
     DB     = Connection       (                                              )
@@ -1193,14 +1302,10 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def ReportCurrentGooglePeriod ( self                                     ) :
     ##########################################################################
-    if                          ( len ( self . CurrentCalendar ) <= 0      ) :
-      FAIL = "請先指定行事曆"
-      self . TalkTo             ( "Calendars" , FAIL                         )
+    if                          ( not self . hasCurrentCalendarId ( )      ) :
       return False
     ##########################################################################
-    if                          ( self . CurrentPeriod <= 0                ) :
-      FAIL = "請先指定時段編號"
-      self . TalkTo             ( "Calendars" , FAIL                         )
+    if                          ( not self . hasCurrentPeriod     ( )      ) :
       return False
     ##########################################################################
     PUID   = self . CurrentPeriod
