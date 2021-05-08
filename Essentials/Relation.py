@@ -540,7 +540,10 @@ class Relation       ( Columns                                             ) :
     DB . Query ( QQ )
     Lists = DB . FetchAll ( )
     print ( QQ )
-    if ( not Lists ) :
+    print ( Lists )
+    if ( not Lists ) or ( Lists == None ) or ( len ( Lists ) <= 0 ) :
+      pass
+    else :
       return False
     ID = -1
     QQ = self . Last ( Table )
