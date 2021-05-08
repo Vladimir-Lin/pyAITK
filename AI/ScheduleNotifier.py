@@ -730,7 +730,7 @@ class ScheduleNotifier (                                                   ) :
     NAMTAB   = "`names_others`"
     TZ       = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
     MSG      = ""
-    WRONG    = "時段編號錯誤"
+    WRONG    = f"時段編號'{PUID}'錯誤"
     NOTFOUND = "找不到時段資訊"
     ##########################################################################
     PRD      = Periode           (                                           )
@@ -759,7 +759,7 @@ class ScheduleNotifier (                                                   ) :
   def AssignCurrentPeriod         ( self , PERIOD                          ) :
     ##########################################################################
     PERIOD   = f"{PERIOD}"
-    WRONG    = "時段編號錯誤"
+    WRONG    = f"時段編號'{PERIOD}'錯誤"
     PUID     = 0
     ##########################################################################
     PRD      = Periode            (                                          )
@@ -815,11 +815,12 @@ class ScheduleNotifier (                                                   ) :
     EVNTAB   = "`events`"
     NAMTAB   = "`names_others`"
     MSG      = ""
-    WRONG    = "事件編號錯誤"
+    WRONG    = f"事件編號'{PUID}'錯誤"
     NOTFOUND = "找不到事件資訊"
     ##########################################################################
     NX       = Naming            ( DB , NAMTAB , PUID , self . Locality      )
     if                           ( len ( NX ) <= 0                         ) :
+      self   . TalkTo            ( "Calendars" , WRONG                       )
       return False
     ##########################################################################
     MSG      = f"事件 : {NX}\n編號 : {PUID}"
@@ -831,13 +832,12 @@ class ScheduleNotifier (                                                   ) :
   def AssignCurrentEvent          ( self , EVENT                           ) :
     ##########################################################################
     EVENT    = f"{EVENT}"
-    WRONG    = "事件編號錯誤"
+    WRONG    = f"事件編號'{EVENT}'錯誤"
     PUID     = 0
     if                            ( len ( EVENT ) == 19                    ) :
       ########################################################################
       try                                                                    :
         PUID = int                ( EVENT                                    )
-        PRD  . Uuid = PUID
       except                                                                 :
         ######################################################################
         self . TalkTo             ( "Calendars" , WRONG                      )
@@ -877,11 +877,12 @@ class ScheduleNotifier (                                                   ) :
     TSKTAB   = "`tasks`"
     NAMTAB   = "`names_others`"
     MSG      = ""
-    WRONG    = "任務編號錯誤"
+    WRONG    = f"任務編號'{PUID}'錯誤"
     NOTFOUND = "找不到任務資訊"
     ##########################################################################
     NX       = Naming            ( DB , NAMTAB , PUID , self . Locality      )
     if                           ( len ( NX ) <= 0                         ) :
+      self   . TalkTo            ( "Calendars" , WRONG                       )
       return False
     ##########################################################################
     MSG      = f"任務 : {NX}\n編號 : {PUID}"
@@ -893,13 +894,12 @@ class ScheduleNotifier (                                                   ) :
   def AssignCurrentTask           ( self , TASK                            ) :
     ##########################################################################
     TASK     = f"{TASK}"
-    WRONG    = "任務編號錯誤"
+    WRONG    = f"任務編號'{TASK}'錯誤"
     PUID     = 0
     if                            ( len ( TASK ) == 19                     ) :
       ########################################################################
       try                                                                    :
         PUID = int                ( TASK                                     )
-        PRD  . Uuid = PUID
       except                                                                 :
         ######################################################################
         self . TalkTo             ( "Calendars" , WRONG                      )
