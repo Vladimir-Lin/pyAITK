@@ -739,21 +739,18 @@ class FoxmanRobot (                                                        ) :
     if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Assign" ] [ "Allows" ] ) :
       ########################################################################
       if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Relate" ] [ "Allows" ] ) :
-        print ( "Relate" )
         if ( CNT > 3 )                                                       :
           if   ( L [ 3 ] in self . JSON [ "Commands" ] [ "Period" ] [ "Allows" ] ) :
             ##################################################################
             ## 指定 關聯 任務 時段
             ##################################################################
             if ( L [ 2 ] in self . JSON [ "Commands" ] [ "Task"   ] [ "Allows" ] ) :
-              print ( "Assign Relate Task Period" )
               threading . Thread ( target = self . Scheduler . RelateTaskAndPeriod ) . start ( )
               return True
             ##################################################################
             ## 指定 關聯 事件 時段
             ##################################################################
             if ( L [ 2 ] in self . JSON [ "Commands" ] [ "Event"  ] [ "Allows" ] ) :
-              print ( "Assign Relate Event Period" )
               threading . Thread ( target = self . Scheduler . RelateEventAndPeriod ) . start ( )
               return True
           elif ( L [ 2 ] in self . JSON [ "Commands" ] [ "Task" ] [ "Allows" ] ) :
@@ -761,7 +758,6 @@ class FoxmanRobot (                                                        ) :
             ## 指定 關聯 任務 事件
             ##################################################################
             if ( L [ 3 ] in self . JSON [ "Commands" ] [ "Event"  ] [ "Allows" ] ) :
-              print ( "Assign Relate Task Event" )
               threading . Thread ( target = self . Scheduler . RelateTaskAndEvent ) . start ( )
               return True
       ########################################################################

@@ -539,8 +539,6 @@ class Relation       ( Columns                                             ) :
     QQ = self . ExactColumn ( Table , "id" )
     DB . Query ( QQ )
     Lists = DB . FetchAll ( )
-    print ( QQ )
-    print ( Lists )
     if ( not Lists ) or ( Lists == None ) or ( len ( Lists ) <= 0 ) :
       pass
     else :
@@ -548,7 +546,6 @@ class Relation       ( Columns                                             ) :
     ID = -1
     QQ = self . Last ( Table )
     DB . Query ( QQ )
-    print ( QQ )
     rr = DB . FetchOne ( )
     if ( not rr ) :
       pass
