@@ -487,13 +487,13 @@ class ScheduleNotifier (                                                   ) :
     NAMTAB  = "`names_others`"
     ##########################################################################
     TZ      = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
+    TZE     = self . JSON [ "Google" ] [ "Options" ] [ "TZextend" ]
     TUID    = self . JSON [ "Google" ] [ "Groups"  ] [ CalendarId ] [ "Uuid" ]
     ##########################################################################
     NOW     = StarDate          (                                            )
     PRD     = Periode           (                                            )
     REL     = Relation          (                                            )
     NOX     = NoteItem          (                                            )
-    NIT     = NameItem          (                                            )
     ##########################################################################
     PUID    = PRD . GetUuid     ( DB , PRDTAB                                )
     ##########################################################################
@@ -511,13 +511,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     if                          ( len ( TITLE ) > 0                        ) :
       ########################################################################
-      NIT   . Uuid      = PUID
-      NIT   . Locality  = self . Locality
-      NIT   . Priority  = 0
-      NIT   . Relevance = 0
-      NIT   . Flags     = 1
-      NIT   . Name      = TITLE
-      NIT   . Editing           ( DB , NAMTAB                                )
+      self . assureName         ( DB , PUID , TITLE , NAMTAB , 1             )
     ##########################################################################
     if                          ( len ( DESCRIPTION ) > 0                  ) :
       ########################################################################
@@ -536,11 +530,11 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     NOW     . Stardate = START
     SDTX    = NOW . toDateTimeString ( TZ )
-    SDTX    = SDTX + "+08:00"
+    SDTX    = SDTX + TZE
     ##########################################################################
     NOW     . Stardate = END
     EDTX    = NOW . toDateTimeString ( TZ )
-    EDTX    = EDTX + "+08:00"
+    EDTX    = EDTX + TZE
     ##########################################################################
     E       = { "kind"              : "calendar#event"                       ,
                 "summary"            : TITLE                                 ,
