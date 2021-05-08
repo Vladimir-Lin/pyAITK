@@ -642,6 +642,18 @@ class FoxmanRobot (                                                        ) :
                                args   = ( L [ 2 ] , )            ) . start ( )
           return True
       ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Event" ] [ "Allows" ] ) :
+        if ( CNT > 2 )                                                       :
+          threading . Thread ( target = self . Scheduler . AssignCurrentEvent , \
+                               args   = ( L [ 2 ] , )            ) . start ( )
+          return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Task" ] [ "Allows" ] ) :
+        if ( CNT > 2 )                                                       :
+          threading . Thread ( target = self . Scheduler . AssignCurrentTask , \
+                               args   = ( L [ 2 ] , )            ) . start ( )
+          return True
+      ########################################################################
       if ( L [ 1 ] in self . JSON [ "Commands" ] [ "StartTime" ] [ "Allows" ] ) :
         if ( CNT > 2 )                                                       :
           TT = L [ 2 ]
