@@ -757,7 +757,7 @@ class FoxmanRobot (                                                        ) :
             ##################################################################
             ## 指定 關聯 任務 事件
             ##################################################################
-            if ( L [ 2 ] in self . JSON [ "Commands" ] [ "Event"  ] [ "Allows" ] ) :
+            if ( L [ 3 ] in self . JSON [ "Commands" ] [ "Event"  ] [ "Allows" ] ) :
               threading . Thread ( target = self . Scheduler . RelateTaskAndEvent ) . start ( )
               return True
       ########################################################################
