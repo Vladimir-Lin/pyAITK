@@ -53,10 +53,7 @@ class ScheduleNotifier (                                                   ) :
     self . CurrentEvent       = self . JSON [ "Google" ] [ "Options" ] [ "Event"  ]
     self . CurrentPeriod      = self . JSON [ "Google" ] [ "Options" ] [ "Period" ]
     ##########################################################################
-    self . CurrentTitle       = ""
-    self . CurrentDescription = ""
-    self . CurrentStart       = 0
-    self . CurrentEnd         = 0
+    self . ClearCurrentSettings (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -241,6 +238,15 @@ class ScheduleNotifier (                                                   ) :
       MSG   = f"{MSG}\n系統編號:{PXID}"
     ##########################################################################
     return MSG
+  ############################################################################
+  def ClearCurrentSettings    ( self                                       ) :
+    ##########################################################################
+    self . CurrentTitle       = ""
+    self . CurrentDescription = ""
+    self . CurrentStart       = 0
+    self . CurrentEnd         = 0
+    ##########################################################################
+    return True
   ############################################################################
   def ReportCurrentCalendar   ( self                                       ) :
     ##########################################################################
@@ -909,7 +915,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return True
   ############################################################################
-  def AppendCurrentEvent                ( self                             ) :
+  def AppendCurrentEvent      ( self                                       ) :
     ##########################################################################
     FAIL   = "資訊不足以新增事件"
     ##########################################################################
@@ -929,13 +935,13 @@ class ScheduleNotifier (                                                   ) :
     PUID   = DB . LastUuid    ( EVNTAB , "uuid" , 7302000000000000000        )
     if                        ( PUID > 0                                   ) :
       DB   . AddUuid          ( EVNTAB , PUID , 196833                       )
-      self . assureName       ( DB , PUID , TITLE , NAMTAB , 1               )
+      self . assureName       ( DB , PUID , self . CurrentTitle , NAMTAB , 1 )
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################
     return True
   ############################################################################
-  def AppendCurrentTask                 ( self                             ) :
+  def AppendCurrentTask       ( self                                       ) :
     ##########################################################################
     FAIL   = "資訊不足以新增任務"
     ##########################################################################
@@ -955,7 +961,7 @@ class ScheduleNotifier (                                                   ) :
     PUID   = DB . LastUuid    ( TSKTAB , "uuid" , 7303000000000000000        )
     if                        ( PUID > 0                                   ) :
       DB   . AddUuid          ( EVNTAB , PUID , 196833                       )
-      self . assureName       ( DB , PUID , TITLE , NAMTAB , 1               )
+      self . assureName       ( DB , PUID , self . CurrentTitle , NAMTAB , 1 )
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################

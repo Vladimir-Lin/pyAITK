@@ -696,6 +696,12 @@ class FoxmanRobot (                                                        ) :
         threading . Thread ( target = self . Scheduler . ReportCurrentSettings ) . start ( )
         return True
     ##########################################################################
+    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Clear"    ] [ "Allows" ] ) :
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . ClearCurrentSettings ) . start ( )
+        return True
+    ##########################################################################
     return True
   ############################################################################
   def CalendarTitle                ( self , beau , message                 ) :
