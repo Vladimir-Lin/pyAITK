@@ -760,6 +760,14 @@ class FoxmanRobot (                                                        ) :
       ########################################################################
       pass
     ##########################################################################
+    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Details" ] [ "Allows" ] ) :
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Google" ] [ "Allows" ] ) :
+        if ( CNT > 2 ) :
+          if ( L [ 2 ] in self . JSON [ "Commands" ] [ "Period" ] [ "Allows" ] ) :
+            threading . Thread ( target = self . Scheduler . ReportCurrentGooglePeriod ) . start ( )
+            return True
+    ##########################################################################
     return True
   ############################################################################
   def CalendarTitle                ( self , beau , message                 ) :
