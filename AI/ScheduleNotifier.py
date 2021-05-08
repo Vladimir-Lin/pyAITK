@@ -1028,7 +1028,7 @@ class ScheduleNotifier (                                                   ) :
     PERIOD   = f"{PERIOD}"
     FAILSTR  = self . JSON [ "Google" ] [ "Messages" ] [ "Failure" ]
     PXIDSTR  = self . JSON [ "Google" ] [ "Messages" ] [ "PeriodUuid" ]
-    WRONG    = f"{PXIDSTR}'{PUID}'{FAILSTR}"
+    WRONG    = f"{PXIDSTR}'{PERIOD}'{FAILSTR}"
     PUID     = 0
     ##########################################################################
     PRD      = Periode            (                                          )
