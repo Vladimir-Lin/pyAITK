@@ -206,7 +206,6 @@ class ScheduleNotifier (                                                   ) :
     V . Uuid  = UUID
     V . Type  = TYPE
     V . Name  = NAME
-    V . Value = VALUE
     ##########################################################################
     return V . GetValue      ( DB , TABLE                                    )
   ############################################################################
