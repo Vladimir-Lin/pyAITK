@@ -539,11 +539,13 @@ class Relation       ( Columns                                             ) :
     QQ = self . ExactColumn ( Table , "id" )
     DB . Query ( QQ )
     Lists = DB . FetchAll ( )
+    print ( QQ )
     if ( not Lists ) :
       return False
     ID = -1
     QQ = self . Last ( Table )
     DB . Query ( QQ )
+    print ( QQ )
     rr = DB . FetchOne ( )
     if ( not rr ) :
       pass
