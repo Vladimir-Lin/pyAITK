@@ -636,6 +636,20 @@ class FoxmanRobot (                                                        ) :
     ##########################################################################
     if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Assign" ] [ "Allows" ] ) :
       ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Relate" ] [ "Allows" ] ) :
+        if ( CNT > 3 )                                                       :
+          if   ( L [ 3 ] in self . JSON [ "Commands" ] [ "Period" ] [ "Allows" ] ) :
+            if ( L [ 2 ] in self . JSON [ "Commands" ] [ "Task"   ] [ "Allows" ] ) :
+              threading . Thread ( target = self . Scheduler . RelateTaskAndPeriod ) . start ( )
+              return True
+            if ( L [ 2 ] in self . JSON [ "Commands" ] [ "Event"  ] [ "Allows" ] ) :
+              threading . Thread ( target = self . Scheduler . RelateEventAndPeriod ) . start ( )
+              return True
+          elif ( L [ 2 ] in self . JSON [ "Commands" ] [ "Task" ] [ "Allows" ] ) :
+            if ( L [ 2 ] in self . JSON [ "Commands" ] [ "Event"  ] [ "Allows" ] ) :
+              threading . Thread ( target = self . Scheduler . RelateTaskAndEvent ) . start ( )
+              return True
+      ########################################################################
       if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Period" ] [ "Allows" ] ) :
         if ( CNT > 2 )                                                       :
           threading . Thread ( target = self . Scheduler . AssignCurrentPeriod , \
@@ -736,11 +750,15 @@ class FoxmanRobot (                                                        ) :
         threading . Thread ( target = self . Scheduler . InventoryCurrentTasks ) . start ( )
         return True
     ##########################################################################
-    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Clear"    ] [ "Allows" ] ) :
+    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Clear" ] [ "Allows" ] ) :
       ########################################################################
       if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Settings" ] [ "Allows" ] ) :
         threading . Thread ( target = self . Scheduler . ClearCurrentSettings ) . start ( )
         return True
+    ##########################################################################
+    if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Decouple" ] [ "Allows" ] ) :
+      ########################################################################
+      pass
     ##########################################################################
     return True
   ############################################################################
