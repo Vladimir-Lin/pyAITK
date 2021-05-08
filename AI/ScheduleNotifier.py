@@ -726,7 +726,7 @@ class ScheduleNotifier (                                                   ) :
                                   PUID                                     , \
                                   "Description"                            , \
                                   DESCR                                    , \
-                                  -1                                       , \
+                                  0                                        , \
                                   NOXTAB                                     )
     ##########################################################################
     PRD     . UpdateColumns     ( DB , PRDTAB                                )
@@ -1127,7 +1127,7 @@ class ScheduleNotifier (                                                   ) :
                                    PUID                                    , \
                                    "Description"                           , \
                                    self . CurrentDescription               , \
-                                   -1                                      , \
+                                   0                                       , \
                                    NOXTAB                                    )
       ########################################################################
       GID   = self . GetVariable ( DB                                      , \
