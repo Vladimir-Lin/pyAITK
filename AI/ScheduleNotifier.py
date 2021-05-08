@@ -1651,10 +1651,12 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   def RelateEventAndPeriod    ( self                                       ) :
     ##########################################################################
+    print ( self . CurrentEvent )
     if                        ( self . CurrentEvent <= 0                   ) :
       self . TalkTo           ( "Calendars" , "請先指定事件編號"                )
       return False
     ##########################################################################
+    print ( self . CurrentPeriod )
     if                        ( self . CurrentPeriod <= 0                  ) :
       self . TalkTo           ( "Calendars" , "請先指定時段編號"                )
       return False
@@ -1680,6 +1682,7 @@ class ScheduleNotifier (                                                   ) :
     REL    . setRelation      ( "Contains"                                   )
     ##########################################################################
     REL    . Join             ( DB , RELTAB                                  )
+    print ( "JOIN" )
     ##########################################################################
     DB     . UnlockTables     (                                              )
     ##########################################################################
