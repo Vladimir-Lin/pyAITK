@@ -625,6 +625,14 @@ class FoxmanRobot (                                                        ) :
       if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Period" ] [ "Allows" ] ) :
         threading . Thread ( target = self . Scheduler . AppendCurrentPeriod ) . start ( )
         return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Event" ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . AppendCurrentEvent ) . start ( )
+        return True
+      ########################################################################
+      if ( L [ 1 ] in self . JSON [ "Commands" ] [ "Task" ] [ "Allows" ] ) :
+        threading . Thread ( target = self . Scheduler . AppendCurrentTask ) . start ( )
+        return True
     ##########################################################################
     if   ( L [ 0 ] in self . JSON [ "Commands" ] [ "Assign" ] [ "Allows" ] ) :
       ########################################################################
