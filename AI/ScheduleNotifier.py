@@ -973,7 +973,7 @@ class ScheduleNotifier (                                                   ) :
       if                           ( APPENDING                             ) :
         self . AppendEventEntry    ( DB , G , TUID , e                       )
       else                                                                   :
-        self . UpdateEventEntry    ( DB , G , TUID , e                       )
+        self . UpdateEventEntry    ( DB ,            e                       )
     ##########################################################################
     DB . UnlockTables              (                                         )
     DB . Close                     (                                         )
