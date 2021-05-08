@@ -742,13 +742,13 @@ class FoxmanRobot (                                                        ) :
         if ( CNT > 3 )                                                       :
           if   ( L [ 3 ] in self . JSON [ "Commands" ] [ "Period" ] [ "Allows" ] ) :
             ##################################################################
-            ## 指定 關聯 時段 任務
+            ## 指定 關聯 任務 時段
             ##################################################################
             if ( L [ 2 ] in self . JSON [ "Commands" ] [ "Task"   ] [ "Allows" ] ) :
               threading . Thread ( target = self . Scheduler . RelateTaskAndPeriod ) . start ( )
               return True
             ##################################################################
-            ## 指定 關聯 時段 事件
+            ## 指定 關聯 事件 時段
             ##################################################################
             if ( L [ 2 ] in self . JSON [ "Commands" ] [ "Event"  ] [ "Allows" ] ) :
               threading . Thread ( target = self . Scheduler . RelateEventAndPeriod ) . start ( )
