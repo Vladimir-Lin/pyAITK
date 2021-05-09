@@ -17,19 +17,23 @@ import json
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK  . Database   . Connection import Connection as Connection
+from   AITK  . Database   . Connection import Connection     as Connection
 ##############################################################################
-from   AITK  . Documents  . Name       import Name       as NameItem
-from   AITK  . Documents  . Name       import Naming     as Naming
-from   AITK  . Documents  . Notes      import Notes      as NoteItem
-from   AITK  . Documents  . Variables  import Variables  as VariableItem
+from   AITK  . Documents  . Name       import Name           as NameItem
+from   AITK  . Documents  . Name       import Naming         as Naming
+from   AITK  . Documents  . Notes      import Notes          as NoteItem
+from   AITK  . Documents  . Variables  import Variables      as VariableItem
 ##############################################################################
-from   AITK  . Calendars  . StarDate   import StarDate   as StarDate
-from   AITK  . Calendars  . Periode    import Periode    as Periode
+from   AITK  . Calendars  . StarDate   import StarDate       as StarDate
+from   AITK  . Calendars  . Periode    import Periode        as Periode
 ##############################################################################
-from   AITK  . Essentials . Relation   import Relation   as Relation
+from   AITK  . Essentials . Relation   import Relation       as Relation
 ##############################################################################
-from   AITK  . Google     . Calendar   import Calendar   as GCalendar
+from   AITK  . Networking . WSS        import WSS            as WSS
+from   AITK  . Networking . WSS        import wssAccepter    as wssAccepter
+from   AITK  . Networking . WSS        import WssHttpRequest as WssHttpRequest
+##############################################################################
+from   AITK  . Google     . Calendar   import Calendar       as GCalendar
 ##############################################################################
 """
 NOW    . Now                       (                                     )
@@ -152,6 +156,20 @@ class ScheduleNotifier (                                                   ) :
       Logger . info                ( message                                 )
     ##########################################################################
     return
+  ############################################################################
+  ## RPC解譯器
+  ############################################################################
+  def HttpParser      ( self , Path , Headers , JSON                       ) :
+    ##########################################################################
+    if                ( "/Calendars" == Path                               ) :
+      ########################################################################
+      ########################################################################
+      return          { "Process" : True                                     ,
+                        "Result"  : { "Answer"   : 200                       ,
+                                      "Response" :                           {
+                                      "Answer"   : "Yes"                 } } }
+    ##########################################################################
+    return            { "Process" : False                                    }
   ############################################################################
   ## 發送到Skype
   ############################################################################
