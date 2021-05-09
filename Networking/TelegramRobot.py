@@ -53,13 +53,53 @@ class TelegramWatcher           ( HttpRPC                                  ) :
 ##############################################################################
 class TelegramRobot (                                                      ) :
   ############################################################################
-  def __init__      ( self                                                 ) :
+  def __init__   ( self                                                      ,
+                   Username = ""                                             ,
+                   Password = ""                                             ,
+                   Account  = ""                                             ,
+                   Options  = { }                                          ) :
     ##########################################################################
+    self . TelegramLocker = threading . Lock (                               )
+    self . Watcher        = None
+    self . DebugLogger    = None
+    self . Running        = False
+    self . Account        = Account
+    self . Username       = Username
+    self . Password       = Password
+    self . HttpPlugin     = None
+    self . SetOptions ( Options )
     ##########################################################################
     return
   ############################################################################
   def __del__       ( self                                                 ) :
+    return
+  ############################################################################
+  def SetOptions ( self , Options                                          ) :
+    self . Options = Options
+    return
+  ############################################################################
+  def debug                        ( self , message , way = "info"         ) :
     ##########################################################################
+    Logger   = self . DebugLogger
+    ##########################################################################
+    if                             ( Logger == None                        ) :
+      return
+    ##########################################################################
+    if                             ( way == "debug"                        ) :
+      Logger . debug               ( message                                 )
+    elif                           ( way == "info"                         ) :
+      Logger . info                ( message                                 )
     ##########################################################################
     return
+  ############################################################################
+  def lock                          ( self                                 ) :
+    self . TelegramLocker . acquire (                                        )
+    return
+  ############################################################################
+  def release                       ( self                                 ) :
+    self . TelegramLocker . release (                                        )
+    return
+  ############################################################################
+  def isWorking         ( self                                             ) :
+    return self . Working
 ##############################################################################
