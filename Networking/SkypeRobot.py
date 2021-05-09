@@ -381,13 +381,21 @@ class SkypeRobot (                                                         ) :
   ############################################################################
   def StartHttpd                         ( self                            ) :
     ##########################################################################
-    MSG            = "Skype Robot is binded to 0.0.0.0:" + str ( self . Port )
+    MSG            = "Start up Skype Robot HTTP Watcher"
+    self . debug                         ( MSG , "debug"                     )
+    ##########################################################################
     IP             =                     ( "0.0.0.0" , self . Port           )
     ##########################################################################
     self . Watcher = ThreadingHTTPServer ( IP , SkypeWatcher                 )
     self . Watcher . Robot = self
+    ##########################################################################
+    MSG            = "Skype Robot is binded to 0.0.0.0:" + str ( self . Port )
     self . debug                         ( MSG                               )
+    ##########################################################################
     self . Watcher . serve_forever       (                                   )
+    ##########################################################################
+    MSG            = "Shutdown Skype Robot HTTP Watcher"
+    self . debug                         ( MSG , "debug"                     )
     ##########################################################################
     return
   ############################################################################
@@ -396,6 +404,7 @@ class SkypeRobot (                                                         ) :
     if                        ( self . Watcher == None                     ) :
       return False
     ##########################################################################
+    self . debug              ( "Shutdown Skype Robot HTTP Watcher"          )
     self . Watcher . shutdown (                                              )
     ##########################################################################
     return True
