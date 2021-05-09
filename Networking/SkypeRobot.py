@@ -176,7 +176,9 @@ class SkypeRobot (                                                         ) :
                    Password = ""                                             ,
                    Account  = ""                                             ,
                    Options  = { }                                          ) :
+    ##########################################################################
     self . SkypeLocker  = threading . Lock (                                 )
+    ##########################################################################
     self . IMS          = None
     self . Watcher      = None
     self . Port         = 5531
@@ -184,6 +186,8 @@ class SkypeRobot (                                                         ) :
     self . HttpPassword = ""
     self . DebugLogger  = None
     self . Running      = False
+    self . Working      = False
+    self . Handling     = False
     self . Queues       = [ ]
     self . Account      = Account
     self . Username     = Username
@@ -191,13 +195,16 @@ class SkypeRobot (                                                         ) :
     self . Reply        = None
     self . SendTo       = None
     self . HttpPlugin   = None
+    ##########################################################################
     self . SetOptions ( Options )
+    ##########################################################################
     return
   ############################################################################
   def __del__    ( self                                                    ) :
     return
   ############################################################################
   def SetOptions ( self , Options                                          ) :
+    self . Options = Options
     return
   ############################################################################
   def debug                        ( self , message , way = "info"         ) :
@@ -214,13 +221,16 @@ class SkypeRobot (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def lock                     ( self                                      ) :
-    self . SkypeLocker . acquire (                                             )
+  def lock                       ( self                                    ) :
+    self . SkypeLocker . acquire (                                           )
     return
   ############################################################################
-  def release                  ( self                                      ) :
-    self . SkypeLocker . release (                                             )
+  def release                    ( self                                    ) :
+    self . SkypeLocker . release (                                           )
     return
+  ############################################################################
+  def isWorking         ( self                                             ) :
+    return self . Working
   ############################################################################
   def count             ( self                                             ) :
     ##########################################################################
@@ -294,9 +304,14 @@ class SkypeRobot (                                                         ) :
   ############################################################################
   def EventHandler                ( self                                   ) :
     ##########################################################################
+    MSG        = "Starting Skype Robot Chat Message Event Handler"
+    self       . debug            ( MSG , "debug"                            )
+    ##########################################################################
+    self . Handling = True
+    ##########################################################################
     while                         ( self . Running                         ) :
       ########################################################################
-      time . sleep                ( 1.0                                      )
+      time . sleep                ( 0.25                                     )
       ########################################################################
       if                          ( self . IMS == None                     ) :
         continue
@@ -326,6 +341,8 @@ class SkypeRobot (                                                         ) :
       finally                                                                :
         self . release            (                                          )
     ##########################################################################
+    self . Handling = False
+    ##########################################################################
     return True
   ############################################################################
   def Monitor                     ( self                                   ) :
@@ -333,6 +350,10 @@ class SkypeRobot (                                                         ) :
     self           . Running = True
     ##########################################################################
     threading . Thread            ( target = self . EventHandler ) . start ( )
+    ##########################################################################
+    self . Working = True
+    MSG            = "Starting Skype Robot Monitor"
+    self           . debug        ( MSG , "debug"                            )
     ##########################################################################
     while                         ( self . Running                         ) :
       ########################################################################
@@ -377,17 +398,35 @@ class SkypeRobot (                                                         ) :
       ########################################################################
       self         . send         ( BODY                                     )
     ##########################################################################
+    MSG            = "Trying to Stop Skype Robot Monitor"
+    self           . debug        ( MSG , "debug"                            )
+    ##########################################################################
+    while                         ( self . Handling                        ) :
+      time . sleep                ( 0.1                                      )
+    ##########################################################################
+    MSG            = "Skype Robot Monitor Stopped"
+    self           . debug        ( MSG , "debug"                            )
+    self . Working = False
+    ##########################################################################
     return True
   ############################################################################
   def StartHttpd                         ( self                            ) :
     ##########################################################################
-    MSG            = "Skype Robot is binded to 0.0.0.0:" + str ( self . Port )
+    MSG            = "Start up Skype Robot HTTP Watcher"
+    self . debug                         ( MSG , "debug"                     )
+    ##########################################################################
     IP             =                     ( "0.0.0.0" , self . Port           )
     ##########################################################################
     self . Watcher = ThreadingHTTPServer ( IP , SkypeWatcher                 )
     self . Watcher . Robot = self
+    ##########################################################################
+    MSG            = "Skype Robot is binded to 0.0.0.0:" + str ( self . Port )
     self . debug                         ( MSG                               )
+    ##########################################################################
     self . Watcher . serve_forever       (                                   )
+    ##########################################################################
+    MSG            = "Shutdown Skype Robot HTTP Watcher"
+    self . debug                         ( MSG , "debug"                     )
     ##########################################################################
     return
   ############################################################################
@@ -396,6 +435,7 @@ class SkypeRobot (                                                         ) :
     if                        ( self . Watcher == None                     ) :
       return False
     ##########################################################################
+    self . debug              ( "Shutdown Skype Robot HTTP Watcher"          )
     self . Watcher . shutdown (                                              )
     ##########################################################################
     return True
