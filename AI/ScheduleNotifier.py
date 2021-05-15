@@ -1285,7 +1285,7 @@ class ScheduleNotifier (                                                   ) :
                                       75                                   , \
                                       "Calendar"                           , \
                                       VARTAB                                 )
-    if                           ( len ( CID ) <= 0                        ) :
+    if ( ( CID == None ) or ( len ( CID ) <= 0 ) )                           :
       return False
     ##########################################################################
     GID        = self . GetVariable ( DB                                   , \
@@ -1326,7 +1326,7 @@ class ScheduleNotifier (                                                   ) :
                      }                                                       ,
                    }                                                         }
     ##########################################################################
-    if                           ( len ( GID ) <= 0                        ) :
+    if ( ( GID == None ) or ( len ( GID ) <= 0 ) )                           :
       ########################################################################
       self . AppendPeriodItemToGoogle   ( DB , CID       , PRD , EVENT       )
       ########################################################################
@@ -1341,8 +1341,6 @@ class ScheduleNotifier (                                                   ) :
   def SyncPeriodsToGoogle         ( self , JSON                            ) :
     ##########################################################################
     PERIODs  = JSON               [ "Periods"                                ]
-    print ( json.dumps(JSON) )
-    print ( json.dumps(PERIODs) )
     if                            ( len ( PERIODs ) <= 0                   ) :
       return
     ##########################################################################
