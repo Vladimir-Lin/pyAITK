@@ -190,7 +190,7 @@ class FoxmanRobot (                                                        ) :
                                       "Answer"   : "Yes"                 } } }
     ##########################################################################
     if                ( self . Scheduler != None                           ) :
-      R = self . Scheduler . HttpParser ( self , Path , Headers , JSON       )
+      R = self . Scheduler . HttpParser ( Path , Headers , JSON              )
       if              ( R [ "Process" ]                                    ) :
         return R
     ##########################################################################
