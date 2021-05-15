@@ -35,28 +35,6 @@ from   AITK  . Networking . WSS        import WssHttpRequest as WssHttpRequest
 ##############################################################################
 from   AITK  . Google     . Calendar   import Calendar       as GCalendar
 ##############################################################################
-"""
-NOW    . Now                       (                                     )
-BASE   = NOW    . Stardate
-for c in OriphaseSettings [ "Channels" ]                                 :
-  CID   = OriphaseSettings [ "Channels" ] [ c ] [ "CalendarId" ]
-  if   ( CID in OriphaseSettings [ "Watch" ]                           ) :
-    p   = OriphaseSettings [ "Watch" ] [ CID ]
-    if ( c == p [ "id" ]                                               ) :
-      e  = OriphaseSettings [ "Watch" ] [ CID ] [ "expiration" ]
-      NOW . setTime ( int ( int ( e ) / 1000 ) )
-      DT = int ( NOW . Stardate ) - BASE
-      if ( DT < 43200 ) :
-        if ( c not in REPLACEMENTS ) :
-          REPLACEMENTS . append ( c )
-if                                 ( len ( REPLACEMENTS ) > 0          ) :
-  for r in REPLACEMENTS                                                  :
-    CID   = OriphaseSettings [ "Channels" ] [ r ] [ "CalendarId" ]
-    JSOX  = { "CalendarId" : CID }
-    RemoveWatchChannel             ( JSOX                                )
-    WatchChannel                   ( JSOX                                )
-"""
-##############################################################################
 class ScheduleNotifier (                                                   ) :
   ############################################################################
   def __init__         ( self , jsonFile = ""                              ) :
@@ -166,6 +144,16 @@ class ScheduleNotifier (                                                   ) :
       if                   ( "SyncGoogleCalendars" == JSON [ "Action" ]    ) :
         ######################################################################
         threading . Thread ( target = self . SyncGoogleCalendars ) . start ( )
+        ######################################################################
+        return             { "Process" : True                                ,
+                             "Result"  : { "Answer"     : 200                ,
+                                             "Response" :                    {
+                                            "Answer"    : "Yes"          } } }
+      ########################################################################
+      if                   ( "SyncPeriodsToGoogle" == JSON [ "Action" ]    ) :
+        ######################################################################
+        threading . Thread ( target = self . SyncPeriodsToGoogle             ,
+                             args   = ( JSON , )                 ) . start ( )
         ######################################################################
         return             { "Process" : True                                ,
                              "Result"  : { "Answer"     : 200                ,
@@ -841,7 +829,7 @@ class ScheduleNotifier (                                                   ) :
     EDTX    = NOW . toDateTimeString ( TZ )
     EDTX    = EDTX + TZE
     ##########################################################################
-    E       = { "kind"              : "calendar#event"                       ,
+    E       = { "kind"               : "calendar#event"                      ,
                 "summary"            : TITLE                                 ,
                 "description"        : DESCRIPTION                           ,
                 "start"              :                                       {
@@ -857,27 +845,7 @@ class ScheduleNotifier (                                                   ) :
                     "Tag"            : TUID                                  ,
                   }                                                          ,
                 }                                                            }
-    z       = self . Calendar . Append ( calendarId = CalendarId , Body = E  )
-    ##########################################################################
-    if                          ( not z                                    ) :
-      ########################################################################
-      PRD     . UpdateColumns   ( DB , PRDTAB                                )
-      ########################################################################
-      return False
-    ##########################################################################
-    if                          ( "id" in z                                ) :
-      ########################################################################
-      ID    = z [ "id" ]
-      PRD   = self . ConvertEventCreationToPeriod ( z , PRD                  )
-      ########################################################################
-      self  . AssureVariables   ( DB                                       , \
-                                  PUID                                     , \
-                                  196833                                   , \
-                                  "GoogleCalendar"                         , \
-                                  ID                                       , \
-                                  VARTAB                                     )
-    ##########################################################################
-    PRD     . UpdateColumns     ( DB , PRDTAB                                )
+    self . AppendPeriodItemToGoogle  ( DB , CalendarId , PRD , E             )
     ##########################################################################
     return True
   ############################################################################
@@ -1224,6 +1192,186 @@ class ScheduleNotifier (                                                   ) :
     DB      . Close              (                                           )
     ##########################################################################
     return True
+  ############################################################################
+  ## 新增本地時段到谷歌行事曆
+  ############################################################################
+  def AppendPeriodItemToGoogle   ( self                                    , \
+                                   DB                                      , \
+                                   CalendarId                              , \
+                                   PERIOD                                  , \
+                                   EVENT                                   ) :
+    ##########################################################################
+    PRDTAB    = "`periods`"
+    VARTAB    = "`variables`"
+    ##########################################################################
+    Z         = self . Calendar . Append ( calendarId = CalendarId         , \
+                                           Body       = EVENT                )
+    ##########################################################################
+    if                           ( not Z                                   ) :
+      ########################################################################
+      PERIOD  . UpdateColumns    ( DB , PRDTAB                               )
+      ########################################################################
+      return False
+    ##########################################################################
+    if                           ( "id" in Z                               ) :
+      ########################################################################
+      ID      = Z [ "id" ]
+      PERIOD  = self . ConvertEventCreationToPeriod ( Z , PERIOD             )
+      ########################################################################
+      self    . AssureVariables  ( DB                                      , \
+                                   PERIOD . Uuid                           , \
+                                   196833                                  , \
+                                   "GoogleCalendar"                        , \
+                                   ID                                      , \
+                                   VARTAB                                    )
+    ##########################################################################
+    PERIOD    . UpdateColumns    ( DB , PRDTAB                               )
+    ##########################################################################
+    return True
+  ############################################################################
+  ## 更新本地時段到谷歌行事曆
+  ############################################################################
+  def UpdatePeriodItemToGoogle        ( self                               , \
+                                        DB                                 , \
+                                        CalendarId                         , \
+                                        EventId                            , \
+                                        PERIOD                             , \
+                                        EVENT                              ) :
+    ##########################################################################
+    Z      = self . Calendar . Update ( CalendarId , EventId , Body = EVENT  )
+    if                                ( not Z                              ) :
+      return False
+    ##########################################################################
+    PRDTAB = "`periods`"
+    PERIOD = self . ConvertEventCreationToPeriod ( Z , PERIOD                )
+    PERIOD . UpdateColumns            ( DB , PRDTAB                          )
+    ##########################################################################
+    return True
+  ############################################################################
+  ## 將單一時段同步到谷歌行事曆
+  ############################################################################
+  def SyncPeriodToGoogle         ( self , DB , PUID                        ) :
+    ##########################################################################
+    PRDTAB     = "`periods`"
+    VARTAB     = "`variables`"
+    NOXTAB     = "`notes`"
+    NAMTAB     = "`names_others`"
+    RELTAB     = "`relations_others`"
+    ##########################################################################
+    TZ         = self . JSON [ "Google" ] [ "Options" ] [ "TimeZone" ]
+    TZE        = self . JSON [ "Google" ] [ "Options" ] [ "TZextend" ]
+    ##########################################################################
+    NOW        = StarDate        (                                           )
+    PRD        = Periode         (                                           )
+    REL        = Relation        (                                           )
+    ##########################################################################
+    PRD . Uuid = PUID
+    ##########################################################################
+    if                           ( not PRD . ObtainsByUuid ( DB , PRDTAB ) ) :
+      return False
+    ##########################################################################
+    REL        . set             ( "second" , f"{PUID}"                      )
+    REL        . setT1           ( "Tag"                                     )
+    REL        . setT2           ( "Period"                                  )
+    REL        . setRelation     ( "Contains"                                )
+    TAGS       = REL . GetOwners ( DB , RELTAB                               )
+    ##########################################################################
+    if                           ( len ( TAGS ) <= 0                       ) :
+      return False
+    TUID       = TAGS            [ 0                                         ]
+    ##########################################################################
+    CID        = self . GetVariable ( DB                                   , \
+                                      TUID                                 , \
+                                      75                                   , \
+                                      "Calendar"                           , \
+                                      VARTAB                                 )
+    if                           ( len ( CID ) <= 0                        ) :
+      return False
+    ##########################################################################
+    GID        = self . GetVariable ( DB                                   , \
+                                      PUID                                 , \
+                                      196833                               , \
+                                      "GoogleCalendar"                     , \
+                                      VARTAB                                 )
+    ##########################################################################
+    TITLE      = Naming          ( DB , NAMTAB , PUID , self . Locality      )
+    ##########################################################################
+    NOX        = NoteItem        (                                           )
+    NOX        . setOwner        ( PUID , "Description"                      )
+    NOX        . ObtainsAll      ( DB , NOXTAB                               )
+    NOTE       = NOX . Note
+    ##########################################################################
+    NOW        . Stardate = PRD . Start
+    SDTX       = NOW . toDateTimeString ( TZ )
+    SDTX       = SDTX + TZE
+    ##########################################################################
+    NOW        . Stardate = PRD . End
+    EDTX       = NOW . toDateTimeString ( TZ )
+    EDTX       = EDTX + TZE
+    ##########################################################################
+    EVENT      = { "kind"               : "calendar#event"                   ,
+                   "summary"            : TITLE                              ,
+                   "description"        : NOTE                               ,
+                   "start"              :                                    {
+                     "timeZone"         : TZ                                 ,
+                     "dateTime"         : SDTX                               ,
+                   }                                                         ,
+                   "end"                :                                    {
+                     "timeZone"         : TZ                                 ,
+                     "dateTime"         : EDTX                             } ,
+                   "extendedProperties" :                                    {
+                     "private"          :                                    {
+                       "Uuid"           : PUID                               ,
+                       "Tag"            : TUID                               ,
+                     }                                                       ,
+                   }                                                         }
+    ##########################################################################
+    if                           ( len ( GID ) <= 0                        ) :
+      ########################################################################
+      self . AppendPeriodItemToGoogle   ( DB , CID       , PRD , EVENT       )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . UpdatePeriodItemToGoogle   ( DB , CID , GID , PRD ,  EVENT      )
+    ##########################################################################
+    return True
+  ############################################################################
+  ## 將時段同步到谷歌行事曆
+  ############################################################################
+  def SyncPeriodsToGoogle         ( self , JSON                            ) :
+    ##########################################################################
+    PERIODs  = JSON               [ "Periods"                                ]
+    if                            ( len ( PERIODs ) <= 0                   ) :
+      return
+    ##########################################################################
+    PRDTAB   = "`periods`"
+    VARTAB   = "`variables`"
+    NOXTAB   = "`notes`"
+    NAMTAB   = "`names_others`"
+    RELTAB   = "`relations_others`"
+    ##########################################################################
+    DB       = Connection         (                                          )
+    ##########################################################################
+    if                            ( not DB . ConnectTo ( self . AITKDB )   ) :
+      return False
+    DB       . Prepare            (                                          )
+    ##########################################################################
+    DB       . LockWrites         ( [ PRDTAB                               , \
+                                      VARTAB                               , \
+                                      NOXTAB                               , \
+                                      NAMTAB                               , \
+                                      RELTAB                               ] )
+    ##########################################################################
+    self     . CalendarLocker . acquire (                                    )
+    ##########################################################################
+    for PUID in PERIODs                                                      :
+      self   . SyncPeriodToGoogle ( DB , PUID                                )
+    ##########################################################################
+    self     . CalendarLocker . release (                                    )
+    DB       . UnlockTables       (                                          )
+    DB       . Close              (                                          )
+    ##########################################################################
+    return
   ############################################################################
   ## 目前時段列表
   ############################################################################
