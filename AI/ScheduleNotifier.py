@@ -1341,6 +1341,8 @@ class ScheduleNotifier (                                                   ) :
   def SyncPeriodsToGoogle         ( self , JSON                            ) :
     ##########################################################################
     PERIODs  = JSON               [ "Periods"                                ]
+    print ( json.dumps(JSON) )
+    print ( json.dumps(PERIODs) )
     if                            ( len ( PERIODs ) <= 0                   ) :
       return
     ##########################################################################
