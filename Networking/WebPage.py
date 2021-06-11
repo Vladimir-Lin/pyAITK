@@ -1,237 +1,400 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-##
-##############################################################################
-"""
-
-CREATE TABLE `tld` (
-  `id` int(11) NOT NULL,
-  `uuid` bigint(20) NOT NULL,
-  `used` int(11) DEFAULT 1,
-  `type` int(11) DEFAULT 0,
-  `owner` bigint(20) DEFAULT 0,
-  `name` varchar(64) DEFAULT NULL,
-  `reverse` varchar(64) DEFAULT NULL,
-  `iana` varchar(16) DEFAULT NULL,
-  `explain` blob DEFAULT '',
-  `sld` bigint(20) DEFAULT 0,
-  `domains` bigint(20) DEFAULT 0,
-  `hosts` bigint(20) DEFAULT 0,
-  `pages` bigint(20) DEFAULT 0,
-  `ltime` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uuid` (`uuid`),
-  KEY `used` (`used`),
-  KEY `type` (`type`),
-  KEY `owner` (`owner`),
-  KEY `name` (`name`(16)),
-  KEY `reverse` (`reverse`(16)),
-  KEY `iana` (`iana`),
-  KEY `explain` (`explain`(128)),
-  KEY `sld` (`sld`),
-  KEY `domains` (`domains`),
-  KEY `hosts` (`hosts`),
-  KEY `pages` (`pages`),
-  KEY `ltime` (`ltime`)
-) ENGINE=Aria DEFAULT CHARSET=utf8mb4 ;
-
-"""
+## 網頁位址分析器
 ##############################################################################
 import os
 import sys
+##############################################################################
+import urllib
+import urllib   . parse
+from   urllib                        import parse
+from   pathlib                       import Path
 ##############################################################################
 import mysql . connector
 from   mysql . connector             import Error
 ##############################################################################
 from   ..      Database . Query      import Query      as Query
 from   ..      Database . Connection import Connection as Connection
-from   ..      Database . Columns    import Columns    as Columns
 ##############################################################################
-
-class TLD ( Columns ) :
-
-  def __init__ ( self ) :
-    super ( TLD , self ) . __init__ ( )
-    self . Clear                    ( )
-
-  def __del__ ( self ) :
-    pass
-
-  def Clear ( self ) :
-    self . Columns  = [ ]
-    self . Id       = -1
-    self . Uuid     =  0
-    self . Used     =  1
-    self . Type     =  0
-    self . Owner    =  0
-    self . Name     =  ""
-    self . Reverse  =  ""
-    self . IANA     =  ""
-    self . Explain  =  ""
-    self . SLD      =  0
-    self . Domains  =  0
-    self . Hosts    =  0
-    self . Pages    =  0
-    self . Update   =  False
-
-  def assign ( self , item ) :
-    self . Columns  = item . Columns
-    self . Id       = item . Id
-    self . Uuid     = item . Uuid
-    self . Used     = item . Used
-    self . Type     = item . Type
-    self . Owner    = item . Owner
-    self . Name     = item . Name
-    self . Reverse  = item . Reverse
-    self . IANA     = item . IANA
-    self . Explain  = item . Explain
-    self . SLD      = item . SLD
-    self . Domains  = item . Domains
-    self . Hosts    = item . Hosts
-    self . Pages    = item . Pages
-    self . Update   = item . Update
-
-  def set ( self , item , value ) :
-    a = item . lower ( )
-    if ( "id"       == a ) :
-      self . Id      = value
-    if ( "uuid"     == a ) :
-      self . Uuid    = value
-    if ( "used"     == a ) :
-      self . Used    = value
-    if ( "type"     == a ) :
-      self . Type    = value
-    if ( "owner"    == a ) :
-      self . Owner   = value
-    if ( "name"     == a ) :
-      self . Name    = value
-    if ( "reverse"  == a ) :
-      self . Reverse = value
-    if ( "iana"     == a ) :
-      self . IANA    = value
-    if ( "explain"  == a ) :
-      self . Explain = value
-    if ( "sld"      == a ) :
-      self . SLD     = value
-    if ( "domains"  == a ) :
-      self . Domains = value
-    if ( "hosts"    == a ) :
-      self . Hosts   = value
-    if ( "pages"    == a ) :
-      self . Pages   = value
-    if ( "ltime"    == a ) :
-      self . Update  = value
-
-  def get ( self , item ) :
-    a = item . lower ( )
-    if ( "id"       == a ) :
-      return self . Id
-    if ( "uuid"     == a ) :
-      return self . Uuid
-    if ( "used"     == a ) :
-      return self . Used
-    if ( "type"     == a ) :
-      return self . Type
-    if ( "owner"    == a ) :
-      return self . Owner
-    if ( "name"     == a ) :
-      return self . Name
-    if ( "reverse"  == a ) :
-      return self . Reverse
-    if ( "iana"     == a ) :
-      return self . IANA
-    if ( "explain"  == a ) :
-      return self . Explain
-    if ( "sld"      == a ) :
-      return self . SLD
-    if ( "domains"  == a ) :
-      return self . Domains
-    if ( "hosts"    == a ) :
-      return self . Hosts
-    if ( "pages"    == a ) :
-      return self . Pages
-    if ( "ltime"    == a ) :
-      return self . Update
-    return ""
-
-  def tableItems ( self ) :
-    return [ "id"      ,
-             "uuid"    ,
-             "used"    ,
-             "type"    ,
-             "owner"   ,
-             "name"    ,
-             "reverse" ,
-             "iana"    ,
-             "explain" ,
-             "sld"     ,
-             "domains" ,
-             "hosts"   ,
-             "pages"   ,
-             "ltime"   ]
-
-  def pair ( self , item ) :
-    a = item . lower (      )
-    v = self . get   ( item )
-    if ( "id"       == a ) :
-      return f"`{item}` = {v}"
-    if ( "uuid"     == a ) :
-      return f"`{item}` = {v}"
-    if ( "used"     == a ) :
-      return f"`{item}` = {v}"
-    if ( "type"     == a ) :
-      return f"`{item}` = {v}"
-    if ( "owner"    == a ) :
-      return f"`{item}` = {v}"
-    if ( "name"     == a ) :
-      return f"`{item}` = '{v}'"
-    if ( "reverse"  == a ) :
-      return f"`{item}` = '{v}'"
-    if ( "iana"     == a ) :
-      return f"`{item}` = '{v}'"
-    if ( "explain"  == a ) :
-      return f"`{item}` = '{v}'"
-    if ( "sld"      == a ) :
-      return f"`{item}` = {v}"
-    if ( "domains"  == a ) :
-      return f"`{item}` = {v}"
-    if ( "hosts"    == a ) :
-      return f"`{item}` = {v}"
-    if ( "pages"    == a ) :
-      return f"`{item}` = {v}"
-    if ( "ltime"    == a ) :
-      return f"`{item}` = '{v}'"
-    return f"`{item}` = {v}"
-
-  def valueItems ( self ) :
-    return [ "used"    ,
-             "type"    ,
-             "owner"   ,
-             "name"    ,
-             "reverse" ,
-             "iana"    ,
-             "explain" ,
-             "sld"     ,
-             "domains" ,
-             "hosts"   ,
-             "pages"   ]
-
-  def toJson ( self ) :
-    return { "id"      : self . Id      ,
-             "uuid"    : self . Uuid    ,
-             "used"    : self . Used    ,
-             "type"    : self . Type    ,
-             "owner"   : self . Owner   ,
-             "name"    : self . Name    ,
-             "reverse" : self . Reverse ,
-             "iana"    : self . IANA    ,
-             "explain" : self . Explain ,
-             "sld"     : self . SLD     ,
-             "domains" : self . Domains ,
-             "hosts"   : self . Hosts   ,
-             "pages"   : self . Pages   ,
-             "ltime"   : self . Update  }
-
-  def isMatch ( self , tld ) :
-    T = tld . lower ( )
-    return ( self . Name == T )
+class WebPage         (                                                    ) :
+  ############################################################################
+  def __init__        ( self , page = ""                                   ) :
+    ##########################################################################
+    self . Uuid       = 0
+    self . Protocol   = "http"
+    self . Port       = 80
+    self . Hostname   = ""
+    self . TLD        = 0
+    self . SLD        = 0
+    self . DomainUuid = 0
+    self . HostUuid   = 0
+    self . UrlUuid    = 0
+    self . Path       = ""
+    self . Reverse    = ""
+    self . Page       = ""
+    self . Tables     = { }
+    self . setPage    ( page                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def __del__         ( self                                               ) :
+    return
+  ############################################################################
+  def setPage               ( self , page                                  ) :
+    ##########################################################################
+    self . Page       = page
+    self . Reverse    = page [ ::-1 ]
+    self . Path       = ""
+    self . Protocol   = "http"
+    self . Port       = 80
+    self . Hostname   = ""
+    ##########################################################################
+    if                      ( len ( page ) <= 0                            ) :
+      return False
+    ##########################################################################
+    r    = parse . urlparse ( page                                           )
+    ##########################################################################
+    p    = r . path
+    i    = page . index     ( p                                              )
+    z    = page
+    if                      ( i >= 0                                       ) :
+      x  = z
+      z  = x                [ i :                                            ]
+      v  = x                [   : i                                          ]
+      self . Page    = v . lower ( ) + z
+      self . Reverse = self . Page [ ::-1 ]
+    ##########################################################################
+    self . Protocol   = r . scheme
+    self . Port       = r . port
+    self . Hostname   = r . hostname
+    self . Path       = z
+    self . DecidePort       (                                                )
+    ##########################################################################
+    return True
+  ############################################################################
+  def DecidePort ( self                                                    ) :
+    ##########################################################################
+    if           ( self . Port != None                                     ) :
+      return
+    ##########################################################################
+    if           ( self . Protocol == "http"                               ) :
+      self . Port =  80
+    elif         ( self . Protocol == "https"                              ) :
+      self . Port = 443
+    elif         ( self . Protocol == "ftp"                                ) :
+      self . Port =  21
+    ##########################################################################
+    return
+  ############################################################################
+  def isProtocol ( self                                                    ) :
+    return       ( len ( self . Protocol ) > 0                               )
+  ############################################################################
+  def LookForTLD             ( self , DB                                   ) :
+    ##########################################################################
+    h        = self . Hostname
+    if                       ( len ( h ) <= 0                              ) :
+      return None
+    ##########################################################################
+    r        = h             [ ::-1                                          ]
+    t        = r . split     ( "."                                           )
+    ##########################################################################
+    if                       ( len ( t ) <= 0                              ) :
+      return None
+    ##########################################################################
+    w        = t             [ 0                                             ]
+    ##########################################################################
+    TLDTAB   = self . Tables [ "TLD"                                         ]
+    QQ       = f"select `id`,`type` from {TLDTAB} where ( `reverse` = '{w}' ) ;"
+    DB       . Query         ( QQ                                            )
+    K        = DB . FetchOne (                                               )
+    ##########################################################################
+    if                       ( K == None                                   ) :
+      return None
+    ##########################################################################
+    if                       ( len ( K ) < 2                               ) :
+      return None
+    ##########################################################################
+    return                   { "Id" : K [ 0 ] , "Type" : K [ 1 ]             }
+  ############################################################################
+  def LookForSLD             ( self , DB                                   ) :
+    ##########################################################################
+    h        = self . Hostname
+    if                       ( len ( h ) <= 0                              ) :
+      return 0
+    ##########################################################################
+    r        = h             [ ::-1                                          ]
+    t        = r . split     ( "."                                           )
+    ##########################################################################
+    if                       ( len ( t ) <= 1                              ) :
+      return 0
+    ##########################################################################
+    w        = t             [ 0                                             ]
+    x        = t             [ 1                                             ]
+    c        = f"{w}.{x}"
+    ##########################################################################
+    SLDTAB   = self . Tables [ "SLD"                                         ]
+    QQ       = f"select `id` from {SLDTAB} where ( `reverse` = '{c}' ) ;"
+    DB       . Query         ( QQ                                            )
+    K        = DB . FetchOne (                                               )
+    ##########################################################################
+    if                       ( K == None                                   ) :
+      return 0
+    ##########################################################################
+    if                       ( len ( K ) < 1                               ) :
+      return 0
+    ##########################################################################
+    return K                 [ 0                                             ]
+  ############################################################################
+  def LookForDomain          ( self , DB                                   ) :
+    ##########################################################################
+    CNT      = 2
+    ##########################################################################
+    if                       ( self . SLD > 0                              ) :
+      CNT    = 3
+    ##########################################################################
+    h        = self . Hostname
+    if                       ( len ( h ) <= 0                              ) :
+      return 0
+    ##########################################################################
+    r        = h             [ ::-1                                          ]
+    t        = r . split     ( "."                                           )
+    ##########################################################################
+    if                       ( len ( t ) < CNT                             ) :
+      return 0
+    ##########################################################################
+    z        =               [                                               ]
+    LI       = 0
+    for s in t                                                               :
+      ########################################################################
+      if                     ( LI < CNT                                    ) :
+        z    . append        ( s                                             )
+      ########################################################################
+      LI     = LI + 1
+    ##########################################################################
+    W        = "." . join    ( z                                             )
+    ##########################################################################
+    DOMTAB   = self . Tables [ "Domains"                                     ]
+    QQ       = f"select `uuid` from {DOMTAB} where ( `reverse` = '{W}' ) ;"
+    DB       . Query         ( QQ                                            )
+    K        = DB . FetchOne (                                               )
+    ##########################################################################
+    if                       ( K == None                                   ) :
+      return 0
+    ##########################################################################
+    if                       ( len ( K ) < 1                               ) :
+      return 0
+    ##########################################################################
+    return K                 [ 0                                             ]
+  ############################################################################
+  def AppendDomain           ( self , DB                                   ) :
+    ##########################################################################
+    CNT      = 2
+    ##########################################################################
+    if                       ( self . SLD > 0                              ) :
+      CNT    = 3
+    ##########################################################################
+    h        = self . Hostname
+    if                       ( len ( h ) <= 0                              ) :
+      return 0
+    ##########################################################################
+    r        = h             [ ::-1                                          ]
+    t        = r . split     ( "."                                           )
+    ##########################################################################
+    if                       ( len ( t ) < CNT                             ) :
+      return 0
+    ##########################################################################
+    z        =               [                                               ]
+    LI       = 0
+    for s in t                                                               :
+      ########################################################################
+      if                     ( LI < CNT                                    ) :
+        z    . append        ( s                                             )
+      ########################################################################
+      LI     = LI + 1
+    ##########################################################################
+    W        = "." . join    ( z                                             )
+    ##########################################################################
+    DOMTAB   = self . Tables [ "Domains"                                     ]
+    DUID     = DB . LastUuid ( DOMTAB , "uuid" , 8310000000000000000         )
+    ##########################################################################
+    QQ       = f"insert into {DOMTAB} ( `uuid`,`name` ) values ( %s , %s ) ;"
+    DB       . QueryValues   ( QQ , ( DUID , W [ ::-1 ] , )                  )
+    ##########################################################################
+    return DUID
+  ############################################################################
+  def LookForHost            ( self , DB                                   ) :
+    ##########################################################################
+    p       =                ( self . Hostname ,                             )
+    HSTTAB  = self . Tables  [ "Hosts"                                       ]
+    QQ      = f"select `uuid` from {HSTTAB} where ( `name` = %s ) ;"
+    DB . QueryValues         ( QQ , p                                        )
+    ##########################################################################
+    K        = DB . FetchOne (                                               )
+    ##########################################################################
+    if                       ( K == None                                   ) :
+      return 0
+    ##########################################################################
+    if                       ( len ( K ) < 1                               ) :
+      return 0
+    ##########################################################################
+    return K                 [ 0                                             ]
+  ############################################################################
+  def AppendHost             ( self , DB                                   ) :
+    ##########################################################################
+    HSTTAB   = self . Tables [ "Hosts"                                       ]
+    HUID     = DB . LastUuid ( HSTTAB , "uuid" , 8370000000000000000         )
+    DUID     = self . DomainUuid
+    NAME     = self . Hostname
+    REVERSE  = NAME [ ::-1 ]
+    W        =               ( HUID , DUID , NAME , REVERSE ,                )
+    ##########################################################################
+    QQ       = f"""insert into {HSTTAB}
+                   ( `uuid` , `domain` , `name` , `reverse` )
+                   values
+                   ( %s , %s , %s , %s ) ;"""
+    DB       . QueryValues   ( QQ , W                                        )
+    ##########################################################################
+    return HUID
+  ############################################################################
+  def LookForURL             ( self , DB                                   ) :
+    ##########################################################################
+    p       =                ( self . HostUuid                             , \
+                               self . Protocol                             , \
+                               self . Port                                 , \
+                               self . Hostname                             , )
+    URLTAB  = self . Tables  [ "URLs"                                        ]
+    QQ      = f"""select `uuid` from {URLTAB}
+                  where ( `host` = %s )
+                  and ( `protocol` = %s )
+                  and ( `port` = %s )
+                  and ( `name` = %s ) ;"""
+    DB . QueryValues         ( QQ , p                                        )
+    ##########################################################################
+    K        = DB . FetchOne (                                               )
+    ##########################################################################
+    if                       ( K == None                                   ) :
+      return 0
+    ##########################################################################
+    if                       ( len ( K ) < 1                               ) :
+      return 0
+    ##########################################################################
+    return K                 [ 0                                             ]
+  ############################################################################
+  def AppendURL              ( self , DB                                   ) :
+    ##########################################################################
+    URLTAB   = self . Tables [ "URLs"                                        ]
+    UUID     = DB . LastUuid ( URLTAB , "uuid" , 8320000000000000000         )
+    HUID     = self . HostUuid
+    PROTOCOL = self . Protocol
+    PORT     = self . Port
+    NAME     = self . Hostname
+    REVERSE  = NAME [ ::-1 ]
+    W        =               ( UUID                                        , \
+                               HUID                                        , \
+                               PROTOCOL                                    , \
+                               PORT                                        , \
+                               NAME                                        , \
+                               REVERSE                                     , )
+    ##########################################################################
+    QQ       = f"""insert into {URLTAB}
+                   ( `uuid` , `host` , `protocol` , `port` , `name` , `reverse` )
+                   values
+                   ( %s , %s , %s , %s , %s , %s ) ;"""
+    DB       . QueryValues   ( QQ , W                                        )
+    ##########################################################################
+    return UUID
+  ############################################################################
+  def LookForPage            ( self , DB                                   ) :
+    ##########################################################################
+    p       =                ( self . Page                                 , )
+    PAGTAB  = self . Tables  [ "Webpages"                                    ]
+    QQ      = f"select `uuid` from {PAGTAB} where ( `name` = %s ) ;"
+    DB . QueryValues         ( QQ , p                                        )
+    ##########################################################################
+    K        = DB . FetchOne (                                               )
+    ##########################################################################
+    if                       ( K == None                                   ) :
+      return 0
+    ##########################################################################
+    if                       ( len ( K ) < 1                               ) :
+      return 0
+    ##########################################################################
+    return K                 [ 0                                             ]
+  ############################################################################
+  def AppendPage             ( self , DB                                   ) :
+    ##########################################################################
+    WPGTAB      = self . Tables      [ "Webpages"                            ]
+    UUID     = DB . LastUuid ( WPGTAB , "uuid" , 8380000000000000000         )
+    URID     = self . UrlUuid
+    NAME     = self . Page
+    REVERSE  = self . Reverse
+    PATH     = self . Path
+    W        =               ( UUID , URID , NAME , REVERSE , PATH ,         )
+    ##########################################################################
+    QQ       = f"""insert into {WPGTAB}
+                   ( `uuid` , `url` , `name` , `reverse` , `path` )
+                   values
+                   ( %s , %s , %s , %s , %s ) ;"""
+    DB       . QueryValues   ( QQ , W                                        )
+    ##########################################################################
+    return UUID
+  ############################################################################
+  def Assure                         ( self , DB                           ) :
+    ##########################################################################
+    Answer = False
+    self . Uuid = self . LookForPage ( DB                                    )
+    ##########################################################################
+    if                               ( self . Uuid > 0                     ) :
+      return True
+    ##########################################################################
+    TLDTAB      = self . Tables      [ "TLD"                                 ]
+    SLDTAB      = self . Tables      [ "SLD"                                 ]
+    DOMTAB      = self . Tables      [ "Domains"                             ]
+    HSTTAB      = self . Tables      [ "Hosts"                               ]
+    URLTAB      = self . Tables      [ "URLs"                                ]
+    WPGTAB      = self . Tables      [ "Webpages"                            ]
+    ##########################################################################
+    DB          . LockWrites         ( [ TLDTAB                            , \
+                                         SLDTAB                            , \
+                                         DOMTAB                            , \
+                                         HSTTAB                            , \
+                                         URLTAB                            , \
+                                         WPGTAB                            ] )
+    ##########################################################################
+    R           = self . LookForTLD  ( DB                                    )
+    if                               ( R != None                           ) :
+      self      . TLD = R            [ "Id"                                  ]
+      if                             ( R [ "Type" ] == 7                   ) :
+        self . SLD = self . LookForSLD ( DB                                  )
+    ##########################################################################
+    D   = self . LookForDomain       ( DB                                    )
+    if                               ( D > 0                               ) :
+      self . DomainUuid = D
+    else                                                                     :
+      self . DomainUuid = self . AppendDomain ( DB                           )
+    ##########################################################################
+    if                               ( self . DomainUuid > 0               ) :
+      ########################################################################
+      H = self . LookForHost         ( DB                                    )
+      if                             ( H > 0                               ) :
+        self . HostUuid = H
+      else                                                                   :
+        self . HostUuid = self . AppendHost ( DB                             )
+    ##########################################################################
+    if                               ( self . HostUuid > 0                 ) :
+      ########################################################################
+      U = self . LookForURL          ( DB                                    )
+      if                             ( U > 0                               ) :
+        self . UrlUuid = U
+      else                                                                   :
+        self . UrlUuid = self . AppendURL ( DB                               )
+    ##########################################################################
+    if                               ( self . UrlUuid > 0                  ) :
+      ########################################################################
+      self . Uuid = self . AppendPage ( DB                                   )
+      Answer = True
+    ##########################################################################
+    DB          . UnlockTables       (                                       )
+    ##########################################################################
+    return Answer
+##############################################################################
