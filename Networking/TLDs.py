@@ -14,18 +14,14 @@ from   ..      Database . Columns    import Columns    as Columns
 ##############################################################################
 from   .       TLD                   import TLD        as TLD
 ##############################################################################
-
-class TLDs ( ) :
-
+class TLDs       (                                                         ) :
   ############################################################################
-  def __init__ ( self ) :
-    self . Clear ( )
+  def __init__   ( self                                                    ) :
+    self . Clear (                                                           )
     return
-
   ############################################################################
-  def __del__ ( self ) :
+  def __del__    ( self                                                    ) :
     pass
-
   ############################################################################
   def Clear ( self )                                                         :
     ##########################################################################
@@ -43,7 +39,6 @@ class TLDs ( ) :
     self . UuidsToReverses = { }
     ##########################################################################
     return
-
   ############################################################################
   def assign ( self , item )                                                 :
     ##########################################################################
@@ -61,21 +56,18 @@ class TLDs ( ) :
     self . UuidsToReverses = item . UuidsToReverses
     ##########################################################################
     return
-
   ############################################################################
   def ToUuid ( self , id ) :
     return id + 8300000000001000000
-
   ############################################################################
   def FromUuid ( self , uuid ) :
     return uuid - 8300000000001000000
-
   ############################################################################
   def obtains ( self , DB , Table )                                          :
     ##########################################################################
     self . Clear ( )
     ##########################################################################
-    QQ    = f"select `id`,`uuid`,`name`,`reverse` from {Table} where ( `used` > 0 ) order by `id` asc ;"
+    QQ    = f"select `id`,`uuid`,`name`,`reverse` from {Table} where ( `used` > 0 ) and ( `id` > 0 ) order by `id` asc ;"
     DB    . Query         ( QQ )
     RR    = DB . FetchAll (    )
     if ( not ( ( RR == None ) or ( len ( RR ) <= 0 ) ) )                     :
@@ -102,31 +94,28 @@ class TLDs ( ) :
         self . UuidsToReverses [ UUID    ] = REVERSE
     ##########################################################################
     return True
-
   ############################################################################
   def IdByName ( self , name                                               ) :
     n = name . lower ( )
     if         ( n not in self . Names                                     ) :
       return 0
     return self . NamesToIds [ n ]
-
   ############################################################################
   def UuidByName ( self , name                                             ) :
     n = name . lower ( )
     if         ( n not in self . Names                                     ) :
       return 0
     return self . NamesToUuids [ n ]
-
   ############################################################################
   def IdByReverse ( self , name                                            ) :
     n = name . lower ( )
     if         ( n not in self . Reverses                                  ) :
       return 0
     return self . ReversesToIds [ n ]
-
   ############################################################################
   def IdByReverse ( self , name                                            ) :
     n = name . lower ( )
     if         ( n not in self . Reverses                                  ) :
       return 0
     return self . ReversesToUuids [ n ]
+##############################################################################
