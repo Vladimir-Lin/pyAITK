@@ -186,6 +186,16 @@ class FoxmanRobot (                                                        ) :
                                       "Response" :                           {
                                       "Answer"   : "Yes"                 } } }
     ##########################################################################
+    if                ( "/Command" == Path                                 ) :
+      ########################################################################
+      threading . Thread ( target = self . GoCommand                       , \
+                           args   = ( JSON , )                   ) . start ( )
+      ########################################################################
+      return          { "Process" : True                                     ,
+                        "Result"  : { "Answer"   : 200                       ,
+                                      "Response" :                           {
+                                      "Answer"   : "Yes"                 } } }
+    ##########################################################################
     if                ( self . Scheduler != None                           ) :
       R = self . Scheduler . HttpParser ( Path , Headers , JSON              )
       if              ( R [ "Process" ]                                    ) :
@@ -213,6 +223,14 @@ class FoxmanRobot (                                                        ) :
   def TalkTo                       ( self , beau , message                 ) :
     threading . Thread             ( target = self . ActualTalkTo          , \
                                      args = ( beau , message , ) ) . start ( )
+    return True
+  ############################################################################
+  ## 執行命令
+  ############################################################################
+  def GoCommand                    ( self , JSON                           ) :
+    ##########################################################################
+    self . RunCommand              ( JSON [ "Command" ]                      )
+    ##########################################################################
     return True
   ############################################################################
   ## 根據聊天狀態分配任務
