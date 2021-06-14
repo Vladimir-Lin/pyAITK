@@ -211,4 +211,5 @@ class Picture     (                                                        ) :
       DB  . Query ( QQ )
       ########################################################################
     DB     . UnlockTables (     )
+    self . UUID = UUIX
     return True
