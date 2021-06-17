@@ -99,27 +99,56 @@ class Picture     (                                                        ) :
     self . SHA256 = base64 . b64encode ( m . digest ( ) ) . decode ('utf-8')
     return self . SHA256
   ############################################################################
-  def toHistogram ( self )                                                   :
-    fp  = BytesIO ( self . Data )
-    img = Pillow . open ( fp )
-    r, g, b = img.split()
-    self . R = r . histogram ( )
-    self . G = g . histogram ( )
-    self . B = b . histogram ( )
+  def toHistogram                  ( self                                  ) :
+    ##########################################################################
+    fp            = BytesIO        ( self . Data                             )
+    img           = Pillow . open  ( fp                                      )
+    channels      = img    . split (                                         )
+    count         = len            ( channels                                )
+    ##########################################################################
+    self . R      =                [                                         ]
+    self . G      =                [                                         ]
+    self . B      =                [                                         ]
+    self . A      =                [                                         ]
+    ##########################################################################
+    if                             ( count == 3                            ) :
+      r, g, b     = img . split    (                                         )
+    elif                           ( count == 4                            ) :
+      r, g, b , a = img . split    (                                         )
+      self . A    = a . histogram  (                                         )
+    else                                                                     :
+      return
+    ##########################################################################
+    self . R      = r . histogram  (                                         )
+    self . G      = g . histogram  (                                         )
+    self . B      = b . histogram  (                                         )
+    ##########################################################################
     return
   ############################################################################
-  def PrepareForDB ( self ) :
-    self . Iconize     ( )
-    self . toCRC32     ( )
-    self . toMD5       ( )
-    self . toSHA256    ( )
-    self . toHistogram ( )
+  def PrepareForDB     ( self                                              ) :
+    self . Iconize     (                                                     )
+    self . toCRC32     (                                                     )
+    self . toMD5       (                                                     )
+    self . toSHA256    (                                                     )
+    self . toHistogram (                                                     )
   ############################################################################
-  def HistogramToBytes ( self , HIST ) :
-    B = BytesIO ( )
-    for v in HIST :
-      B . write ( int ( v ) . to_bytes ( 4 , 'big' ) )
+  def HistogramToBytes ( self , HIST                                       ) :
+    B = BytesIO        (                                                     )
+    for v in HIST                                                            :
+      B . write        ( int ( v ) . to_bytes ( 4 , 'big' )                  )
     return B
+  ############################################################################
+  def StoreHistogram   ( self , DB , TABLE , UUID , Item , Data )            :
+    ##########################################################################
+    if                 ( len ( Data ) <= 0                                 ) :
+      return
+    ##########################################################################
+    BB  = self . HistogramToBytes ( Data ) . getvalue ( )
+    VAL = ( UUID , len ( BB ) , BB , )
+    QQ  = f"insert into {TABLE} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,2,'Histograph','{Item}',%s,%s) ;"
+    DB  . QueryValues ( QQ , VAL )
+    ##########################################################################
+    return
   ############################################################################
   def ImportDB ( self , DB , Options ) :
     UUIX   = 0
@@ -186,20 +215,10 @@ class Picture     (                                                        ) :
       QQ  = f"insert into {HASH} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,1,'Hash','SHA256',%s,%s) ;"
       DB  . QueryValues ( QQ , VAL )
       ########################################################################
-      RR  = self . HistogramToBytes ( self . R ) . getvalue ( )
-      VAL = ( UUIX , len ( RR ) , RR , )
-      QQ  = f"insert into {HIST} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,2,'Histograph','R',%s,%s) ;"
-      DB  . QueryValues ( QQ , VAL )
-      ########################################################################
-      GG  = self . HistogramToBytes ( self . G ) . getvalue ( )
-      VAL = ( UUIX , len ( GG ) , GG , )
-      QQ  = f"insert into {HIST} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,2,'Histograph','G',%s,%s) ;"
-      DB  . QueryValues ( QQ , VAL )
-      ########################################################################
-      BB  = self . HistogramToBytes ( self . B ) . getvalue ( )
-      VAL = ( UUIX , len ( BB ) , BB , )
-      QQ  = f"insert into {HIST} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,2,'Histograph','B',%s,%s) ;"
-      DB  . QueryValues ( QQ , VAL )
+      self . StoreHistogram   ( DB , HIST , UUIX , "R" , self . R            )
+      self . StoreHistogram   ( DB , HIST , UUIX , "G" , self . G            )
+      self . StoreHistogram   ( DB , HIST , UUIX , "B" , self . B            )
+      self . StoreHistogram   ( DB , HIST , UUIX , "A" , self . A            )
       ########################################################################
       QQ  = f"insert into {PRETAB} ( `uuid` ) values ( {UUIX} ) ;"
       DB  . Query ( QQ )
