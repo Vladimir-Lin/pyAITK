@@ -143,7 +143,7 @@ class Picture     (                                                        ) :
     TH     = self . Icon  . height
     TSIZE  = self . IconData . getbuffer ( ) . nbytes
     CRC32  = self . CRC32
-    DB     . LockWrites   ( [ MASTER , DEPOT , THUMB , TDEPOT , HASH , HIST , ORDERS , PRETAB , MIMEM , EXTMX ] )
+    DB     . LockWrites   ( [ MASTER , DEPOT , THUMB , TDEPOT , HASH , HIST , PRETAB , MIMEM , EXTMX ] )
     QQ     = f"select `uuid` from {MASTER} where ( `filesize` = {SIZE} ) and ( `checksum` = {CRC32} ) and ( `width` = {SW} ) and ( `height` = {SH} ) ;"
     DB     . Query ( QQ )
     LL     = DB . FetchAll ( )
