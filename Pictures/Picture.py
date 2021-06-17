@@ -143,7 +143,7 @@ class Picture     (                                                        ) :
     TH     = self . Icon  . height
     TSIZE  = self . IconData . getbuffer ( ) . nbytes
     CRC32  = self . CRC32
-    DB     . LockWrites   ( [ MASTER , DEPOT , THUMB , TDEPOT , HASH , HIST , PRETAB , MIMEM , EXTMX ] )
+    DB     . LockWrites   ( [ MASTER , DEPOT , THUMB , TDEPOT , HASH , HIST , ORDERS , PRETAB , MIMEM , EXTMX ] )
     QQ     = f"select `uuid` from {MASTER} where ( `filesize` = {SIZE} ) and ( `checksum` = {CRC32} ) and ( `width` = {SW} ) and ( `height` = {SH} ) ;"
     DB     . Query ( QQ )
     LL     = DB . FetchAll ( )
@@ -201,14 +201,15 @@ class Picture     (                                                        ) :
       QQ  = f"insert into {HIST} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,2,'Histograph','B',%s,%s) ;"
       DB  . QueryValues ( QQ , VAL )
       ########################################################################
-      QQ  = f"update {PRETAB} set `position` = {PREFER} where ( `uuid` = {UUIX} ) ;"
+      QQ  = f"insert into {PRETAB} ( `uuid` ) values ( {UUIX} ) ;"
       DB  . Query ( QQ )
       ########################################################################
     else                                                                     :
       ########################################################################
-      UUIX = LL [ 0 ] [ 0 ]
-      QQ  = f"update {PRETAB} set `position` = {PREFER} where ( `uuid` = {UUIX} ) ;"
-      DB  . Query ( QQ )
+      if ( PREFER >= 0 )                                                     :
+        UUIX = LL [ 0 ] [ 0 ]
+        QQ  = f"update {PRETAB} set `position` = {PREFER} where ( `uuid` = {UUIX} ) ;"
+        DB  . Query ( QQ )
       ########################################################################
     DB     . UnlockTables (     )
     self . UUID = UUIX
