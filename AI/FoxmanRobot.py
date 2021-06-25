@@ -15,6 +15,8 @@ import gettext
 import shutil
 import json
 ##############################################################################
+from . TblRobot         import TblRobot         as TblRobot
+from . CalendarRobot    import CalendarRobot    as CalendarRobot
 from . ScheduleNotifier import ScheduleNotifier as ScheduleNotifier
 ##############################################################################
 ## Foxman智能回應程式
@@ -22,6 +24,9 @@ from . ScheduleNotifier import ScheduleNotifier as ScheduleNotifier
 class FoxmanRobot (                                                        ) :
   ############################################################################
   def __init__         ( self , jsonFile = ""                              ) :
+    ##########################################################################
+    self . RobotTBL      = TblRobot      ( )
+    self . RobotCalendar = CalendarRobot ( )
     ##########################################################################
     self . DebugLogger   = None
     self . Talk          = None
