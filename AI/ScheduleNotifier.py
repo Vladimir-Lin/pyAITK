@@ -350,7 +350,7 @@ class ScheduleNotifier (                                                   ) :
     if                          ( "description" in event                   ) :
       DESCR = event             [ "description"                              ]
     ##########################################################################
-    UUID = 0
+    UUID    = 0
     if     ( "extendedProperties" in event                                 ) :
       if   ( "private" in event [ "extendedProperties" ]                   ) :
         if ( "Uuid"    in event [ "extendedProperties" ] [ "private" ]     ) :
@@ -639,6 +639,11 @@ class ScheduleNotifier (                                                   ) :
     PRD     = Periode           (                                            )
     REL     = Relation          (                                            )
     ##########################################################################
+    DB      . LockWrites        ( [ PRDTAB                                 , \
+                                    NAMTAB                                 , \
+                                    NOXTAB                                 , \
+                                    VARTAB                                 , \
+                                    RELTAB                                 ] )
     PUID    = PRD . GetUuid     ( DB , PRDTAB                                )
     ID      = EVENT             [ "id"                                       ]
     TITLE   = ""
@@ -659,11 +664,11 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     if                          ( len ( TITLE ) > 0                        ) :
       ########################################################################
-      self . assureName         ( DB , PUID , TITLE , NAMTAB , 1             )
+      self  . assureName        ( DB , PUID , TITLE , NAMTAB , 1             )
     ##########################################################################
     if                          ( len ( DESCR ) > 0                        ) :
       ########################################################################
-      self . assureNote         ( DB                                       , \
+      self  . assureNote        ( DB                                       , \
                                   PUID                                     , \
                                   "Description"                            , \
                                   DESCR                                    , \
@@ -684,6 +689,8 @@ class ScheduleNotifier (                                                   ) :
     REL     . setRelation       ( "Contains"                                 )
     REL     . Append            ( DB , RELTAB                                )
     ##########################################################################
+    DB      . UnlockTables      (                                            )
+    ##########################################################################
     EVENT [ "extendedProperties" ] =                                         {
       "private"                    :                                         {
         "Uuid"                     : PUID                                    ,
@@ -697,7 +704,9 @@ class ScheduleNotifier (                                                   ) :
     if                          ( Z != False                               ) :
       PRD   = self . ConvertEventCreationToPeriod ( Z , PRD                  )
     ##########################################################################
+    DB      . LockWrites        ( [ PRDTAB                                 ] )
     PRD     . UpdateColumns     ( DB , PRDTAB                                )
+    DB      . UnlockTables      (                                            )
     ##########################################################################
     return True
   ############################################################################
@@ -744,6 +753,8 @@ class ScheduleNotifier (                                                   ) :
     TITLE   = ""
     DESCR   = ""
     ##########################################################################
+    DB      . LockWrites        ( [ PRDTAB , NAMTAB, NOXTAB                ] )
+    ##########################################################################
     if                          ( "summary"     in EVENT                   ) :
       TITLE = EVENT             [ "summary"                                  ]
     if                          ( "description" in EVENT                   ) :
@@ -751,11 +762,11 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     if                          ( len ( TITLE ) > 0                        ) :
       ########################################################################
-      self . assureName         ( DB , PUID , TITLE , NAMTAB , 1             )
+      self  . assureName        ( DB , PUID , TITLE , NAMTAB , 1             )
     ##########################################################################
     if                          ( len ( DESCR ) > 0                        ) :
       ########################################################################
-      self . assureNote         ( DB                                       , \
+      self  . assureNote        ( DB                                       , \
                                   PUID                                     , \
                                   "Description"                            , \
                                   DESCR                                    , \
@@ -763,6 +774,8 @@ class ScheduleNotifier (                                                   ) :
                                   NOXTAB                                     )
     ##########################################################################
     PRD     . UpdateColumns     ( DB , PRDTAB                                )
+    ##########################################################################
+    DB      . UnlockTables      (                                            )
     ##########################################################################
     return True
   ############################################################################
@@ -789,6 +802,8 @@ class ScheduleNotifier (                                                   ) :
     NOW     = StarDate          (                                            )
     PRD     = Periode           (                                            )
     REL     = Relation          (                                            )
+    ##########################################################################
+    DB      . LockWrites        ( [ PRDTAB , NAMTAB, NOXTAB , RELTAB       ] )
     ##########################################################################
     PUID    = PRD . GetUuid     ( DB , PRDTAB                                )
     ##########################################################################
@@ -820,6 +835,8 @@ class ScheduleNotifier (                                                   ) :
     REL     . setT2             ( "Period"                                   )
     REL     . setRelation       ( "Contains"                                 )
     REL     . Append            ( DB , RELTAB                                )
+    ##########################################################################
+    DB      . UnlockTables      (                                            )
     ##########################################################################
     NOW     . Stardate = START
     SDTX    = NOW . toDateTimeString ( TZ )
@@ -939,7 +956,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     return True
   ############################################################################
-  ## 同步谷歌行事曆事件
+  ## 從谷歌行事曆事件同步到本地資料庫
   ############################################################################
   def SyncPeriods                  ( self                                  ) :
     ##########################################################################
@@ -970,11 +987,6 @@ class ScheduleNotifier (                                                   ) :
     if                             ( not DB . ConnectTo ( self . AITKDB )  ) :
       return
     DB . Prepare                   (                                         )
-    DB . LockWrites                ( [ "`periods`"                         , \
-                                       "`notes`"                           , \
-                                       "`variables`"                       , \
-                                       "`relations_others`"                , \
-                                       "`names_others`"                    ] )
     ##########################################################################
     for e in events                                                          :
       ########################################################################
@@ -992,7 +1004,6 @@ class ScheduleNotifier (                                                   ) :
       else                                                                   :
         self . UpdateEventEntry    ( DB ,            e                       )
     ##########################################################################
-    DB . UnlockTables              (                                         )
     DB . Close                     (                                         )
     ##########################################################################
     return True
@@ -1128,14 +1139,14 @@ class ScheduleNotifier (                                                   ) :
       return False
     DB      . Prepare            (                                           )
     ##########################################################################
-    DB      . LockWrites         ( [ PRDTAB , VARTAB , NOXTAB , NAMTAB     ] )
-    ##########################################################################
     PRD     . Uuid = PUID
     ##########################################################################
     if                           ( PRD . ObtainsByUuid ( DB , PRDTAB )     ) :
       ########################################################################
       PRD   . Start = self . CurrentStart
       PRD   . End   = self . CurrentEnd
+      ########################################################################
+      DB    . LockWrites         ( [ VARTAB , NOXTAB , NAMTAB              ] )
       ########################################################################
       self  . assureName         ( DB                                      , \
                                    PUID                                    , \
@@ -1155,6 +1166,8 @@ class ScheduleNotifier (                                                   ) :
                                    196833                                  , \
                                    "GoogleCalendar"                        , \
                                    VARTAB                                    )
+      ########################################################################
+      DB    . UnlockTables       (                                           )
       ########################################################################
       if                         ( ( GID != None ) and ( len ( GID ) > 0 ) ) :
         ######################################################################
@@ -1186,9 +1199,10 @@ class ScheduleNotifier (                                                   ) :
         if                       ( Z != False                              ) :
           PRD = self . ConvertEventCreationToPeriod ( Z , PRD                )
       ########################################################################
+      DB    . LockWrites         ( [ PRDTAB                                ] )
       PRD   . UpdateColumns      ( DB , PRDTAB                               )
+      DB    . UnlockTables       (                                           )
     ##########################################################################
-    DB      . UnlockTables       (                                           )
     DB      . Close              (                                           )
     ##########################################################################
     return True
@@ -1209,10 +1223,13 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     if                           ( not Z                                   ) :
       ########################################################################
+      DB      . LockWrites       ( [ PRDTAB                                ] )
       PERIOD  . UpdateColumns    ( DB , PRDTAB                               )
+      DB      . UnlockTables     (                                           )
       ########################################################################
       return False
     ##########################################################################
+    DB        . LockWrites       ( [ PRDTAB , VARTAB                       ] )
     if                           ( "id" in Z                               ) :
       ########################################################################
       ID      = Z [ "id" ]
@@ -1226,6 +1243,7 @@ class ScheduleNotifier (                                                   ) :
                                    VARTAB                                    )
     ##########################################################################
     PERIOD    . UpdateColumns    ( DB , PRDTAB                               )
+    DB        . UnlockTables     (                                           )
     ##########################################################################
     return True
   ############################################################################
@@ -1244,7 +1262,10 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     PRDTAB = "`periods`"
     PERIOD = self . ConvertEventCreationToPeriod ( Z , PERIOD                )
+    ##########################################################################
+    DB     . LockWrites               ( [ PRDTAB                           ] )
     PERIOD . UpdateColumns            ( DB , PRDTAB                          )
+    DB     . UnlockTables             (                                      )
     ##########################################################################
     return True
   ############################################################################
@@ -1338,38 +1359,25 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   ## 將時段同步到谷歌行事曆
   ############################################################################
-  def SyncPeriodsToGoogle         ( self , JSON                            ) :
+  def SyncPeriodsToGoogle        ( self , JSON                             ) :
     ##########################################################################
-    PERIODs  = JSON               [ "Periods"                                ]
-    if                            ( len ( PERIODs ) <= 0                   ) :
+    PERIODs = JSON               [ "Periods"                                 ]
+    if                           ( len ( PERIODs ) <= 0                    ) :
       return
     ##########################################################################
-    PRDTAB   = "`periods`"
-    VARTAB   = "`variables`"
-    NOXTAB   = "`notes`"
-    NAMTAB   = "`names_others`"
-    RELTAB   = "`relations_others`"
+    DB      = Connection         (                                           )
     ##########################################################################
-    DB       = Connection         (                                          )
-    ##########################################################################
-    if                            ( not DB . ConnectTo ( self . AITKDB )   ) :
+    if                           ( not DB . ConnectTo ( self . AITKDB )    ) :
       return False
-    DB       . Prepare            (                                          )
+    DB      . Prepare            (                                           )
     ##########################################################################
-    DB       . LockWrites         ( [ PRDTAB                               , \
-                                      VARTAB                               , \
-                                      NOXTAB                               , \
-                                      NAMTAB                               , \
-                                      RELTAB                               ] )
-    ##########################################################################
-    self     . CalendarLocker . acquire (                                    )
+    self    . CalendarLocker . acquire (                                     )
     ##########################################################################
     for PUID in PERIODs                                                      :
-      self   . SyncPeriodToGoogle ( DB , PUID                                )
+      self  . SyncPeriodToGoogle ( DB , PUID                                 )
     ##########################################################################
-    self     . CalendarLocker . release (                                    )
-    DB       . UnlockTables       (                                          )
-    DB       . Close              (                                          )
+    self    . CalendarLocker . release (                                     )
+    DB      . Close              (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -1397,10 +1405,10 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     MSG      = f"事件 : {NX}\n編號 : {PUID}"
     ##########################################################################
-    self   . TalkTo              ( "Calendars" , MSG                         )
+    self     . TalkTo            ( "Calendars" , MSG                         )
     ##########################################################################
-    MSG    = f"ReportEventBrief : {MSG}"
-    self   . debug               ( MSG , "debug"                             )
+    MSG      = f"ReportEventBrief : {MSG}"
+    self     . debug             ( MSG , "debug"                             )
     ##########################################################################
     return True
   ############################################################################
@@ -1436,9 +1444,9 @@ class ScheduleNotifier (                                                   ) :
     DB       . Prepare            (                                          )
     ##########################################################################
     if                            ( self . ReportEventBrief ( DB , PUID ) ) :
-      self . CurrentEvent       = PUID
-      self . JSON [ "Google" ] [ "Options" ] [ "Event"  ] = PUID
-      self . StoreJSON            (                                          )
+      self   . CurrentEvent = PUID
+      self   . JSON [ "Google" ] [ "Options" ] [ "Event"  ] = PUID
+      self   . StoreJSON          (                                          )
     ##########################################################################
     DB       . Close              (                                          )
     ##########################################################################
@@ -1446,33 +1454,34 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   ## 修改目前事件
   ############################################################################
-  def ModifyCurrentEvent         ( self                                    ) :
+  def ModifyCurrentEvent  ( self                                           ) :
     ##########################################################################
-    if                           ( self . CurrentEvent  <= 0               ) :
-      self . TalkTo              ( "Calendars" , "請先指定事件編號"             )
+    if                    ( self . CurrentEvent  <= 0                      ) :
+      self . TalkTo       ( "Calendars" , "請先指定事件編號"                    )
       return False
     ##########################################################################
-    if                           ( len ( self . CurrentTitle ) <= 0        ) :
-      self . TalkTo              ( "Calendars" , "請指定標題"                  )
+    if                    ( len ( self . CurrentTitle ) <= 0               ) :
+      self . TalkTo       ( "Calendars" , "請指定標題"                         )
       return False
     ##########################################################################
-    DB       = Connection         (                                          )
+    DB     = Connection   (                                                  )
     ##########################################################################
-    if                            ( not DB . ConnectTo ( self . AITKDB )   ) :
+    if                    ( not DB . ConnectTo ( self . AITKDB )           ) :
       return False
-    DB       . Prepare            (                                          )
     ##########################################################################
-    PUID     = self . CurrentEvent
-    NAME     = self . CurrentTitle
-    NAMTAB   = "`names_others`"
+    DB     . Prepare      (                                                  )
     ##########################################################################
-    DB       . LockWrites         ( [ NAMTAB ]                               )
+    PUID   = self . CurrentEvent
+    NAME   = self . CurrentTitle
+    NAMTAB = "`names_others`"
     ##########################################################################
-    self     . assureName         ( DB , PUID , NAME , NAMTAB , 1            )
+    DB     . LockWrites   ( [ NAMTAB                                       ] )
     ##########################################################################
-    DB       . UnlockTables       (                                          )
+    self   . assureName   ( DB , PUID , NAME , NAMTAB , 1                    )
     ##########################################################################
-    DB       . Close              (                                          )
+    DB     . UnlockTables (                                                  )
+    ##########################################################################
+    DB     . Close        (                                                  )
     ##########################################################################
     return True
   ############################################################################
@@ -1588,20 +1597,20 @@ class ScheduleNotifier (                                                   ) :
   ############################################################################
   ## 報告目前時段資訊
   ############################################################################
-  def ReportCurrentPeriod          ( self                                  ) :
+  def ReportCurrentPeriod    ( self                                        ) :
     ##########################################################################
-    if                             ( not self . hasCurrentPeriod ( )       ) :
+    if                       ( not self . hasCurrentPeriod ( )             ) :
       return False
     ##########################################################################
-    DB = Connection                (                                         )
+    DB   = Connection        (                                               )
     ##########################################################################
-    if                             ( not DB . ConnectTo ( self . AITKDB )  ) :
+    if                       ( not DB . ConnectTo ( self . AITKDB )        ) :
       return
-    DB       . Prepare             (                                         )
+    DB   . Prepare           (                                               )
     ##########################################################################
-    self     . ReportPeriodBrief   ( DB , self . CurrentPeriod               )
+    self . ReportPeriodBrief ( DB , self . CurrentPeriod                     )
     ##########################################################################
-    DB       . Close               (                                         )
+    DB   . Close             (                                               )
     ##########################################################################
     return True
   ############################################################################
@@ -1785,7 +1794,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     PUID   = self . ObtainEventkUuid ( DB , EVNTAB                           )
     if                        ( PUID > 0                                   ) :
-      DB   . LockWrites       ( [ NAMTAB ]                                   )
+      DB   . LockWrites       ( [ NAMTAB                                   ] )
       self . assureName       ( DB , PUID , self . CurrentTitle , NAMTAB , 1 )
       DB   . UnlockTables     (                                              )
     ##########################################################################
@@ -1814,7 +1823,7 @@ class ScheduleNotifier (                                                   ) :
     ##########################################################################
     PUID   = self . ObtainTaskUuid ( DB , TSKTAB                             )
     if                        ( PUID > 0                                   ) :
-      DB   . LockWrites       ( [ NAMTAB ]                                   )
+      DB   . LockWrites       ( [ NAMTAB                                   ] )
       self . assureName       ( DB , PUID , self . CurrentTitle , NAMTAB , 1 )
       DB   . UnlockTables     (                                              )
     ##########################################################################
@@ -1846,7 +1855,7 @@ class ScheduleNotifier (                                                   ) :
     RELTAB = "`relations_others`"
     REL    = Relation         (                                              )
     ##########################################################################
-    DB     . LockWrites       ( [ RELTAB ]                                   )
+    DB     . LockWrites       ( [ RELTAB                                   ] )
     ##########################################################################
     REL    . set              ( "first"  , f"{TUID}"                         )
     REL    . set              ( "second" , f"{PUID}"                         )
@@ -1854,7 +1863,7 @@ class ScheduleNotifier (                                                   ) :
     REL    . setT2            ( "Period"                                     )
     REL    . setRelation      ( "Contains"                                   )
     ##########################################################################
-    REL    .  Join            ( DB , RELTAB                                  )
+    REL    . Join             ( DB , RELTAB                                  )
     ##########################################################################
     DB     . UnlockTables     (                                              )
     ##########################################################################
@@ -1886,7 +1895,7 @@ class ScheduleNotifier (                                                   ) :
     RELTAB = "`relations_others`"
     REL    = Relation         (                                              )
     ##########################################################################
-    DB     . LockWrites       ( [ RELTAB ]                                   )
+    DB     . LockWrites       ( [ RELTAB                                   ] )
     ##########################################################################
     REL    . set              ( "first"  , f"{TUID}"                         )
     REL    . set              ( "second" , f"{PUID}"                         )
@@ -1926,7 +1935,7 @@ class ScheduleNotifier (                                                   ) :
     RELTAB = "`relations_others`"
     REL    = Relation         (                                              )
     ##########################################################################
-    DB     . LockWrites       ( [ RELTAB ]                                   )
+    DB     . LockWrites       ( [ RELTAB                                   ] )
     ##########################################################################
     REL    . set              ( "first"  , f"{TUID}"                         )
     REL    . set              ( "second" , f"{PUID}"                         )
@@ -1934,7 +1943,7 @@ class ScheduleNotifier (                                                   ) :
     REL    . setT2            ( "Schedule"                                   )
     REL    . setRelation      ( "Contains"                                   )
     ##########################################################################
-    REL    .  Join            ( DB , RELTAB                                  )
+    REL    . Join             ( DB , RELTAB                                  )
     ##########################################################################
     DB     . UnlockTables     (                                              )
     ##########################################################################
