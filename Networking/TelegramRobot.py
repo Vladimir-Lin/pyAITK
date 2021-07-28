@@ -22,9 +22,11 @@ from   urllib                              import parse
 ##############################################################################
 from   pathlib                             import Path
 ##############################################################################
-from   http  . server                      import HTTPServer
-from   http  . server                      import BaseHTTPRequestHandler
-from   http  . server                      import ThreadingHTTPServer
+from   http     . server                   import HTTPServer
+from   http     . server                   import BaseHTTPRequestHandler
+from   http     . server                   import ThreadingHTTPServer
+##############################################################################
+from   telegram . ext                      import Updater
 ##############################################################################
 from   . HttpRPC                           import HttpRPC as HttpRPC
 ##############################################################################
