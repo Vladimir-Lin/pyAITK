@@ -17,7 +17,7 @@ import random
 import numpy
 import scipy
 from   scipy . optimize import curve_fit as CurveFit
-from . TaiwanBLs        import TaiwanBLs as TaiwanBLs
+from . TaiwanBL         import TaiwanBL  as TaiwanBL
 ##############################################################################
 class TaiwanBLs        (                                                   ) :
   ############################################################################
