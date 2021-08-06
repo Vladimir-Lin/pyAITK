@@ -19,6 +19,29 @@ import scipy
 from   scipy . optimize import curve_fit       as CurveFit
 from   operator         import itemgetter      as itemgetter
 ##############################################################################
+from . TblMaps          import tblStatisticsAC6        as tblStatisticsAC6
+from . TblMaps          import tblStatisticsAC7        as tblStatisticsAC7
+from . TblMaps          import tblStatisticsOdds6      as tblStatisticsOdds6
+from . TblMaps          import tblStatisticsOdds7      as tblStatisticsOdds7
+from . TblMaps          import tblStatisticsEvens6     as tblStatisticsEvens6
+from . TblMaps          import tblStatisticsEvens7     as tblStatisticsEvens7
+from . TblMaps          import tblStatisticsHead6      as tblStatisticsHead6
+from . TblMaps          import tblStatisticsHead7      as tblStatisticsHead7
+from . TblMaps          import tblStatisticsTail6      as tblStatisticsTail6
+from . TblMaps          import tblStatisticsTail7      as tblStatisticsTail7
+from . TblMaps          import tblStatisticsFirst6     as tblStatisticsFirst6
+from . TblMaps          import tblStatisticsFirst7     as tblStatisticsFirst7
+from . TblMaps          import tblStatisticsEnding6    as tblStatisticsEnding6
+from . TblMaps          import tblStatisticsEnding7    as tblStatisticsEnding7
+from . TblMaps          import tblStatisticsGaps6      as tblStatisticsGaps6
+from . TblMaps          import tblStatisticsGaps7      as tblStatisticsGaps7
+from . TblMaps          import tblStatisticsTotalSums6 as tblStatisticsTotalSums6
+from . TblMaps          import tblStatisticsTotalSums7 as tblStatisticsTotalSums7
+from . TblMaps          import tblStatisticsHeadSums6  as tblStatisticsHeadSums6
+from . TblMaps          import tblStatisticsHeadSums7  as tblStatisticsHeadSums7
+from . TblMaps          import tblStatisticsTailSums6  as tblStatisticsTailSums6
+from . TblMaps          import tblStatisticsTailSums7  as tblStatisticsTailSums7
+##############################################################################
 from . TblDistribution  import TblDistribution as TblDistribution
 from . TaiwanBL         import TaiwanBL        as TaiwanBL
 ##############################################################################
@@ -126,29 +149,6 @@ class TaiwanBLs              (                                             ) :
     return len                ( M                                            )
   ############################################################################
   def StatisticsMaps          ( self , Item , Balls = 6                    ) :
-    ##########################################################################
-    global tblStatisticsAC6
-    global tblStatisticsAC7
-    global tblStatisticsOdds6
-    global tblStatisticsOdds7
-    global tblStatisticsEvens6
-    global tblStatisticsEvens7
-    global tblStatisticsHead6
-    global tblStatisticsHead7
-    global tblStatisticsTail6
-    global tblStatisticsTail7
-    global tblStatisticsFirst6
-    global tblStatisticsFirst7
-    global tblStatisticsEnding6
-    global tblStatisticsEnding7
-    global tblStatisticsGaps6
-    global tblStatisticsGaps7
-    global tblStatisticsTotalSums6
-    global tblStatisticsTotalSums7
-    global tblStatisticsHeadSums6
-    global tblStatisticsHeadSums7
-    global tblStatisticsTailSums6
-    global tblStatisticsTailSums7
     ##########################################################################
     if                        ( "AC"            == Item                    ) :
       if                      ( 7 == Balls                                 ) :
@@ -413,8 +413,6 @@ class TaiwanBLs              (                                             ) :
   ############################################################################
   def ConvertDisappearWeight              ( self , weight                  ) :
     ##########################################################################
-    global tblAppearanceWeight
-    ##########################################################################
     KEYs    = tblAppearanceWeight . keys  (                                  )
     final   =                             {                                  }
     final [ 0 ] = 0
@@ -443,4 +441,13 @@ class TaiwanBLs              (                                             ) :
       R [ i ] = int ( A [ i ] ) * int ( B [ i ] )
     ##########################################################################
     return R
+  ############################################################################
+  def Listings               ( self                                        ) :
+    ##########################################################################
+    for i in range           ( 0 , self . Total                            ) :
+      tblz = self . at       ( i + 1                                         )
+      s    = tblz . toString (                                               )
+      print                  ( s                                             )
+    ##########################################################################
+    return
 ##############################################################################
