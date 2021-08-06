@@ -41,6 +41,7 @@ from . TblMaps          import tblStatisticsHeadSums6  as tblStatisticsHeadSums6
 from . TblMaps          import tblStatisticsHeadSums7  as tblStatisticsHeadSums7
 from . TblMaps          import tblStatisticsTailSums6  as tblStatisticsTailSums6
 from . TblMaps          import tblStatisticsTailSums7  as tblStatisticsTailSums7
+from . TblSquare        import tblStatisticsSquare6    as tblStatisticsSquare6
 ##############################################################################
 from . TblDistribution  import TblDistribution as TblDistribution
 from . TaiwanBL         import TaiwanBL        as TaiwanBL
@@ -208,7 +209,7 @@ class TaiwanBLs              (                                             ) :
     if                        ( "Square"        == Item                    ) :
       if                      ( 7 == Balls                                 ) :
         return                {                                              }
-      return                  {                                              }
+      return   tblStatisticsSquare6
     ##########################################################################
     return                    {                                              }
   ############################################################################
