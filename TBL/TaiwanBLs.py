@@ -57,15 +57,22 @@ class TaiwanBLs              (                                             ) :
   def __del__                ( self                                        ) :
     return
   ############################################################################
-  def clear                  ( self                                        ) :
+  def clear                   ( self                                       ) :
     ##########################################################################
     self . Total = 0
-    self . TBLs  =           [                                               ]
+    self . appearanceWeight = {                                              }
+    self . TBLs             = [                                              ]
     ##########################################################################
     return
   ############################################################################
   def Serials                ( self                                        ) :
     return self . Total
+  ############################################################################
+  def setAppearanceWeight    ( self , weight                               ) :
+    ##########################################################################
+    self . appearanceWeight = weight
+    ##########################################################################
+    return
   ############################################################################
   def ImportHistory          ( self , History                              ) :
     ##########################################################################
@@ -333,8 +340,8 @@ class TaiwanBLs              (                                             ) :
     r    = self . MultiplyTwo49  ( w , m                                     )
     t    = self . SortMapValues  ( r                                         )
     ##########################################################################
-    for e in range          ( 0 , balls                                    ) :
-      numbers [ e ] = t [ e ]
+    for e in range          ( 1 , balls + 1                                ) :
+      numbers [ e - 1 ] = t [ e ]
     ##########################################################################
     return numbers
   ############################################################################
@@ -346,7 +353,9 @@ class TaiwanBLs              (                                             ) :
     for i in range          ( 1 , 50                                       ) :
       mss [ i ] = v         [ i                                              ]
     ##########################################################################
-    kss         = sorted    ( mss , key = itemgetter ( 1 )                   )
+    kss         = sorted    ( mss     . items      (   )                   , \
+                              key     = itemgetter ( 1 )                   , \
+                              reverse = True                                 )
     ##########################################################################
     CNT         = 1
     for i , v in kss                                                         :
@@ -412,16 +421,16 @@ class TaiwanBLs              (                                             ) :
     ##########################################################################
     return weight
   ############################################################################
-  def ConvertDisappearWeight              ( self , weight                  ) :
+  def ConvertDisappearWeight                  ( self , weight              ) :
     ##########################################################################
-    KEYs    = tblAppearanceWeight . keys  (                                  )
-    final   =                             {                                  }
+    KEYs    = self . appearanceWeight . keys  (                              )
+    final   =                                 {                              }
     final [ 0 ] = 0
     ##########################################################################
-    for i in range                        ( 1 , 50                         ) :
-      w     = weight                      [ i                                ]
-      if                                  ( w in KEYs                      ) :
-        final [ i ] = tblAppearanceWeight [ w                                ]
+    for i in range                            ( 1 , 50                     ) :
+      w     = weight                          [ i                            ]
+      if                                      ( w in KEYs                  ) :
+        final [ i ] = self . appearanceWeight [ w                            ]
       else                                                                   :
         final [ i ] = 1
     ##########################################################################
