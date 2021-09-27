@@ -1,22 +1,28 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
+## InputTreeWidget
+##############################################################################
 import os
 import sys
+import getopt
 import time
+import requests
+import threading
+import gettext
+import json
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
 from   PyQt5                          import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QFont
 from   PyQt5 . QtGui                  import QKeySequence
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
@@ -31,52 +37,42 @@ from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
-from   PyQt5 . QtWidgets              import QMdiArea
-from   PyQt5 . QtWidgets              import QStackedWidget
-from   PyQt5 . QtWidgets              import QMainWindow
 ##############################################################################
 from         . VirtualGui             import VirtualGui as VirtualGui
+from         . Widget                 import Widget     as Widget
+from         . TreeWidget             import TreeWidget as TreeWidget
 ##############################################################################
-class MainWindow ( QMainWindow , VirtualGui ) :
+class InputTreeWidget ( Widget , VirtualGui ) :
   ############################################################################
   def __init__ ( self , parent = None ) :
     ##########################################################################
-    super ( QMainWindow , self ) . __init__   ( parent )
-    super ( VirtualGui  , self ) . Initialize ( self   )
+    super ( Widget     , self ) . __init__   ( parent )
+    super ( VirtualGui , self ) . Initialize ( self   )
+    ##########################################################################
+    self . EditorHeight = 28
+    self . combo = QComboBox    ( self                                       )
+    self . line  = QLineEdit    ( self                                       )
+    self . tree  = TreeWidget   ( self                                       )
+    ##########################################################################
+    self . combo . setLineEdit  ( self . line                                )
+    ##########################################################################
+    self . combo . move         ( 0 , 0                                      )
+    self . tree  . move         ( 0 , self . EditorHeight                    )
     ##########################################################################
     return
   ############################################################################
-  def Configure ( self ) :
-    self . stacked = QStackedWidget ( self                                   )
-    self . mdi     = QMdiArea       ( self . stacked                         )
-    self . stacked . addWidget      ( self . mdi                             )
-    self . setCentralWidget         ( self . stacked                         )
+  def Configure                 ( self                                     ) :
+    raise NotImplementedError   (                                            )
+  ############################################################################
+  def resizeEvent               ( self , event                             ) :
+    ##########################################################################
+    QWidget . resizeEvent       ( self , event                               )
+    ##########################################################################
+    w       = self  . width     (                                            )
+    h       = self  . height    (                                            )
+    ##########################################################################
+    self    . combo . resize    ( w ,     self . EditorHeight                )
+    self    . tree  . resize    ( w , h - self . EditorHeight                )
     ##########################################################################
     return
-  ############################################################################
-  def focusInEvent ( self , event ) :
-    if ( self . focusIn ( event ) ) :
-      return
-    super ( QMainWindow , self ) . focusInEvent ( event )
-    return
-  ############################################################################
-  def focusOutEvent ( self , event ) :
-    if ( self . focusOut ( event ) ) :
-      return
-    super ( QMainWindow , self ) . focusOutEvent ( event )
-    return
-  ############################################################################
-  def startup ( self ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def FocusIn ( self ) :
-    return True
-  ############################################################################
-  def FocusOut ( self ) :
-    return True
-  ############################################################################
-  def addMdi                         ( self , widget , showOptions = 1 ) :
-    subw = self . mdi . addSubWindow ( widget                            )
-    subw . setAttribute              ( Qt . WA_DeleteOnClose             )
-    return subw
 ##############################################################################
