@@ -32,21 +32,38 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 ##############################################################################
-class AbstractGui ( ) :
+import mysql . connector
+from   mysql . connector              import Error
+##############################################################################
+import AITK
+from   AITK . Database  . Query       import Query
+from   AITK . Database  . Connection  import Connection
+from   AITK . Database  . Pair        import Pair
+from   AITK . Database  . Columns     import Columns
+##############################################################################
+from   AITK . Calendars . StarDate    import StarDate
+##############################################################################
+class AbstractGui        (                                                 ) :
   ############################################################################
-  def __init__ ( self ) :
-    self . Locality    = 1002
+  def __init__           ( self                                            ) :
     return
   ############################################################################
-  def __del__ ( self ) :
+  def __del__            ( self                                            ) :
     return
   ############################################################################
-  def Initialize ( self , widget = None ) :
-    self . Gui        = widget
-    self . focusState = False
+  def Initialize         ( self , widget = None                            ) :
+    ##########################################################################
+    self . Locality     = 1002
+    self . Prepared     = False
+    self . DB           = { }
+    self . Settings     = { }
+    self . Translations = { }
+    self . Gui          = widget
+    self . focusState   = False
+    ##########################################################################
     return
   ############################################################################
-  def focusIn ( self , event ) :
+  def focusIn            ( self , event                                    ) :
     if   ( event . gotFocus ( ) ) :
       if ( self  . FocusIn  ( ) ) :
         event    . accept   ( )
@@ -54,7 +71,7 @@ class AbstractGui ( ) :
         return True
     return False
   ############################################################################
-  def focusOut ( self , event ) :
+  def focusOut           ( self , event                                    ) :
     if   ( event . lostFocus ( ) ) :
       if ( self  . FocusOut  ( ) ) :
         event    . accept    ( )
@@ -62,13 +79,22 @@ class AbstractGui ( ) :
         return True
     return False
   ############################################################################
-  def FocusIn ( self ) :
+  def FocusIn            ( self                                            ) :
     raise NotImplementedError ( )
   ############################################################################
-  def FocusOut ( self ) :
+  def FocusOut           ( self                                            ) :
     raise NotImplementedError ( )
   ############################################################################
-  def setLocality ( self , locality ) :
+  def setLocality        ( self , locality                                 ) :
     self . Locality = locality
     return True
+  ############################################################################
+  def ConnectDB          ( self                                            ) :
+    ##########################################################################
+    DB = Connection      (                                                   )
+    if                   ( not DB . ConnectTo ( self . DB )                ) :
+      return None
+    DB . Prepare         (                                                   )
+    ##########################################################################
+    return DB
 ##############################################################################

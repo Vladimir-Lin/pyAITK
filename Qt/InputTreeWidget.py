@@ -42,12 +42,15 @@ from         . VirtualGui             import VirtualGui as VirtualGui
 from         . Widget                 import Widget     as Widget
 from         . TreeWidget             import TreeWidget as TreeWidget
 ##############################################################################
-class InputTreeWidget ( Widget , VirtualGui ) :
+class InputTreeWidget ( Widget                                             ) :
   ############################################################################
-  def __init__ ( self , parent = None ) :
+  def __init__        ( self , parent = None                               ) :
     ##########################################################################
     super ( Widget     , self ) . __init__   ( parent )
-    super ( VirtualGui , self ) . Initialize ( self   )
+    ##########################################################################
+    return
+  ############################################################################
+  def Prepare                   ( self                                     ) :
     ##########################################################################
     self . EditorHeight = 28
     self . combo = QComboBox    ( self                                       )
@@ -59,6 +62,8 @@ class InputTreeWidget ( Widget , VirtualGui ) :
     self . combo . move         ( 0 , 0                                      )
     self . tree  . move         ( 0 , self . EditorHeight                    )
     ##########################################################################
+    self . Prepared    = True
+    ##########################################################################
     return
   ############################################################################
   def Configure                 ( self                                     ) :
@@ -67,6 +72,9 @@ class InputTreeWidget ( Widget , VirtualGui ) :
   def resizeEvent               ( self , event                             ) :
     ##########################################################################
     QWidget . resizeEvent       ( self , event                               )
+    ##########################################################################
+    if                          ( not self . Prepared                      ) :
+      return
     ##########################################################################
     w       = self  . width     (                                            )
     h       = self  . height    (                                            )
