@@ -123,10 +123,10 @@ class Columns ( ) :
   ############################################################################
   ## 查詢欄位語法
   ############################################################################
-  def SelectItems ( self , Table , items , Options , Limits )                :
+  def SelectItems             ( self , Table , items , Options , Limits    ) :
     ##########################################################################
-    IS    = self . items ( " , " )
-    QUERY = self . QueryItems ( items , Options , Limits )
+    IS    = self . join       ( items , " , "                                )
+    QUERY = self . QueryItems ( items , Options , Limits                     )
     QQ    = f"select {IS} from {Table} {QUERY} ;"
     ##########################################################################
     return QQ

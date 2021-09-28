@@ -46,48 +46,76 @@ from   AITK . Calendars . StarDate    import StarDate
 class AbstractGui        (                                                 ) :
   ############################################################################
   def __init__           ( self                                            ) :
+    ##########################################################################
+    NOW                 = StarDate (                                         )
+    NOW  . Now           (                                                   )
+    ##########################################################################
+    self . Locality        = 1002
+    self . Prepared        = False
+    self . DB              = { }
+    self . Settings        = { }
+    self . Translations    = { }
+    self . Tables          = { }
+    self . Gui             = None
+    self . focusState      = False
+    self . CreatedDateTime = NOW . Stardate
+    ##########################################################################
     return
   ############################################################################
   def __del__            ( self                                            ) :
     return
   ############################################################################
+  def isPrepared         ( self                                            ) :
+    return self . Prepared
+  ############################################################################
+  def setPrepared        ( self , prepared                                 ) :
+    self . Prepared = prepared
+    return self . Prepared
+  ############################################################################
+  def getLocality        ( self                                            ) :
+    return self . Locality
+  ############################################################################
+  def setLocality        ( self , locality                                 ) :
+    ##########################################################################
+    self . Locality = locality
+    ##########################################################################
+    return self . Locality
+  ############################################################################
   def Initialize         ( self , widget = None                            ) :
     ##########################################################################
-    self . Locality     = 1002
-    self . Prepared     = False
-    self . DB           = { }
-    self . Settings     = { }
-    self . Translations = { }
     self . Gui          = widget
-    self . focusState   = False
     ##########################################################################
     return
   ############################################################################
   def focusIn            ( self , event                                    ) :
-    if   ( event . gotFocus ( ) ) :
-      if ( self  . FocusIn  ( ) ) :
-        event    . accept   ( )
-        self     . focusState = True
+    ##########################################################################
+    if                   ( event . gotFocus ( )                            ) :
+      if                 ( self  . FocusIn  ( )                            ) :
+        ######################################################################
+        event . accept   (                                                   )
+        self  . focusState = True
+        ######################################################################
         return True
+    ##########################################################################
     return False
   ############################################################################
   def focusOut           ( self , event                                    ) :
-    if   ( event . lostFocus ( ) ) :
-      if ( self  . FocusOut  ( ) ) :
-        event    . accept    ( )
-        self     . focusState = False
+    ##########################################################################
+    if                   ( event . lostFocus ( )                           ) :
+      if                 ( self  . FocusOut  ( )                           ) :
+        ######################################################################
+        event . accept   (                                                   )
+        self  . focusState = False
+        ######################################################################
         return True
+    ##########################################################################
     return False
   ############################################################################
-  def FocusIn            ( self                                            ) :
-    raise NotImplementedError ( )
+  def FocusIn                 ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def FocusOut           ( self                                            ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def setLocality        ( self , locality                                 ) :
-    self . Locality = locality
-    return True
+  def FocusOut                ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
   def ConnectDB          ( self                                            ) :
     ##########################################################################

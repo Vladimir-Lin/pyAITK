@@ -37,13 +37,14 @@ from         . AbstractGui            import AbstractGui as AbstractGui
 class VirtualGui               ( AbstractGui                               ) :
   ############################################################################
   def __init__                 ( self                                      ) :
+    super ( ) . __init__       (                                             )
     return
   ############################################################################
   def __del__                  ( self                                      ) :
     return
   ############################################################################
   def Initialize               ( self , widget = None                      ) :
-    super ( AbstractGui , self ) . Initialize ( widget )
+    super ( ) . Initialize     ( widget                                      )
     return
   ############################################################################
   def setAllFont                    ( self , widget , font                 ) :

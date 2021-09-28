@@ -40,80 +40,123 @@ from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from         . VirtualGui             import VirtualGui as VirtualGui
 ##############################################################################
-class TreeWidget ( QTreeWidget , VirtualGui ) :
+class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
-  def __init__ ( self , parent = None ) :
+  def __init__                ( self , parent = None                       ) :
     ##########################################################################
-    super ( QTreeWidget , self ) . __init__   ( parent )
-    super ( VirtualGui  , self ) . Initialize ( self   )
+    super ( QTreeWidget , self ) . __init__   ( parent                       )
+    super ( VirtualGui  , self ) . __init__   (                              )
+    super ( VirtualGui  , self ) . Initialize ( self                         )
+    ##########################################################################
+    self . CurrentItem =      {                                              }
     ##########################################################################
     return
   ############################################################################
-  def Configure ( self ) :
-    raise NotImplementedError ( )
+  def Configure               ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def focusInEvent ( self , event ) :
-    if ( self . focusIn ( event ) ) :
+  def focusInEvent            ( self , event                               ) :
+    if                        ( self . focusIn ( event )                   ) :
       return
-    super ( QTreeWidget , self ) . focusInEvent ( event )
+    super ( QTreeWidget , self ) . focusInEvent ( event                      )
     return
   ############################################################################
-  def focusOutEvent ( self , event ) :
-    if ( self . focusOut ( event ) ) :
+  def focusOutEvent           ( self , event                               ) :
+    if                        ( self . focusOut ( event )                  ) :
       return
-    super ( QTreeWidget , self ) . focusOutEvent ( event )
+    super ( QTreeWidget , self ) . focusOutEvent ( event                     )
     return
   ############################################################################
-  def contextMenuEvent ( self , event ) :
-    if ( self . Menu ( event . pos ( ) ) ) :
-      event . accept ( )
+  def contextMenuEvent        ( self , event                               ) :
+    if                        ( self . Menu ( event . pos ( ) )            ) :
+      event . accept          (                                              )
       return
-    super ( QTreeWidget , self ) . contextMenuEvent ( event )
+    super ( QTreeWidget , self ) . contextMenuEvent ( event                  )
     return
   ############################################################################
-  def setCentralLabels ( self , labels ) :
-    it = QTreeWidgetItem ( labels )
-    i  = 0
-    for x in labels :
-      it . setTextAlignment ( i , Qt . AlignCenter )
-      i = i + 1
-    self . setHeaderItem ( it )
+  def setCentralLabels        ( self , labels                              ) :
+    ##########################################################################
+    it = QTreeWidgetItem      ( labels                                       )
+    for i , x in enumerate    ( labels                                     ) :
+      it . setTextAlignment   ( i , Qt . AlignCenter                         )
+    self . setHeaderItem      ( it                                           )
+    ##########################################################################
     return it
   ############################################################################
-  def startup ( self ) :
-    raise NotImplementedError ( )
+  def startup                 ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def FocusIn ( self ) :
+  def FocusIn                 ( self                                       ) :
     return True
   ############################################################################
-  def FocusOut ( self ) :
+  def FocusOut                ( self                                       ) :
     return True
   ############################################################################
-  def removeParked ( self ) :
-    if ( "Item"   not in self . CurrentItem ) :
+  def removeParked              ( self                                     ) :
+    ##########################################################################
+    if                          ( "Item"   not in self . CurrentItem       ) :
       return False
-    if ( "Column" not in self . CurrentItem ) :
+    if                          ( "Column" not in self . CurrentItem       ) :
       return False
-    if ( "Widget" not in self . CurrentItem ) :
+    if                          ( "Widget" not in self . CurrentItem       ) :
       return False
-    item   = self . CurrentItem [ "Item"   ]
-    column = self . CurrentItem [ "Column" ]
-    self   . removeItemWidget ( item , column )
-    self   . CurrentItem = { }
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    self   . removeItemWidget   ( item , column                              )
+    self   . CurrentItem =      {                                            }
+    ##########################################################################
     return True
   ############################################################################
-  def singleClicked ( self , item , column ) :
-    raise NotImplementedError ( )
+  def MountClicked            ( self , clicks                              ) :
+    ##########################################################################
+    if                        ( clicks == 1                                ) :
+      ########################################################################
+      try                                                                    :
+        self . itemClicked       . disconnect (                              )
+      except                                                                 :
+        pass
+      self   . itemClicked       .    connect ( self . singleClicked         )
+      ########################################################################
+      return
+    ##########################################################################
+    if                        ( clicks == 2                                ) :
+      ########################################################################
+      try                                                                    :
+        self . itemDoubleClicked . disconnect (                              )
+      except                                                                 :
+        pass
+      self   . itemDoubleClicked .    connect ( self . doubleClicked         )
+      ########################################################################
+      return
+    ##########################################################################
+    if                        ( clicks == 9                                ) :
+      ########################################################################
+      try                                                                    :
+        self . itemChanged       . disconnect (                              )
+      except                                                                 :
+        pass
+      self   . itemChanged       .    connect ( self . stateChanged          )
+      ########################################################################
+      return
+    ##########################################################################
+    return
   ############################################################################
-  def doubleClicked ( self , item , column ) :
-    raise NotImplementedError ( )
+  def singleClicked           ( self , item , column                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def Insert ( self ) :
-    raise NotImplementedError ( )
+  def doubleClicked           ( self , item , column                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def Delete ( self ) :
-    raise NotImplementedError ( )
+  def stateChanged            ( self , item , column                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def Menu ( self , pos ) :
-    raise NotImplementedError ( )
+  def Insert                  ( self                                       ) :
+    raise NotImplementedError (                                              )
+  ############################################################################
+  def Delete                  ( self                                       ) :
+    raise NotImplementedError (                                              )
+  ############################################################################
+  def Menu                    ( self , pos                                 ) :
+    raise NotImplementedError (                                              )
 ##############################################################################
