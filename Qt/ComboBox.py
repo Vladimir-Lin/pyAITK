@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## Widget
+## ComboBox
 ##############################################################################
 import os
 import sys
@@ -26,26 +26,19 @@ from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QTreeWidget
-from   PyQt5 . QtWidgets              import QTreeWidgetItem
-from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
-from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from         . VirtualGui             import VirtualGui as VirtualGui
 ##############################################################################
-class Widget   ( QWidget , VirtualGui                                      ) :
+class ComboBox ( QComboBox , VirtualGui                                    ) :
   ############################################################################
   def __init__ ( self , parent = None                                      ) :
     ##########################################################################
-    super ( QWidget     , self ) . __init__   ( parent                       )
-    super ( VirtualGui  , self ) . Initialize ( self                         )
+    super ( QComboBox  , self ) . __init__   ( parent                        )
+    super ( VirtualGui , self ) . Initialize ( self                          )
     ##########################################################################
     return
 ##############################################################################
