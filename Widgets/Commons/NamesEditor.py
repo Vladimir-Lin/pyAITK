@@ -11,42 +11,44 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                           import QtCore
+from   PyQt5                           import QtGui
+from   PyQt5                           import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                  import QObject
+from   PyQt5 . QtCore                  import pyqtSignal
+from   PyQt5 . QtCore                  import Qt
+from   PyQt5 . QtCore                  import QPoint
+from   PyQt5 . QtCore                  import QPointF
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                   import QIcon
+from   PyQt5 . QtGui                   import QCursor
+from   PyQt5 . QtGui                   import QKeySequence
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAction
-from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QTreeWidget
-from   PyQt5 . QtWidgets              import QTreeWidgetItem
-from   PyQt5 . QtWidgets              import QLineEdit
-from   PyQt5 . QtWidgets              import QComboBox
-from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets               import QApplication
+from   PyQt5 . QtWidgets               import QWidget
+from   PyQt5 . QtWidgets               import qApp
+from   PyQt5 . QtWidgets               import QMenu
+from   PyQt5 . QtWidgets               import QAction
+from   PyQt5 . QtWidgets               import QShortcut
+from   PyQt5 . QtWidgets               import QMenu
+from   PyQt5 . QtWidgets               import QTreeWidget
+from   PyQt5 . QtWidgets               import QTreeWidgetItem
+from   PyQt5 . QtWidgets               import QLineEdit
+from   PyQt5 . QtWidgets               import QComboBox
+from   PyQt5 . QtWidgets               import QSpinBox
 ##############################################################################
-from   AITK  . Qt        . VirtualGui import VirtualGui as VirtualGui
-from   AITK  . Qt        . TreeWidget import TreeWidget as TreeWidget
+from   AITK  . Qt        . VirtualGui  import VirtualGui  as VirtualGui
+from   AITK  . Qt        . MenuManager import MenuManager as MenuManager
+from   AITK  . Qt        . TreeWidget  import TreeWidget  as TreeWidget
 ##############################################################################
-from   AITK  . Documents . Name       import Name       as NameItem
+from   AITK  . Documents . Name        import Name        as NameItem
 ##############################################################################
 class NamesEditor        ( TreeWidget , NameItem                           ) :
   ############################################################################
   emitNamesShow = pyqtSignal     (                                           )
   emitAllNames  = pyqtSignal     ( list                                      )
+  CloseMyself   = pyqtSignal     ( QWidget                                   )
   ############################################################################
   def __init__           ( self , parent = None                            ) :
     ##########################################################################
@@ -90,6 +92,7 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     self     . emitNamesShow . connect ( self . show                         )
     self     . emitAllNames  . connect ( self . refresh                      )
     ##########################################################################
+    self     . MountClicked       ( 1                                        )
     self     . MountClicked       ( 2                                        )
     ##########################################################################
     self     . setPrepared        ( True                                     )
@@ -119,32 +122,56 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked ( self , item , column ) :
-    print("singleClicked")
+  def singleClicked              ( self , item , column                    ) :
+    print(f"singleClicked {column}")
     return
   ############################################################################
-  def doubleClicked ( self , item , column ) :
-    print("doubleClicked")
+  def doubleClicked              ( self , item , column                    ) :
+    ##########################################################################
+    if                           ( column not in [ 1 , 2 , 3 , 4 , 5 ]     ) :
+      return
+    ##########################################################################
+    print(f"doubleClicked {column}")
+    if                           ( column == 1                             ) :
+      pass
+    ##########################################################################
+    elif                         ( column == 2                             ) :
+      pass
+    ##########################################################################
+    elif                         ( column == 3                             ) :
+      pass
+    ##########################################################################
+    elif                         ( column == 4                             ) :
+      pass
+    ##########################################################################
+    elif                         ( column == 5                             ) :
+      pass
+    ##########################################################################
     return
   ############################################################################
-  def stateChanged  ( self , item , column ) :
-    print("stateChanged")
+  def stateChanged               ( self , item , column                    ) :
+    print(f"stateChanged {column}")
     return
   ############################################################################
-  def Insert ( self ) :
+  def Insert                     ( self                                    ) :
     print("Insert")
     return
   ############################################################################
-  def Delete ( self ) :
+  def Delete                     ( self                                    ) :
     print("Delete")
     return
   ############################################################################
-  def Menu ( self , pos ) :
+  def Menu                       ( self , pos                              ) :
+    ##########################################################################
+    ##########################################################################
     print(pos)
     return
   ############################################################################
-  def TryClose ( self ) :
-    self . Prepared = False
+  def TryClose                   ( self                                    ) :
+    ##########################################################################
+    self . setPrepared           ( False                                     )
+    self . CloseMyself . emit    ( self                                      )
+    ##########################################################################
     print("TryClose")
     return True
   ############################################################################
@@ -168,18 +195,23 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
         pass
       ########################################################################
       NT    . setText               ( 0 , str ( IT [  0 ] )                  )
+      NT    . setTextAlignment      ( 4 , Qt.AlignRight                      )
       ########################################################################
       NT    . setText               ( 1 , str ( S         )                  )
       ########################################################################
       NT    . setText               ( 2 , str ( LANG      )                  )
+      NT    . setData               ( 2 , Qt . UserRole , IT [ 2 ]           )
       ########################################################################
       NT    . setText               ( 3 , str ( REL       )                  )
+      NT    . setData               ( 3 , Qt . UserRole , IT [ 4 ]           )
       ########################################################################
       NT    . setText               ( 4 , str ( IT [  3 ] )                  )
       NT    . setTextAlignment      ( 4 , Qt.AlignRight                      )
+      NT    . setData               ( 4 , Qt . UserRole , IT [ 3 ]           )
       ########################################################################
       NT    . setText               ( 5 , str ( IT [  5 ] )                  )
       NT    . setTextAlignment      ( 5 , Qt.AlignRight                      )
+      NT    . setData               ( 5 , Qt . UserRole , IT [ 5 ]           )
       ########################################################################
       NT    . setText               ( 6 , str ( IT [  6 ] )                  )
       NT    . setTextAlignment      ( 6 , Qt.AlignRight                      )
