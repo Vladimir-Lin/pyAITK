@@ -17,6 +17,7 @@ from   PyQt5                          import QtWidgets
 ##############################################################################
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
@@ -31,17 +32,29 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QLineEdit
+from   PyQt5 . QtWidgets              import QCompleter
 ##############################################################################
 from         . VirtualGui             import VirtualGui as VirtualGui
 ##############################################################################
-class LineEdit ( QLineEdit , VirtualGui                                    ) :
+class LineEdit            ( QLineEdit , VirtualGui                         ) :
   ############################################################################
-  def __init__ ( self , parent = None                                      ) :
+  def __init__            ( self , parent = None , plan = None             ) :
     ##########################################################################
     super ( QLineEdit  , self ) . __init__   ( parent                        )
     super ( VirtualGui , self ) . Initialize ( self                          )
     ##########################################################################
+    self . setAttribute   ( Qt . WA_InputMethodEnabled                       )
+    ##########################################################################
     return
+  ############################################################################
+  @pyqtSlot(list)
+  def updateCompleter                  ( self , strings                    ) :
+    ##########################################################################
+    QCompleter * oc = self . completer (                                     )
+    QCompleter * lc = new QCompleter   ( strings , self                      )
+    self . setCompleter                ( lc                                  )
+    ##########################################################################
+    return oc
 ##############################################################################
 
 

@@ -128,7 +128,7 @@ class AbstractGui        (                                                 ) :
 ##############################################################################
 
 
-
+"""
 
 
 bool getAbstractStopable(QVariant pointer) ;
@@ -548,7 +548,7 @@ class Q_COMPONENTS_EXPORT AbstractGui
 };
 
 
-"""
+
 
 #include <qtcomponents.h>
 
