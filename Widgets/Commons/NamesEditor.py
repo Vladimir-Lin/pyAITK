@@ -88,23 +88,30 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     return
   ############################################################################
   def FocusIn ( self ) :
+    print("FocusIn")
     return True
   ############################################################################
   def FocusOut ( self ) :
+    print("FocusOut")
     return True
   ############################################################################
   def singleClicked ( self , item , column ) :
+    print("singleClicked")
     return
   ############################################################################
   def doubleClicked ( self , item , column ) :
+    print("doubleClicked")
     return
   ############################################################################
   def Insert ( self ) :
+    print("Insert")
     return
   ############################################################################
   def Delete ( self ) :
+    print("Delete")
     return
   ############################################################################
   def Menu ( self , pos ) :
+    print(pos)
     return
 ##############################################################################
