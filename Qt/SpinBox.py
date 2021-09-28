@@ -43,3 +43,96 @@ class SpinBox  ( QSpinBox , VirtualGui                                     ) :
     ##########################################################################
     return
 ##############################################################################
+
+
+
+
+
+"""
+
+
+
+
+class Q_COMPONENTS_EXPORT SpinBox : public QSpinBox
+                                  , public VirtualGui
+{
+  Q_OBJECT
+  Q_PROPERTY(bool designable READ canDesign WRITE setDesignable DESIGNABLE true)
+  public:
+
+    int * External ;
+
+    explicit SpinBox           (StandardConstructor) ;
+    virtual ~SpinBox           (void               ) ;
+
+  protected:
+
+  private:
+
+  public slots:
+
+  protected slots:
+
+     virtual void DropCommands (void) ;
+     virtual void assignValue  (int value) ;
+
+  private slots:
+
+  signals:
+
+};
+
+
+
+
+
+
+
+#include <qtcomponents.h>
+
+N::SpinBox :: SpinBox    (QWidget * parent,Plan * p)
+            : QSpinBox   (          parent         )
+            , VirtualGui (          this  ,       p)
+            , External   (NULL                     )
+{
+  setAttribute  ( Qt::WA_InputMethodEnabled               ) ;
+  addConnector  ( "Value"                                   ,
+                  this    , SIGNAL ( valueChanged (int) )   ,
+                  this    , SLOT   ( assignValue  (int) ) ) ;
+  addConnector  ( "Commando"                                ,
+                  Commando                                  ,
+                  SIGNAL ( timeout      ( ) )               ,
+                  this                                      ,
+                  SLOT   ( DropCommands ( ) )             ) ;
+  onlyConnector ( "Value"                                 ) ;
+  onlyConnector ( "Commando"                              ) ;
+}
+
+N::SpinBox ::~SpinBox(void)
+{
+}
+
+void N::SpinBox::DropCommands(void)
+{
+  LaunchCommands ( ) ;
+}
+
+void N::SpinBox::assignValue(int value)
+{
+  nDropOut ( IsNull(External) ) ;
+  (*External) = value           ;
+}
+
+
+
+
+"""
+
+
+
+
+
+
+
+
+

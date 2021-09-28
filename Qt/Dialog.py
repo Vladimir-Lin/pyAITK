@@ -50,3 +50,62 @@ class Dialog   ( QDialog , VirtualGui                                      ) :
     ##########################################################################
     return
 ##############################################################################
+
+
+"""
+
+
+class Q_COMPONENTS_EXPORT Dialog : public QDialog
+                                 , public VirtualGui
+                                 , public Thread
+{
+  Q_OBJECT
+  Q_PROPERTY(bool designable READ canDesign WRITE setDesignable DESIGNABLE true)
+  public:
+
+    explicit Dialog (StandardConstructor) ;
+    virtual ~Dialog (void               ) ;
+
+  protected:
+
+  private:
+
+  public slots:
+
+  protected slots:
+
+  private slots:
+
+  signals:
+
+};
+
+
+
+
+#include <qtcomponents.h>
+
+N::Dialog :: Dialog     (QWidget * parent,Plan * p     )
+           : QDialog    (          parent              )
+           , VirtualGui (          this  ,       p     )
+           , Thread     (          0     ,       false )
+{
+  WidgetClass                                   ;
+  setAttribute ( Qt::WA_InputMethodEnabled    ) ;
+  ///////////////////////////////////////////////
+  if ( NotNull ( plan ) )                       {
+    Data . Controller = & ( plan->canContinue ) ;
+  }                                             ;
+}
+
+N::Dialog ::~Dialog(void)
+{
+}
+
+
+
+
+"""
+
+
+
