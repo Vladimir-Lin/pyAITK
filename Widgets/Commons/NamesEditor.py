@@ -38,50 +38,54 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from         . VirtualGui             import VirtualGui as VirtualGui
+from   AITK  . Qt        . VirtualGui import VirtualGui as VirtualGui
+from   AITK  . Qt        . TreeWidget import TreeWidget as TreeWidget
 ##############################################################################
-class TreeWidget ( QTreeWidget , VirtualGui ) :
+from   AITK  . Documents . Name       import Name       as NameItem
+##############################################################################
+class NamesEditor        ( TreeWidget , NameItem                           ) :
   ############################################################################
-  def __init__ ( self , parent = None ) :
+  def __init__           ( self , parent = None                            ) :
     ##########################################################################
-    super ( QTreeWidget , self ) . __init__   ( parent )
-    super ( VirtualGui  , self ) . Initialize ( self   )
+    super ( TreeWidget , self ) . __init__   ( parent                        )
+    super ( NameItem   , self ) . __init__   (                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def Prepare                    ( self                                    ) :
+    ##########################################################################
+    Names  = self . Translations [ "NamesEditor" ] [ "Labels" ]
+    Items  = self . tableItems   (                                           )
+    ##########################################################################
+    self . KEYs =                [                                           ]
+    self . KEYs . append         ( "id"                                      )
+    self . KEYs . append         ( "name"                                    )
+    for it in Items                                                          :
+      if ( ( it not in self . KEYs ) and ( it not in [ "uuid" ] ) )          :
+       self  . KEYs . append     ( it                                        )
+    ##########################################################################
+    TOTAL    = len ( self . KEYs )
+    self     . setColumnCount    ( TOTAL + 1                                 )
+    ##########################################################################
+    self     . LabelItem = QTreeWidgetItem (                                 )
+    for i , it in enumerate      ( self . KEYs                             ) :
+      self   . LabelItem . setText          ( i , Names [ it ]               )
+      self   . LabelItem . setTextAlignment ( i , Qt . AlignHCenter          )
+    self     . LabelItem . setText          ( TOTAL , ""                     )
+    self     . setHeaderItem     ( self . LabelItem                          )
+    ##########################################################################
+    self     . setColumnWidth    ( TOTAL     , 3                             )
+    ##########################################################################
+    self     . setColumnHidden   ( 0         , True                          )
+    self     . setColumnHidden   ( TOTAL - 1 , True                          )
     ##########################################################################
     return
   ############################################################################
   def Configure ( self ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def focusInEvent ( self , event ) :
-    if ( self . focusIn ( event ) ) :
-      return
-    super ( QTreeWidget , self ) . focusInEvent ( event )
     return
-  ############################################################################
-  def focusOutEvent ( self , event ) :
-    if ( self . focusOut ( event ) ) :
-      return
-    super ( QTreeWidget , self ) . focusOutEvent ( event )
-    return
-  ############################################################################
-  def contextMenuEvent ( self , event ) :
-    if ( self . Menu ( event . pos ( ) ) ) :
-      event . accept ( )
-      return
-    super ( QTreeWidget , self ) . contextMenuEvent ( event )
-    return
-  ############################################################################
-  def setCentralLabels ( self , labels ) :
-    it = QTreeWidgetItem ( labels )
-    i  = 0
-    for x in labels :
-      it . setTextAlignment ( i , Qt . AlignCenter )
-      i = i + 1
-    self . setHeaderItem ( it )
-    return it
   ############################################################################
   def startup ( self ) :
-    raise NotImplementedError ( )
+    return
   ############################################################################
   def FocusIn ( self ) :
     return True
@@ -89,31 +93,18 @@ class TreeWidget ( QTreeWidget , VirtualGui ) :
   def FocusOut ( self ) :
     return True
   ############################################################################
-  def removeParked ( self ) :
-    if ( "Item"   not in self . CurrentItem ) :
-      return False
-    if ( "Column" not in self . CurrentItem ) :
-      return False
-    if ( "Widget" not in self . CurrentItem ) :
-      return False
-    item   = self . CurrentItem [ "Item"   ]
-    column = self . CurrentItem [ "Column" ]
-    self   . removeItemWidget ( item , column )
-    self   . CurrentItem = { }
-    return True
-  ############################################################################
   def singleClicked ( self , item , column ) :
-    raise NotImplementedError ( )
+    return
   ############################################################################
   def doubleClicked ( self , item , column ) :
-    raise NotImplementedError ( )
+    return
   ############################################################################
   def Insert ( self ) :
-    raise NotImplementedError ( )
+    return
   ############################################################################
   def Delete ( self ) :
-    raise NotImplementedError ( )
+    return
   ############################################################################
   def Menu ( self , pos ) :
-    raise NotImplementedError ( )
+    return
 ##############################################################################
