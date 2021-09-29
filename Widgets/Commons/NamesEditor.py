@@ -11,6 +11,8 @@ import threading
 import gettext
 import json
 ##############################################################################
+from   opencc                          import OpenCC
+##############################################################################
 from   PyQt5                           import QtCore
 from   PyQt5                           import QtGui
 from   PyQt5                           import QtWidgets
@@ -373,6 +375,21 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     ##########################################################################
     return mm
   ############################################################################
+  def TranslationsMenu             ( self , mm                             ) :
+    ##########################################################################
+    TRX    = self . Translations   [ "Translations"                          ]
+    msg    = self . Translations   [ "UI::Translations"                      ]
+    KEYs   = TRX  . keys           (                                         )
+    ##########################################################################
+    LOT    = mm . addMenu          ( msg                                     )
+    ##########################################################################
+    for K in KEYs                                                            :
+       msg = TRX                   [ K                                       ]
+       V   = int                   ( K                                       )
+       mm  . addActionFromMenu     ( LOT , V , msg                           )
+    ##########################################################################
+    return mm
+  ############################################################################
   def LocalityMenu                 ( self , mm                             ) :
     ##########################################################################
     TRX    = self . Translations
@@ -383,7 +400,7 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     ##########################################################################
     KEYs   = LOC . keys            (                                         )
     ##########################################################################
-    for K in                       ( KEYs                                  ) :
+    for K in KEYs                                                            :
        msg = LOC                   [ K                                       ]
        V   = int                   ( K                                       )
        hid =                       ( V == self . defaultLocality             )
@@ -401,7 +418,7 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     ##########################################################################
     KEYs   = REL . keys            (                                         )
     ##########################################################################
-    for K in                       ( KEYs                                  ) :
+    for K in KEYs                                                            :
        msg = REL                   [ K                                       ]
        V   = int                   ( K                                       )
        hid =                       ( V == self . defaultRelevance            )
@@ -409,6 +426,51 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     ##########################################################################
     return mm
   ############################################################################
+  def HandleTranslations     ( self , item , ID                            ) :
+    ##########################################################################
+    if                       ( ( ID < 7001 ) or ( ID > 7008 )              ) :
+      return False
+    ##########################################################################
+    CODE   = ""
+    if                       ( ID == 7001                                  ) :
+      CODE = "t2s"
+    elif                     ( ID == 7002                                  ) :
+      CODE = "s2t"
+    elif                     ( ID == 7003                                  ) :
+      CODE = "tw2s"
+    elif                     ( ID == 7004                                  ) :
+      CODE = "s2tw"
+    elif                     ( ID == 7005                                  ) :
+      CODE = "tw2sp"
+    elif                     ( ID == 7006                                  ) :
+      CODE = "s2twp"
+    elif                     ( ID == 7007                                  ) :
+      CODE = "hk2s"
+    elif                     ( ID == 7008                                  ) :
+      CODE = "s2hk"
+    ##########################################################################
+    pid    = item . text     ( 0                                             )
+    text   = item . text     ( 1                                             )
+    pid    = int             ( pid                                           )
+    cc     = OpenCC          ( CODE                                          )
+    target = cc . convert    ( text                                          )
+    UTF8   = len             ( target                                        )
+    LENZ   = 0
+    ##########################################################################
+    try                                                                      :
+      S    = target . encode ( "utf-8"                                       )
+      LENZ = len             ( S                                             )
+    except                                                                   :
+      pass
+    ##########################################################################
+    item   . setText         ( 1 , target                                    )
+    item   . setText         ( 6 , str ( UTF8 )                              )
+    item   . setText         ( 7 , str ( LENZ )                              )
+    ##########################################################################
+    threading . Thread       ( target = self . UpdateUuidName                ,
+                               args   = ( item , pid , target , ) ) . start ()
+    ##########################################################################
+    return True
   def Menu                         ( self , pos                            ) :
     ##########################################################################
     items  = self . selectedItems  (                                         )
@@ -432,9 +494,11 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
                                      self . ShowCompact                      )
     mm     . addSeparator          (                                         )
     ##########################################################################
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    mm     = self . RelevanceMenu  ( mm                                      )
+    mm     = self . ColumnsMenu      ( mm                                    )
+    if                               ( len ( items ) == 1                  ) :
+      mm   = self . TranslationsMenu ( mm                                    )
+    mm     = self . LocalityMenu     ( mm                                    )
+    mm     = self . RelevanceMenu    ( mm                                    )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
@@ -443,6 +507,10 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     if                             ( at >= 10000000                        ) :
       self . defaultLocality  = at - 10000000
       return True
+    ##########################################################################
+    if                             ( len ( items ) == 1                    ) :
+      if ( self . HandleTranslations ( items [ 0 ] , at )                  ) :
+        return True
     ##########################################################################
     if                             ( at >= 9000                            ) :
       col  = at - 9000
