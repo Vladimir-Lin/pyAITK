@@ -48,7 +48,7 @@ class SpinBox               ( QSpinBox , VirtualGui                         ) :
     self . External = None
     ##########################################################################
     self . valueChanged . connect ( self . assignValue                       )
-    self . timeout      . connect ( self . DropCommands                      )
+    ## self . timeout      . connect ( self . DropCommands                      )
     ##########################################################################
     return
   ############################################################################

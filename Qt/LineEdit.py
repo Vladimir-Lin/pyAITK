@@ -48,11 +48,11 @@ class LineEdit            ( QLineEdit , VirtualGui                         ) :
     return
   ############################################################################
   @pyqtSlot(list)
-  def updateCompleter                  ( self , strings                    ) :
+  def updateCompleter       ( self , strings                               ) :
     ##########################################################################
-    QCompleter * oc = self . completer (                                     )
-    QCompleter * lc = new QCompleter   ( strings , self                      )
-    self . setCompleter                ( lc                                  )
+    oc   = self . completer (                                                )
+    lc   = QCompleter       ( strings , self                                 )
+    self . setCompleter     ( lc                                             )
     ##########################################################################
     return oc
 ##############################################################################

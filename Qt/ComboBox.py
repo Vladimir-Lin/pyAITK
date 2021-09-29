@@ -41,6 +41,21 @@ class ComboBox ( QComboBox , VirtualGui                                    ) :
     super ( VirtualGui , self ) . Initialize ( self                          )
     ##########################################################################
     return
+  ############################################################################
+  def addJson              ( self , JSON , currentIndex                    ) :
+    ##########################################################################
+    index   = 0
+    atp     = 0
+    KEYs    = JSON . keys  (                                                 )
+    for K in KEYs                                                            :
+      self . addItem       ( JSON [ K ] , K                                  )
+      if                   ( K == currentIndex                             ) :
+        atp = index
+      index = index + 1
+    ##########################################################################
+    self . setCurrentIndex ( atp                                             )
+    ##########################################################################
+    return
 ##############################################################################
 
 
@@ -132,11 +147,6 @@ class Q_COMPONENTS_EXPORT ComboBox : public QComboBox
     void assignNames             (NAMEs & names) ;
 
 };
-
-
-
-
-#include <qtcomponents.h>
 
 N::ComboBox:: ComboBox   ( QWidget * parent , Plan * p     )
             : QComboBox  (           parent                )

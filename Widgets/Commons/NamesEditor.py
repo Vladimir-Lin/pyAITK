@@ -123,7 +123,11 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     return False
   ############################################################################
   def singleClicked              ( self , item , column                    ) :
-    print(f"singleClicked {column}")
+    ##########################################################################
+    if                           ( self . isItemPicked ( )                 ) :
+      if ( column != self . CurrentItem [ "Column" ] )                       :
+        self . removeParked      (                                           )
+    ##########################################################################
     return
   ############################################################################
   def doubleClicked              ( self , item , column                    ) :
@@ -131,18 +135,48 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     if                           ( column not in [ 1 , 2 , 3 , 4 , 5 ]     ) :
       return
     ##########################################################################
-    print(f"doubleClicked {column}")
     if                           ( column == 1                             ) :
-      pass
+      ########################################################################
+      line = self . setLineEdit  ( item                                      ,
+                                   column                                    ,
+                                   "editingFinished"                         ,
+                                   self . nameChanged                        )
+      line . setFocus            ( Qt . TabFocusReason                       )
     ##########################################################################
     elif                         ( column == 2                             ) :
-      pass
+      ########################################################################
+      LL   = self . Translations [ "NamesEditor" ] [ "Languages"             ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . localityChanged                    )
+      cb   . addJson             ( LL , val                                  )
+      cb   . showPopup           (                                           )
     ##########################################################################
     elif                         ( column == 3                             ) :
-      pass
+      ########################################################################
+      RR   = self . Translations [ "NamesEditor" ] [ "Relevance"             ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . localityChanged                    )
+      cb   . addJson             ( RR , val                                  )
+      cb   . showPopup           (                                           )
     ##########################################################################
-    elif                         ( column == 4                             ) :
-      pass
+    elif                         ( column in [ 4 , 5 ]                     ) :
+      ########################################################################
+      sb   = self . setSpinBox   ( item                                      ,
+                                   column                                    ,
+                                   0                                         ,
+                                   999999999                                 ,
+                                   "editingFinished"                         ,
+                                   self . spinChanged                        )
+      sb   . setAlignment        ( Qt . AlignRight                           )
+      sb   . setFocus            ( Qt . TabFocusReason                       )
     ##########################################################################
     elif                         ( column == 5                             ) :
       pass
@@ -151,6 +185,121 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
   ############################################################################
   def stateChanged               ( self , item , column                    ) :
     print(f"stateChanged {column}")
+    return
+  ############################################################################
+  def nameChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    line   = self . CurrentItem [ "Widget"                                   ]
+    text   = self . CurrentItem [ "Text"                                     ]
+    msg    = line . text        (                                            )
+    ##########################################################################
+    if                          ( msg != text                              ) :
+      ########################################################################
+      pid  = int                ( item . text ( 0 )                          )
+      bmsg = str . encode       ( msg                                        )
+      ########################################################################
+      item . setText            ( column ,              msg                  )
+      item . setText            ( 6      , str ( len (  msg ) )              )
+      item . setText            ( 7      , str ( len ( bmsg ) )              )
+      ########################################################################
+      print(f"nameChanged:{pid},{msg}")
+      threading . Thread        ( target = self . UpdateName                 ,
+                                  args   = ( item , pid , msg , ) ) . start ()
+    ##########################################################################
+    self . removeParked          (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def localityChanged            ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      pid  = int                 ( item . text ( 0 )                         )
+      LL   = self . Translations [ "NamesEditor" ] [ "Languages"             ]
+      msg  = LL                  [ value                                     ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      print(f"localityChanged:{pid},{value}")
+      threading . Thread         ( target = self . UpdateLocality             ,
+                                   args   = ( item , pid , value , ) ) . start ()
+    ##########################################################################
+    self . removeParked          (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def relevanceChanged           ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      pid  = int                 ( item . text ( 0 )                         )
+      RR   = self . Translations [ "NamesEditor" ] [ "Relevance"             ]
+      msg  = RR                  [ value                                     ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      print(f"relevanceChanged:{pid},{value}")
+      threading . Thread         ( target = self . UpdateRelevance             ,
+                                   args   = ( item , pid , value , ) ) . start ()
+    ##########################################################################
+    self . removeParked          (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def spinChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    sb     = self . CurrentItem [ "Widget"                                   ]
+    v      = self . CurrentItem [ "Value"                                    ]
+    nv     = sb   . value       (                                            )
+    ##########################################################################
+    if                          ( v != nv                                  ) :
+      ########################################################################
+      pid  = int                ( item . text ( 0 )                          )
+      ########################################################################
+      item . setText            ( column , str ( nv )                        )
+      ########################################################################
+      print(f"spinChanged:{pid},{column},{nv}")
+      if                        ( column == 4                              ) :
+        threading . Thread      ( target = self . UpdatePriority             ,
+                                  args   = ( item , pid , nv , ) ) . start ( )
+      elif                      ( column == 5                              ) :
+        threading . Thread      ( target = self . UpdateFlags                ,
+                                  args   = ( item , pid , nv , ) ) . start ( )
+    ##########################################################################
+    self . removeParked          (                                           )
+    ##########################################################################
     return
   ############################################################################
   def Insert                     ( self                                    ) :
@@ -172,8 +321,37 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     self . setPrepared           ( False                                     )
     self . CloseMyself . emit    ( self                                      )
     ##########################################################################
-    print("TryClose")
     return True
+  ############################################################################
+  def UpdateName                    ( self , item , pid , name             ) :
+    ##########################################################################
+    print ( f"UpdateName: {pid} , {name}" )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateLocality                ( self , item , pid , locality         ) :
+    ##########################################################################
+    print ( f"UpdateLocality: {pid} , {locality}" )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateRelevance               ( self , item , pid , relevance        ) :
+    ##########################################################################
+    print ( f"UpdateRelevance: {pid} , {relevance}" )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdatePriority                ( self , item , pid , priority         ) :
+    ##########################################################################
+    print ( f"UpdatePriority: {pid} , {priority}" )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateFlags                   ( self , item , pid , flags            ) :
+    ##########################################################################
+    print ( f"UpdateFlags: {pid} , {flags}" )
+    ##########################################################################
+    return
   ############################################################################
   def refresh                       ( self , All                           ) :
     ##########################################################################

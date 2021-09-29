@@ -39,6 +39,9 @@ from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from         . VirtualGui             import VirtualGui as VirtualGui
+from         . LineEdit               import LineEdit   as LineEdit
+from         . ComboBox               import ComboBox   as ComboBox
+from         . SpinBox                import SpinBox    as SpinBox
 ##############################################################################
 class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
@@ -92,13 +95,23 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def FocusOut                ( self                                       ) :
     return True
   ############################################################################
-  def removeParked              ( self                                     ) :
+  def isItemPicked              ( self                                     ) :
+    ##########################################################################
+    if                          ( not hasattr ( self , 'CurrentItem' )     ) :
+      self . CurrentItem =      {                                            }
     ##########################################################################
     if                          ( "Item"   not in self . CurrentItem       ) :
       return False
     if                          ( "Column" not in self . CurrentItem       ) :
       return False
     if                          ( "Widget" not in self . CurrentItem       ) :
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def removeParked              ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
       return False
     ##########################################################################
     item   = self . CurrentItem [ "Item"                                     ]
@@ -141,6 +154,83 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
       return
     ##########################################################################
     return
+  ############################################################################
+  def setLineEdit             ( self , item , column , signal , method     ) :
+    ##########################################################################
+    if                        ( not hasattr ( self , 'CurrentItem' )       ) :
+      self . CurrentItem =    {                                              }
+    ##########################################################################
+    text   = item . text      ( column                                       )
+    le     = LineEdit         ( self                                         )
+    le     . setText          ( text                                         )
+    self   . setItemWidget    ( item , column , le                           )
+    ##########################################################################
+    self   . CurrentItem [ "Item"   ] = item
+    self   . CurrentItem [ "Column" ] = column
+    self   . CurrentItem [ "Widget" ] = le
+    self   . CurrentItem [ "Text"   ] = text
+    ##########################################################################
+    try                                                                      :
+      S  = getattr            ( le, signal                                   )
+      S  . connect            ( method                                       )
+    except AttributeError                                                    :
+      pass
+    ##########################################################################
+    return le
+  ############################################################################
+  def setComboBox             ( self , item , column , signal , method     ) :
+    ##########################################################################
+    if                        ( not hasattr ( self , 'CurrentItem' )       ) :
+      self . CurrentItem =    {                                              }
+    ##########################################################################
+    value  = item . data      ( column , Qt . UserRole                       )
+    value  = int              ( value                                        )
+    cb     = ComboBox         ( self                                         )
+    self   . setItemWidget    ( item , column , cb                           )
+    ##########################################################################
+    self   . CurrentItem [ "Item"   ] = item
+    self   . CurrentItem [ "Column" ] = column
+    self   . CurrentItem [ "Widget" ] = cb
+    self   . CurrentItem [ "Value"  ] = value
+    ##########################################################################
+    try                                                                      :
+      S  = getattr            ( cb, signal                                   )
+      S  . connect            ( method                                       )
+    except AttributeError                                                    :
+      pass
+    ##########################################################################
+    return cb
+  ############################################################################
+  def setSpinBox              ( self                                       , \
+                                item                                       , \
+                                column                                     , \
+                                minv                                       , \
+                                maxv                                       , \
+                                signal                                     , \
+                                method                                     ) :
+    ##########################################################################
+    if                        ( not hasattr ( self , 'CurrentItem' )       ) :
+      self . CurrentItem =    {                                              }
+    ##########################################################################
+    text   = item . text      ( column                                       )
+    v      = int              ( text                                         )
+    sb     = SpinBox          ( self                                         )
+    sb     . setRange         ( minv , maxv                                  )
+    sb     . setValue         ( v                                            )
+    self   . setItemWidget    ( item , column , sb                           )
+    ##########################################################################
+    self   . CurrentItem [ "Item"   ] = item
+    self   . CurrentItem [ "Column" ] = column
+    self   . CurrentItem [ "Widget" ] = sb
+    self   . CurrentItem [ "Value"  ] = v
+    ##########################################################################
+    try                                                                      :
+      S  = getattr            ( sb, signal                                   )
+      S  . connect            ( method                                       )
+    except AttributeError                                                    :
+      pass
+    ##########################################################################
+    return sb
   ############################################################################
   def singleClicked           ( self , item , column                       ) :
     raise NotImplementedError (                                              )
