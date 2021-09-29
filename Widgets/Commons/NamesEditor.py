@@ -20,6 +20,7 @@ from   PyQt5 . QtCore                  import pyqtSignal
 from   PyQt5 . QtCore                  import Qt
 from   PyQt5 . QtCore                  import QPoint
 from   PyQt5 . QtCore                  import QPointF
+from   PyQt5 . QtCore                  import QSize
 ##############################################################################
 from   PyQt5 . QtGui                   import QIcon
 from   PyQt5 . QtGui                   import QCursor
@@ -32,6 +33,7 @@ from   PyQt5 . QtWidgets               import QMenu
 from   PyQt5 . QtWidgets               import QAction
 from   PyQt5 . QtWidgets               import QShortcut
 from   PyQt5 . QtWidgets               import QMenu
+from   PyQt5 . QtWidgets               import QAbstractItemView
 from   PyQt5 . QtWidgets               import QTreeWidget
 from   PyQt5 . QtWidgets               import QTreeWidgetItem
 from   PyQt5 . QtWidgets               import QLineEdit
@@ -46,9 +48,11 @@ from   AITK  . Documents . Name        import Name        as NameItem
 ##############################################################################
 class NamesEditor        ( TreeWidget , NameItem                           ) :
   ############################################################################
-  emitNamesShow = pyqtSignal     (                                           )
-  emitAllNames  = pyqtSignal     ( list                                      )
-  CloseMyself   = pyqtSignal     ( QWidget                                   )
+  emitNamesShow   = pyqtSignal (                                             )
+  emitAllNames    = pyqtSignal ( list                                        )
+  emitNewItem     = pyqtSignal ( list                                        )
+  emitRefreshItem = pyqtSignal ( QTreeWidgetItem , list                      )
+  CloseMyself     = pyqtSignal ( QWidget , int                               )
   ############################################################################
   def __init__           ( self , parent = None                            ) :
     ##########################################################################
@@ -57,6 +61,9 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     ##########################################################################
     return
   ############################################################################
+  def sizeHint                    ( self                                   ) :
+    return QSize                  ( 800 , 480                                )
+  ############################################################################
   def Prepare                     ( self                                   ) :
     ##########################################################################
     Names  = self . Translations  [ "NamesEditor" ] [ "Labels"               ]
@@ -64,6 +71,7 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     ##########################################################################
     self   . defaultLocality  = 1001
     self   . defaultRelevance =    0
+    self   . ShowCompact      = True
     ##########################################################################
     self   . KEYs =               [ "id"                                     ,
                                     "name"                                   ,
@@ -92,14 +100,18 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     ##########################################################################
     self     . setRootIsDecorated ( False                                    )
     ##########################################################################
-    self     . emitNamesShow . connect ( self . show                         )
-    self     . emitAllNames  . connect ( self . refresh                      )
+    self     . emitNamesShow   . connect ( self . show                       )
+    self     . emitAllNames    . connect ( self . refresh                    )
+    self     . emitNewItem     . connect ( self . appendJsonItem             )
+    self     . emitRefreshItem . connect ( self . RefreshItem                )
     ##########################################################################
     self     . MountClicked       ( 1                                        )
     self     . MountClicked       ( 2                                        )
     ##########################################################################
-    QShortcut ( QKeySequence ( "Ins"                 ) , self ) . activated . connect ( self . Insert )
-    QShortcut ( QKeySequence ( QKeySequence . Delete ) , self ) . activated . connect ( self . Delete )
+    QShortcut ( QKeySequence ( "Ins"                 ) , self ) . activated . connect ( self . InsertItem  )
+    QShortcut ( QKeySequence ( QKeySequence . Delete ) , self ) . activated . connect ( self . DeleteItems )
+    ##########################################################################
+    self     . setSelectionMode   ( QAbstractItemView . ContiguousSelection  )
     ##########################################################################
     self     . setPrepared        ( True                                     )
     ##########################################################################
@@ -126,6 +138,14 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def appendJsonItem             ( self , JSON                             ) :
+    ##########################################################################
+    item = self . jsonToItem     ( JSON                                      )
+    self . addTopLevelItem       ( item                                      )
+    self . setCurrentItem        ( item                                      )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked              ( self , item , column                    ) :
     ##########################################################################
@@ -168,7 +188,7 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
       cb   = self . setComboBox  ( item                                      ,
                                    column                                    ,
                                    "activated"                               ,
-                                   self . localityChanged                    )
+                                   self . relevanceChanged                   )
       cb   . addJson             ( RR , val                                  )
       cb   . showPopup           (                                           )
     ##########################################################################
@@ -211,8 +231,7 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
       item . setText            ( 6      , str ( len (  msg ) )              )
       item . setText            ( 7      , str ( len ( bmsg ) )              )
       ########################################################################
-      print(f"nameChanged:{pid},{msg}")
-      threading . Thread        ( target = self . UpdateName                 ,
+      threading . Thread        ( target = self . UpdateUuidName             ,
                                   args   = ( item , pid , msg , ) ) . start ()
     ##########################################################################
     self . removeParked          (                                           )
@@ -235,13 +254,12 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
       ########################################################################
       pid  = int                 ( item . text ( 0 )                         )
       LL   = self . Translations [ "NamesEditor" ] [ "Languages"             ]
-      msg  = LL                  [ value                                     ]
+      msg  = LL                  [ str ( value )                             ]
       ########################################################################
       item . setText             ( column ,  msg                             )
       item . setData             ( column , Qt . UserRole , value            )
       ########################################################################
-      print(f"localityChanged:{pid},{value}")
-      threading . Thread         ( target = self . UpdateLocality             ,
+      threading . Thread         ( target = self . UpdateByLocality          ,
                                    args   = ( item , pid , value , ) ) . start ()
     ##########################################################################
     self . removeParked          (                                           )
@@ -259,18 +277,19 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     cbv    = self . CurrentItem  [ "Value"                                   ]
     index  = cb   . currentIndex (                                           )
     value  = cb   . itemData     ( index                                     )
+    cbv    = int                 ( cbv                                       )
+    value  = int                 ( value                                     )
     ##########################################################################
     if                           ( value != cbv                            ) :
       ########################################################################
       pid  = int                 ( item . text ( 0 )                         )
       RR   = self . Translations [ "NamesEditor" ] [ "Relevance"             ]
-      msg  = RR                  [ value                                     ]
+      msg  = RR                  [ str ( value )                             ]
       ########################################################################
       item . setText             ( column ,  msg                             )
       item . setData             ( column , Qt . UserRole , value            )
       ########################################################################
-      print(f"relevanceChanged:{pid},{value}")
-      threading . Thread         ( target = self . UpdateRelevance             ,
+      threading . Thread         ( target = self . UpdateByRelevance         ,
                                    args   = ( item , pid , value , ) ) . start ()
     ##########################################################################
     self . removeParked          (                                           )
@@ -286,6 +305,7 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     column = self . CurrentItem [ "Column"                                   ]
     sb     = self . CurrentItem [ "Widget"                                   ]
     v      = self . CurrentItem [ "Value"                                    ]
+    v      = int                ( v                                          )
     nv     = sb   . value       (                                            )
     ##########################################################################
     if                          ( v != nv                                  ) :
@@ -294,26 +314,25 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
       ########################################################################
       item . setText            ( column , str ( nv )                        )
       ########################################################################
-      print(f"spinChanged:{pid},{column},{nv}")
       if                        ( column == 4                              ) :
-        threading . Thread      ( target = self . UpdatePriority             ,
+        threading . Thread      ( target = self . UpdateByPriority           ,
                                   args   = ( item , pid , nv , ) ) . start ( )
       elif                      ( column == 5                              ) :
-        threading . Thread      ( target = self . UpdateFlags                ,
+        threading . Thread      ( target = self . UpdateByFlags              ,
                                   args   = ( item , pid , nv , ) ) . start ( )
     ##########################################################################
     self . removeParked          (                                           )
     ##########################################################################
     return
   ############################################################################
-  def Insert                     ( self                                    ) :
+  def InsertItem                 ( self                                    ) :
     ##########################################################################
     th = threading . Thread      ( target = self . AppendItem                )
     th . start                   (                                           )
     ##########################################################################
     return
   ############################################################################
-  def Delete                                  ( self                       ) :
+  def DeleteItems                             ( self                       ) :
     ##########################################################################
     items        = self . selectedItems       (                              )
     if                                        ( len ( items ) <= 0         ) :
@@ -403,8 +422,16 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"  ]           )
     if                             ( len ( items ) > 0                     ) :
       mm   . addAction             ( 1102 ,  TRX [ "UI::Delete"  ]           )
+      if ( self . canSpeak ( ) ) and ( len ( items ) == 1 )                  :
+        mm . addAction             ( 1501 ,  TRX [ "UI::Talk"  ]             )
     ##########################################################################
     mm     . addSeparator          (                                         )
+    mm     . addAction             ( 1801                                  , \
+                                     TRX [ "UI::AutoCompact" ]             , \
+                                     True                                  , \
+                                     self . ShowCompact                      )
+    mm     . addSeparator          (                                         )
+    ##########################################################################
     mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
     mm     = self . RelevanceMenu  ( mm                                      )
@@ -432,26 +459,38 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
-      self . Insert                (                                         )
+      self . InsertItem            (                                         )
       return True
     ##########################################################################
     if                             ( at == 1102                            ) :
-      self . Delete                (                                         )
+      self . DeleteItems           (                                         )
       return True
     ##########################################################################
+    if                             ( at == 1501                            ) :
+      ########################################################################
+      item = items                 [ 0                                       ]
+      T    = item . text           ( 1                                       )
+      L    = item . data           ( 2 , Qt . UserRole                       )
+      L    = int                   ( L                                       )
+      ########################################################################
+      self . Talk                  ( T , L                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1801                            ) :
+      self . ShowCompact =         ( not self . ShowCompact                  )
     ##########################################################################
     return True
   ############################################################################
   def TryClose                   ( self                                    ) :
     ##########################################################################
     self . setPrepared           ( False                                     )
-    self . CloseMyself . emit    ( self                                      )
+    self . CloseMyself . emit    ( self , int ( self . get ( "uuid" ) )      )
     ##########################################################################
     return True
   ############################################################################
-  def UpdateName                    ( self , item , pid , name             ) :
+  def UpdateUuidName                ( self , item , pid , name             ) :
     ##########################################################################
-    print ( f"UpdateName: {pid} , {name}" )
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
     ##########################################################################
@@ -459,14 +498,33 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
+    TABLE  = self . Tables          [ "Names"                                ]
+    ##########################################################################
+    self   . set                    ( "id"   , pid                           )
+    self   . set                    ( "name" , name                          )
+    ##########################################################################
+    DB     . LockWrites             ( [ TABLE ]                              )
+    self   . UpdateNameById         ( DB , TABLE                             )
+    DB     . UnlockTables           (                                        )
     ##########################################################################
     DB     . Close                  (                                        )
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocality                ( self , item , pid , locality         ) :
+  def UpdateMajorParameters         ( self , DB , TABLE                    ) :
     ##########################################################################
-    print ( f"UpdateLocality: {pid} , {locality}" )
+    IDX    = self . GetPosition     (        DB , TABLE                      )
+    if                              ( IDX < 0                              ) :
+      DB   . LockWrites             ( [ TABLE ]                              )
+      self . UpdateParametersById   (        DB , TABLE                      )
+      DB   . UnlockTables           (                                        )
+    ##########################################################################
+    self   . ObtainsById            (        DB , TABLE                      )
+    ##########################################################################
+    return self . toList            (                                        )
+  ############################################################################
+  def UpdateByLocality              ( self , item , pid , locality         ) :
+    ##########################################################################
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
     ##########################################################################
@@ -474,14 +532,24 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
+    TABLE  = self . Tables          [ "Names"                                ]
+    JSON   = self . itemToJson      ( item                                   )
+    ##########################################################################
+    self   . set                    ( "id"        , pid                      )
+    self   . set                    ( "locality"  , locality                 )
+    self   . set                    ( "relevance" , JSON [ "Relevance" ]     )
+    self   . set                    ( "priority"  , JSON [ "Priority"  ]     )
+    ##########################################################################
+    CRX    = self . UpdateMajorParameters ( DB , TABLE                       )
     ##########################################################################
     DB     . Close                  (                                        )
     ##########################################################################
+    self   . emitRefreshItem . emit ( item , CRX                             )
+    ##########################################################################
     return
   ############################################################################
-  def UpdateRelevance               ( self , item , pid , relevance        ) :
+  def UpdateByRelevance             ( self , item , pid , relevance        ) :
     ##########################################################################
-    print ( f"UpdateRelevance: {pid} , {relevance}" )
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
     ##########################################################################
@@ -489,14 +557,24 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
+    TABLE  = self . Tables          [ "Names"                                ]
+    JSON   = self . itemToJson      ( item                                   )
+    ##########################################################################
+    self   . set                    ( "id"        , pid                      )
+    self   . set                    ( "locality"  , JSON [ "Locality"  ]     )
+    self   . set                    ( "relevance" , relevance                )
+    self   . set                    ( "priority"  , JSON [ "Priority"  ]     )
+    ##########################################################################
+    CRX    = self . UpdateMajorParameters ( DB , TABLE                       )
     ##########################################################################
     DB     . Close                  (                                        )
     ##########################################################################
+    self   . emitRefreshItem . emit ( item , CRX                             )
+    ##########################################################################
     return
   ############################################################################
-  def UpdatePriority                ( self , item , pid , priority         ) :
+  def UpdateByPriority              ( self , item , pid , priority         ) :
     ##########################################################################
-    print ( f"UpdatePriority: {pid} , {priority}" )
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
     ##########################################################################
@@ -504,14 +582,24 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
+    TABLE  = self . Tables          [ "Names"                                ]
+    JSON   = self . itemToJson      ( item                                   )
+    ##########################################################################
+    self   . set                    ( "id"        , pid                      )
+    self   . set                    ( "locality"  , JSON [ "Locality"  ]     )
+    self   . set                    ( "relevance" , JSON [ "Relevance" ]     )
+    self   . set                    ( "priority"  , priority                 )
+    ##########################################################################
+    CRX    = self . UpdateMajorParameters ( DB , TABLE                       )
     ##########################################################################
     DB     . Close                  (                                        )
     ##########################################################################
+    self   . emitRefreshItem . emit ( item , CRX                             )
+    ##########################################################################
     return
   ############################################################################
-  def UpdateFlags                   ( self , item , pid , flags            ) :
+  def UpdateByFlags                   ( self , item , pid , flags            ) :
     ##########################################################################
-    print ( f"UpdateFlags: {pid} , {flags}" )
     if                              ( self . get ( "uuid" ) <= 0           ) :
       return
     ##########################################################################
@@ -519,6 +607,13 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
+    TABLE  = self . Tables          [ "Names"                                ]
+    self   . set                    ( "id"    , pid                          )
+    self   . set                    ( "flags" , flags                        )
+    ##########################################################################
+    DB     . LockWrites             ( [ TABLE ]                              )
+    self   . UpdateFlagsById        ( DB , TABLE                             )
+    DB     . UnlockTables           (                                        )
     ##########################################################################
     DB     . Close                  (                                        )
     ##########################################################################
@@ -533,7 +628,11 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
-    print("RemoveItems:",Listings)
+    TABLE  = self . Tables          [ "Names"                                ]
+    QQ     = self . DeleteIDs       ( TABLE , Listings                       )
+    DB     . LockWrites             ( [ TABLE ]                              )
+    DB     . Query                  ( QQ                                     )
+    DB     . UnlockTables           (                                        )
     ##########################################################################
     DB     . Close                  (                                        )
     ##########################################################################
@@ -548,11 +647,118 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
-    print("AppendItem")
+    TABLE  = self . Tables          [ "Names"                                ]
+    ##########################################################################
+    self . set                      ( "name"      , ""                       )
+    self . set                      ( "locality"  , self . defaultLocality   )
+    self . set                      ( "relevance" , self . defaultRelevance  )
+    self . set                      ( "priority"  , 0                        )
+    self . set                      ( "flags"     , 0                        )
+    self . set                      ( "utf8"      , 0                        )
+    self . set                      ( "length"    , 0                        )
+    ##########################################################################
+    DONE = False
+    ##########################################################################
+    self . Append                   ( DB , TABLE                             )
+    IDX  = self . GetPosition       ( DB , TABLE                             )
+    if                              ( IDX >= 0                             ) :
+      self . Id = IDX
+      if                            ( self . ObtainsById ( DB , TABLE )    ) :
+        DONE = True
     ##########################################################################
     DB     . Close                  (                                        )
     ##########################################################################
+    if                              ( DONE                                 ) :
+      ########################################################################
+      JSON = self . toList          (                                        )
+      self . emitNewItem . emit     ( JSON                                   )
+    ##########################################################################
     return
+  ############################################################################
+  def itemToJson                       ( self , item                       ) :
+    ##########################################################################
+    JSON                 =             {                                     }
+    JSON [ "Id"        ] = item . text ( 0                                   )
+    JSON [ "Name"      ] = item . text ( 1                                   )
+    JSON [ "Locality"  ] = item . data ( 2 , Qt . UserRole                   )
+    JSON [ "Relevance" ] = item . data ( 3 , Qt . UserRole                   )
+    JSON [ "Priority"  ] = item . text ( 4                                   )
+    JSON [ "Relevance" ] = item . text ( 5                                   )
+    ##########################################################################
+    JSON [ "Id"        ] = int         ( JSON [ "Id"        ]                )
+    JSON [ "Locality"  ] = int         ( JSON [ "Locality"  ]                )
+    JSON [ "Relevance" ] = int         ( JSON [ "Relevance" ]                )
+    JSON [ "Priority"  ] = int         ( JSON [ "Priority"  ]                )
+    JSON [ "Relevance" ] = int         ( JSON [ "Relevance" ]                )
+    ##########################################################################
+    return JSON
+  ############################################################################
+  def RefreshItem                ( self , item , JSON                      ) :
+    ##########################################################################
+    TRX  = self . Translations   [ "NamesEditor"                             ]
+    ##########################################################################
+    L    = JSON                  [ 2                                         ]
+    R    = JSON                  [ 4                                         ]
+    REL  = TRX                   [ "Relevance" ] [ str ( R )                 ]
+    LANG = TRX                   [ "Languages" ] [ str ( L )                 ]
+    ##########################################################################
+    item . setText               ( 2 , str ( LANG      )                     )
+    item . setData               ( 2 , Qt . UserRole , JSON [ 2 ]            )
+    ##########################################################################
+    item . setText               ( 3 , str ( REL       )                     )
+    item . setData               ( 3 , Qt . UserRole , JSON [ 4 ]            )
+    ##########################################################################
+    item . setText               ( 4 , str ( JSON [  3 ] )                   )
+    item . setTextAlignment      ( 4 , Qt.AlignRight                         )
+    item . setData               ( 4 , Qt . UserRole , JSON [ 3 ]            )
+    ##########################################################################
+    return
+  ############################################################################
+  def jsonToItem                 ( self , JSON                             ) :
+    ##########################################################################
+    TRX  = self . Translations   [ "NamesEditor"                             ]
+    item = QTreeWidgetItem       (                                           )
+    ##########################################################################
+    L    = JSON                  [ 2                                         ]
+    R    = JSON                  [ 4                                         ]
+    REL  = TRX                   [ "Relevance" ] [ str ( R )                 ]
+    LANG = TRX                   [ "Languages" ] [ str ( L )                 ]
+    S    = JSON                  [ 8                                         ]
+    try                                                                      :
+      S  = S . decode            ( "utf-8"                                   )
+    except ( UnicodeDecodeError , AttributeError )                           :
+      pass
+    ##########################################################################
+    item . setText               ( 0 , str ( JSON [  0 ] )                   )
+    item . setTextAlignment      ( 4 , Qt.AlignRight                         )
+    ##########################################################################
+    item . setText               ( 1 , str ( S         )                     )
+    ##########################################################################
+    item . setText               ( 2 , str ( LANG      )                     )
+    item . setData               ( 2 , Qt . UserRole , JSON [ 2 ]            )
+    ##########################################################################
+    item . setText               ( 3 , str ( REL       )                     )
+    item . setData               ( 3 , Qt . UserRole , JSON [ 4 ]            )
+    ##########################################################################
+    item . setText               ( 4 , str ( JSON [  3 ] )                   )
+    item . setTextAlignment      ( 4 , Qt.AlignRight                         )
+    item . setData               ( 4 , Qt . UserRole , JSON [ 3 ]            )
+    ##########################################################################
+    item . setText               ( 5 , str ( JSON [  5 ] )                   )
+    item . setTextAlignment      ( 5 , Qt.AlignRight                         )
+    item . setData               ( 5 , Qt . UserRole , JSON [ 5 ]            )
+    ##########################################################################
+    item . setText               ( 6 , str ( JSON [  6 ] )                   )
+    item . setTextAlignment      ( 6 , Qt.AlignRight                         )
+    ##########################################################################
+    item . setText               ( 7 , str ( JSON [  7 ] )                   )
+    item . setTextAlignment      ( 7 , Qt.AlignRight                         )
+    ##########################################################################
+    item . setText               ( 8 , str ( JSON [  9 ] )                   )
+    ##########################################################################
+    item . setText               ( 9 , ""                                    )
+    ##########################################################################
+    return item
   ############################################################################
   def refresh                       ( self , All                           ) :
     ##########################################################################
@@ -561,54 +767,15 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
     ##########################################################################
     for IT in All                                                            :
       ########################################################################
-      NT    = QTreeWidgetItem       (                                        )
-      ########################################################################
-      L     = IT                    [ 2                                      ]
-      R     = IT                    [ 4                                      ]
-      REL   = TRX                   [ "Relevance" ] [ str ( R )              ]
-      LANG  = TRX                   [ "Languages" ] [ str ( L )              ]
-      S     = IT                    [ 8                                      ]
-      try                                                                    :
-        S   = S . decode            ( "utf-8"                                )
-      except ( UnicodeDecodeError , AttributeError )                         :
-        pass
-      ########################################################################
-      NT    . setText               ( 0 , str ( IT [  0 ] )                  )
-      NT    . setTextAlignment      ( 4 , Qt.AlignRight                      )
-      ########################################################################
-      NT    . setText               ( 1 , str ( S         )                  )
-      ########################################################################
-      NT    . setText               ( 2 , str ( LANG      )                  )
-      NT    . setData               ( 2 , Qt . UserRole , IT [ 2 ]           )
-      ########################################################################
-      NT    . setText               ( 3 , str ( REL       )                  )
-      NT    . setData               ( 3 , Qt . UserRole , IT [ 4 ]           )
-      ########################################################################
-      NT    . setText               ( 4 , str ( IT [  3 ] )                  )
-      NT    . setTextAlignment      ( 4 , Qt.AlignRight                      )
-      NT    . setData               ( 4 , Qt . UserRole , IT [ 3 ]           )
-      ########################################################################
-      NT    . setText               ( 5 , str ( IT [  5 ] )                  )
-      NT    . setTextAlignment      ( 5 , Qt.AlignRight                      )
-      NT    . setData               ( 5 , Qt . UserRole , IT [ 5 ]           )
-      ########################################################################
-      NT    . setText               ( 6 , str ( IT [  6 ] )                  )
-      NT    . setTextAlignment      ( 6 , Qt.AlignRight                      )
-      ########################################################################
-      NT    . setText               ( 7 , str ( IT [  7 ] )                  )
-      NT    . setTextAlignment      ( 7 , Qt.AlignRight                      )
-      ########################################################################
-      NT    . setText               ( 8 , str ( IT [  9 ] )                  )
-      ########################################################################
-      NT    . setText               ( 9 , ""                                 )
-      ########################################################################
+      NT    = self . jsonToItem     ( IT                                     )
       self  . addTopLevelItem       ( NT                                     )
     ##########################################################################
     self . emitNamesShow . emit     (                                        )
     ##########################################################################
-    TOTAL   = len                   ( self . KEYs                            )
-    for i in range                  ( 0 , TOTAL - 1                        ) :
-      self  . resizeColumnToContents ( i )
+    if                              ( self . ShowCompact                   ) :
+      TOTAL   = len                 ( self . KEYs                            )
+      for i in range                ( 0 , TOTAL - 1                        ) :
+        self  . resizeColumnToContents ( i                                   )
     ##########################################################################
     return
   ############################################################################
@@ -646,83 +813,9 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
 
 """
 
-
-#define LinkAction(ID,Function)       connectAction(N::Menus::ID,this,SLOT(Function))
-
-
-
-
-N::PhonemeItems:: PhonemeItems ( QWidget * parent , Plan * p )
-                : TreeDock     (           parent ,        p )
-                , Group        (                             )
-                , GroupItems   (                           p )
-{
-  WidgetClass   ;
-  Configure ( ) ;
-}
-
-N::PhonemeItems::~PhonemeItems (void)
-{
-}
-
 QSize N::PhonemeItems::sizeHint(void) const
 {
   return QSize ( 1024 , 720 ) ;
-}
-
-QMimeData * N::PhonemeItems::dragMime (void)
-{
-  QMimeData * mime = standardMime("phoneme")                 ;
-  nKickOut ( IsNull(mime) , NULL )                           ;
-  QImage image = windowIcon().pixmap(QSize(32,32)).toImage() ;
-  mime -> setImageData(image)                                ;
-  return mime                                                ;
-}
-
-bool N::PhonemeItems::hasItem(void)
-{
-  UUIDs Uuids = selectedUuids(0) ;
-  return ( Uuids.count() > 0 )   ;
-}
-
-bool N::PhonemeItems::startDrag(QMouseEvent * event)
-{
-  QTreeWidgetItem * atItem = itemAt(event->pos())           ;
-  nKickOut ( IsNull(atItem) , false )                       ;
-  nKickOut (!IsMask(event->buttons(),Qt::LeftButton),false) ;
-  dragPoint = event->pos()                                  ;
-  nKickOut (!atItem->isSelected(),false)                    ;
-  nKickOut (!PassDragDrop,true)                             ;
-  return true                                               ;
-}
-
-bool N::PhonemeItems::fetchDrag(QMouseEvent * event)
-{
-  nKickOut ( !IsMask(event->buttons(),Qt::LeftButton) , false) ;
-  QPoint pos = event->pos()                                    ;
-  pos -= dragPoint                                             ;
-  return ( pos.manhattanLength() > qApp->startDragDistance() ) ;
-}
-
-void N::PhonemeItems::dragDone(Qt::DropAction dropIt,QMimeData * mime)
-{
-}
-
-bool N::PhonemeItems::finishDrag(QMouseEvent * event)
-{
-  return true ;
-}
-
-bool N::PhonemeItems::acceptDrop(QWidget * source,const QMimeData * mime)
-{
-  nKickOut ( nEqual(source,this) , false ) ;
-  return dropHandler(mime)                 ;
-}
-
-bool N::PhonemeItems::dropNew(QWidget * source,const QMimeData * mime,QPoint pos)
-{
-  Alert ( Action ) ;
-  return true      ;
 }
 
 bool N::PhonemeItems::FocusIn(void)
@@ -762,15 +855,6 @@ void N::PhonemeItems::Configure(void)
   MountClicked                 ( 2                                ) ;
   setDropFlag                  ( DropPhoneme , true               ) ;
   plan -> setFont              ( this                             ) ;
-}
-
-void N::PhonemeItems::run(int Type,ThreadData * data)
-{ Q_UNUSED ( data ) ;
-  switch   ( Type ) {
-    case 10001      :
-      List (      ) ;
-    break           ;
-  }                 ;
 }
 
 void N::PhonemeItems::List(void)
@@ -862,228 +946,6 @@ void N::PhonemeItems::List(void)
   Alert                 ( Done                              ) ;
 }
 
-bool N::PhonemeItems::startup(void)
-{
-  clear             (       ) ;
-  plan -> StartBusy (       ) ;
-  start             ( 10001 ) ;
-  return true                 ;
-}
-
-void N::PhonemeItems::New(void)
-{
-  NewTreeWidgetItem( item                 ) ;
-  item -> setData  ( 0 , Qt::UserRole , 0 ) ;
-  addTopLevelItem  ( item                 ) ;
-  scrollToItem     ( item                 ) ;
-  doubleClicked    ( item , 0             ) ;
-}
-
-void N::PhonemeItems::doubleClicked (QTreeWidgetItem * item,int column)
-{
-  SUID u = nTreeUuid ( item , 0 )                       ;
-  QLineEdit * line                                      ;
-  SpinBox   * sb                                        ;
-  switch (column)                                       {
-    case 0                                              :
-      line = setLineEdit                                (
-        item                                            ,
-        column                                          ,
-        SIGNAL(returnPressed())                         ,
-        SLOT  (nameChanged  ()) )                       ;
-      line->setFocus(Qt::TabFocusReason)                ;
-    break                                               ;
-    case 1                                              :
-      if ( u <= 0 ) return                              ;
-      line = setLineEdit                                (
-        item                                            ,
-        column                                          ,
-        SIGNAL(returnPressed())                         ,
-        SLOT  (signChanged  ()) )                       ;
-      line->setFocus(Qt::TabFocusReason)                ;
-    break                                               ;
-    case 2                                              :
-      if ( u <= 0 ) return                              ;
-      line = setLineEdit                                (
-        item                                            ,
-        column                                          ,
-        SIGNAL(returnPressed())                         ,
-        SLOT  (flagsChanged ()) )                       ;
-      line->setFocus(Qt::TabFocusReason)                ;
-    break                                               ;
-    case 3                                              :
-    case 4                                              :
-    case 5                                              :
-    case 6                                              :
-    case 7                                              :
-      if ( u <= 0 ) return                              ;
-      sb = (SpinBox *)setSpinBox                        (
-        item                                            ,
-        column                                          ,
-        0                                               ,
-        255                                             ,
-        SIGNAL(editingFinished())                       ,
-        SLOT  (spinChanged    ())                     ) ;
-      sb -> blockSignals ( true                       ) ;
-      sb -> setValue     ( item->text(column).toInt() ) ;
-      sb -> blockSignals ( false                      ) ;
-    break                                               ;
-  }                                                     ;
-}
-
-void N::PhonemeItems::nameChanged(void)
-{
-  if (IsNull(ItemEditing)) return                     ;
-  if (IsNull(ItemWidget )) return                     ;
-  QLineEdit * line    = Casting(QLineEdit,ItemWidget) ;
-  SUID        u       = nTreeUuid(ItemEditing,0)      ;
-  QString     n       = ""                            ;
-  bool        success = false                         ;
-  if (NotNull(line)) n = line->text()                 ;
-  if ( n . length ( ) > 0 )                           {
-    EnterSQL ( SC , plan->sql )                       ;
-      QString Q                                       ;
-      if ( u <= 0 )                                   {
-        QByteArray B                                  ;
-        B . resize ( 4 )                              ;
-        B . fill   ( 0 )                              ;
-        u = SC . Unique                               (
-              PlanTable(MajorUuid)                    ,
-              "uuid"                                  ,
-              87241600                              ) ;
-        SC . assureUuid                               (
-          PlanTable(MajorUuid)                        ,
-          u                                           ,
-          Types::Phoneme                            ) ;
-        Q = SC . sql . InsertInto                     (
-              PlanTable(Phonemes)                     ,
-              2                                       ,
-              "uuid"                                  ,
-              "mnemonic"                            ) ;
-        SC . Prepare ( Q                            ) ;
-        SC . Bind    ( "uuid"     , u               ) ;
-        SC . Bind    ( "mnemonic" , B               ) ;
-        SC . Exec    (                              ) ;
-      }                                               ;
-      SC . assureName                                 (
-        PlanTable(Names)                              ,
-        u                                             ,
-        vLanguageId                                   ,
-        n                                           ) ;
-      ItemEditing -> setText ( 0 , n )                ;
-      success = true                                  ;
-    LeaveSQL ( SC , plan->sql )                       ;
-  }                                                   ;
-  removeOldItem ( true , 0 )                          ;
-  if (success)                                        {
-    Alert ( Done  )                                   ;
-  } else                                              {
-    Alert ( Error )                                   ;
-  }                                                   ;
-}
-
-void N::PhonemeItems::signChanged(void)
-{
-  if (IsNull(ItemEditing)) return                  ;
-  if (IsNull(ItemWidget )) return                  ;
-  QLineEdit * line = Casting(QLineEdit,ItemWidget) ;
-  SUID        u    = nTreeUuid(ItemEditing,0)      ;
-  QString     n    = ""                            ;
-  if (NotNull(line)) n = line->text()              ;
-  if (u>0 && n.length()>0)                         {
-      unsigned int m = 0                           ;
-      m = (unsigned int)n.at(0).toLatin1()         ;
-      for (int i=1;i<n.length();i++)               {
-        m <<= 8                                    ;
-        n  += (unsigned int)n.at(i).toLatin1()     ;
-      }                                            ;
-      QByteArray B                                 ;
-      uint32_t   v = (uint32_t)m                   ;
-      B . append ( (const char *)&v , 4 )          ;
-      EnterSQL  ( SC , plan->sql )                 ;
-        QString Q                                  ;
-        Q = SC . sql . Update                      (
-              PlanTable(Phonemes)                  ,
-              SC.WhereUuid(u)                      ,
-              1                                    ,
-              "mnemonic"                         ) ;
-        SC . Prepare ( Q                         ) ;
-        SC . Bind    ( "mnemonic" , B            ) ;
-        SC . Exec    (                           ) ;
-      LeaveSQL  ( SC , plan->sql )                 ;
-      Alert     ( Done           )                 ;
-  }                                                ;
-  removeOldItem ( false , 1      )                 ;
-}
-
-void N::PhonemeItems::flagsChanged(void)
-{
-  if (IsNull(ItemEditing)) return                  ;
-  if (IsNull(ItemWidget )) return                  ;
-  QLineEdit * line = Casting(QLineEdit,ItemWidget) ;
-  SUID        u    = nTreeUuid(ItemEditing,0)      ;
-  QString     n    = ""                            ;
-  if (NotNull(line)) n = line->text()              ;
-  if (u>0 && n.length()>0)                         {
-    bool         ok    = false                     ;
-    unsigned int flags = n.toUInt(&ok,16)          ;
-    if (ok)                                        {
-      EnterSQL  ( SC , plan->sql )                 ;
-        QString Q                                  ;
-        Q = SC . sql . Update                      (
-              PlanTable(Phonemes)                  ,
-              SC.WhereUuid(u)                      ,
-              1                                    ,
-              "flags"                            ) ;
-        SC . Prepare ( Q                         ) ;
-        SC . Bind    ( "flags" , flags           ) ;
-        SC . Exec    (                           ) ;
-      LeaveSQL  ( SC , plan->sql )                 ;
-      Alert     ( Done           )                 ;
-    } else                                         {
-      Alert     ( Error          )                 ;
-    }                                              ;
-  }                                                ;
-  removeOldItem ( false , 2      )                 ;
-}
-
-void N::PhonemeItems::spinChanged(void)
-{
-  if (IsNull(ItemEditing)) return              ;
-  if (IsNull(ItemWidget )) return              ;
-  QSpinBox * sb = Casting(QSpinBox,ItemWidget) ;
-  SUID       u  = nTreeUuid(ItemEditing,0)     ;
-  int        L  = sb->value()                  ;
-  if (u>0 && L>0)                              {
-    EnterSQL ( SC , plan->sql )                ;
-      QString Q                                ;
-      QString column                           ;
-      switch (ItemColumn)                      {
-        case 3: column = "code"        ; break ;
-        case 4: column = "type"        ; break ;
-        case 5: column = "start"       ; break ;
-        case 6: column = "end"         ; break ;
-        case 7: column = "length"      ; break ;
-      }                                        ;
-      Q = SC . sql . Update                    (
-            PlanTable(Phonemes)                ,
-            SC.WhereUuid(u)                    ,
-            1                                  ,
-            column.toUtf8().constData()      ) ;
-      SC . Prepare ( Q                       ) ;
-      SC . Bind    ( column , L              ) ;
-      SC . Exec    (                         ) ;
-    LeaveSQL ( SC , plan->sql )                ;
-    Alert    ( Done           )                ;
-  }                                            ;
-  removeOldItem ( false , ItemColumn )         ;
-}
-
-bool N::PhonemeItems::dropPhonemes(QWidget * widget,QPointF pos,const UUIDs & Uuids)
-{
-  return true ;
-}
-
 bool N::PhonemeItems::Menu(QPoint pos)
 {
   nScopedMenu ( mm , this )                       ;
@@ -1132,8 +994,5 @@ bool N::PhonemeItems::Menu(QPoint pos)
   }                                               ;
   return true                                     ;
 }
-
-
-
 
 """
