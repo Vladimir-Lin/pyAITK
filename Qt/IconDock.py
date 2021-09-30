@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## ListWidget
+## IconDock
 ##############################################################################
 import os
 import sys
@@ -40,17 +40,13 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from         . AttachDock             import AttachDock as AttachDock
-from         . ListWidget             import ListWidget as ListWidget
+from         . ListDock               import ListDock as ListDock
 ##############################################################################
-class ListDock        ( ListWidget , AttachDock                            ) :
+class IconDock           ( ListDock                                        ) :
   ############################################################################
-  def __init__        ( self , parent = None , plan = None                 ) :
+  def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
-    ## super ( ListWidget , self ) . __init__ ( parent , plan                   )
-    super (                   ) . __init__ ( parent , plan                   )
-    super ( AttachDock , self ) . __init__ (                                 )
-    self . InitializeDock                  (          plan                   )
+    super ( ) . __init__ ( parent , plan                                     )
     ##########################################################################
     return
 ##############################################################################

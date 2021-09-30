@@ -59,7 +59,8 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
-    super ( TreeDock , self ) . __init__ ( parent , plan                     )
+    ## super ( TreeDock , self ) . __init__ ( parent , plan                     )
+    super (                 ) . __init__ ( parent , plan                     )
     super ( NameItem , self ) . __init__ (                                   )
     ##########################################################################
     return

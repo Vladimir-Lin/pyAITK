@@ -46,7 +46,8 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
-    super ( QListWidget , self ) . __init__ ( parent                         )
+    ## super ( QListWidget , self ) . __init__ ( parent                         )
+    super (                    ) . __init__ ( parent                         )
     super ( VirtualGui  , self ) . __init__ (                                )
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )

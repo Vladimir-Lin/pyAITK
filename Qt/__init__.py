@@ -13,6 +13,9 @@ from . ComboBox        import ComboBox        as ComboBox
 from . SpinBox         import SpinBox         as SpinBox
 from . TreeWidget      import TreeWidget      as TreeWidget
 from . TreeDock        import TreeDock        as TreeDock
+from . ListWidget      import ListWidget      as ListWidget
+from . ListDock        import ListDock        as ListDock
+from . IconDock        import IconDock        as IconDock
 from . InputTreeWidget import InputTreeWidget as InputTreeWidget
 from . MainWindow      import MainWindow      as MainWindow
 ##############################################################################
@@ -29,6 +32,9 @@ __all__ = [ "AbstractGui"                                                    ,
             "SpinBox"                                                        ,
             "TreeWidget"                                                     ,
             "TreeDock"                                                       ,
+            "ListWidget"                                                     ,
+            "ListDock"                                                       ,
+            "IconDock"                                                       ,
             "InputTreeWidget"                                                ,
             "MainWindow"                                                     ]
 ##############################################################################
