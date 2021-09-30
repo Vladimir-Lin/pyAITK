@@ -89,12 +89,11 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     TOTAL    = len                ( self . KEYs                              )
     self     . setColumnCount     ( TOTAL + 1                                )
     ##########################################################################
-    self     . LabelItem = QTreeWidgetItem (                                 )
-    for i , it in enumerate       ( self . KEYs                            ) :
-      self   . LabelItem . setText          ( i , Names [ it ]               )
-      self   . LabelItem . setTextAlignment ( i , Qt . AlignHCenter          )
-    self     . LabelItem . setText          ( TOTAL , ""                     )
-    self     . setHeaderItem      ( self . LabelItem                         )
+    LABELs   =                    [                                          ]
+    for it in self . KEYs                                                    :
+      LABELs . append             ( Names [ it ]                             )
+    LABELs   . append             ( ""                                       )
+    self     . setCentralLabels   ( LABELs                                   )
     ##########################################################################
     self     . setColumnWidth     ( TOTAL     , 3                            )
     ##########################################################################
