@@ -17,6 +17,7 @@ from   PyQt5                          import QtWidgets
 ##############################################################################
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
@@ -39,111 +40,104 @@ from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from         . TreeWidget             import TreeWidget as TreeWidget
+from         . AttachDock             import AttachDock as AttachDock
 ##############################################################################
-class TreeDock                ( TreeWidget                                 ) :
+class TreeDock                ( TreeWidget , AttachDock                    ) :
   ############################################################################
-  def __init__                ( self , parent = None                       ) :
+  Clicked     = pyqtSignal    ( int                                          )
+  ############################################################################
+  def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
     super ( TreeWidget , self ) . __init__   ( parent                        )
+    super ( AttachDock , self ) . __init__   ( plan                          )
+    ##########################################################################
+    ## WidgetClass                                                       ;
+    ##########################################################################
+    self . dockingOrientation = 0
+    self . dockingPlace       = None
+    self . dockingPlaces      = None
+    ## dockingPlace       ( Qt::RightDockWidgetArea     )
+    ## dockingPlaces      ( Qt::TopDockWidgetArea       |
+    ##                      Qt::BottomDockWidgetArea    |
+    ##                      Qt::LeftDockWidgetArea      |
+    ##                      Qt::RightDockWidgetArea     )
+    ##########################################################################
+    self . setRootIsDecorated      ( False )
+    self . setAlternatingRowColors ( True  )
+    self . MountClicked ( 2 )
+    ##########################################################################
+    ## setFunction             ( N::AttachDock::FunctionDocking , true ) ;
+    ## LocalMsgs [ AttachToMdi  ] = tr("Move to window area")            ;
+    ## LocalMsgs [ AttachToDock ] = tr("Move to dock area"  )            ;
     ##########################################################################
     return
+  ############################################################################
+  def Docking ( self , Main , title , area , areas ) :
+    ##########################################################################
+    super ( AttachDock , self ) . Docking ( Main , self , title , area , areas )
+    ## nConnect(Dock,SIGNAL(visibilityChanged(bool))   ,
+    ##          this,SLOT  (Visible          (bool)) ) ;
+    ##########################################################################
+    return
+  ############################################################################
+  def DockIn  ( self , shown                                               ) :
+    ##########################################################################
+    super     ( AttachDock , self ) . ShowDock ( shown                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def Visible ( self , visible                                             ) :
+    ##########################################################################
+    super     ( AttachDock , self ) . Visible ( visible                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def doubleClicked       ( self , item , column                           ) :
+    ##########################################################################
+    uuid      = int       ( item . data ( column , Qt . UserRole )           )
+    self . Clicked . emit ( uuid                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def DockingMenu ( self , menu ) :
+    ##########################################################################
+    ##########################################################################
+    ## if ( ! isFunction ( N::AttachDock::FunctionDocking ) ) return          ;
+    ## QMdiSubWindow  * mdi    = Casting(QMdiSubWindow,parent())              ;
+    ## QDockWidget    * dock   = Casting(QDockWidget  ,parent())              ;
+    ## if (NotNull(dock) || NotNull(mdi)) Menu . addSeparator ( )             ;
+    ## nIfSafe(dock) Menu . add ( AttachToMdi  , LocalMsgs [ AttachToMdi  ] ) ;
+    ## nIfSafe(mdi ) Menu . add ( AttachToDock , LocalMsgs [ AttachToDock ] ) ;
+    ##########################################################################
+    return
+  ############################################################################
+  def RunDocking ( self , menu , action ) :
+    ##########################################################################
+    at = menu . at ( action )
+    ##########################################################################
+    if ( at == AttachDock . AttachToMdi ) :
+      ## emit attachMdi (this,dockingOrientation) ;
+      return True
+    ##########################################################################
+    if ( at == AttachDock . AttachToDock ) :
+      ## emit attachDock                          (
+      ##   this                                   ,
+      ##   windowTitle()                          ,
+      ##   dockingPlace                           ,
+      ##   dockingPlaces                        ) ;
+      return True
+    ##########################################################################
+    return False
 ##############################################################################
 
-
-
 """
-
-
-
-class Q_COMPONENTS_EXPORT TreeDock : public TreeWidget
-                                   , public AttachDock
-{
-  Q_OBJECT
-  public:
-
-    int                 dockingOrientation ;
-    Qt::DockWidgetArea  dockingPlace       ;
-    Qt::DockWidgetAreas dockingPlaces      ;
-
-    explicit TreeDock    (StandardConstructor) ;
-    virtual ~TreeDock    (void);
-
-  protected:
-
-  private:
-
-  public slots:
-
-    virtual void Docking (QMainWindow * Main,QString title,Qt::DockWidgetArea area,Qt::DockWidgetAreas areas);
-    virtual void DockIn  (bool shown);
-
     virtual QTreeWidgetItem * addItem (QString text,SUID uuid,int column = 0);
     virtual QTreeWidgetItem * addItem (QIcon icon,QString text,SUID uuid,int column = 0);
-
-  protected slots:
-
-    virtual void DockingMenu          (MenuManager & Menu) ;
-    virtual bool RunDocking           (MenuManager & Menu,QAction * action) ;
-    void         Visible              (bool visible);
-    void         doubleClicked        (QTreeWidgetItem * item,int column);
-
-  private slots:
 
   signals:
 
     DockSignals ;
 
-    void Clicked         (SUID uuid);
-
-};
-
-
-
-#include <qtcomponents.h>
-
-N::TreeDock:: TreeDock           ( QWidget * parent , Plan * p )
-            : TreeWidget         (           parent ,        p )
-            , AttachDock         (                           p )
-            , dockingOrientation ( 0                           )
-            , dockingPlace       ( Qt::RightDockWidgetArea     )
-            , dockingPlaces      ( Qt::TopDockWidgetArea       |
-                                   Qt::BottomDockWidgetArea    |
-                                   Qt::LeftDockWidgetArea      |
-                                   Qt::RightDockWidgetArea     )
-{
-  WidgetClass                                                       ;
-  setRootIsDecorated      ( false                                 ) ;
-  setAlternatingRowColors ( true                                  ) ;
-  MountClicked            ( 2                                     ) ;
-  setFunction             ( N::AttachDock::FunctionDocking , true ) ;
-  LocalMsgs [ AttachToMdi  ] = tr("Move to window area")            ;
-  LocalMsgs [ AttachToDock ] = tr("Move to dock area"  )            ;
-}
-
-N::TreeDock::~TreeDock (void)
-{
-}
-
-void N::TreeDock::Docking        (
-       QMainWindow      *  Main  ,
-       QString             title ,
-       Qt::DockWidgetArea  area  ,
-       Qt::DockWidgetAreas areas )
-{
-  AttachDock::Docking(Main,this,title,area,areas) ;
-  nConnect(Dock,SIGNAL(visibilityChanged(bool))   ,
-           this,SLOT  (Visible          (bool)) ) ;
-}
-
-void N::TreeDock::Visible(bool visible)
-{
-  Visiblity(visible) ;
-}
-
-void N::TreeDock::DockIn(bool shown)
-{
-  Show(shown);
-}
 
 QTreeWidgetItem * N::TreeDock::addItem(QString text,SUID uuid,int column)
 {
@@ -164,40 +158,4 @@ QTreeWidgetItem * N::TreeDock::addItem(QIcon icon,QString text,SUID uuid,int col
   return IT                                    ;
 }
 
-void N::TreeDock::doubleClicked(QTreeWidgetItem * item,int column)
-{
-  SUID uuid = nTreeUuid(item,column) ;
-  emit Clicked (uuid)                ;
-}
-
-void N::TreeDock::DockingMenu(MenuManager & Menu)
-{
-  if ( ! isFunction ( N::AttachDock::FunctionDocking ) ) return          ;
-  QMdiSubWindow  * mdi    = Casting(QMdiSubWindow,parent())              ;
-  QDockWidget    * dock   = Casting(QDockWidget  ,parent())              ;
-  if (NotNull(dock) || NotNull(mdi)) Menu . addSeparator ( )             ;
-  nIfSafe(dock) Menu . add ( AttachToMdi  , LocalMsgs [ AttachToMdi  ] ) ;
-  nIfSafe(mdi ) Menu . add ( AttachToDock , LocalMsgs [ AttachToDock ] ) ;
-}
-
-bool N::TreeDock::RunDocking(MenuManager & Menu,QAction * action)
-{
-  switch (Menu[action])                        {
-    case AttachToMdi                           :
-      emit attachMdi (this,dockingOrientation) ;
-    break                                      ;
-    case AttachToDock                          :
-      emit attachDock                          (
-        this                                   ,
-        windowTitle()                          ,
-        dockingPlace                           ,
-        dockingPlaces                        ) ;
-    break                                      ;
-    default: return false                      ;
-  }                                            ;
-  return true                                  ;
-}
-
-
 """
-

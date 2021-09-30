@@ -45,10 +45,11 @@ from   PyQt5 . QtWidgets               import QSpinBox
 from   AITK  . Qt        . VirtualGui  import VirtualGui  as VirtualGui
 from   AITK  . Qt        . MenuManager import MenuManager as MenuManager
 from   AITK  . Qt        . TreeWidget  import TreeWidget  as TreeWidget
+from   AITK  . Qt        . TreeDock    import TreeDock    as TreeDock
 ##############################################################################
 from   AITK  . Documents . Name        import Name        as NameItem
 ##############################################################################
-class NamesEditor        ( TreeWidget , NameItem                           ) :
+class NamesEditor        ( TreeDock , NameItem                             ) :
   ############################################################################
   emitNamesShow   = pyqtSignal (                                             )
   emitAllNames    = pyqtSignal ( list                                        )
@@ -58,8 +59,8 @@ class NamesEditor        ( TreeWidget , NameItem                           ) :
   ############################################################################
   def __init__           ( self , parent = None                            ) :
     ##########################################################################
-    super ( TreeWidget , self ) . __init__   ( parent                        )
-    super ( NameItem   , self ) . __init__   (                               )
+    super ( TreeDock , self ) . __init__ ( parent                            )
+    super ( NameItem , self ) . __init__ (                                   )
     ##########################################################################
     return
   ############################################################################

@@ -31,11 +31,11 @@ class AttachDock         (                                                 ) :
   AttachToMdi     = 1000001
   AttachToDock    = 1000002
   ############################################################################
-  def __init__           ( self                                            ) :
+  def __init__           ( self , plan = None                              ) :
     ##########################################################################
     self . Trigger    = None
     self . Dock       = None
-    self . dockPlan   = None
+    self . dockPlan   = plan
     self . Scope      = ""
     self . Mutex      = threading . Lock ( )
     self . DockLimits = { }
