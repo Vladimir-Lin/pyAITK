@@ -34,6 +34,7 @@ from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QDockWidget
 ##############################################################################
+from         . AbstractGui            import AbstractGui as AbstractGui
 from         . VirtualGui             import VirtualGui as VirtualGui
 ##############################################################################
 dockStyleSheet = \
@@ -50,9 +51,10 @@ class DockWidget                ( QDockWidget , VirtualGui                 ) :
     ##########################################################################
     global dockStyleSheet
     ##########################################################################
-    super ( QDockWidget , self ) . __init__   ( parent                       )
-    super ( VirtualGui  , self ) . __init__   (                              )
-    super ( VirtualGui  , self ) . Initialize ( self                         )
+    super ( QDockWidget , self ) . __init__        ( parent                  )
+    super ( VirtualGui  , self ) . __init__        (                         )
+    super ( VirtualGui  , self ) . Initialize      ( self                    )
+    super ( AbstractGui , self ) . setPlanFunction ( plan                    )
     ##########################################################################
     self . Regular      = True
     self . DockGeometry = QRect (                                            )

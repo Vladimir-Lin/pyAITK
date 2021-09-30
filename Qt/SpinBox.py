@@ -33,15 +33,17 @@ from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from         . VirtualGui             import VirtualGui as VirtualGui
+from         . AbstractGui            import AbstractGui as AbstractGui
+from         . VirtualGui             import VirtualGui  as VirtualGui
 ##############################################################################
-class SpinBox               ( QSpinBox , VirtualGui                         ) :
+class SpinBox               ( QSpinBox , VirtualGui                        ) :
   ############################################################################
-  def __init__              ( self , parent = None , plan = None            ) :
+  def __init__              ( self , parent = None , plan = None           ) :
     ##########################################################################
-    super ( QSpinBox   , self ) . __init__   ( parent                        )
-    super ( VirtualGui , self ) . __init__   (                               )
-    super ( VirtualGui , self ) . Initialize ( self                          )
+    super ( QSpinBox    , self ) . __init__        ( parent                  )
+    super ( VirtualGui  , self ) . __init__        (                         )
+    super ( VirtualGui  , self ) . Initialize      ( self                    )
+    super ( AbstractGui , self ) . setPlanFunction ( plan                    )
     ##########################################################################
     self . setAttribute     ( Qt . WA_InputMethodEnabled                     )
     ##########################################################################

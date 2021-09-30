@@ -44,12 +44,11 @@ from         . AttachDock             import AttachDock as AttachDock
 ##############################################################################
 class TreeDock                ( TreeWidget , AttachDock                    ) :
   ############################################################################
-  Clicked     = pyqtSignal    ( int                                          )
+  Clicked    = pyqtSignal     ( int                                          )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
-    super ( TreeWidget , self ) . __init__   ( parent                        )
-    super ( AttachDock , self ) . __init__   ( plan                          )
+    super ( TreeWidget , self ) . __init__ ( parent , plan                   )
     ##########################################################################
     ## WidgetClass                                                       ;
     ##########################################################################

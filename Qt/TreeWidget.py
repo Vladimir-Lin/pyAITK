@@ -45,11 +45,12 @@ from         . SpinBox                import SpinBox    as SpinBox
 ##############################################################################
 class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
-  def __init__                ( self , parent = None                       ) :
+  def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
-    super ( QTreeWidget , self ) . __init__   ( parent                       )
-    super ( VirtualGui  , self ) . __init__   (                              )
-    super ( VirtualGui  , self ) . Initialize ( self                         )
+    super ( QTreeWidget , self ) . __init__        ( parent                  )
+    super ( VirtualGui  , self ) . __init__        (                         )
+    super ( VirtualGui  , self ) . Initialize      ( self                    )
+    super ( AbstractGui , self ) . setPlanFunction ( plan                    )
     ##########################################################################
     self . CurrentItem =      {                                              }
     ##########################################################################

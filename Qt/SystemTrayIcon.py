@@ -28,18 +28,21 @@ from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QSystemTrayIcon
 ##############################################################################
+from         . AbstractGui            import AbstractGui as AbstractGui
 from         . VirtualGui             import VirtualGui  as VirtualGui
 from         . MenuManager            import MenuManager as MenuManager
 ##############################################################################
-class SystemTrayIcon ( QSystemTrayIcon , VirtualGui ) :
+class SystemTrayIcon ( QSystemTrayIcon , VirtualGui                        ) :
   ############################################################################
   emitShowMessage = pyqtSignal       ( str , str                             )
   emitSetIcon     = pyqtSignal       ( str                                   )
   ############################################################################
-  def __init__ ( self , icon , parent = None ) :
+  def __init__       ( self , icon , parent = None , plan = None           ) :
     ##########################################################################
-    QSystemTrayIcon . __init__ ( self , icon , parent )
-    super ( VirtualGui  , self ) . Initialize ( self   )
+    QSystemTrayIcon              . __init__        ( self , icon , parent    )
+    super ( VirtualGui  , self ) . __init__        (                         )
+    super ( VirtualGui  , self ) . Initialize      ( self                    )
+    super ( AbstractGui , self ) . setPlanFunction ( plan                    )
     ##########################################################################
     self . activated       . connect ( self . doTrayActivated                )
     self . emitShowMessage . connect ( self . doShowMessage                  )
