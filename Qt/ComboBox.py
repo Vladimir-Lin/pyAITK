@@ -31,17 +31,16 @@ from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QComboBox
 ##############################################################################
-from         . AbstractGui            import AbstractGui as AbstractGui
 from         . VirtualGui             import VirtualGui  as VirtualGui
 ##############################################################################
 class ComboBox ( QComboBox , VirtualGui                                    ) :
   ############################################################################
   def __init__ ( self , parent = None , plan = None                        ) :
     ##########################################################################
-    super ( QComboBox   , self ) . __init__        ( parent                  )
-    super ( VirtualGui  , self ) . __init__        (                         )
-    super ( VirtualGui  , self ) . Initialize      ( self                    )
-    super ( AbstractGui , self ) . setPlanFunction ( plan                    )
+    super ( QComboBox  , self ) . __init__ ( parent                          )
+    super ( VirtualGui , self ) . __init__ (                                 )
+    self . Initialize                      ( self                            )
+    self . setPlanFunction                 ( plan                            )
     ##########################################################################
     return
   ############################################################################

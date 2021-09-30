@@ -29,17 +29,16 @@ from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 ##############################################################################
-from         . AbstractGui            import AbstractGui as AbstractGui
 from         . VirtualGui             import VirtualGui  as VirtualGui
 ##############################################################################
 class Widget            ( QWidget , VirtualGui                             ) :
   ############################################################################
   def __init__          ( self , parent = None , plan = None               ) :
     ##########################################################################
-    super ( QWidget     , self ) . __init__        ( parent                  )
-    super ( VirtualGui  , self ) . __init__        (                         )
-    super ( VirtualGui  , self ) . Initialize      ( self                    )
-    super ( AbstractGui , self ) . setPlanFunction ( plan                    )
+    super ( QWidget     , self ) . __init__ ( parent                         )
+    super ( VirtualGui  , self ) . __init__ (                                )
+    self . Initialize                       ( self                           )
+    self . setPlanFunction                  ( plan                           )
     ##########################################################################
     self . setAttribute ( Qt . WA_InputMethodEnabled                         )
     ##########################################################################

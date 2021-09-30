@@ -38,15 +38,14 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from         . VirtualGui             import VirtualGui as VirtualGui
 from         . Widget                 import Widget     as Widget
 from         . TreeWidget             import TreeWidget as TreeWidget
 ##############################################################################
 class InputTreeWidget ( Widget                                             ) :
   ############################################################################
-  def __init__        ( self , parent = None                               ) :
+  def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
-    super ( Widget     , self ) . __init__   ( parent )
+    super ( Widget     , self ) . __init__   ( parent , plan                 )
     ##########################################################################
     return
   ############################################################################

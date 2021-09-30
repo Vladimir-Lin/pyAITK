@@ -42,63 +42,68 @@ from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from         . VirtualGui             import VirtualGui as VirtualGui
 ##############################################################################
-class ListWidget ( QListWidget , VirtualGui ) :
+class ListWidget      ( QListWidget , VirtualGui                           ) :
   ############################################################################
-  def __init__ ( self , parent = None ) :
+  def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
-    super ( QListWidget , self ) . __init__   ( parent )
-    super ( VirtualGui  , self ) . Initialize ( self   )
+    super ( QListWidget , self ) . __init__ ( parent                         )
+    super ( VirtualGui  , self ) . __init__ (                                )
+    self . Initialize                       ( self                           )
+    self . setPlanFunction                  ( plan                           )
     ##########################################################################
     return
   ############################################################################
-  def Configure ( self ) :
-    raise NotImplementedError ( )
+  def Configure               ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def focusInEvent ( self , event ) :
-    if ( self . focusIn ( event ) ) :
+  def focusInEvent      ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . focusIn ( event )                         ) :
       return
-    super ( QListWidget , self ) . focusInEvent ( event )
+    ##########################################################################
+    super ( QListWidget , self ) . focusInEvent ( event                      )
+    ##########################################################################
     return
   ############################################################################
-  def focusOutEvent ( self , event ) :
-    if ( self . focusOut ( event ) ) :
+  def focusOutEvent     ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . focusOut ( event )                        ) :
       return
-    super ( QListWidget , self ) . focusOutEvent ( event )
+    ##########################################################################
+    super ( QListWidget , self ) . focusOutEvent ( event                     )
+    ##########################################################################
     return
   ############################################################################
-  def contextMenuEvent ( self , event ) :
-    if ( self . Menu ( event . pos ( ) ) ) :
-      event . accept ( )
+  def contextMenuEvent  ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . Menu ( event . pos ( ) )                  ) :
+      event . accept    (                                                    )
       return
-    super ( QListWidget , self ) . contextMenuEvent ( event )
+    ##########################################################################
+    super ( QListWidget , self ) . contextMenuEvent ( event                  )
+    ##########################################################################
     return
   ############################################################################
-  def startup ( self ) :
-    raise NotImplementedError ( )
+  def startup                 ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def FocusIn ( self ) :
+  def FocusIn                 ( self                                       ) :
     return True
   ############################################################################
-  def FocusOut ( self ) :
+  def FocusOut                ( self                                       ) :
     return True
   ############################################################################
-  def removeParked ( self ) :
+  def removeParked            ( self                                       ) :
     return True
   ############################################################################
-  def singleClicked ( self , item , column ) :
-    raise NotImplementedError ( )
+  def InsertItem              ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def doubleClicked ( self , item , column ) :
-    raise NotImplementedError ( )
+  def DeleteItems             ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def Insert ( self ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def Delete ( self ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def Menu ( self , pos ) :
-    raise NotImplementedError ( )
+  def Menu                    ( self , pos                                 ) :
+    raise NotImplementedError (                                              )
 ##############################################################################
 
 

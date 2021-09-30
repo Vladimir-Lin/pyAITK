@@ -17,6 +17,7 @@ from   PyQt5                          import QtWidgets
 ##############################################################################
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
@@ -38,21 +39,24 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from         . VirtualGui             import VirtualGui as VirtualGui
-from         . LineEdit               import LineEdit   as LineEdit
-from         . ComboBox               import ComboBox   as ComboBox
-from         . SpinBox                import SpinBox    as SpinBox
+from         . VirtualGui             import VirtualGui  as VirtualGui
+from         . LineEdit               import LineEdit    as LineEdit
+from         . ComboBox               import ComboBox    as ComboBox
+from         . SpinBox                import SpinBox     as SpinBox
 ##############################################################################
 class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
+  emitPendingTopLevelItem = pyqtSignal ( QTreeWidgetItem                     )
+  ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
-    super ( QTreeWidget , self ) . __init__        ( parent                  )
-    super ( VirtualGui  , self ) . __init__        (                         )
-    super ( VirtualGui  , self ) . Initialize      ( self                    )
-    super ( AbstractGui , self ) . setPlanFunction ( plan                    )
+    super ( QTreeWidget , self ) . __init__ ( parent                         )
+    super ( VirtualGui  , self ) . __init__ (                                )
+    self . Initialize                       ( self                           )
+    self . setPlanFunction                  ( plan                           )
     ##########################################################################
     self . CurrentItem =      {                                              }
+    self . emitPendingTopLevelItem.connect ( self.acceptPendingTopLevelItem  )
     ##########################################################################
     return
   ############################################################################
@@ -86,6 +90,29 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . setHeaderItem      ( it                                           )
     ##########################################################################
     return it
+  ############################################################################
+  def acceptPendingTopLevelItem ( self , item                              ) :
+    self . addTopLevelItem      (        item                                )
+    return
+  ############################################################################
+  def pendingTopLevelItem                 ( self , item                    ) :
+    self . emitPendingTopLevelItem . emit (        item                      )
+    return
+  ############################################################################
+  def resizeColumnsToContents       ( self , columns = [ ]                 ) :
+    ##########################################################################
+    cols   = columns
+    if                              ( len ( columns ) <= 0                 ) :
+      c    = self . columnCount     (                                        )
+      cols = range                  ( 0 , c                                  )
+    ##########################################################################
+    if                              ( len ( cols    ) <= 0                 ) :
+      return
+    ##########################################################################
+    for i in cols                                                            :
+      self . resizeColumnToContents ( i                                      )
+    ##########################################################################
+    return
   ############################################################################
   def startup                 ( self                                       ) :
     raise NotImplementedError (                                              )

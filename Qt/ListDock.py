@@ -40,75 +40,20 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from         . VirtualGui             import VirtualGui as VirtualGui
+from         . AttachDock             import AttachDock as AttachDock
+from         . ListWidget             import ListWidget as ListWidget
 ##############################################################################
-class ListWidget ( QListWidget , VirtualGui ) :
+class ListDock        ( ListWidget , AttachDock                            ) :
   ############################################################################
-  def __init__ ( self , parent = None ) :
+  def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
-    super ( QListWidget , self ) . __init__   ( parent )
-    super ( VirtualGui  , self ) . Initialize ( self   )
+    super ( ListWidget , self ) . __init__ ( parent , plan                   )
+    self . setDockPlanFunction             (          plan                   )
     ##########################################################################
     return
-  ############################################################################
-  def Configure ( self ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def focusInEvent ( self , event ) :
-    if ( self . focusIn ( event ) ) :
-      return
-    super ( QListWidget , self ) . focusInEvent ( event )
-    return
-  ############################################################################
-  def focusOutEvent ( self , event ) :
-    if ( self . focusOut ( event ) ) :
-      return
-    super ( QListWidget , self ) . focusOutEvent ( event )
-    return
-  ############################################################################
-  def contextMenuEvent ( self , event ) :
-    if ( self . Menu ( event . pos ( ) ) ) :
-      event . accept ( )
-      return
-    super ( QListWidget , self ) . contextMenuEvent ( event )
-    return
-  ############################################################################
-  def startup ( self ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def FocusIn ( self ) :
-    return True
-  ############################################################################
-  def FocusOut ( self ) :
-    return True
-  ############################################################################
-  def removeParked ( self ) :
-    return True
-  ############################################################################
-  def singleClicked ( self , item , column ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def doubleClicked ( self , item , column ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def Insert ( self ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def Delete ( self ) :
-    raise NotImplementedError ( )
-  ############################################################################
-  def Menu ( self , pos ) :
-    raise NotImplementedError ( )
 ##############################################################################
-
-
-
 
 """
-
-
-
-
 
 class Q_COMPONENTS_EXPORT ListDock : public ListWidget
                                    , public AttachDock

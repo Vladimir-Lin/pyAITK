@@ -49,6 +49,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
     super ( TreeWidget , self ) . __init__ ( parent , plan                   )
+    self . setDockPlanFunction             (          plan                   )
     ##########################################################################
     ## WidgetClass                                                       ;
     ##########################################################################

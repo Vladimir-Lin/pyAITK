@@ -39,10 +39,10 @@ class SystemTrayIcon ( QSystemTrayIcon , VirtualGui                        ) :
   ############################################################################
   def __init__       ( self , icon , parent = None , plan = None           ) :
     ##########################################################################
-    QSystemTrayIcon              . __init__        ( self , icon , parent    )
-    super ( VirtualGui  , self ) . __init__        (                         )
-    super ( VirtualGui  , self ) . Initialize      ( self                    )
-    super ( AbstractGui , self ) . setPlanFunction ( plan                    )
+    QSystemTrayIcon             . __init__ ( self , icon , parent            )
+    super ( VirtualGui , self ) . __init__ (                                 )
+    self . Initialize                      ( self                            )
+    self . setPlanFunction                 ( plan                            )
     ##########################################################################
     self . activated       . connect ( self . doTrayActivated                )
     self . emitShowMessage . connect ( self . doShowMessage                  )

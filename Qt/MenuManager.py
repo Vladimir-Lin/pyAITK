@@ -29,18 +29,18 @@ from   PyQt5 . QtWidgets              import QWidgetAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
 ##############################################################################
-class MenuManager ( ) :
+class MenuManager           (                                              ) :
   ############################################################################
-  def __init__ ( self , parent = None ) :
+  def __init__              ( self , parent = None                         ) :
     ##########################################################################
-    self . actions      = [ ]
-    self . menus        = [ ]
-    self . IDs          = { }
-    self . Widgets      = { }
-    self . actionGroups = { }
+    self . actions      =   [                                                ]
+    self . menus        =   [                                                ]
+    self . IDs          =   {                                                }
+    self . Widgets      =   {                                                }
+    self . actionGroups =   {                                                }
     ##########################################################################
-    self . menu         = QMenu        ( parent                     )
-    self . menu         . setAttribute ( Qt . WA_InputMethodEnabled )
+    self . menu         = QMenu        ( parent                              )
+    self . menu         . setAttribute ( Qt . WA_InputMethodEnabled          )
     ##########################################################################
     return
   ############################################################################

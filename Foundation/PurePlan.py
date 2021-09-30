@@ -3,9 +3,10 @@
 import os
 import sys
 ##############################################################################
-class PurePlan ( ) :
+class PurePlan (                                                           ) :
   ############################################################################
-  def __init__ ( self ) :
+  def __init__ ( self                                                      ) :
+    ##########################################################################
     self . Application = ""
     self . Machine     = ""
     self . Hostname    = ""
@@ -31,25 +32,24 @@ class PurePlan ( ) :
     self . SQLs        = { }
     self . Dirs        = { }
     self . Variables   = { }
-
+    ##########################################################################
+    return
   ############################################################################
-
-  def __del__  ( self ) :
+  def __del__                  ( self                                      ) :
     return
-
-  def type ( self ) :
+  ############################################################################
+  def type                     ( self                                      ) :
     return 1
-
-  def Initialize ( self ) :
+  ############################################################################
+  def Initialize               ( self                                      ) :
     return True
-
-  def arguments ( self , argv ) :
+  ############################################################################
+  def arguments                ( self , argv                               ) :
     return
-
-  def Path ( self , name ) :
-    return os . path . abspath ( self . Root + "/" + filename )
-
-  def Temporary ( self , filename ) :
-    return self . Path ( "Temp" )
-
+  ############################################################################
+  def Path                     ( self , name                               ) :
+    return os . path . abspath ( self . Root + "/" + filename                )
+  ############################################################################
+  def Temporary        ( self , filename                                   ) :
+    return self . Path ( "Temp"                                              )
 ##############################################################################

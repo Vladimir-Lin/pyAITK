@@ -37,16 +37,19 @@ from   PyQt5 . QtWidgets              import QMainWindow
 ##############################################################################
 from         . VirtualGui             import VirtualGui as VirtualGui
 ##############################################################################
-class MainWindow ( QMainWindow , VirtualGui ) :
+class MainWindow    ( QMainWindow , VirtualGui                             ) :
   ############################################################################
-  def __init__ ( self , parent = None ) :
+  def __init__      ( self , parent = None , plan = None                   ) :
     ##########################################################################
-    super ( QMainWindow , self ) . __init__   ( parent )
-    super ( VirtualGui  , self ) . Initialize ( self   )
+    super ( QMainWindow , self ) . __init__ ( parent                         )
+    super ( VirtualGui  , self ) . __init__ (                                )
+    self . Initialize                       ( self                           )
+    self . setPlanFunction                  ( plan                           )
     ##########################################################################
     return
   ############################################################################
-  def Configure ( self ) :
+  def Configure                     ( self                                 ) :
+    ##########################################################################
     self . stacked = QStackedWidget ( self                                   )
     self . mdi     = QMdiArea       ( self . stacked                         )
     self . stacked . addWidget      ( self . mdi                             )
@@ -54,29 +57,35 @@ class MainWindow ( QMainWindow , VirtualGui ) :
     ##########################################################################
     return
   ############################################################################
-  def focusInEvent ( self , event ) :
-    if ( self . focusIn ( event ) ) :
+  def focusInEvent    ( self , event                                       ) :
+    ##########################################################################
+    if                ( self . focusIn ( event )                           ) :
       return
-    super ( QMainWindow , self ) . focusInEvent ( event )
+    super ( QMainWindow , self ) . focusInEvent ( event                      )
+    ##########################################################################
     return
   ############################################################################
-  def focusOutEvent ( self , event ) :
-    if ( self . focusOut ( event ) ) :
+  def focusOutEvent   ( self , event                                       ) :
+    ##########################################################################
+    if                ( self . focusOut ( event )                          ) :
       return
-    super ( QMainWindow , self ) . focusOutEvent ( event )
+    super ( QMainWindow , self ) . focusOutEvent ( event                     )
+    ##########################################################################
     return
   ############################################################################
-  def startup ( self ) :
-    raise NotImplementedError ( )
+  def startup                 ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  def FocusIn ( self ) :
+  def FocusIn                 ( self                                       ) :
     return True
   ############################################################################
-  def FocusOut ( self ) :
+  def FocusOut                ( self                                       ) :
     return True
   ############################################################################
-  def addMdi                         ( self , widget , showOptions = 1 ) :
-    subw = self . mdi . addSubWindow ( widget                            )
-    subw . setAttribute              ( Qt . WA_DeleteOnClose             )
+  def addMdi                         ( self , widget , showOptions = 1     ) :
+    ##########################################################################
+    subw = self . mdi . addSubWindow ( widget                                )
+    subw . setAttribute              ( Qt . WA_DeleteOnClose                 )
+    ##########################################################################
     return subw
 ##############################################################################

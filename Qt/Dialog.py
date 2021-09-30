@@ -27,17 +27,16 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 ##############################################################################
-from         . AbstractGui            import AbstractGui as AbstractGui
-from         . VirtualGui             import VirtualGui  as VirtualGui
+from         . VirtualGui             import VirtualGui as VirtualGui
 ##############################################################################
 class Dialog            ( QDialog , VirtualGui                             ) :
   ############################################################################
   def __init__          ( self , parent = None , plan = None               ) :
     ##########################################################################
-    super ( QDialog     , self ) . __init__        ( parent                  )
-    super ( VirtualGui  , self ) . __init__        (                         )
-    super ( VirtualGui  , self ) . Initialize      ( self                    )
-    super ( AbstractGui , self ) . setPlanFunction ( plan                    )
+    super ( QDialog    , self ) . __init__ ( parent                          )
+    super ( VirtualGui , self ) . __init__ (                                 )
+    self . Initialize                      ( self                            )
+    self . setPlanFunction                 ( plan                            )
     ##########################################################################
     ## WidgetClass
     self . setAttribute ( Qt . WA_InputMethodEnabled                         )

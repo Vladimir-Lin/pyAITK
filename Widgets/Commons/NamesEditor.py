@@ -57,9 +57,9 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
   emitRefreshItem = pyqtSignal ( QTreeWidgetItem , list                      )
   CloseMyself     = pyqtSignal ( QWidget , int                               )
   ############################################################################
-  def __init__           ( self , parent = None                            ) :
+  def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
-    super ( TreeDock , self ) . __init__ ( parent                            )
+    super ( TreeDock , self ) . __init__ ( parent , plan                     )
     super ( NameItem , self ) . __init__ (                                   )
     ##########################################################################
     return
@@ -234,10 +234,10 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
       item . setText            ( 6      , str ( len (  msg ) )              )
       item . setText            ( 7      , str ( len ( bmsg ) )              )
       ########################################################################
-      threading . Thread        ( target = self . UpdateUuidName             ,
-                                  args   = ( item , pid , msg , ) ) . start ()
+      self . Go                 ( self . UpdateUuidName                    , \
+                                  ( item , pid , msg , )                     )
     ##########################################################################
-    self . removeParked          (                                           )
+    self   . removeParked       (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -262,10 +262,10 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
       item . setText             ( column ,  msg                             )
       item . setData             ( column , Qt . UserRole , value            )
       ########################################################################
-      threading . Thread         ( target = self . UpdateByLocality          ,
-                                   args   = ( item , pid , value , ) ) . start ()
+      self . Go                  ( self . UpdateByLocality                 , \
+                                   ( item , pid , value , )                  )
     ##########################################################################
-    self . removeParked          (                                           )
+    self   . removeParked        (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -292,10 +292,10 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
       item . setText             ( column ,  msg                             )
       item . setData             ( column , Qt . UserRole , value            )
       ########################################################################
-      threading . Thread         ( target = self . UpdateByRelevance         ,
-                                   args   = ( item , pid , value , ) ) . start ()
+      self . Go                  ( self . UpdateByRelevance                , \
+                                   ( item , pid , value , )                  )
     ##########################################################################
-    self . removeParked          (                                           )
+    self   . removeParked        (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -318,11 +318,11 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
       item . setText            ( column , str ( nv )                        )
       ########################################################################
       if                        ( column == 4                              ) :
-        threading . Thread      ( target = self . UpdateByPriority           ,
-                                  args   = ( item , pid , nv , ) ) . start ( )
+        self . Go               ( self . UpdateByPriority                  , \
+                                  ( item , pid , nv , )                      )
       elif                      ( column == 5                              ) :
-        threading . Thread      ( target = self . UpdateByFlags              ,
-                                  args   = ( item , pid , nv , ) ) . start ( )
+        self . Go               ( self . UpdateByFlags                     , \
+                                  ( item , pid , nv , )                      )
     ##########################################################################
     self . removeParked          (                                           )
     ##########################################################################
@@ -330,8 +330,7 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
   ############################################################################
   def InsertItem                 ( self                                    ) :
     ##########################################################################
-    th = threading . Thread      ( target = self . AppendItem                )
-    th . start                   (                                           )
+    self . Go                    ( self . AppendItem                         )
     ##########################################################################
     return
   ############################################################################
@@ -353,9 +352,7 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     if                                        ( len ( Listings ) <= 0      ) :
       return
     ##########################################################################
-    th           = threading . Thread         ( target = self . RemoveItems  ,
-                                                args   = ( Listings , )      )
-    th           . start                      (                              )
+    self         . Go ( self . RemoveItems , ( Listings , )                  )
     ##########################################################################
     return
   ############################################################################
@@ -468,8 +465,8 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     item   . setText         ( 6 , str ( UTF8 )                              )
     item   . setText         ( 7 , str ( LENZ )                              )
     ##########################################################################
-    threading . Thread       ( target = self . UpdateUuidName                ,
-                               args   = ( item , pid , target , ) ) . start ()
+    self   . Go              ( self . UpdateUuidName                       , \
+                               ( item , pid , target , )                     )
     ##########################################################################
     return True
   def Menu                         ( self , pos                            ) :
@@ -829,22 +826,21 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     ##########################################################################
     return item
   ############################################################################
-  def refresh                       ( self , All                           ) :
+  def refresh                         ( self , All                         ) :
     ##########################################################################
-    self . clear                    (                                        )
-    TRX     = self . Translations   [ "NamesEditor"                          ]
+    self    . clear                   (                                      )
+    TRX     = self . Translations     [ "NamesEditor"                        ]
     ##########################################################################
     for IT in All                                                            :
       ########################################################################
-      NT    = self . jsonToItem     ( IT                                     )
-      self  . addTopLevelItem       ( NT                                     )
+      NT    = self . jsonToItem       ( IT                                   )
+      self  . addTopLevelItem         ( NT                                   )
     ##########################################################################
-    self . emitNamesShow . emit     (                                        )
+    self    . emitNamesShow . emit    (                                      )
     ##########################################################################
-    if                              ( self . ShowCompact                   ) :
-      TOTAL   = len                 ( self . KEYs                            )
-      for i in range                ( 0 , TOTAL - 1                        ) :
-        self  . resizeColumnToContents ( i                                   )
+    if                                ( self . ShowCompact                 ) :
+      TOTAL = len                     ( self . KEYs                          )
+      self  . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )              )
     ##########################################################################
     return
   ############################################################################
@@ -875,7 +871,7 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     if                           ( not self . Prepared                     ) :
       self . Prepare             (                                           )
     ##########################################################################
-    threading . Thread ( target = self . loading ) . start (                 )
+    self   . Go                  ( self . loading                            )
     ##########################################################################
     return
 ##############################################################################
