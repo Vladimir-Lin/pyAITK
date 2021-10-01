@@ -41,6 +41,7 @@ from   AITK . Database  . Connection  import Connection
 from   AITK . Database  . Pair        import Pair
 from   AITK . Database  . Columns     import Columns
 ##############################################################################
+from   AITK . Documents . Name        import Name   as NameItem
 from   AITK . Documents . Name        import Naming as Naming
 ##############################################################################
 from   AITK . Calendars . StarDate    import StarDate
@@ -58,6 +59,8 @@ class AbstractGui        (                                                 ) :
     self . Settings        = { }
     self . Translations    = { }
     self . Tables          = { }
+    self . Languages       = { }
+    self . Menus           = { }
     self . Gui             = None
     self . focusState      = False
     self . CreatedDateTime = NOW . Stardate
@@ -84,6 +87,24 @@ class AbstractGui        (                                                 ) :
     self . Locality = locality
     ##########################################################################
     return self . Locality
+  ############################################################################
+  def setLanguages       ( self , languages                                ) :
+    ##########################################################################
+    self . Languages = languages
+    ##########################################################################
+    return self . Languages
+  ############################################################################
+  def getLanguages       ( self                                            ) :
+    return self . Languages
+  ############################################################################
+  def setMenus           ( self , menus                                    ) :
+    ##########################################################################
+    self . Menus = menus
+    ##########################################################################
+    return self . Menus
+  ############################################################################
+  def getMenus           ( self                                            ) :
+    return self . Menus
   ############################################################################
   def setPlanFunction       ( self , func                                  ) :
     ##########################################################################
@@ -156,8 +177,36 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     return DB
   ############################################################################
-  def GetName       ( self , DB , TABLE , Uuid  , Usage = "Default"        ) :
-    return Naming   (        DB , TABLE , Uuid  , self . Locality , Usage    )
+  def GetName        ( self , DB , TABLE , Uuid  , Usage = "Default"       ) :
+    ##########################################################################
+    N   = Naming     (        DB , TABLE , Uuid  , self . Locality , Usage   )
+    S   = N
+    ##########################################################################
+    try                                                                      :
+      S = S . decode ( "utf-8"                                               )
+    except                                                                   :
+      pass
+    ##########################################################################
+    return S
+  ############################################################################
+  def AssureUuidName ( self , DB , TABLE , Uuid , Name , Usage = "Default" ) :
+    ##########################################################################
+    N   = NameItem   (                                                       )
+    ##########################################################################
+    S   = Name
+    try                                                                      :
+      S = S . decode ( "utf-8"                                               )
+    except                                                                   :
+      pass
+    ##########################################################################
+    N . set          ( "uuid"     , Uuid                                     )
+    N . set          ( "locality" , self . getLocality ( )                   )
+    N . setRelevance ( Usage                                                 )
+    N . set          ( "name"     , S                                        )
+    ##########################################################################
+    N . Assure       ( DB         , TABLE                                    )
+    ##########################################################################
+    return True
   ############################################################################
   def GetNames      ( self , DB , TABLE , UUIDs , Usage = "Default"        ) :
     ##########################################################################

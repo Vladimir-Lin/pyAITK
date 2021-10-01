@@ -69,40 +69,40 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
   def sizeHint                    ( self                                   ) :
     return QSize                  ( 800 , 480                                )
   ############################################################################
-  def Prepare                     ( self                                   ) :
+  def Prepare                      ( self                                  ) :
     ##########################################################################
-    Names  = self . Translations  [ "NamesEditor" ] [ "Labels"               ]
-    Items  = self . tableItems    (                                          )
+    Names  = self . Translations   [ "NamesEditor" ] [ "Labels"              ]
+    Items  = self . tableItems     (                                         )
     ##########################################################################
     self   . defaultLocality  = 1001
     self   . defaultRelevance =    0
     self   . ShowCompact      = True
     ##########################################################################
-    self   . KEYs =               [ "id"                                     ,
-                                    "name"                                   ,
-                                    "locality"                               ,
-                                    "relevance"                              ,
-                                    "priority"                               ,
-                                    "flags"                                  ,
-                                    "utf8"                                   ,
-                                    "length"                                 ,
-                                    "ltime"                                  ]
+    self   . KEYs =                [ "id"                                    ,
+                                     "name"                                  ,
+                                     "locality"                              ,
+                                     "relevance"                             ,
+                                     "priority"                              ,
+                                     "flags"                                 ,
+                                     "utf8"                                  ,
+                                     "length"                                ,
+                                     "ltime"                                 ]
     ##########################################################################
-    TOTAL    = len                ( self . KEYs                              )
-    self     . setColumnCount     ( TOTAL + 1                                )
+    TOTAL    = len                 ( self . KEYs                             )
+    self     . setColumnCount      ( TOTAL + 1                               )
     ##########################################################################
-    LABELs   =                    [                                          ]
+    LABELs   =                     [                                         ]
     for it in self . KEYs                                                    :
-      LABELs . append             ( Names [ it ]                             )
-    LABELs   . append             ( ""                                       )
-    self     . setCentralLabels   ( LABELs                                   )
+      LABELs . append              ( Names [ it ]                            )
+    LABELs   . append              ( ""                                      )
+    self     . setCentralLabels    ( LABELs                                  )
     ##########################################################################
-    self     . setColumnWidth     ( TOTAL     , 3                            )
+    self     . setColumnWidth      ( TOTAL     , 3                           )
     ##########################################################################
-    self     . setColumnHidden    ( 0         , True                         )
-    self     . setColumnHidden    ( TOTAL - 1 , True                         )
+    self     . setColumnHidden     ( 0         , True                        )
+    self     . setColumnHidden     ( TOTAL - 1 , True                        )
     ##########################################################################
-    self     . setRootIsDecorated ( False                                    )
+    self     . setRootIsDecorated  ( False                                   )
     self     . setAlternatingRowColors ( True                                )
     ##########################################################################
     self     . emitNamesShow   . connect ( self . show                       )
@@ -110,15 +110,15 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     self     . emitNewItem     . connect ( self . appendJsonItem             )
     self     . emitRefreshItem . connect ( self . RefreshItem                )
     ##########################################################################
-    self     . MountClicked       ( 1                                        )
-    self     . MountClicked       ( 2                                        )
+    self     . MountClicked        ( 1                                       )
+    self     . MountClicked        ( 2                                       )
     ##########################################################################
     QShortcut ( QKeySequence ( "Ins"                 ) , self ) . activated . connect ( self . InsertItem  )
     QShortcut ( QKeySequence ( QKeySequence . Delete ) , self ) . activated . connect ( self . DeleteItems )
     ##########################################################################
-    self     . setSelectionMode   ( QAbstractItemView . ContiguousSelection  )
+    self     . assignSelectionMode ( "ContiguousSelection"                   )
     ##########################################################################
-    self     . setPrepared        ( True                                     )
+    self     . setPrepared         ( True                                    )
     ##########################################################################
     return
   ############################################################################
@@ -216,6 +216,7 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
   def stateChanged               ( self , item , column                    ) :
     return
   ############################################################################
+  @pyqtSlot()
   def nameChanged               ( self                                     ) :
     ##########################################################################
     if                          ( not self . isItemPicked ( )              ) :

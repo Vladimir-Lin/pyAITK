@@ -39,6 +39,7 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
+from   AITK  . Qt . MenuManager       import MenuManager   as MenuManager
 from   AITK  . Qt . MajorListings     import MajorListings as MajorListings
 ##############################################################################
 class ProjectListings    ( MajorListings                                   ) :
@@ -46,6 +47,9 @@ class ProjectListings    ( MajorListings                                   ) :
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
     super ( ) . __init__ (        parent        , plan                       )
+    ##########################################################################
+    QShortcut ( QKeySequence ( "Ins"                 ) , self ) . activated . connect ( self . InsertItem  )
+    ## QShortcut ( QKeySequence ( QKeySequence . Delete ) , self ) . activated . connect ( self . DeleteItems )
     ##########################################################################
     return
   ############################################################################
@@ -65,11 +69,67 @@ class ProjectListings    ( MajorListings                                   ) :
     ##########################################################################
     return
   ############################################################################
+  def AssureUuidItem               ( self , item , uuid , name             ) :
+    ##########################################################################
+    DB      = self . ConnectDB     (                                         )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    PRJTAB = self . Tables         [ "Projects"                              ]
+    NAMTAB = self . Tables         [ "Names"                                 ]
+    HEAD   = 5702000000000000000
+    ##########################################################################
+    DB     . LockWrites            ( [ PRJTAB , NAMTAB ]                     )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      uuid = DB . LastUuid         ( PRJTAB , "uuid" , HEAD                  )
+      DB   . AppendUuid            ( PRJTAB , uuid                           )
+    ##########################################################################
+    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    ##########################################################################
+    DB      . Close                (                                         )
+    ##########################################################################
+    item    . setData              ( 0 , Qt . UserRole , uuid                )
+    ##########################################################################
+    return
+  ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
-    ## items  = self . selectedItems  (                                         )
-    ## mm     = MenuManager           ( self                                    )
+    items  = self . selectedItems  (                                         )
+    mm     = MenuManager           ( self                                    )
     ##########################################################################
+    TRX    = self . Translations
+    ##########################################################################
+    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
+    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
+    mm     . addSeparator          (                                         )
+    if                             ( len ( items ) == 1                    ) :
+      if                           ( self . EditAllNames != None           ) :
+        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
+        mm . addSeparator          (                                         )
+    ##########################################################################
+    mm     = self . LocalityMenu   ( mm                                      )
+    ##########################################################################
+    mm     . setFont               ( self    . font ( )                      )
+    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . HandleLocalityMenu ( at )      ) :
+      return True
+    ##########################################################################
+    if                             ( at == 1001                            ) :
+      self . startup               (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1101                            ) :
+      self . InsertItem            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1601                            ) :
+      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
+      NAM  = self . Tables         [ "Names"                                 ]
+      self . EditAllNames          ( self , "Projects" , uuid , NAM          )
+      return True
     ##########################################################################
     return True
 ##############################################################################

@@ -42,6 +42,7 @@ from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from         . VirtualGui             import VirtualGui  as VirtualGui
+from         . MenuManager            import MenuManager as MenuManager
 from         . LineEdit               import LineEdit    as LineEdit
 from         . ComboBox               import ComboBox    as ComboBox
 from         . SpinBox                import SpinBox     as SpinBox
@@ -49,6 +50,7 @@ from         . SpinBox                import SpinBox     as SpinBox
 class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   emitPendingTopLevelItem = pyqtSignal ( QTreeWidgetItem                     )
+  pickSelectionMode       = pyqtSignal ( str                                 )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
@@ -60,6 +62,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     self . CurrentItem =      {                                              }
     self . emitPendingTopLevelItem.connect ( self.acceptPendingTopLevelItem  )
+    self . pickSelectionMode      .connect ( self.assignSelectionMode        )
     ##########################################################################
     return
   ############################################################################
@@ -94,12 +97,23 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return it
   ############################################################################
+  @pyqtSlot(QTreeWidgetItem)
   def acceptPendingTopLevelItem ( self , item                              ) :
     self . addTopLevelItem      (        item                                )
     return
   ############################################################################
   def pendingTopLevelItem                 ( self , item                    ) :
     self . emitPendingTopLevelItem . emit (        item                      )
+    return
+  ############################################################################
+  @pyqtSlot(QTreeWidgetItem)
+  def removeTopLevelItem              ( self , item                        ) :
+    ##########################################################################
+    i    = self . indexOfTopLevelItem ( item                                 )
+    if                                ( i < 0                              ) :
+      return
+    self . takeTopLevelItem           ( i                                    )
+    ##########################################################################
     return
   ############################################################################
   def resizeColumnsToContents       ( self , columns = [ ]                 ) :
@@ -117,9 +131,22 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def startup                 ( self                                       ) :
-    raise NotImplementedError (                                              )
+  @pyqtSlot(str)
+  def assignSelectionMode     ( self , mode                                ) :
+    ##########################################################################
+    mode = mode . lower       (                                              )
+    if                        ( mode == "noselection"                      ) :
+      self . setSelectionMode ( QAbstractItemView . NoSelection              )
+    elif                      ( mode == "singleselection"                  ) :
+      self . setSelectionMode ( QAbstractItemView . SingleSelection          )
+    elif                      ( mode == "multiselection"                   ) :
+      self . setSelectionMode ( QAbstractItemView . MultiSelection           )
+    elif                      ( mode == "extendedselection"                ) :
+      self . setSelectionMode ( QAbstractItemView . ExtendedSelection        )
+    elif                      ( mode == "contiguousselection"              ) :
+      self . setSelectionMode ( QAbstractItemView . ContiguousSelection      )
+    ##########################################################################
+    return
   ############################################################################
   def FocusIn                 ( self                                       ) :
     return True
@@ -268,6 +295,35 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return sb
   ############################################################################
+  def LocalityMenu                 ( self , mm                             ) :
+    ##########################################################################
+    DFL    = self  . getLocality   (                                         )
+    LANGZ  = self  . getLanguages  (                                         )
+    MENUZ  = self  . getMenus      (                                         )
+    ##########################################################################
+    LOM    = mm    . addMenu       ( MENUZ [ "Language" ]                    )
+    ##########################################################################
+    KEYs   = LANGZ . keys          (                                         )
+    ##########################################################################
+    for K in KEYs                                                            :
+       msg = LANGZ                 [ K                                       ]
+       V   = int                   ( K                                       )
+       hid =                       ( V == DFL                                )
+       mm  . addActionFromMenu     ( LOM , 10000000 + V , msg , True , hid   )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def HandleLocalityMenu           ( self , atId                           ) :
+    ##########################################################################
+    if                             ( atId < 10000000                       ) :
+      return False
+    if                             ( atId > 11000000                       ) :
+      return False
+    ##########################################################################
+    self . setLocality             ( atId - 10000000                         )
+    ##########################################################################
+    return True
+  ############################################################################
   def singleClicked           ( self , item , column                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
@@ -284,6 +340,10 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     raise NotImplementedError (                                              )
   ############################################################################
   def Menu                    ( self , pos                                 ) :
+    raise NotImplementedError (                                              )
+  ############################################################################
+  @pyqtSlot()
+  def startup                 ( self                                       ) :
     raise NotImplementedError (                                              )
 ##############################################################################
 

@@ -52,6 +52,8 @@ class MajorListings                ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
+    self . EditAllNames = None
+    ##########################################################################
     self . setColumnCount          ( 1                                       )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
@@ -59,7 +61,7 @@ class MajorListings                ( TreeDock                              ) :
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
     ##########################################################################
-    self . setSelectionMode        ( QAbstractItemView . ContiguousSelection )
+    self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitAllNames  . connect ( self . refresh                          )
@@ -105,6 +107,54 @@ class MajorListings                ( TreeDock                              ) :
     IT . setData                      ( 0 , Qt . UserRole , UUID             )
     ##########################################################################
     return IT
+  ############################################################################
+  @pyqtSlot()
+  def InsertItem              ( self                                       ) :
+    ##########################################################################
+    item = QTreeWidgetItem    (                                              )
+    item . setData            ( 0 , Qt . UserRole , 0                        )
+    self . insertTopLevelItem ( 0 , item                                     )
+    line = self . setLineEdit ( item                                       , \
+                                0                                          , \
+                                "editingFinished"                          , \
+                                self . nameChanged                           )
+    line . setFocus           ( Qt . TabFocusReason                          )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot()
+  def DeleteItems                  ( self                                  ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot()
+  def nameChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    line   = self . CurrentItem [ "Widget"                                   ]
+    text   = self . CurrentItem [ "Text"                                     ]
+    msg    = line . text        (                                            )
+    uuid   = self . itemUuid    ( item , 0                                   )
+    ##########################################################################
+    if                          ( len ( msg ) <= 0                         ) :
+      self . removeTopLevelItem ( item                                       )
+      return
+    ##########################################################################
+    item   . setText            ( column ,              msg                  )
+    ##########################################################################
+    self   . removeParked       (                                            )
+    self   . Go                 ( self . AssureUuidItem                    , \
+                                  ( item , uuid , msg , )                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssureUuidItem               ( self , item , uuid , name             ) :
+    raise NotImplementedError      (                                         )
   ############################################################################
   @pyqtSlot(dict)
   def refresh                         ( self , JSON                        ) :
