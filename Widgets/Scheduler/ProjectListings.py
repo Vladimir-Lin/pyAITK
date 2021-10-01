@@ -42,6 +42,9 @@ from   PyQt5 . QtWidgets              import QSpinBox
 from   AITK  . Qt . MenuManager       import MenuManager   as MenuManager
 from   AITK  . Qt . MajorListings     import MajorListings as MajorListings
 ##############################################################################
+from   AITK . Calendars . StarDate    import StarDate
+from   AITK . Calendars . Periode     import Periode
+##############################################################################
 class ProjectListings    ( MajorListings                                   ) :
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
@@ -75,15 +78,38 @@ class ProjectListings    ( MajorListings                                   ) :
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    PRJTAB = self . Tables         [ "Projects"                              ]
-    NAMTAB = self . Tables         [ "Names"                                 ]
-    HEAD   = 5702000000000000000
+    PRJTAB  = self . Tables        [ "Projects"                              ]
+    PRDTAB  = self . Tables        [ "Periods"                               ]
+    NAMTAB  = self . Tables        [ "Names"                                 ]
+    HEAD    = 5702000000000000000
     ##########################################################################
-    DB     . LockWrites            ( [ PRJTAB , NAMTAB ]                     )
+    DB      . LockWrites           ( [ PRJTAB , PRDTAB , NAMTAB ]            )
     ##########################################################################
     if                             ( uuid <= 0                             ) :
-      uuid = DB . LastUuid         ( PRJTAB , "uuid" , HEAD                  )
-      DB   . AppendUuid            ( PRJTAB , uuid                           )
+      ########################################################################
+      uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
+      DB    . AppendUuid           ( PRJTAB , uuid                           )
+      ########################################################################
+      NOW   = StarDate             (                                         )
+      NOW   . Now                  (                                         )
+      CDT   = NOW . Stardate
+      ########################################################################
+      PRD   = Periode              (                                         )
+      PRID  = PRD  . GetUuid       ( DB , PRDTAB                             )
+      ########################################################################
+      PRD   . Realm    = uuid
+      PRD   . Role     = 71
+      PRD   . Item     = 1
+      PRD   . States   = 0
+      PRD   . Creation = CDT
+      PRD   . Modified = CDT
+      Items =                      [ "realm"                               , \
+                                     "role"                                , \
+                                     "item"                                , \
+                                     "states"                              , \
+                                     "creation"                            , \
+                                     "modified"                              ]
+      PRD   . UpdateItems          ( DB , PRDTAB , Items                     )
     ##########################################################################
     self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
     ##########################################################################
