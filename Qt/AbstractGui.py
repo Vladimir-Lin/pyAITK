@@ -41,6 +41,8 @@ from   AITK . Database  . Connection  import Connection
 from   AITK . Database  . Pair        import Pair
 from   AITK . Database  . Columns     import Columns
 ##############################################################################
+from   AITK . Documents . Name        import Naming as Naming
+##############################################################################
 from   AITK . Calendars . StarDate    import StarDate
 ##############################################################################
 class AbstractGui        (                                                 ) :
@@ -153,6 +155,17 @@ class AbstractGui        (                                                 ) :
     DB . Prepare         (                                                   )
     ##########################################################################
     return DB
+  ############################################################################
+  def GetName       ( self , DB , TABLE , Uuid  , Usage = "Default"        ) :
+    return Naming   (        DB , TABLE , Uuid  , self . Locality , Usage    )
+  ############################################################################
+  def GetNames      ( self , DB , TABLE , UUIDs , Usage = "Default"        ) :
+    ##########################################################################
+    NAMEs         = {                                                        }
+    for U in UUIDs                                                           :
+      NAMEs [ U ] = self . GetName ( DB , TABLE , U , Usage                  )
+    ##########################################################################
+    return NAMEs
   ############################################################################
   def setSpeaker         ( self , speaker                                  ) :
     self . Speaker = speaker

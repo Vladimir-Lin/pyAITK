@@ -19,6 +19,7 @@ from   PyQt5                           import QtWidgets
 ##############################################################################
 from   PyQt5 . QtCore                  import QObject
 from   PyQt5 . QtCore                  import pyqtSignal
+from   PyQt5 . QtCore                  import pyqtSlot
 from   PyQt5 . QtCore                  import Qt
 from   PyQt5 . QtCore                  import QPoint
 from   PyQt5 . QtCore                  import QPointF
@@ -102,6 +103,7 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     self     . setColumnHidden    ( TOTAL - 1 , True                         )
     ##########################################################################
     self     . setRootIsDecorated ( False                                    )
+    self     . setAlternatingRowColors ( True                                )
     ##########################################################################
     self     . emitNamesShow   . connect ( self . show                       )
     self     . emitAllNames    . connect ( self . refresh                    )
@@ -469,6 +471,7 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
                                ( item , pid , target , )                     )
     ##########################################################################
     return True
+  ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
     items  = self . selectedItems  (                                         )
@@ -866,9 +869,10 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot()
   def startup                    ( self                                    ) :
     ##########################################################################
-    if                           ( not self . Prepared                     ) :
+    if                           ( not self . isPrepared ( )               ) :
       self . Prepare             (                                           )
     ##########################################################################
     self   . Go                  ( self . loading                            )

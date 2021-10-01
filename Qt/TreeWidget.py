@@ -21,6 +21,7 @@ from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -33,6 +34,7 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QAbstractItemView
 from   PyQt5 . QtWidgets              import QTreeWidget
 from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
@@ -115,6 +117,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot()
   def startup                 ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
@@ -123,6 +126,10 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   def FocusOut                ( self                                       ) :
     return True
+  ############################################################################
+  def itemUuid                  ( self , item , column = 0                 ) :
+    uuid = item . data          ( column , Qt . UserRole                     )
+    return int                  ( uuid                                       )
   ############################################################################
   def isItemPicked              ( self                                     ) :
     ##########################################################################
@@ -270,10 +277,10 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def stateChanged            ( self , item , column                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
-  def Insert                  ( self                                       ) :
+  def InsertItem              ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
-  def Delete                  ( self                                       ) :
+  def DeleteItems             ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
   def Menu                    ( self , pos                                 ) :

@@ -16,6 +16,7 @@ from . TreeDock        import TreeDock        as TreeDock
 from . ListWidget      import ListWidget      as ListWidget
 from . ListDock        import ListDock        as ListDock
 from . IconDock        import IconDock        as IconDock
+from . MajorListings   import MajorListings   as MajorListings
 from . InputTreeWidget import InputTreeWidget as InputTreeWidget
 from . MainWindow      import MainWindow      as MainWindow
 ##############################################################################
@@ -35,6 +36,7 @@ __all__ = [ "AbstractGui"                                                    ,
             "ListWidget"                                                     ,
             "ListDock"                                                       ,
             "IconDock"                                                       ,
+            "MajorListings"                                                  ,
             "InputTreeWidget"                                                ,
             "MainWindow"                                                     ]
 ##############################################################################
