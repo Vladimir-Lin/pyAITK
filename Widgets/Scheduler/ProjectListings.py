@@ -88,7 +88,7 @@ class ProjectListings    ( MajorListings                                   ) :
     if                             ( uuid <= 0                             ) :
       ########################################################################
       uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
-      DB    . AppendUuid           ( PRJTAB , uuid                           )
+      DB    . AddUuid              ( PRJTAB , uuid   , 1                     )
       ########################################################################
       NOW   = StarDate             (                                         )
       NOW   . Now                  (                                         )
