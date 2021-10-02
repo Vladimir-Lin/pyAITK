@@ -10,195 +10,229 @@ import datetime
 import requests
 import threading
 ##############################################################################
-import mysql . connector
-from   mysql . connector              import Error
+from   AITK . Calendars . StarDate import StarDate
 ##############################################################################
-import AITK
-from   AITK . Database  . Query       import Query
-from   AITK . Database  . Connection  import Connection
-from   AITK . Database  . Columns     import Columns
+globalVirtualProgress = None
 ##############################################################################
-
+class ProgressReporter        (                                            ) :
+  ############################################################################
+  StateStop     = 0
+  StateRunning  = 1
+  StatePause    = 2
+  StateResume   = 3
+  StateStopping = 4
+  ############################################################################
+  def __init__                ( self                                       ) :
+    ##########################################################################
+    NOW  = StarDate           (                                              )
+    NOW  . Now                (                                              )
+    ##########################################################################
+    self . Name         = ""
+    self . Format       = ""
+    self . StartTime    = NOW . Stardate
+    self . TotalAmount  = 0
+    self . CurrentValue = 0
+    self . Users        = 0
+    self . State        = 0
+    self . Id           = -1
+    self . Running      = False
+    self . Mutex        = threading . Lock (                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def __del__                 ( self                                       ) :
+    return
+  ############################################################################
+  def getValue                ( self                                       ) :
+    return self . CurrentValue
+  ############################################################################
+  def getRunning              ( self                                       ) :
+    return self . Running
+  ############################################################################
+  def setRunning               ( self , enable                             ) :
+    ##########################################################################
+    self   . Mutex   . acquire (                                             )
+    ##########################################################################
+    self   . Running = enable
+    ##########################################################################
+    if                         ( enable                                    ) :
+      self . State   = self . StateRunning
+    else                                                                     :
+      self . State   = self . StateStopping
+    ##########################################################################
+    self   . Mutex   . release (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def Using                ( self                                          ) :
+    ##########################################################################
+    self . Mutex . acquire (                                                 )
+    self . Users = self   . Users + 1
+    self . Mutex . release (                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def Leaving              ( self                                          ) :
+    ##########################################################################
+    self . Mutex . acquire (                                                 )
+    self . Users = self   . Users - 1
+    self . Mutex . release (                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def setVirtual           ( self , vpo                                    ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    globalVirtualProgress = vpo
+    ##########################################################################
+    return
+  ############################################################################
+  def Progress                ( self , name , Format                       ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                        ( globalVirtualProgress == None              ) :
+      return -1
+    ##########################################################################
+    if                        ( self . Id < 0                              ) :
+      return -1
+    ##########################################################################
+    self . Id = globalVirtualProgress . Progress ( name , Format             )
+    ##########################################################################
+    return self . Id
+  ############################################################################
+  def ProgressName                       ( self , name                     ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                                   ( globalVirtualProgress == None   ) :
+      return
+    ##########################################################################
+    if                                   ( self . Id < 0                   ) :
+      return
+    ##########################################################################
+    globalVirtualProgress . ProgressName ( self . Id , name                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def ProgressText                       ( self , message                  ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                                   ( globalVirtualProgress == None   ) :
+      return
+    ##########################################################################
+    if                                   ( self . Id < 0                   ) :
+      return
+    ##########################################################################
+    globalVirtualProgress . ProgressText ( self . Id , message               )
+    ##########################################################################
+    return
+  ############################################################################
+  def setProgress                       ( self , Format                    ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                                  ( globalVirtualProgress == None    ) :
+      return
+    ##########################################################################
+    if                                  ( self . Id < 0                    ) :
+      return
+    ##########################################################################
+    globalVirtualProgress . setProgress ( self . Id , Format                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def setRange                       ( self , Min , Max                    ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                               ( globalVirtualProgress == None       ) :
+      return
+    ##########################################################################
+    if                               ( self . Id < 0                       ) :
+      return
+    ##########################################################################
+    globalVirtualProgress . setRange ( self . Id , Min , Max                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def setFrequency            ( self , cFmt , rFmt                         ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                        ( globalVirtualProgress == None              ) :
+      return
+    ##########################################################################
+    if                        ( self . Id < 0                              ) :
+      return
+    ##########################################################################
+    globalVirtualProgress . setFrequency ( self . Id , cFmt , rFmt           )
+    ##########################################################################
+    return
+  ############################################################################
+  def StartMe                     ( self                                   ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                            ( globalVirtualProgress == None          ) :
+      return
+    ##########################################################################
+    if                            ( self . Id < 0                          ) :
+      return
+    ##########################################################################
+    self . Running = True
+    globalVirtualProgress . Start ( self . Id                              , \
+                                    self . getValue                        , \
+                                    self . getRunning                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def Start                       ( self , ValueFunc , RunningFunc         ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                            ( globalVirtualProgress == None          ) :
+      return
+    ##########################################################################
+    if                            ( self . Id < 0                          ) :
+      return
+    ##########################################################################
+    globalVirtualProgress . Start ( self . Id , ValueFunc , RunningFunc      )
+    ##########################################################################
+    return 
+  ############################################################################
+  def Finish                  ( self                                       ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                        ( globalVirtualProgress == None              ) :
+      return
+    ##########################################################################
+    if                        ( self . Id < 0                              ) :
+      return
+    ##########################################################################
+    globalVirtualProgress . Finish ( self . Id )
+    self . Id = -1
+    ##########################################################################
+    return
+  ############################################################################
+  def ProgressReady           ( self , msecs = 1000                   ) :
+    ##########################################################################
+    global globalVirtualProgress
+    ##########################################################################
+    if                        ( globalVirtualProgress == None              ) :
+      return False
+    ##########################################################################
+    if                        ( self . Id < 0                              ) :
+      return False
+    ##########################################################################
+    return globalVirtualProgress . ProgressReady ( self . Id , msecs         )
+  ############################################################################
+  def plus                    ( self                                       ) :
+    ##########################################################################
+    self . CurrentValue = self . CurrentValue + 1
+    ##########################################################################
+    return self . CurrentValue
 ##############################################################################
-
-
-##############################################################################
-
-"""
-
-class Q_ESSENTIALS_EXPORT ProgressReporter
-{
-  public:
-
-    QString   name    ;
-    QString   format  ;
-    QDateTime start   ;
-    qint64    total   ;
-    qint64    value   ;
-    int       users   ;
-    int       state   ; // 0 - stop , 1 - running , 2 - pause , 3 - resume , 4 - stopping
-    int       id      ;
-    bool      running ;
-    Mutexz    mutex   ;
-
-    explicit         ProgressReporter (void) ;
-    virtual         ~ProgressReporter (void) ;
-
-    virtual void     setRunning       (bool enable) ;
-    virtual void     Using            (void) ;
-    virtual void     Leaving          (void) ;
-
-    static  void     setVirtual       (VirtualProgress * vp) ;
-
-    virtual int      Progress         (QString name,QString format) ;
-    virtual void     ProgressName     (QString name) ;
-    virtual void     ProgressText     (QString message) ;
-    virtual void     setProgress      (QString format) ;
-    virtual void     setRange         (qint64 Min,qint64 Max) ;
-    virtual void     setFrequency     (QString cFmt,QString rFmt) ;
-    virtual void     Start            (void) ;
-    virtual void     Start            (qint64 * value,bool * running) ;
-    virtual void     Finish           (void) ;
-    virtual bool     ProgressReady    (int msecs = 1000) ;
-
-    virtual qint64 & operator ++      (void) ;
-
-  protected:
-
-    static VirtualProgress * vp ;
-
-  private:
-
-} ;
-
-
-#include <essentials.h>
-
-N::VirtualProgress * N::ProgressReporter::vp = NULL ;
-
-N::ProgressReporter:: ProgressReporter ( void     )
-                    : name             ( ""       )
-                    , format           ( ""       )
-                    , start            ( nTimeNow )
-                    , total            ( 0        )
-                    , value            ( 0        )
-                    , users            ( 0        )
-                    , state            ( 0        )
-                    , id               ( -1       )
-                    , running          ( false    )
-{
-}
-
-N::ProgressReporter::~ProgressReporter(void)
-{
-}
-
-void N::ProgressReporter::setRunning(bool enable)
-{
-  mutex [ 0 ] . lock   ( ) ;
-  running = enable         ;
-  state   = enable ? 1 : 4 ;
-  mutex [ 0 ] . unlock ( ) ;
-}
-
-void N::ProgressReporter::Using(void)
-{
-  mutex [ 0 ] . lock   ( ) ;
-  users ++                 ;
-  mutex [ 0 ] . unlock ( ) ;
-}
-
-void N::ProgressReporter::Leaving(void)
-{
-  mutex [ 0 ] . lock   ( ) ;
-  users --                 ;
-  mutex [ 0 ] . unlock ( ) ;
-  if ( users <= 0 )        {
-    delete this            ;
-  }                        ;
-}
-
-void N::ProgressReporter::setVirtual(VirtualProgress * v)
-{
-  vp = v ;
-}
-
-int N::ProgressReporter::Progress(QString name,QString format)
-{
-  if ( NULL == vp ) return -1           ;
-  id = vp -> Progress ( name , format ) ;
-  return id                             ;
-}
-
-void N::ProgressReporter::ProgressName(QString name)
-{
-  if ( NULL == vp ) return         ;
-  if ( id   <  0  ) return         ;
-  vp -> ProgressName ( id , name ) ;
-}
-
-void N::ProgressReporter::ProgressText(QString message)
-{
-  if ( NULL == vp ) return            ;
-  if ( id   <  0  ) return            ;
-  vp -> ProgressText ( id , message ) ;
-}
-
-void N::ProgressReporter::setProgress(QString format)
-{
-  if ( NULL == vp ) return          ;
-  if ( id   <  0  ) return          ;
-  vp -> setProgress ( id , format ) ;
-}
-
-void N::ProgressReporter::setRange(qint64 Min,qint64 Max)
-{
-  if ( NULL == vp ) return          ;
-  if ( id   <  0  ) return          ;
-  vp -> setRange ( id , Min , Max ) ;
-}
-
-void N::ProgressReporter::setFrequency(QString cFmt,QString rFmt)
-{
-  if ( NULL == vp ) return                ;
-  if ( id   <  0  ) return                ;
-  vp -> setFrequency ( id , cFmt , rFmt ) ;
-}
-
-void N::ProgressReporter::Start(void)
-{
-  if ( NULL == vp ) return                 ;
-  if ( id   <  0  ) return                 ;
-  running = true                           ;
-  vp -> Start ( id , & value , & running ) ;
-}
-
-void N::ProgressReporter::Start(qint64 * v,bool * r)
-{
-  if ( NULL == vp ) return   ;
-  if ( id   <  0  ) return   ;
-  vp -> Start ( id , v , r ) ;
-}
-
-void N::ProgressReporter::Finish(void)
-{
-  if ( NULL == vp ) return ;
-  if ( id   <  0  ) return ;
-  vp -> Finish ( id )      ;
-  id  = -1                 ;
-}
-
-bool N::ProgressReporter::ProgressReady(int msecs)
-{
-  if ( NULL == vp ) return false            ;
-  if ( id   <  0  ) return false            ;
-  return vp -> ProgressReady ( id , msecs ) ;
-}
-
-qint64 & N::ProgressReporter::operator ++ (void)
-{
-  value ++     ;
-  return value ;
-}
-
-"""
