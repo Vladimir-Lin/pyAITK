@@ -19,6 +19,7 @@ from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -39,15 +40,138 @@ from   . PurePlan import PurePlan as PurePlan
 class Plan                 ( PurePlan                                      ) :
   ############################################################################
   def __init__             ( self                                          ) :
-    print("Plan")
+    ##########################################################################
     super ( ) . __init__   (                                                 )
+    ##########################################################################
+    self . Actions    =    {                                                 }
+    self . Shortcuts  =    {                                                 }
+    ##########################################################################
     return
   ############################################################################
   def __del__              ( self                                          ) :
     return
   ############################################################################
-  def PrepareActions       ( self                                          ) :
+  def addAction            ( self , Id , action                            ) :
+    self . Actions [ Id ] = action
+    return len             ( self . Actions                                  )
+  ############################################################################
+  def Action               ( self , Id                                     ) :
+    if                     ( Id not in self . Actions                      ) :
+      return None
+    return self . Actions  [ Id                                              ]
+  ############################################################################
+  def hasAction            ( self , Id                                     ) :
+    return                 ( Id in self . Actions                            )
+  ############################################################################
+  def connectAction              ( self , Id , method , enable = True      ) :
     ##########################################################################
+    a   = self . Action          (        Id                                 )
+    if                           ( a == None                               ) :
+      return None
+    ##########################################################################
+    try                                                                      :
+      a . triggered . disconnect (                                           )
+    except                                                                   :
+      pass
+    ##########################################################################
+    a   . triggered . connect    ( method                                    )
+    a   . setEnabled             ( enable                                    )
+    ##########################################################################
+    return a
+  ############################################################################
+  def disableAction              ( self , Id                               ) :
+    ##########################################################################
+    a   = self . Action          (        Id                                 )
+    if                           ( a == None                               ) :
+      return None
+    ##########################################################################
+    try                                                                      :
+      a . triggered . disconnect (                                           )
+    except                                                                   :
+      pass
+    ##########################################################################
+    a   . setEnabled             ( False                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def actionVisible   ( self , Id , visible                                ) :
+    ##########################################################################
+    a = self . Action (        Id                                            )
+    if                ( a == None                                          ) :
+      return None
+    ##########################################################################
+    a . setVisible    ( visible                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def nameAction      ( self , Id , name                                   ) :
+    ##########################################################################
+    a = self . Action (        Id                                            )
+    if                ( a == None                                          ) :
+      return None
+    ##########################################################################
+    a . setText       ( name                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def disableAllAction             ( self                                  ) :
+    ##########################################################################
+    KEYs   = self . Actions . keys (                                         )
+    for K in KEYs                                                            :
+      ########################################################################
+      self . disableAction         ( K                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def addShortcut           ( self , Id , shortcut                         ) :
+    self . Shortcuts [ Id ] = shortcut
+    return len              ( self . Shortcuts                               )
+  ############################################################################
+  def Shortcut              ( self , Id                                    ) :
+    if                      ( Id not in self . Shortcuts                   ) :
+      return None
+    return self . Shortcuts [ Id                                             ]
+  ############################################################################
+  def hasShortcut           ( self , Id                                    ) :
+    return                  ( Id in self . Shortcuts                         )
+  ############################################################################
+  def connectShortcut            ( self , Id , method                      ) :
+    ##########################################################################
+    s   = self . Shortcut        (        Id                                 )
+    if                           ( s == None                               ) :
+      return None
+    ##########################################################################
+    try                                                                      :
+      s . activated . disconnect (                                           )
+    except                                                                   :
+      pass
+    ##########################################################################
+    s   . activated . connect    ( method                                    )
+    ##########################################################################
+    return s
+  ############################################################################
+  def disableShortcut            ( self , Id                               ) :
+    ##########################################################################
+    s   = self . Shortcut        (        Id                                 )
+    if                           ( s == None                               ) :
+      return None
+    ##########################################################################
+    try                                                                      :
+      s . activated . disconnect (                                           )
+    except                                                                   :
+      pass
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  def PrepareActions   ( self , parent = None                              ) :
+    ##########################################################################
+    s    = QShortcut   ( QKeySequence ( "Ins"                 ) , parent     )
+    self . addShortcut ( "Insert" , s                                        )
+    ##########################################################################
+    s    = QShortcut   ( QKeySequence ( QKeySequence . Delete ) , parent     )
+    self . addShortcut ( "Delete" , s                                        )
     ##########################################################################
     return
 ##############################################################################
@@ -108,15 +232,6 @@ class Q_COMPONENTS_EXPORT Plan : public PurePlan
     bool      setFont          (QFont   & font             ) ;
     void      setFont          (QWidget * widget,int FontId) ;
     void      setFont          (QObject * widget           ) ;
-
-    // Actions
-    int       addAction        (int Id,QAction * act ) ;
-    QAction * Action           (int Id               ) ;
-    QAction * connectAction    (int Id,QObject * parent,const char * method,bool enable = true) ;
-    void      disableAction    (int Id               ) ;
-    void      actionVisible    (int Id,bool visible  ) ;
-    void      nameAction       (int Id,QString name  ) ;
-    void      disableAllAction (void                 ) ;
 
     // Menus
     int       addMenu          (int Id,QMenu * menu  ) ;
@@ -450,82 +565,6 @@ N::Font & N::Plan::selectFont(int FontId)
 {
   if (fonts.contains(FontId)) return fonts[FontId] ;
   return font                                      ;
-}
-
-// Actions
-int N::Plan::addAction(int Id,QAction * act)
-{
-  actions[Id] = act     ;
-  return actions.size() ;
-}
-
-QAction * N::Plan::Action(int Id)
-{
-  nKickOut(!actions.contains(Id),NULL) ;
-  return actions[Id]                   ;
-}
-
-QAction * N::Plan::connectAction(int Id,QObject * parent,const char * method,bool enable)
-{
-  QAction * a = Action(Id)         ;
-  nKickOut ( IsNull ( a ) , NULL ) ;
-  QObject::disconnect              (
-    a                              ,
-    SIGNAL ( triggered ( ) )       ,
-    NULL                           ,
-    NULL                         ) ;
-  if ( ! QObject::connect          (
-           a                       ,
-           SIGNAL(triggered())     ,
-           parent                  ,
-           method                  ,
-           Qt::DirectConnection )  )
-    return NULL                    ;
-  a -> setEnabled ( enable )       ;
-  return a                         ;
-}
-
-void N::Plan::disableAllAction(void)
-{
-  UUIDs U = actions . keys ( ) ;
-  SUID  u                      ;
-  foreach  ( u , U )           {
-    switch ( u     )           {
-      case Menus::Quit         :
-      case Menus::Subwindow    :
-      case Menus::Tabbed       :
-      case Menus::Cascade      :
-      case Menus::Tile         :
-      break                    ;
-      default                  :
-        disableAction ((int)u) ;
-      break                    ;
-    }                          ;
-  }                            ;
-}
-
-void N::Plan::disableAction(int Id)
-{
-  QAction * a = Action(Id)   ;
-  nDropOut(IsNull(a))        ;
-  QObject::disconnect        (
-    a   ,SIGNAL(triggered()) ,
-    NULL,NULL              ) ;
-  a -> setEnabled(false)     ;
-}
-
-void N::Plan::actionVisible(int Id,bool visible)
-{
-  QAction * a = Action(Id) ;
-  nDropOut(IsNull(a))      ;
-  a -> setVisible(visible) ;
-}
-
-void N::Plan::nameAction(int Id,QString name)
-{
-  QAction * a = Action(Id) ;
-  nDropOut(IsNull(a))      ;
-  a -> setText(name)       ;
 }
 
 int N::Plan::addMenu(int Id,QMenu * menu)

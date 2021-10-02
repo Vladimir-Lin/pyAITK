@@ -246,11 +246,24 @@ class AbstractGui        (                                                 ) :
     self . Speaker       ( message , LC                                      )
     ##########################################################################
     return
+  ############################################################################
+  def LinkAction             ( self , Id , method , enable = True          ) :
+    ##########################################################################
+    plan = self . GetPlan    (                                               )
+    if                       ( plan == None                                ) :
+      return False
+    ##########################################################################
+    if                       ( plan . hasShortcut ( Id )                   ) :
+      plan . connectShortcut ( Id , method                                   )
+    elif                     ( plan . hasAction   ( Id )                   ) :
+      plan . connectAction   ( Id , method , enable                          )
+    else                                                                     :
+      return False
+    ##########################################################################
+    return True
 ##############################################################################
 
-
 """
-
 
 bool getAbstractStopable(QVariant pointer) ;
 bool setAbstractStopable(QVariant pointer,bool stopable) ;
