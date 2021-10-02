@@ -3,11 +3,13 @@
 import os
 import sys
 ##############################################################################
-class PurePlan (                                                           ) :
+from AITK . Essentials . VirtualProgress import VirtualProgress as VirtualProgress
+##############################################################################
+class PurePlan           ( VirtualProgress                                 ) :
   ############################################################################
-  def __init__ ( self                                                      ) :
+  def __init__           ( self                                            ) :
     ##########################################################################
-    print("PurePlan")
+    super ( ) . __init__ (                                                   )
     ##########################################################################
     self . Application = ""
     self . Machine     = ""
@@ -54,6 +56,33 @@ class PurePlan (                                                           ) :
   ############################################################################
   def Temporary        ( self , filename                                   ) :
     return self . Path ( "Temp"                                              )
+  ############################################################################
+  def Progress                ( self , name , Format                       ) :
+    return -1
+  ############################################################################
+  def ProgressName            ( self , Id , name                           ) :
+    return
+  ############################################################################
+  def ProgressText            ( self , Id , message                        ) :
+    return
+  ############################################################################
+  def setProgress             ( self , Id , Format                         ) :
+    return
+  ############################################################################
+  def setRange                ( self , Id , Min , Max                      ) :
+    return
+  ############################################################################
+  def setFrequency            ( self , Id , cFmt , rFmt                    ) :
+    return
+  ############################################################################
+  def Start                   ( self , Id , ValueFunc , RunningFunc        ) :
+    return
+  ############################################################################
+  def Finish                  ( self , Id                                  ) :
+    return
+  ############################################################################
+  def ProgressReady           ( self , Id , msecs = 1000                   ) :
+    return True
 ##############################################################################
 
 """
@@ -941,44 +970,6 @@ void N::PurePlan::setValue(void * bar,int value)
 
 void N::PurePlan::Finish(void * bar)
 {
-}
-
-int N::PurePlan::Progress(QString name,QString format)
-{
-  return -1 ;
-}
-
-void N::PurePlan::setRange(int Id,qint64 Min,qint64 Max)
-{
-}
-
-void N::PurePlan::setFrequency(int Id,QString cFmt,QString rFmt)
-{
-}
-
-void N::PurePlan::ProgressName(int Id,QString name)
-{
-}
-
-void N::PurePlan::ProgressText(int Id,QString message)
-{
-}
-
-void N::PurePlan::setProgress(int Id,QString format)
-{
-}
-
-void N::PurePlan::Start(int Id,qint64 * Value,bool * Running)
-{
-}
-
-void N::PurePlan::Finish(int Id)
-{
-}
-
-bool N::PurePlan::ProgressReady (int Id,int msecs)
-{
-  return true ;
 }
 
 void N::PurePlan::LoadSupports(Languages & L)
