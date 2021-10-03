@@ -146,7 +146,6 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     for U in UUIDs                                                           :
       if                              ( U in self . UuidItemMaps           ) :
-        print(U)
         item = self . UuidItemMaps    [ U                                    ]
         PUID = self . GetUuidIcon     ( DB , U                               )
         if                            ( PUID > 0                           ) :

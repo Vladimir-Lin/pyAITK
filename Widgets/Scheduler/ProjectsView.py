@@ -34,6 +34,7 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QAbstractItemView
 from   PyQt5 . QtWidgets              import QListWidget
 from   PyQt5 . QtWidgets              import QListWidgetItem
 from   PyQt5 . QtWidgets              import QTreeWidget
@@ -43,6 +44,11 @@ from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from   AITK  . Qt . IconDock          import IconDock as IconDock
+##############################################################################
+from   AITK  . Qt . MenuManager       import MenuManager   as MenuManager
+##############################################################################
+from   AITK  . Calendars . StarDate   import StarDate
+from   AITK  . Calendars . Periode    import Periode
 ##############################################################################
 class ProjectsView            ( IconDock                                   ) :
   ############################################################################
@@ -65,9 +71,10 @@ class ProjectsView            ( IconDock                                   ) :
     ##########################################################################
     return QQ
   ############################################################################
-  def Prepare                 ( self                                       ) :
+  def Prepare                  ( self                                      ) :
     ##########################################################################
-    self   . setPrepared      ( True                                         )
+    self . assignSelectionMode ( "ContiguousSelection"                       )
+    self . setPrepared         ( True                                        )
     ##########################################################################
     return
   ############################################################################
@@ -76,8 +83,14 @@ class ProjectsView            ( IconDock                                   ) :
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
-    """
     items  = self . selectedItems  (                                         )
+    atItem = self . itemAt         ( pos                                     )
+    uuid   = 0
+    ##########################################################################
+    if                             ( atItem != None                        ) :
+      uuid = atItem . data         ( Qt . UserRole                           )
+      uuid = int                   ( uuid                                    )
+    ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
@@ -85,7 +98,7 @@ class ProjectsView            ( IconDock                                   ) :
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
     mm     . addSeparator          (                                         )
-    if                             ( len ( items ) == 1                    ) :
+    if                             ( atItem != None                        ) :
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
@@ -108,11 +121,9 @@ class ProjectsView            ( IconDock                                   ) :
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
       self . EditAllNames          ( self , "Projects" , uuid , NAM          )
       return True
-    """
     ##########################################################################
     return True
 ##############################################################################

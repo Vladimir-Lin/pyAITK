@@ -33,6 +33,7 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QAbstractItemView
 from   PyQt5 . QtWidgets              import QListWidget
 from   PyQt5 . QtWidgets              import QListWidgetItem
 from   PyQt5 . QtWidgets              import QTreeWidget
@@ -45,13 +46,17 @@ from         . VirtualGui             import VirtualGui as VirtualGui
 ##############################################################################
 class ListWidget      ( QListWidget , VirtualGui                           ) :
   ############################################################################
+  pickSelectionMode       = pyqtSignal ( str                                 )
+  ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
     super (                    ) . __init__ ( parent                         )
     super ( VirtualGui  , self ) . __init__ (                                )
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )
-    self . DefaultItemIcon = QIcon          (                                )
+    self . DefaultItemIcon   = QIcon        (                                )
+    ##########################################################################
+    self . pickSelectionMode . connect      ( self . assignSelectionMode     )
     ##########################################################################
     return
   ############################################################################
@@ -92,6 +97,52 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     super ( QListWidget , self ) . contextMenuEvent ( event                  )
     ##########################################################################
     return
+  ############################################################################
+  @pyqtSlot(str)
+  def assignSelectionMode     ( self , mode                                ) :
+    ##########################################################################
+    mode = mode . lower       (                                              )
+    if                        ( mode == "noselection"                      ) :
+      self . setSelectionMode ( QAbstractItemView . NoSelection              )
+    elif                      ( mode == "singleselection"                  ) :
+      self . setSelectionMode ( QAbstractItemView . SingleSelection          )
+    elif                      ( mode == "multiselection"                   ) :
+      self . setSelectionMode ( QAbstractItemView . MultiSelection           )
+    elif                      ( mode == "extendedselection"                ) :
+      self . setSelectionMode ( QAbstractItemView . ExtendedSelection        )
+    elif                      ( mode == "contiguousselection"              ) :
+      self . setSelectionMode ( QAbstractItemView . ContiguousSelection      )
+    ##########################################################################
+    return
+  ############################################################################
+  def LocalityMenu                 ( self , mm                             ) :
+    ##########################################################################
+    DFL    = self  . getLocality   (                                         )
+    LANGZ  = self  . getLanguages  (                                         )
+    MENUZ  = self  . getMenus      (                                         )
+    ##########################################################################
+    LOM    = mm    . addMenu       ( MENUZ [ "Language" ]                    )
+    ##########################################################################
+    KEYs   = LANGZ . keys          (                                         )
+    ##########################################################################
+    for K in KEYs                                                            :
+       msg = LANGZ                 [ K                                       ]
+       V   = int                   ( K                                       )
+       hid =                       ( V == DFL                                )
+       mm  . addActionFromMenu     ( LOM , 10000000 + V , msg , True , hid   )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def HandleLocalityMenu           ( self , atId                           ) :
+    ##########################################################################
+    if                             ( atId < 10000000                       ) :
+      return False
+    if                             ( atId > 11000000                       ) :
+      return False
+    ##########################################################################
+    self . setLocality             ( atId - 10000000                         )
+    ##########################################################################
+    return True
   ############################################################################
   def startup                 ( self                                       ) :
     raise NotImplementedError (                                              )
