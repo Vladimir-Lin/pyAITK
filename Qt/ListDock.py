@@ -17,6 +17,7 @@ from   PyQt5                          import QtWidgets
 ##############################################################################
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF

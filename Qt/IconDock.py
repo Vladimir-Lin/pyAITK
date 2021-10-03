@@ -17,9 +17,11 @@ from   PyQt5                          import QtWidgets
 ##############################################################################
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -32,6 +34,8 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QAbstractItemView
+from   PyQt5 . QtWidgets              import QListView
 from   PyQt5 . QtWidgets              import QListWidget
 from   PyQt5 . QtWidgets              import QListWidgetItem
 from   PyQt5 . QtWidgets              import QTreeWidget
@@ -44,21 +48,191 @@ from         . ListDock               import ListDock as ListDock
 ##############################################################################
 class IconDock           ( ListDock                                        ) :
   ############################################################################
-  def __init__           ( self , parent = None , plan = None              ) :
+  emitIconsShow  = pyqtSignal       (                                        )
+  emitAllIcons   = pyqtSignal       ( dict                                   )
+  emitAssignIcon = pyqtSignal       ( QListWidgetItem , QIcon                )
+  ############################################################################
+  def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
-    super ( ) . __init__ ( parent , plan                                     )
+    super ( ) . __init__            ( parent , plan                          )
+    ##########################################################################
+    self . EditAllNames  = None
+    self . IconFont      = None
+    self . UuidItemMaps  =          {                                        }
+    ##########################################################################
+    self . setViewMode              ( QListView . IconMode                   )
+    self . setIconSize              ( QSize ( 128 , 128 )                    )
+    self . setGridSize              ( QSize ( 140 , 192 )                    )
+    self . setDragDropMode          ( QAbstractItemView . DropOnly           )
+    self . setResizeMode            ( QListView . Adjust                     )
+    self . setWordWrap              ( True                                   )
+    self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAsNeeded             )
+    self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAsNeeded             )
+    self . setMinimumSize           ( QSize ( 144 , 200 )                    )
+    ##########################################################################
+    self . emitIconsShow  . connect ( self . show                            )
+    self . emitAllIcons   . connect ( self . refresh                         )
+    self . emitAssignIcon . connect ( self . AssignIcon                      )
     ##########################################################################
     return
   ############################################################################
+  def FocusIn                    ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isPrepared ( )               ) :
+      return False
+    ##########################################################################
+    ## self . LinkAction            ( "Insert" , self . InsertItem              )
+    ## self . LinkAction            ( "Delete" , self . DeleteItems             )
+    ##########################################################################
+    return True
+  ############################################################################
+  def FocusOut                   ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isPrepared ( )               ) :
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def Prepare                         ( self                               ) :
+    raise NotImplementedError         (                                      )
+  ############################################################################
+  def GetUuidIcon                     ( self , DB , Uuid                   ) :
+    raise NotImplementedError         (                                      )
+  ############################################################################
+  def setIconFont                     ( self , fnt                         ) :
+    self . IconFont = fnt
+    return self . IconFont
+  ############################################################################
+  def iconFont                        ( self                               ) :
+    ##########################################################################
+    if                                ( self . IconFont != None            ) :
+      return self . IconFont
+    ##########################################################################
+    return self . font                (                                      )
+  ############################################################################
+  @pyqtSlot(QListWidgetItem , QIcon)
+  def AssignIcon                      ( self , item , icon                 ) :
+    item . setIcon                    ( icon                                 )
+    return
+  ############################################################################
+  def PrepareItem                     ( self , UUID , NAME                 ) :
+    ##########################################################################
+    FT = self . iconFont              (                                      )
+    IT = QListWidgetItem              (                                      )
+    IT . setText                      ( NAME                                 )
+    IT . setTextAlignment             ( Qt   . AlignCenter                   )
+    IT . setData                      ( Qt   . UserRole , UUID               )
+    IT . setIcon                      ( self . defaultIcon ( )               )
+    IT . setFont                      ( FT                                   )
+    ##########################################################################
+    return IT
   ############################################################################
   ############################################################################
   ############################################################################
   ############################################################################
+  def FetchIcon                       ( self , DB , PUID                   ) :
+    ##########################################################################
+    ##########################################################################
+    return None
   ############################################################################
+  def FetchIcons                      ( self , UUIDs                       ) :
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      return
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    for U in UUIDs                                                           :
+      if                              ( U in self . UuidItemMaps           ) :
+        print(U)
+        item = self . UuidItemMaps    [ U                                    ]
+        PUID = self . GetUuidIcon     ( DB , U                               )
+        if                            ( PUID > 0                           ) :
+          icon = self . FetchIcon     ( DB , PUID                            )
+          if                          ( icon != None                       ) :
+            self . emitAssignIcon . emit ( item , icon                       )
+    ##########################################################################
+    DB      . Close                   (                                      )
+    ##########################################################################
+    return
   ############################################################################
+  @pyqtSlot(dict)
+  def refresh                         ( self , JSON                        ) :
+    ##########################################################################
+    self    . clear                   (                                      )
+    ##########################################################################
+    UUIDs   = JSON                    [ "UUIDs"                              ]
+    NAMEs   = JSON                    [ "NAMEs"                              ]
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
+      self  . addItem                 ( IT                                   )
+      self  . UuidItemMaps [ U ] = IT
+    ##########################################################################
+    self    . emitIconsShow . emit    (                                      )
+    ##########################################################################
+    if                                ( len ( UUIDs ) > 0                  ) :
+      self . Go                       ( self . FetchIcons , ( UUIDs , )      )
+    ##########################################################################
+    return
   ############################################################################
+  def ObtainUuidsQuery                ( self                               ) :
+    raise NotImplementedError         (                                      )
   ############################################################################
+  def ObtainsItemUuids                ( self , DB                          ) :
+    ##########################################################################
+    QQ      = self . ObtainUuidsQuery (                                      )
+    UUIDs   =                         [                                      ]
+    if                                ( len ( QQ ) > 0                     ) :
+      UUIDs = DB   . ObtainUuids      ( QQ                                   )
+    ##########################################################################
+    return UUIDs
   ############################################################################
+  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
+    ##########################################################################
+    NAMEs   =                         {                                      }
+    ##########################################################################
+    if                                ( len ( UUIDs ) > 0                  ) :
+      TABLE = self . Tables           [ "Names"                              ]
+      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
+    ##########################################################################
+    return NAMEs
+  ############################################################################
+  def loading                         ( self                               ) :
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      self . emitIconsShow . emit     (                                      )
+      return
+    ##########################################################################
+    UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
+    ##########################################################################
+    DB      . Close                   (                                      )
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      self . emitIconsShow . emit     (                                      )
+    ##########################################################################
+    JSON             =                {                                      }
+    JSON [ "UUIDs" ] = UUIDs
+    JSON [ "NAMEs" ] = NAMEs
+    ##########################################################################
+    self   . emitAllIcons . emit      ( JSON                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot()
+  def startup                    ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isPrepared ( )               ) :
+      self . Prepare             (                                           )
+    ##########################################################################
+    self   . Go                  ( self . loading                            )
+    ##########################################################################
+    return
 ##############################################################################
 
 

@@ -52,7 +52,7 @@ class MajorListings                ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . EditAllNames = None
+    self . EditAllNames  = None
     ##########################################################################
     self . setColumnCount          ( 1                                       )
     self . setRootIsDecorated      ( False                                   )
@@ -183,6 +183,25 @@ class MajorListings                ( TreeDock                              ) :
   def ObtainUuidsQuery                ( self                               ) :
     raise NotImplementedError         (                                      )
   ############################################################################
+  def ObtainsItemUuids                ( self , DB                          ) :
+    ##########################################################################
+    QQ      = self . ObtainUuidsQuery (                                      )
+    UUIDs   =                         [                                      ]
+    if                                ( len ( QQ ) > 0                     ) :
+      UUIDs = DB   . ObtainUuids      ( QQ                                   )
+    ##########################################################################
+    return UUIDs
+  ############################################################################
+  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
+    ##########################################################################
+    NAMEs   =                         {                                      }
+    ##########################################################################
+    if                                ( len ( UUIDs ) > 0                  ) :
+      TABLE = self . Tables           [ "Names"                              ]
+      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
+    ##########################################################################
+    return NAMEs
+  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -190,15 +209,8 @@ class MajorListings                ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
-    UUIDs   =                         [                                      ]
-    NAMEs   =                         {                                      }
-    QQ      = self . ObtainUuidsQuery (                                      )
-    if                                ( len ( QQ ) > 0                     ) :
-      UUIDs = DB   . ObtainUuids      ( QQ                                   )
-    ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
+    UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################

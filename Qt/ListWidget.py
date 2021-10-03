@@ -17,6 +17,7 @@ from   PyQt5                          import QtWidgets
 ##############################################################################
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
@@ -46,16 +47,23 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
-    ## super ( QListWidget , self ) . __init__ ( parent                         )
     super (                    ) . __init__ ( parent                         )
     super ( VirtualGui  , self ) . __init__ (                                )
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )
+    self . DefaultItemIcon = QIcon          (                                )
     ##########################################################################
     return
   ############################################################################
   def Configure               ( self                                       ) :
     raise NotImplementedError (                                              )
+  ############################################################################
+  def setDefaultIcon    ( self , icon                                      ) :
+    self . DefaultItemIcon = icon
+    return self . DefaultItemIcon
+  ############################################################################
+  def defaultIcon       ( self                                             ) :
+    return self . DefaultItemIcon
   ############################################################################
   def focusInEvent      ( self , event                                     ) :
     ##########################################################################

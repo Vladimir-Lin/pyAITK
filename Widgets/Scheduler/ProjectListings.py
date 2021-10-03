@@ -51,8 +51,6 @@ class ProjectListings    ( MajorListings                                   ) :
     ##########################################################################
     super ( ) . __init__ (        parent        , plan                       )
     ##########################################################################
-    ## QShortcut ( QKeySequence ( "Ins"                 ) , self ) . activated . connect ( self . InsertItem  )
-    ## QShortcut ( QKeySequence ( QKeySequence . Delete ) , self ) . activated . connect ( self . DeleteItems )
     ##########################################################################
     return
   ############################################################################
