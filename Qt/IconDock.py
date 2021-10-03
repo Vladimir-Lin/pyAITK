@@ -22,10 +22,15 @@ from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QByteArray
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QPainter
+from   PyQt5 . QtGui                  import QColor
+from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QPixmap
+from   PyQt5 . QtGui                  import QImage
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -110,7 +115,7 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     return self . font                (                                      )
   ############################################################################
-  @pyqtSlot(QListWidgetItem , QIcon)
+  @pyqtSlot(QListWidgetItem,QIcon)
   def AssignIcon                      ( self , item , icon                 ) :
     item . setIcon                    ( icon                                 )
     return
@@ -132,8 +137,43 @@ class IconDock           ( ListDock                                        ) :
   ############################################################################
   def FetchIcon                       ( self , DB , PUID                   ) :
     ##########################################################################
+    if                                ( PUID <= 0                          ) :
+      return None
     ##########################################################################
-    return None
+    TUBTAB     = self . Tables        [ "Thumb"                              ]
+    WH         = f"where ( `usage` = 'ICON' ) and ( `uuid` = {PUID} )"
+    OPTS       = "order by `id` desc limit 0 , 1"
+    QQ         = f"select `thumb` from {TUBTAB} {WH} {OPTS} ;"
+    DB         . Query                ( QQ                                   )
+    THUMB      = DB . FetchOne        (                                      )
+    ##########################################################################
+    if                                ( THUMB == None                      ) :
+      return None
+    ##########################################################################
+    if                                ( len ( THUMB ) <= 0                 ) :
+      return None
+    ##########################################################################
+    IMG        = QImage               (                                      )
+    IMG        . loadFromData         ( QByteArray ( THUMB [ 0 ] ) , "PNG"   )
+    TSIZE      = IMG . size           (                                      )
+    ##########################################################################
+    ISIZE      = self . iconSize      (                                      )
+    ICZ        = QImage               ( ISIZE , QImage . Format_ARGB32       )
+    ICZ        . fill                 ( QColor ( 255 , 255 , 255 )           )
+    ##########################################################################
+    W          = int       ( ( ISIZE . width  ( ) - TSIZE . width  ( ) ) / 2 )
+    H          = int       ( ( ISIZE . height ( ) - TSIZE . height ( ) ) / 2 )
+    PTS        = QPoint               ( W , H                                )
+    ##########################################################################
+    p          = QPainter             (                                      )
+    p          . begin                ( ICZ                                  )
+    p          . drawImage            ( PTS , IMG                            )
+    p          . end                  (                                      )
+    ##########################################################################
+    PIX        = QPixmap              (                                      )
+    PIX        . convertFromImage     ( ICZ                                  )
+    ##########################################################################
+    return QIcon                      ( PIX                                  )
   ############################################################################
   def FetchIcons                      ( self , UUIDs                       ) :
     ##########################################################################
