@@ -86,8 +86,9 @@ class IconDock           ( ListDock                                        ) :
     if                           ( not self . isPrepared ( )               ) :
       return False
     ##########################################################################
-    self . LinkAction            ( "Insert" , self . InsertItem              )
-    self . LinkAction            ( "Delete" , self . DeleteItems             )
+    self . LinkAction            ( "Insert"  , self . InsertItem             )
+    self . LinkAction            ( "Delete"  , self . DeleteItems            )
+    self . LinkAction            ( "Refresh" , self . startup                )
     ##########################################################################
     return True
   ############################################################################
@@ -126,7 +127,7 @@ class IconDock           ( ListDock                                        ) :
     IT = QListWidgetItem              (                                      )
     IT . setText                      ( NAME                                 )
     IT . setTextAlignment             ( Qt   . AlignCenter                   )
-    IT . setData                      ( Qt   . UserRole , UUID               )
+    IT . setData                      ( Qt   . UserRole , str ( UUID )       )
     IT . setIcon                      ( self . defaultIcon ( )               )
     IT . setFont                      ( FT                                   )
     ##########################################################################
@@ -221,7 +222,7 @@ class IconDock           ( ListDock                                        ) :
   def ObtainUuidsQuery                ( self                               ) :
     raise NotImplementedError         (                                      )
   ############################################################################
-  def ObtainsItemUuids                ( self , DB                          ) :
+  def DefaultObtainsItemUuids         ( self , DB                          ) :
     ##########################################################################
     QQ      = self . ObtainUuidsQuery (                                      )
     UUIDs   =                         [                                      ]
@@ -229,6 +230,9 @@ class IconDock           ( ListDock                                        ) :
       UUIDs = DB   . ObtainUuids      ( QQ                                   )
     ##########################################################################
     return UUIDs
+  ############################################################################
+  def ObtainsItemUuids                ( self , DB                          ) :
+    return self . DefaultObtainsItemUuids ( DB                               )
   ############################################################################
   def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
     ##########################################################################
