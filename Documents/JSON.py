@@ -33,6 +33,8 @@ def Load                     ( Filename                                    ) :
 def Save              ( Filename , Main                                    ) :
   S   = json . dumps  ( Main , ensure_ascii = False , indent = 4             )
   B   = S    . encode ( "utf-8"                                              )
+  S   = B    . decode ( "utf-8"                                              )
+  B   = S    . encode ( "utf-8"                                              )
   with open ( Filename , 'wb' ) as f                                         :
     f . write         ( B                                                    )
   return True
