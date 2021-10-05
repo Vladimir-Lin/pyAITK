@@ -30,9 +30,11 @@ def Load                     ( Filename                                    ) :
 ##############################################################################
 ## 儲存JSON到檔案中
 ##############################################################################
-def Save ( Filename , Main ) :
-  with     open ( Filename , 'w' , encoding = 'utf-8' ) as f   :
-    json . dump ( Main , f , ensure_ascii = False , indent = 4 )
+def Save              ( Filename , Main                                    ) :
+  S   = json . dumps  ( Main , ensure_ascii = False , indent = 4             )
+  B   = S    . encode ( "utf-8"                                              )
+  with open ( Filename , 'wb' ) as f                                         :
+    f . write         ( B                                                    )
   return True
 ##############################################################################
 ## 合併兩個JSON
