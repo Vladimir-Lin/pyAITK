@@ -101,15 +101,18 @@ class Picture     (                                                        ) :
   ############################################################################
   def toHistogram                  ( self                                  ) :
     ##########################################################################
-    fp            = BytesIO        ( self . Data                             )
-    img           = Pillow . open  ( fp                                      )
-    channels      = img    . split (                                         )
-    count         = len            ( channels                                )
-    ##########################################################################
     self . R      =                [                                         ]
     self . G      =                [                                         ]
     self . B      =                [                                         ]
     self . A      =                [                                         ]
+    ##########################################################################
+    fp            = BytesIO        ( self . Data                             )
+    img           = Pillow . open  ( fp                                      )
+    try                                                                      :
+      channels    = img    . split (                                         )
+      count       = len            ( channels                                )
+    except                                                                   :
+      return
     ##########################################################################
     if                             ( count == 3                            ) :
       r, g, b     = img . split    (                                         )
