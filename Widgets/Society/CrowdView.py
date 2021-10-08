@@ -43,9 +43,12 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from   AITK  . Qt . IconDock          import IconDock as IconDock
+from   AITK  . Qt . IconDock          import IconDock    as IconDock
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager   as MenuManager
+from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
+from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
+from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
+from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
 from   AITK  . Essentials . Relation  import Relation
 ##############################################################################
@@ -55,7 +58,7 @@ from   AITK  . Calendars  . Periode   import Periode
 class CrowdView               ( IconDock                                   ) :
   ############################################################################
   CrowdSubgroup = pyqtSignal  ( int , str                                    )
-  PeopleGroup   = pyqtSignal  ( str                                          )
+  PeopleGroup   = pyqtSignal  ( int , str                                    )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
@@ -194,7 +197,8 @@ class CrowdView               ( IconDock                                   ) :
       return True
     ##########################################################################
     if                             ( at == 2002                            ) :
-      self . PeopleGroup   . emit  ( str ( uuid )                            )
+      tid  = self . Relation . get ( "t2"                                    )
+      self . PeopleGroup   . emit  ( tid , str ( uuid )                      )
       return True
     ##########################################################################
     return True

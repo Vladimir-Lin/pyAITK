@@ -244,6 +244,9 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     return NAMEs
   ############################################################################
+  def FetchSessionInformation         ( self , DB                          ) :
+    return
+  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -251,6 +254,7 @@ class IconDock           ( ListDock                                        ) :
       self . emitIconsShow . emit     (                                      )
       return
     ##########################################################################
+    self    . FetchSessionInformation ( DB                                   )
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
