@@ -86,6 +86,7 @@ class IconDock           ( ListDock                                        ) :
     if                           ( not self . isPrepared ( )               ) :
       return False
     ##########################################################################
+    self . setActionLabel        ( "Label"   , self . windowTitle ( )        )
     self . LinkAction            ( "Insert"  , self . InsertItem             )
     self . LinkAction            ( "Delete"  , self . DeleteItems            )
     self . LinkAction            ( "Refresh" , self . startup                )

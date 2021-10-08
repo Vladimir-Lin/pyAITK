@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## PeopleView
+## PicturesView
 ##############################################################################
 import os
 import sys
@@ -55,7 +55,7 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
-class PeopleView                  ( IconDock                               ) :
+class PicturesView                ( IconDock                               ) :
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
