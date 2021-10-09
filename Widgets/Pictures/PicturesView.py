@@ -57,22 +57,30 @@ from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class PicturesView                ( IconDock                               ) :
   ############################################################################
+  ShowPicture = pyqtSignal        ( str                                      )
+  ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
     super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 65
+    self . Total     = 0
+    self . StartId   = 0
+    self . Amount    = 65
+    self . UsingName = False
     ##########################################################################
     self . Grouping = "Original"
     ## self . Grouping = "Subordination"
     ## self . Grouping = "Reverse"
     ##########################################################################
+    self . Naming   = ""
+    ## self . Naming   = "Size"
+    ## self . Naming   = "Name"
+    ## self . Naming   = "Uuid"
+    ##########################################################################
     self . GroupOrder = "asc"
     ##########################################################################
     self . Relation = Relation    (                                          )
-    self . Relation . setT2       ( "People"                                 )
+    self . Relation . setT2       ( "Picture"                                )
     self . Relation . setRelation ( "Subordination"                          )
     ##########################################################################
     return
@@ -96,24 +104,12 @@ class PicturesView                ( IconDock                               ) :
   ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
-    RELTAB = self . Tables       [ "Relation"                                ]
-    REL    = Relation            (                                           )
-    REL    . set                 ( "first" , Uuid                            )
-    REL    . setT1               ( "People"                                  )
-    REL    . setT2               ( "Picture"                                 )
-    REL    . setRelation         ( "Using"                                   )
-    ##########################################################################
-    PICS   = REL . Subordination ( DB , RELTAB                               )
-    ##########################################################################
-    if                           ( len ( PICS ) > 0                        ) :
-      return PICS                [ 0                                         ]
-    ##########################################################################
-    return 0
+    return Uuid
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
-    TABLE  = self . Tables     [ "People"                                    ]
-    QQ     = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    TABLE  = self . Tables     [ "Pictures"                                  ]
+    QQ     = f"select count(*) from {TABLE} ;"
     DB     . Query             ( QQ                                          )
     ONE    = DB . FetchOne     (                                             )
     ##########################################################################
@@ -137,13 +133,13 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery         ( self                                      ) :
+  def ObtainUuidsQuery          ( self                                     ) :
     ##########################################################################
-    TABLE  = self . Tables      [ "People"                                    ]
+    TABLE  = self . Tables      [ "Pictures"                                 ]
     SID    = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getGroupOrder ( )
-    QQ     = f"select `uuid` from {TABLE} where ( `used` = 1 ) order by `id` {ORDER} limit {SID} , {AMOUNT} ;"
+    QQ     = f"select `uuid` from {TABLE} order by `id` {ORDER} limit {SID} , {AMOUNT} ;"
     ##########################################################################
     return QQ
   ############################################################################
@@ -198,8 +194,7 @@ class PicturesView                ( IconDock                               ) :
     if                           ( not self . isPrepared ( )               ) :
       return False
     ##########################################################################
-    self . LinkAction            ( "Insert"   , self . InsertItem            )
-    self . LinkAction            ( "Delete"   , self . DeleteItems           )
+    self . setActionLabel        ( "Label"    , self . windowTitle ( )       )
     self . LinkAction            ( "Home"     , self . PageHome              )
     self . LinkAction            ( "End"      , self . PageEnd               )
     self . LinkAction            ( "PageUp"   , self . PageUp                )
@@ -214,6 +209,45 @@ class PicturesView                ( IconDock                               ) :
     self . setPrepared         ( True                                        )
     ##########################################################################
     return
+  ############################################################################
+  def ObtainPictureSizes       ( self , DB , UUIDs                         ) :
+    ##########################################################################
+    TABLE = self . Tables      [ "Information"                               ]
+    NAMEs =                    {                                             }
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      QQ  = f"select `width`,`height` from {TABLE} where ( `uuid` = {UUID} ) ;"
+      DB  . Query              ( QQ                                          )
+      RR  = DB . FetchOne      (                                             )
+      if                       ( ( RR != None ) and ( len ( RR ) > 0 )     ) :
+        WW             = RR    [ 0                                           ]
+        HH             = RR    [ 1                                           ]
+        NAMEs [ UUID ] = f"{WW} x {HH}"
+      else                                                                   :
+        NAMEs [ UUID ] = ""
+    ##########################################################################
+    return NAMEs
+  ############################################################################
+  def ObtainsUuidNames                 ( self , DB , UUIDs                 ) :
+    ##########################################################################
+    if                                 ( len ( UUIDs ) <= 0                ) :
+      return                           {                                     }
+    ##########################################################################
+    if                                 ( self . Naming == "Uuid"           ) :
+      NAMEs =                          {                                     }
+      for UUID in UUIDs                                                      :
+        NAMEs [ UUID ] = str           ( UUID                                )
+      return NAMEs
+    ##########################################################################
+    if                                 ( self . Naming == "Name"           ) :
+      TABLE = self . Tables            [ "Names"                             ]
+      NAMEs = self . GetNames          ( DB , TABLE , UUIDs                  )
+      return NAMEs
+    ##########################################################################
+    if                                 ( self . Naming == "Size"           ) :
+      return self . ObtainPictureSizes ( DB , UUIDs                          )
+    ##########################################################################
+    return                            {                                      }
   ############################################################################
   def PageHome                     ( self                                  ) :
     ##########################################################################
@@ -290,7 +324,7 @@ class PicturesView                ( IconDock                               ) :
     TRX    = self . Translations
     ##########################################################################
     T      = self . Total
-    MSG    = f"總人數:{T}"
+    MSG    = f"圖片數量:{T}"
     mm     . addAction             ( 9999991 , MSG                           )
     ##########################################################################
     SIDB   = SpinBox               ( None , self . PlanFunc                  )
@@ -308,33 +342,55 @@ class PicturesView                ( IconDock                               ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
     mm     . addSeparator          (                                         )
-    if                             ( atItem != None                        ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
     ##########################################################################
-    mm     = self . LocalityMenu   ( mm                                      )
+    mm     . addAction             ( 1301 ,  "不顯示訊息" )
+    mm     . addAction             ( 1302 ,  "顯示圖片大小" )
+    mm     . addAction             ( 1303 ,  "顯示圖片名稱" )
+    mm     . addAction             ( 1304 ,  "顯示圖片編號" )
+    ##########################################################################
+    if                             ( uuid > 0                              ) :
+      mm   . addSeparator          (                                         )
+      mm   . addAction             ( 1101 ,  "觀看圖片" )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
-    ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
-      return True
     ##########################################################################
     if                             ( at == 1001                            ) :
       self . startup               (                                         )
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
+      self . ShowPicture . emit    ( str ( uuid )                            )
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Projects" , uuid , NAM          )
+    if                             ( at == 1301                            ) :
+      self . UsingName = False
+      self . Naming    = ""
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1302                            ) :
+      self . UsingName = True
+      self . Naming    = "Size"
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1303                            ) :
+      self . UsingName = True
+      self . Naming    = "Name"
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1304                            ) :
+      self . UsingName = True
+      self . Naming    = "Uuid"
+      self . clear                 (                                         )
+      self . startup               (                                         )
       return True
     ##########################################################################
     return True

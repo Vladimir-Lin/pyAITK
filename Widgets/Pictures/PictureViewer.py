@@ -10,6 +10,13 @@ import requests
 import threading
 import gettext
 import json
+import binascii
+import hashlib
+import base64
+##############################################################################
+from   io           import BytesIO
+from   wand . image import Image
+from   PIL          import Image as Pillow
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -39,10 +46,14 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QScrollArea
 from   PyQt5 . QtWidgets              import QLabel
 ##############################################################################
+from   AITK  . Pictures . Picture     import Picture     as Picture
+##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . VirtualGui        import VirtualGui  as VirtualGui
 ##############################################################################
-class PictureViewer               ( QScrollArea , VirtualGui                               ) :
+class PictureViewer               ( QScrollArea , VirtualGui               ) :
+  ############################################################################
+  AssignImage = pyqtSignal        ( QImage                                   )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -52,6 +63,8 @@ class PictureViewer               ( QScrollArea , VirtualGui                    
     self . setPlanFunction                  ( plan                           )
     self . Image = None
     self . Ratio = QSize          ( 100 , 100                                )
+    ##########################################################################
+    self . AssignImage . connect  ( self . setImage                          )
     ##########################################################################
     return
   ############################################################################
@@ -74,10 +87,88 @@ class PictureViewer               ( QScrollArea , VirtualGui                    
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot(QImage)
   def setImage          ( self , image                                     ) :
     ##########################################################################
     self . Image = image
     self . AssignPixmap (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def BackgroundLoadFile      ( self , filename                            ) :
+    ##########################################################################
+    IMG  = QImage             ( filename                                     )
+    self . AssignImage . emit ( IMG                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def loadFile          ( self , filename                                  ) :
+    ##########################################################################
+    self . Go           ( self . BackgroundLoadFile , ( filename , )         )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchImage                ( self , Uuid                              ) :
+    ##########################################################################
+    DB       = self . ConnectDB (                                            )
+    if                          ( DB == None                               ) :
+      return
+    ##########################################################################
+    FOUND    = False
+    SUFFIX   = ""
+    BLOB     = None
+    PICTAB   = self . Tables    [ "Information"                              ]
+    DPTTAB   = self . Tables    [ "Depot"                                    ]
+    ##########################################################################
+    QQ       = f"select `suffix` from {PICTAB} where ( `uuid` = {Uuid} ) ;"
+    DB       . Query            ( QQ                                         )
+    INF      = DB . FetchOne    (                                            )
+    if                          ( ( INF != None ) and ( len ( INF ) > 0 )  ) :
+      SUFFIX = INF              [ 0                                          ]
+      FOUND  = True
+    ##########################################################################
+    if                          ( FOUND                                    ) :
+      QQ     = f"select `file` from {DPTTAB} where ( `uuid` = {Uuid} ) ;"
+      DB     . Query            ( QQ                                         )
+      BLOBs  = DB . FetchOne    (                                            )
+      if ( ( BLOBs != None ) and ( len ( BLOBs ) > 0 )                     ) :
+        BLOB = BLOBs            [ 0                                          ]
+      else                                                                   :
+        FOUND  = False
+    ##########################################################################
+    DB      . Close             (                                            )
+    ##########################################################################
+    if                          ( not FOUND                                ) :
+      return
+    ##########################################################################
+    if                          ( len ( SUFFIX ) <= 0                      ) :
+      return
+    ##########################################################################
+    if                          ( BLOB == None                             ) :
+      return
+    ##########################################################################
+    SS        = SUFFIX
+    SS        = SS . lower      (                                            )
+    ALLOWED   =                 [ "jpeg" , "jpg" , "png"                     ]
+    if                          ( SS in ALLOWED                            ) :
+      IMG     = QImage          (                                            )
+      IMG     . loadFromData    ( BLOB , SUFFIX                              )
+    else                                                                     :
+      INTL    = Image           ( blob = BLOB                                )
+      INTL    . format = "png"
+      DAT     = BytesIO         (                                            )
+      INTL    . save            ( file = DAT                                 )
+      BLOB    = DAT . getvalue  (                                            )
+      IMG     = QImage          (                                            )
+      IMG     . loadFromData    ( BLOB , "png"                               )
+    ##########################################################################
+    self . AssignImage . emit   ( IMG                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def loadUuid          ( self , Uuid                                      ) :
+    ##########################################################################
+    self . Go           ( self . FetchImage , ( Uuid , )                     )
     ##########################################################################
     return
 ##############################################################################

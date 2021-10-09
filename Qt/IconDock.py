@@ -63,6 +63,7 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     self . EditAllNames  = None
     self . IconFont      = None
+    self . UsingName     = True
     self . UuidItemMaps  =          {                                        }
     ##########################################################################
     self . setViewMode              ( QListView . IconMode                   )
@@ -124,13 +125,14 @@ class IconDock           ( ListDock                                        ) :
   ############################################################################
   def PrepareItem                     ( self , UUID , NAME                 ) :
     ##########################################################################
-    FT = self . iconFont              (                                      )
-    IT = QListWidgetItem              (                                      )
-    IT . setText                      ( NAME                                 )
-    IT . setTextAlignment             ( Qt   . AlignCenter                   )
-    IT . setData                      ( Qt   . UserRole , str ( UUID )       )
-    IT . setIcon                      ( self . defaultIcon ( )               )
-    IT . setFont                      ( FT                                   )
+    FT   = self . iconFont            (                                      )
+    IT   = QListWidgetItem            (                                      )
+    if                                ( self . UsingName                   ) :
+      IT . setText                    ( NAME                                 )
+    IT   . setTextAlignment           ( Qt   . AlignCenter                   )
+    IT   . setData                    ( Qt   . UserRole , str ( UUID )       )
+    IT   . setIcon                    ( self . defaultIcon ( )               )
+    IT   . setFont                    ( FT                                   )
     ##########################################################################
     return IT
   ############################################################################
@@ -205,11 +207,15 @@ class IconDock           ( ListDock                                        ) :
     self    . clear                   (                                      )
     ##########################################################################
     UUIDs   = JSON                    [ "UUIDs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
+    if                                ( self . UsingName                   ) :
+      NAMEs = JSON                    [ "NAMEs"                              ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
+      if                              ( self . UsingName                   ) :
+        IT  = self . PrepareItem      ( U , NAMEs [ U ]                      )
+      else                                                                   :
+        IT  = self . PrepareItem      ( U , ""                               )
       self  . addItem                 ( IT                                   )
       self  . UuidItemMaps [ U ] = IT
     ##########################################################################
@@ -257,16 +263,18 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     self    . FetchSessionInformation ( DB                                   )
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
+    if                                ( self . UsingName                   ) :
+      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
       self . emitIconsShow . emit     (                                      )
     ##########################################################################
-    JSON             =                {                                      }
-    JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
+    JSON               =              {                                      }
+    JSON   [ "UUIDs" ] = UUIDs
+    if                                ( self . UsingName                   ) :
+      JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
     self   . emitAllIcons . emit      ( JSON                                 )
     ##########################################################################

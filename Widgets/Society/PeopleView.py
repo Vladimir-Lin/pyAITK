@@ -55,11 +55,14 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
-class PeopleView                  ( IconDock                               ) :
+class PeopleView                   ( IconDock                              ) :
   ############################################################################
-  def __init__                    ( self , parent = None , plan = None     ) :
+  ShowPersonalGallery = pyqtSignal ( int , str                               )
+  ShowGalleries       = pyqtSignal ( int , str                               )
+  ############################################################################
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    super ( ) . __init__          (        parent        , plan              )
+    super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . Total    = 0
     self . StartId  = 0
@@ -71,9 +74,9 @@ class PeopleView                  ( IconDock                               ) :
     ##########################################################################
     self . GroupOrder = "asc"
     ##########################################################################
-    self . Relation = Relation    (                                          )
-    self . Relation . setT2       ( "People"                                 )
-    self . Relation . setRelation ( "Subordination"                          )
+    self . Relation = Relation     (                                         )
+    self . Relation . setT2        ( "People"                                )
+    self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     return
   ############################################################################
@@ -310,6 +313,11 @@ class PeopleView                  ( IconDock                               ) :
     ##########################################################################
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
+    if                             ( uuid > 0                              ) :
+      mm   . addSeparator          (                                         )
+      mm   . addAction             ( 1201 ,  TRX [ "UI::PersonalGallery"   ] )
+      mm   . addAction             ( 1202 ,  TRX [ "UI::Galleries"         ] )
+    ##########################################################################
     mm     . addSeparator          (                                         )
     if                             ( atItem != None                        ) :
       if                           ( self . EditAllNames != None           ) :
@@ -331,6 +339,14 @@ class PeopleView                  ( IconDock                               ) :
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . InsertItem            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1201                            ) :
+      self . ShowPersonalGallery . emit ( 7 , str ( uuid )                   )
+      return True
+    ##########################################################################
+    if                             ( at == 1202                            ) :
+      self . ShowGalleries       . emit ( 7 ,str ( uuid )                    )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
