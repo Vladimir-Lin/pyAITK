@@ -20,10 +20,16 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QMimeData
+from   PyQt5 . QtCore                 import QByteArray
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QPixmap
+from   PyQt5 . QtGui                  import QImage
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QDrag
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -62,15 +68,38 @@ class AbstractGui        (                                                 ) :
     self . Languages       = { }
     self . Menus           = { }
     self . Gui             = None
+    self . Drag            = None
+    self . PassDragDrop    = True
+    self . Dumping         = False
     self . focusState      = False
     self . CreatedDateTime = NOW . Stardate
     self . Speaker         = None
     self . PlanFunc        = None
+    self . LocalIcons      = { }
+    self . LocalMsgs       = { }
+    self . AllowDrops      = { }
+    self . GuiMutex        = threading . Lock ( )
     ##########################################################################
     return
   ############################################################################
   def __del__            ( self                                            ) :
     return
+  ############################################################################
+  def DoProcessEvents    ( self                                            ) :
+    ##########################################################################
+    qApp . processEvents (                                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def isBitMask          ( self , a , b                                    ) :
+    return               ( ( a & b ) == b                                    )
+  ############################################################################
+  def JsonToByteArray    ( self , jsox                                     ) :
+    ##########################################################################
+    S = json . dumps     ( jsox , ensure_ascii = False                       )
+    B = S    . encode    ( "utf-8"                                           )
+    ##########################################################################
+    return QByteArray    ( B                                                 )
   ############################################################################
   def isPrepared         ( self                                            ) :
     return self . Prepared
@@ -121,6 +150,68 @@ class AbstractGui        (                                                 ) :
       return None
     ##########################################################################
     return self . PlanFunc  (                                                )
+  ############################################################################
+  def setLocalMessage       ( self , Id , message                          ) :
+    self . LocalMsgs [ Id ] = message
+    return self . LocalMsgs [ Id                                             ]
+  ############################################################################
+  def getLocalMessage       ( self , Id                                    ) :
+    if                      ( Id not in self . LocalMsgs                   ) :
+      return ""
+    return self . LocalMsgs [ Id                                             ]
+  ############################################################################
+  def setLocalIcon           ( self , Id , icon                            ) :
+    self . LocalIcons [ Id ] = icon
+    return self . LocalIcons [ Id                                            ]
+  ############################################################################
+  def getLocalIcon           ( self , Id                                   ) :
+    if                       ( Id not in self . LocalMsgs                  ) :
+      return None
+    return self . LocalIcons [ Id                                            ]
+  ############################################################################
+  def setAllowDrops          ( self , IDs                                  ) :
+    ##########################################################################
+    for ID in IDs                                                            :
+      self . setAllowDrop    ( ID , True                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def setAllowDrop           ( self , Id , enabled                         ) :
+    self . AllowDrops [ Id ] = enabled
+    return self . AllowDrops [ Id                                            ]
+  ############################################################################
+  def getAllowDrop           ( self , Id                                   ) :
+    if                       ( Id not in self . AllowDrops                 ) :
+      return False
+    return self . AllowDrops [ Id                                            ]
+  ############################################################################
+  def LockGui                 ( self                                       ) :
+    self . GuiMutex . acquire (                                              )
+    return
+  ############################################################################
+  def UnlockGui               ( self                                       ) :
+    self . GuiMutex . release (                                              )
+    return
+  ############################################################################
+  def Bustle               ( self                                          ) :
+    ##########################################################################
+    if                     ( self . Gui == None                            ) :
+      return False
+    ##########################################################################
+    self . LockGui         (                                                 )
+    self . Gui . setCursor ( Qt . WaitCursor                                 )
+    ##########################################################################
+    return True
+  ############################################################################
+  def Vacancy              ( self                                          ) :
+    ##########################################################################
+    if                     ( self . Gui == None                            ) :
+      return False
+    ##########################################################################
+    self . Gui . setCursor ( Qt . ArrowCursor                                )
+    self . UnlockGui       (                                                 )
+    ##########################################################################
+    return True
   ############################################################################
   def Go                    ( self , func , arguments = ( )                ) :
     ##########################################################################
@@ -273,6 +364,163 @@ class AbstractGui        (                                                 ) :
       label . setText        ( message                                       )
     ##########################################################################
     return
+  ############################################################################
+  def hasDragItem            ( self                                        ) :
+    return False
+  ############################################################################
+  def startDrag              ( self , mouseEvent                           ) :
+    return False
+  ############################################################################
+  def dragStart              ( self , mouseEvent                           ) :
+    return self . startDrag  (        mouseEvent                             )
+  ############################################################################
+  def fetchDrag              ( self , mouseEvent                           ) :
+    return False
+  ############################################################################
+  def dragMoving             ( self , mouseEvent                           ) :
+    ##########################################################################
+    if                       ( self . Drag == None                         ) :
+      return False
+    ##########################################################################
+    if ( not self . isBitMask ( mouseEvent.buttons ( ) , Qt.LeftButton )   ) :
+      return False
+    ##########################################################################
+    if                       ( not self . hasDragItem ( )                  ) :
+      return False
+    ##########################################################################
+    if                       ( not self . fetchDrag ( mouseEvent )         ) :
+      return False
+    ##########################################################################
+    mime   = self . dragMime (                                               )
+    ##########################################################################
+    if                       ( mime == None                                ) :
+      return True
+    ##########################################################################
+    DC               = QCursor       ( Qt . ClosedHandCursor                 )
+    self   . Dumping = True
+    self   . Drag    = QDrag         ( self . Gui                            )
+    self   . Drag    . setMimeData   ( mime                                  )
+    ##########################################################################
+    if                       ( mime . hasImage ( )                         ) :
+      image = mime . imageData       (                                       )
+      self  . Drag . setPixmap       ( QPixmap . fromImage ( image )         )
+    else                                                                     :
+      self  . Drag . setPixmap       ( DC . pixmap ( )                       )
+    ##########################################################################
+    dropAction = self . Drag . exec_ ( Qt . CopyAction | Qt . MoveAction     )
+    self   . dragDone                ( dropAction , mime                     )
+    self   . Dumping = False
+    ##########################################################################
+    return True
+  ############################################################################
+  def dragEnd                ( self , mouseEvent                           ) :
+    ##########################################################################
+    if                       ( not self . finishDrag ( mouseEvent )        ) :
+      return True
+    ##########################################################################
+    if                       ( not self . PassDragDrop                     ) :
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def dragDone               ( self , dropIt , mime                        ) :
+    ##########################################################################
+    if                       ( self . Gui != None                          ) :
+      self . Gui . setCursor ( Qt . ArrowCursor                              )
+    ##########################################################################
+    self . DoProcessEvents   (                                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def finishDrag             ( self , mouseEvent                           ) :
+    return True
+  ############################################################################
+  def dragMime               ( self                                        ) :
+    return None
+  ############################################################################
+  def acceptDrop             ( self , sourceWidget , mimeData              ) :
+    return False
+  ############################################################################
+  def dropNew                ( self , sourceWidget , mimeData , mousePos   ) :
+    return False
+  ############################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return False
+  ############################################################################
+  def dropAppend             ( self , sourceWidget , mimeData , mousePos   ) :
+    return False
+  ############################################################################
+  def removeDrop             ( self                                        ) :
+    return False
+  ############################################################################
+  def dragEnter                   ( self , dragEvent                       ) :
+    ##########################################################################
+    source = dragEvent . source   (                                          )
+    mime   = dragEvent . mimeData (                                          )
+    pos    = dragEvent . pos      (                                          )
+    ##########################################################################
+    if ( not self . acceptDrop ( source , mime       )                     ) :
+      return False
+    ##########################################################################
+    if ( not self . dropNew    ( source , mime , pos )                     ) :
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def dragMove                        ( self , dragMoveEvent               ) :
+    ##########################################################################
+    source = dragMoveEvent . source   (                                      )
+    mime   = dragMoveEvent . mimeData (                                      )
+    pos    = dragMoveEvent . pos      (                                      )
+    ##########################################################################
+    if ( not self . acceptDrop ( source , mime       )                     ) :
+      return False
+    ##########################################################################
+    if ( not self . dropMoving ( source , mime , pos )                     ) :
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def dropIn                 ( self , dropEvent                            ) :
+    ##########################################################################
+    source = dropEvent . source   (                                          )
+    mime   = dropEvent . mimeData (                                          )
+    pos    = dropEvent . pos      (                                          )
+    ##########################################################################
+    if ( not self . acceptDrop ( source , mime       )                     ) :
+      return False
+    ##########################################################################
+    if ( not self . dropAppend ( source , mime , pos )                     ) :
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def MimeType               ( self , mime , formats                       ) :
+    ##########################################################################
+    mimes  = formats . split ( ";"                                           )
+    if                       ( len ( mimes ) <= 0                          ) :
+      return ""
+    ##########################################################################
+    for mtype in mimes                                                       :
+      data = mime . data     ( mtype                                         )
+      if ( ( data != None ) and ( data . size ( ) > 0 )                    ) :
+        return mtype
+    ##########################################################################
+    return ""
+  ############################################################################
+  def setMime                     ( self , mime , mtype , jsox             ) :
+    ##########################################################################
+    B    = self . JsonToByteArray ( jsox                                     )
+    mime . setData                ( mtype , B                                )
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
 ##############################################################################
 
 """
@@ -693,9 +941,6 @@ class Q_COMPONENTS_EXPORT AbstractGui
 
 };
 
-
-
-
 #include <qtcomponents.h>
 
 #define DefaultMax  16777215
@@ -1040,35 +1285,11 @@ void N::AbstractGui::DispatchCommands(void)
 {
 }
 
-bool N::AbstractGui::Bustle(void)
-{
-  Mutex . lock     (                ) ;
-  Gui -> setCursor ( Qt::WaitCursor ) ;
-  return true                         ;
-}
-
-bool N::AbstractGui::Vacancy(void)
-{
-  Gui -> setCursor ( Qt::ArrowCursor ) ;
-  Mutex . unlock   (                 ) ;
-  return true                          ;
-}
-
 bool N::AbstractGui::isLocked(int timeout)
 {
   nKickOut ( !Mutex.tryLock(timeout) , true ) ;
   Mutex . unlock ( )                          ;
   return false                                ;
-}
-
-void N::AbstractGui::LockGui(void)
-{
-  Mutex . lock ( ) ;
-}
-
-void N::AbstractGui::UnlockGui(void)
-{
-  Mutex . unlock ( ) ;
 }
 
 QIcon N::AbstractGui::Icon(SUID ID)
@@ -1168,84 +1389,6 @@ bool N::AbstractGui::FocusOut(void)
   return false ;
 }
 
-bool N::AbstractGui::permitGesture(void)
-{
-  return allowGesture ;
-}
-
-bool N::AbstractGui::gestureEvent(QEvent * event)
-{
-  nKickOut ( NotEqual ( event->type() , QEvent::Gesture ) , false  )       ;
-  QGestureEvent * gesture = static_cast<QGestureEvent *>  ( event  )       ;
-  nKickOut ( IsNull(gesture)                              , false  )       ;
-  QList<QGesture *> gestures = gesture->gestures()                         ;
-  nKickOut ( gestures.count() <=0                         , false  )       ;
-  bool responsed = false                                                   ;
-  for (int i=0;i<gestures.count();i++)                                     {
-    switch (gestures[i]->gestureType())                                    {
-      case Qt::TapGesture                                                  :
-        if (acceptTap    (static_cast<QTapGesture        *>(gestures[i]))) {
-          responsed = true                                                 ;
-        }                                                                  ;
-      break                                                                ;
-      case Qt::TapAndHoldGesture                                           :
-        if (acceptTapHold(static_cast<QTapAndHoldGesture *>(gestures[i]))) {
-          responsed = true                                                 ;
-        }                                                                  ;
-      break                                                                ;
-      case Qt::PanGesture                                                  :
-        if (acceptPan    (static_cast<QPanGesture        *>(gestures[i]))) {
-          responsed = true                                                 ;
-        }                                                                  ;
-      break                                                                ;
-      case Qt::PinchGesture                                                :
-        if (acceptPinch  (static_cast<QPinchGesture      *>(gestures[i]))) {
-          responsed = true                                                 ;
-        }                                                                  ;
-      break                                                                ;
-      case Qt::SwipeGesture                                                :
-        if (acceptSwipe  (static_cast<QSwipeGesture      *>(gestures[i]))) {
-          responsed = true                                                 ;
-        }                                                                  ;
-      break                                                                ;
-      default                                                              :
-        if (acceptCustom(gestures[i])) responsed = true                    ;
-      break                                                                ;
-    }                                                                      ;
-  }                                                                        ;
-  return responsed                                                         ;
-}
-
-bool N::AbstractGui::acceptTap(QTapGesture * gesture)
-{ Q_UNUSED ( gesture ) ;
-  return false         ;
-}
-
-bool N::AbstractGui::acceptTapHold(QTapAndHoldGesture * gesture)
-{ Q_UNUSED ( gesture ) ;
-  return false         ;
-}
-
-bool N::AbstractGui::acceptPan(QPanGesture * gesture)
-{ Q_UNUSED ( gesture ) ;
-  return false         ;
-}
-
-bool N::AbstractGui::acceptPinch(QPinchGesture * gesture)
-{ Q_UNUSED ( gesture ) ;
-  return false         ;
-}
-
-bool N::AbstractGui::acceptSwipe(QSwipeGesture * gesture)
-{ Q_UNUSED ( gesture ) ;
-  return false         ;
-}
-
-bool N::AbstractGui::acceptCustom(QGesture * gesture)
-{ Q_UNUSED ( gesture ) ;
-  return false         ;
-}
-
 bool N::AbstractGui::addSequence(VarArgs args)
 {
   Sequences << args ;
@@ -1263,11 +1406,6 @@ bool N::AbstractGui::addSequence(int command)
 bool N::AbstractGui::Apportion(void)
 {
   return false ;
-}
-
-QString N::AbstractGui::toCpp(QString functionName)
-{
-  return "" ;
 }
 
 bool N::AbstractGui::setAcceptVocal(bool enabled)
@@ -1414,137 +1552,6 @@ int N::AbstractGui::addShortcut            (
   return Shortcuts.count()                                              ;
 }
 
-QString N::AbstractGui::MimeType(const QMimeData * mime,QString formats)
-{
-  QByteArray  data                                    ;
-  QString     mtype = ""                              ;
-  QStringList mimes = formats.split(";")              ;
-  data.clear()                                        ;
-  for (int i=0;data.size()==0 && i<mimes.count();i++) {
-    mtype = mimes[i]                                  ;
-    data  = mime->data(mtype)                         ;
-  }                                                   ;
-  if (data.size()<=0) mtype = ""                      ;
-  return mtype                                        ;
-}
-
-bool N::AbstractGui::dragStart(QMouseEvent * event)
-{
-  return startDrag(event) ;
-}
-
-bool N::AbstractGui::dragMoving(QMouseEvent * event)
-{
-  nKickOut ( NotNull(Drag)                            , false ) ;
-  nKickOut ( !IsMask(event->buttons(),Qt::LeftButton) , false ) ;
-  nKickOut ( !hasItem()                               , false ) ;
-  nKickOut ( !fetchDrag(event)                        , false ) ;
-  QMimeData * mime = dragMime  (   )                            ;
-  if (NotNull(mime))                                            {
-    QCursor DC ( Qt::ClosedHandCursor )                         ;
-    Dumping = true                                              ;
-    Drag = new QDrag (Gui)                                      ;
-    Qt::DropAction dropAction                                   ;
-    Drag->setMimeData(mime)                                     ;
-    if (mime->hasImage())                                       {
-      QImage image = qvariant_cast<QImage>(mime->imageData())   ;
-      Drag -> setPixmap ( QPixmap::fromImage(image) )           ;
-    } else                                                      {
-      Drag -> setPixmap ( DC.pixmap()               )           ;
-    }                                                           ;
-    dropAction = Drag->exec ( Qt::CopyAction | Qt::MoveAction ) ;
-    dragDone(dropAction,mime)                                   ;
-    Dumping = false                                             ;
-  }                                                             ;
-  nKickOut ( !PassDragDrop                            , true  ) ;
-  return true                                                   ;
-}
-
-bool N::AbstractGui::dragEnd(QMouseEvent * event)
-{
-  nKickOut ( !finishDrag(event) , true ) ;
-  nKickOut ( !PassDragDrop      , true ) ;
-  return false                           ;
-}
-
-bool N::AbstractGui::hasItem(void)
-{
-  return false ;
-}
-
-bool N::AbstractGui::startDrag(QMouseEvent * event)
-{
-  return false ;
-}
-
-bool N::AbstractGui::fetchDrag(QMouseEvent * event)
-{
-  return false ;
-}
-
-QMimeData * N::AbstractGui::dragMime(void)
-{
-  return NULL ;
-}
-
-void N::AbstractGui::dragDone(Qt::DropAction dropIt,QMimeData * mime)
-{ // actually, mime was deleted before this function is called
-//  mime -> deleteLater ( ) ;
-  Gui -> setCursor ( Qt::ArrowCursor ) ;
-  DoProcessEvents                      ;
-}
-
-bool N::AbstractGui::finishDrag(QMouseEvent * event)
-{
-  return true ;
-}
-
-bool N::AbstractGui::acceptDrop(QWidget * source,const QMimeData * mime)
-{
-  return false ;
-}
-
-bool N::AbstractGui::dropNew(QWidget * source,const QMimeData * mime,QPoint pos)
-{
-  return false ;
-}
-
-bool N::AbstractGui::dropMoving(QWidget * source,const QMimeData * mime,QPoint pos)
-{
-  return false ;
-}
-
-bool N::AbstractGui::dropAppend(QWidget * source,const QMimeData * mime,QPoint pos)
-{
-  return false ;
-}
-
-bool N::AbstractGui::removeDrop(void)
-{
-  return false ;
-}
-
-bool N::AbstractGui::dragEnter(QDragEnterEvent * event)
-{
-  nKickOut(!acceptDrop((QWidget *)event->source(),event->mimeData()             ),false) ;
-  nKickOut(!dropNew   ((QWidget *)event->source(),event->mimeData(),event->pos()),false) ;
-  return true                                                                            ;
-}
-
-bool N::AbstractGui::dragMove(QDragMoveEvent  * event)
-{
-  nKickOut(!acceptDrop ((QWidget *)event->source(),event->mimeData()             ),false) ;
-  nKickOut(!dropMoving ((QWidget *)event->source(),event->mimeData(),event->pos()),false) ;
-  return true                                                                             ;
-}
-
-bool N::AbstractGui::drop(QDropEvent * event)
-{
-  nKickOut(!acceptDrop ((QWidget *)event->source(),event->mimeData()             ),false) ;
-  nKickOut(!dropAppend ((QWidget *)event->source(),event->mimeData(),event->pos()),false) ;
-  return true                                                                             ;
-}
-
 void N::AbstractGui::acceptMouse(Qt::MouseButtons buttons)
 {
   decisions[0].setCondition(GuiLeftButton  ,IsMask(buttons,Qt::LeftButton  )) ;
@@ -1600,64 +1607,6 @@ SUID N::AbstractGui::GetUuid(QByteArray & data)
 {
   SUID   * suid = (SUID *)data.data() ;
   return (*suid)                      ;
-}
-
-QByteArray N::AbstractGui::CreateByteArray(SUID uuid)
-{
-  return QByteArray((const char *)&uuid,sizeof(SUID));
-}
-
-QByteArray N::AbstractGui::CreateByteArray(UUIDs & Uuids)
-{
-  QByteArray  data                            ;
-  data.resize(sizeof(SUID)*(Uuids.count()+1)) ;
-  SUID * suid = (SUID *)data.data()           ;
-  suid[0] = Uuids.count()                     ;
-  for (int i=0;i<Uuids.count();i++)           {
-    suid[i+1] = Uuids[i]                      ;
-  }                                           ;
-  return data                                 ;
-}
-
-void N::AbstractGui::setMime(QMimeData * mime,QString mtype,SUID uuid)
-{
-  QByteArray  data = CreateByteArray(uuid) ;
-  mime -> setData ( mtype , data )         ;
-}
-
-void N::AbstractGui::setMime(QMimeData * mime,QString mtype,UUIDs & Uuids)
-{
-  QByteArray  data = CreateByteArray(Uuids) ;
-  mime -> setData ( mtype , data )          ;
-}
-
-bool N::AbstractGui::allowDrops(DropTypes dropType)
-{
-  if (AllowDrops.contains((int)dropType)) {
-    return AllowDrops[(int)dropType]      ;
-  }                                       ;
-  return false                            ;
-}
-
-void N::AbstractGui::setDropFlag(DropTypes dropType,bool enabled)
-{
-  AllowDrops[(int)dropType] = enabled ;
-}
-
-QAction * N::AbstractGui::connectAction(int Id,QObject * parent,const char * method,bool enable)
-{
-  if (IsNull(plan)) return NULL                       ;
-  return plan->connectAction(Id,parent,method,enable) ;
-}
-
-QAction * N::AbstractGui::actionLabel(int Id,QString message)
-{
-  if ( IsNull(plan)              ) return NULL ;
-  if (!plan->actions.contains(Id)) return NULL ;
-  QAction * action                             ;
-  action  = plan->actions[Id]                  ;
-  action -> setText(message)                   ;
-  return action                                ;
 }
 
 bool N::AbstractGui::acceptPrivate(const QMimeData * mime)
@@ -2063,5 +2012,3 @@ DX( dropGradient      )
 
 
 """
-
-
