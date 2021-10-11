@@ -166,17 +166,7 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     raise NotImplementedError (                                              )
 ##############################################################################
 
-
-
-
-
 """
-
-
-
-
-
-
 
 class Q_COMPONENTS_EXPORT ListWidget : public QListWidget
                                      , public VirtualGui
@@ -212,10 +202,6 @@ class Q_COMPONENTS_EXPORT ListWidget : public QListWidget
 
     virtual void paintEvent          (QPaintEvent       * event) ;
 
-    virtual void focusInEvent        (QFocusEvent       * event) ;
-    virtual void focusOutEvent       (QFocusEvent       * event) ;
-
-    virtual void contextMenuEvent    (QContextMenuEvent * event) ;
     virtual void resizeEvent         (QResizeEvent      * event) ;
     virtual void showEvent           (QShowEvent        * event) ;
 
@@ -375,11 +361,6 @@ class Q_COMPONENTS_EXPORT ListWidget : public QListWidget
 
 };
 
-
-
-
-#include <qtcomponents.h>
-
 N::ListWidget:: ListWidget  ( QWidget * parent,Plan * p     )
               : QListWidget (           parent              )
               , VirtualGui  (           this  ,       p     )
@@ -390,10 +371,6 @@ N::ListWidget:: ListWidget  ( QWidget * parent,Plan * p     )
   WidgetClass                     ;
   addIntoWidget ( parent , this ) ;
   Configure     (               ) ;
-}
-
-N::ListWidget::~ListWidget (void)
-{
 }
 
 void N::ListWidget::ThreadEvent(void)
@@ -468,21 +445,6 @@ QSize N::ListWidget::sizeHint(void) const
   return SizeSuggestion ( QSize ( 400 , 320 ) ) ;
 }
 
-bool N::ListWidget::event(QEvent * event)
-{
-  if (permitGesture() && gestureEvent(event)) return true ;
-  return QListWidget::event(event)                        ;
-}
-
-bool N::ListWidget::acceptTapHold(QTapAndHoldGesture * gesture)
-{
-  if (!allowGesture) return false          ;
-  allowGesture = false                     ;
-  QPoint p = gesture->position().toPoint() ;
-  Menu ( p )                               ;
-  return true                              ;
-}
-
 void N::ListWidget::setDesignable(bool gui)
 {
   designable = gui                                     ;
@@ -494,16 +456,6 @@ void N::ListWidget::setDesignable(bool gui)
 void N::ListWidget::paintEvent(QPaintEvent * event)
 {
   nIsolatePainter(QListWidget) ;
-}
-
-void N::ListWidget::focusInEvent(QFocusEvent * event)
-{
-  if (!focusIn (event)) QListWidget::focusInEvent (event) ;
-}
-
-void N::ListWidget::focusOutEvent(QFocusEvent * event)
-{
-  if (!focusOut(event)) QListWidget::focusOutEvent(event) ;
 }
 
 void N::ListWidget::closeEvent(QCloseEvent * event)
@@ -1615,11 +1567,4 @@ void N::ListWidget::removeListItem(QListWidgetItem * item)
   takeItem ( r )       ;
 }
 
-
-
-
 """
-
-
-
-
