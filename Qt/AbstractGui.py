@@ -163,7 +163,7 @@ class AbstractGui        (                                                 ) :
   ############################################################################
   def isFunction                  ( self , Id                              ) :
     ##########################################################################
-    if                            ( Id not self . Functionalities          ) :
+    if                            ( Id not in self . Functionalities       ) :
       return False
     ##########################################################################
     return self . Functionalities [ Id                                       ]
@@ -210,6 +210,13 @@ class AbstractGui        (                                                 ) :
     if                       ( Id not in self . LocalMsgs                  ) :
       return None
     return self . LocalIcons [ Id                                            ]
+  ############################################################################
+  def isDrag                 ( self                                        ) :
+    return                   ( self . Drag != None                           )
+  ############################################################################
+  def ReleaseDrag            ( self                                        ) :
+    self . Drag = None
+    return
   ############################################################################
   def setAllowDrops          ( self , IDs                                  ) :
     ##########################################################################
@@ -1233,18 +1240,6 @@ bool N::AbstractGui::stopLoading(void)
 void N::AbstractGui::stopForcely(void)
 {
   LimitValues [ LoadingID ] = 0 ;
-}
-
-bool N::AbstractGui::setFunction(int Id,bool enable)
-{
-  Functionalities [ Id ] = enable ;
-  return enable                   ;
-}
-
-bool N::AbstractGui::isFunction(int Id)
-{
-  if ( !Functionalities.contains(Id) ) return false ;
-  return Functionalities [ Id ]                     ;
 }
 
 void N::AbstractGui::alert(QString sound,QString message)

@@ -47,6 +47,7 @@ from         . VirtualGui             import VirtualGui as VirtualGui
 class ListWidget      ( QListWidget , VirtualGui                           ) :
   ############################################################################
   pickSelectionMode       = pyqtSignal ( str                                 )
+  Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
@@ -55,6 +56,13 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )
     self . DefaultItemIcon   = QIcon        (                                )
+    ##########################################################################
+    self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
+    self . setAcceptDrops                   ( True                           )
+    self . setDragDropMode                  ( QAbstractItemView . DragDrop   )
+    self . setHorizontalScrollBarPolicy     ( Qt . ScrollBarAsNeeded         )
+    self . setVerticalScrollBarPolicy       ( Qt . ScrollBarAsNeeded         )
+    self . setFunction                      ( self . FunctionDocking , False )
     ##########################################################################
     self . pickSelectionMode . connect      ( self . assignSelectionMode     )
     ##########################################################################
@@ -97,6 +105,163 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     super ( QListWidget , self ) . contextMenuEvent ( event                  )
     ##########################################################################
     return
+  ############################################################################
+  def closeEvent        ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . Shutdown ( )                              ) :
+      event . accept    (                                                    )
+      return
+    ##########################################################################
+    super ( QListWidget , self ) . closeEvent ( event                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def resizeEvent       ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . Relocation ( )                            ) :
+      event . accept    (                                                    )
+      return
+    ##########################################################################
+    super ( QListWidget , self ) . resizeEvent ( event                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def showEvent         ( self , event                                     ) :
+    ##########################################################################
+    super ( QListWidget , self ) . showEvent ( event                         )
+    self . Relocation   (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragEnterEvent    ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
+      if                ( self . dragEnter ( event )                       ) :
+        event . acceptProposedAction (                                       )
+        return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( QListWidget , self ) . dragEnterEvent ( event                  )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragLeaveEvent    ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . removeDrop ( )                            ) :
+      event . accept    (                                                    )
+      return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( QListWidget , self ) . dragLeaveEvent ( event                  )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragMoveEvent     ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
+      if                ( self . dragMove  ( event )                       ) :
+        event . acceptProposedAction (                                       )
+        return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( QListWidget , self ) . dragMoveEvent ( event                   )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dropEvent         ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
+      if                ( self . dropIn    ( event )                       ) :
+        event . acceptProposedAction (                                       )
+        return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( QListWidget , self ) . dropEvent ( event                       )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def mousePressEvent   ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . Dumping                                   ) :
+      event . ignore    (                                                    )
+      return
+    ##########################################################################
+    if                  ( self . allowDrag ( self . dragDropMode ( ) )     ) :
+      self . dragStart  ( event                                              )
+    ##########################################################################
+    super ( QListWidget , self ) . mousePressEvent ( event                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseMoveEvent    ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . Dumping                                   ) :
+      event . ignore    (                                                    )
+      return
+    ##########################################################################
+    moving = True
+    ##########################################################################
+    if                  ( self . allowDrag  ( self . dragDropMode ( ) )    ) :
+      if                ( self . dragMoving ( event )                      ) :
+        ######################################################################
+        event  . accept (                                                    )
+        moving = False
+        ######################################################################
+        super ( QListWidget , self ) . mouseReleaseEvent ( event             )
+        ######################################################################
+        self   . ReleasePickings (                                           )
+    ##########################################################################
+    if                  ( moving                                           ) :
+      super ( QListWidget , self ) . mouseMoveEvent ( event                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseReleaseEvent   ( self , event                                   ) :
+    ##########################################################################
+    if                    ( self . Dumping                                 ) :
+      event . ignore      (                                                  )
+      return
+    ##########################################################################
+    if                    ( self . allowDrag ( self . dragDropMode ( ) )   ) :
+      self . dragEnd      ( event                                            )
+    ##########################################################################
+    if                    ( self . isDrag ( )                              ) :
+      ########################################################################
+      self  . ReleaseDrag (                                                  )
+      event . accept      (                                                  )
+      ########################################################################
+      return
+    ##########################################################################
+    super ( QListWidget , self ) . mouseReleaseEvent ( event                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragDone               ( self , dropIt , mime                        ) :
+    return
+  ############################################################################
+  def dropNew                ( self , sourceWidget , mimeData , mousePos   ) :
+    return True
+  ############################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return True
+  ############################################################################
+  def dropAppend             ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    ## return self . dropItems  ( source , mime , pos )
+    ##########################################################################
+    return False
   ############################################################################
   @pyqtSlot(str)
   def assignSelectionMode     ( self , mode                                ) :
@@ -146,6 +311,22 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   ############################################################################
   def startup                 ( self                                       ) :
     raise NotImplementedError (                                              )
+  ############################################################################
+  def Shutdown                ( self                                       ) :
+    self . Leave . emit       ( self                                         )
+    return True
+  ############################################################################
+  def Relocation              ( self                                       ) :
+    return False
+  ############################################################################
+  def ReleasePickings         ( self                                       ) :
+    """
+    if (PickedUuids.count()>0)                 {
+      setSelections (PickedUuids)              ;
+      PickedUuids . clear ( )                  ;
+    }                                          ;
+    """
+    return
   ############################################################################
   def FocusIn                 ( self                                       ) :
     return True
@@ -458,151 +639,9 @@ void N::ListWidget::paintEvent(QPaintEvent * event)
   nIsolatePainter(QListWidget) ;
 }
 
-void N::ListWidget::closeEvent(QCloseEvent * event)
-{
-  if (Shutdown()) event->accept()     ;
-  else QListWidget::closeEvent(event) ;
-}
-
-void N::ListWidget::resizeEvent(QResizeEvent * event)
-{
-  if (Relocation()) event->accept();
-  else QListWidget::resizeEvent(event);
-}
-
-void N::ListWidget::showEvent(QShowEvent * event)
-{
-  QListWidget::showEvent(event) ;
-  Relocation ( )                ;
-}
-
-void N::ListWidget::contextMenuEvent(QContextMenuEvent * event)
-{
-  if (Menu(event->pos())) event->accept(); else
-  QListWidget::contextMenuEvent(event);
-}
-
-void N::ListWidget::dragEnterEvent(QDragEnterEvent * event)
-{
-  if (allowDrop(dragDropMode()) && dragEnter(event))     {
-    event->acceptProposedAction()                        ;
-  } else                                                 {
-    if (PassDragDrop) QListWidget::dragEnterEvent(event) ;
-    else event->ignore()                                 ;
-  }                                                      ;
-}
-
-void N::ListWidget::dragLeaveEvent(QDragLeaveEvent * event)
-{
-  if (removeDrop()) event->accept() ; else               {
-    if (PassDragDrop) QListWidget::dragLeaveEvent(event) ;
-    else event->ignore()                                 ;
-  }                                                      ;
-}
-
-void N::ListWidget::dragMoveEvent(QDragMoveEvent * event)
-{
-  if (allowDrop(dragDropMode()) && dragMove(event))      {
-    event->acceptProposedAction()                        ;
-  } else                                                 {
-    if (PassDragDrop) QListWidget::dragMoveEvent(event)  ;
-    else event->ignore()                                 ;
-  }                                                      ;
-}
-
-void N::ListWidget::dropEvent(QDropEvent * event)
-{
-  if (allowDrop(dragDropMode()) && drop(event))     {
-    event->acceptProposedAction()                   ;
-  } else                                            {
-    if (PassDragDrop) QListWidget::dropEvent(event) ;
-    else event->ignore()                            ;
-  }                                                 ;
-}
-
-void N::ListWidget::mousePressEvent(QMouseEvent * event)
-{
-  if (Dumping)                                    {
-    event->ignore()                               ;
-    return                                        ;
-  }                                               ;
-  if (allowDrag(dragDropMode())) dragStart(event) ;
-  QListWidget::mousePressEvent(event)             ;
-}
-
-void N::ListWidget::mouseMoveEvent(QMouseEvent * event)
-{
-  if (Dumping)                                   {
-    event->ignore()                              ;
-    return                                       ;
-  }                                              ;
-  bool moving = true                             ;
-  if (allowDrag(dragDropMode()))                 {
-    if (dragMoving(event))                       {
-      event->accept()                            ;
-      moving = false                             ;
-      QListWidget::mouseReleaseEvent(event)      ;
-      if (PickedUuids.count()>0)                 {
-        setSelections (PickedUuids)              ;
-        PickedUuids . clear ( )                  ;
-      }                                          ;
-    }                                            ;
-  }                                              ;
-  if (moving) QListWidget::mouseMoveEvent(event) ;
-}
-
-void N::ListWidget::mouseReleaseEvent(QMouseEvent * event)
-{
-  if (Dumping)                                  {
-    event->ignore()                             ;
-    return                                      ;
-  }                                             ;
-  if (allowDrag(dragDropMode())) dragEnd(event) ;
-  if (NotNull(Drag))                            {
-    Drag = NULL                                 ;
-    event->accept()                             ;
-  } else QListWidget::mouseReleaseEvent(event)  ;
-}
-
 bool N::ListWidget::startup(void)
 {
   return true ;
-}
-
-bool N::ListWidget::Shutdown(void)
-{
-  emit Leave ( this ) ;
-  return true         ;
-}
-
-void N::ListWidget::dragDone(Qt::DropAction dropIt,QMimeData * mime)
-{ Q_UNUSED ( dropIt ) ;
-  Q_UNUSED ( mime   ) ;
-}
-
-bool N::ListWidget::acceptDrop(QWidget * source,const QMimeData * mime)
-{ Q_UNUSED ( source ) ;
-  Q_UNUSED ( mime   ) ;
-  return false        ;
-}
-
-bool N::ListWidget::dropNew(QWidget * source,const QMimeData * mime,QPoint pos)
-{ Q_UNUSED ( source ) ;
-  Q_UNUSED ( mime   ) ;
-  Q_UNUSED ( pos    ) ;
-  return true         ;
-}
-
-bool N::ListWidget::dropMoving(QWidget * source,const QMimeData * mime,QPoint pos)
-{ Q_UNUSED ( source ) ;
-  Q_UNUSED ( mime   ) ;
-  Q_UNUSED ( pos    ) ;
-  return true         ;
-}
-
-bool N::ListWidget::dropAppend(QWidget * source,const QMimeData * mime,QPoint pos)
-{
-  return dropItems ( source , mime , pos ) ;
 }
 
 QListWidgetItem * N::ListWidget::addItem(SUID uuid,QString Description,QIcon Icon)
@@ -774,11 +813,6 @@ UUIDs N::ListWidget::ItemUuids(void)
     Uuids << nListUuid(item(i)) ;
   }                             ;
   return Uuids                  ;
-}
-
-bool N::ListWidget::Relocation(void)
-{
-  return false ;
 }
 
 void N::ListWidget::singleClicked(QListWidgetItem * item)
