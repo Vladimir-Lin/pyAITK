@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## TaskListings
+## EventListings
 ##############################################################################
 import os
 import sys
@@ -45,7 +45,7 @@ from   AITK  . Qt . MajorListings     import MajorListings as MajorListings
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
 ##############################################################################
-class TaskListings       ( MajorListings                                   ) :
+class EventListings      ( MajorListings                                   ) :
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
@@ -56,14 +56,14 @@ class TaskListings       ( MajorListings                                   ) :
   ############################################################################
   def ObtainUuidsQuery                ( self                               ) :
     ##########################################################################
-    TABLE = self . Tables [ "Tasks" ]
+    TABLE = self . Tables [ "Events" ]
     QQ    = f"select `uuid` from {TABLE} where ( `used` = 1 ) order by `id` desc ;"
     ##########################################################################
     return QQ
   ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
-    LABELs = [ "任務名稱" ]
+    LABELs = [ "事件名稱" ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )
@@ -154,7 +154,7 @@ class TaskListings       ( MajorListings                                   ) :
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Tasks" , uuid , NAM             )
+      self . EditAllNames          ( self , "Events" , uuid , NAM            )
       return True
     ##########################################################################
     return True
