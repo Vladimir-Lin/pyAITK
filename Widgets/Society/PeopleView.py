@@ -201,14 +201,20 @@ class PeopleView                   ( IconDock                              ) :
     if                           ( not self . isPrepared ( )               ) :
       return False
     ##########################################################################
-    self . setActionLabel        ( "Label"    , self . windowTitle ( )       )
-    self . LinkAction            ( "Insert"   , self . InsertItem            )
-    self . LinkAction            ( "Delete"   , self . DeleteItems           )
-    self . LinkAction            ( "Home"     , self . PageHome              )
-    self . LinkAction            ( "End"      , self . PageEnd               )
-    self . LinkAction            ( "PageUp"   , self . PageUp                )
-    self . LinkAction            ( "PageDown" , self . PageDown              )
-    self . LinkAction            ( "Refresh"  , self . startup               )
+    self . setActionLabel        ( "Label"      , self . windowTitle ( )     )
+    self . LinkAction            ( "Refresh"    , self . startup             )
+    ##########################################################################
+    self . LinkAction            ( "Insert"     , self . InsertItem          )
+    self . LinkAction            ( "Delete"     , self . DeleteItems         )
+    self . LinkAction            ( "Home"       , self . PageHome            )
+    self . LinkAction            ( "End"        , self . PageEnd             )
+    self . LinkAction            ( "PageUp"     , self . PageUp              )
+    self . LinkAction            ( "PageDown"   , self . PageDown            )
+    ##########################################################################
+    self . LinkAction            ( "SelectAll"  , self . SelectAll           )
+    self . LinkAction            ( "SelectNone" , self . SelectNone          )
+    ##########################################################################
+    self . LinkAction            ( "Rename"     , self . RenamePeople        )
     ##########################################################################
     return True
   ############################################################################
@@ -258,6 +264,11 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     self . clear                   (                                         )
     self . startup                 (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def RenamePeople                 ( self                                  ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################

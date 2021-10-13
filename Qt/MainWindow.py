@@ -35,7 +35,9 @@ from   PyQt5 . QtWidgets              import QMdiArea
 from   PyQt5 . QtWidgets              import QStackedWidget
 from   PyQt5 . QtWidgets              import QMainWindow
 ##############################################################################
-from         . VirtualGui             import VirtualGui as VirtualGui
+from         . VirtualGui             import VirtualGui    as VirtualGui
+from         . StackedWidget          import StackedWidget as StackedWidget
+from         . MdiArea                import MdiArea       as MdiArea
 ##############################################################################
 class MainWindow    ( QMainWindow , VirtualGui                             ) :
   ############################################################################
@@ -50,8 +52,8 @@ class MainWindow    ( QMainWindow , VirtualGui                             ) :
   ############################################################################
   def Configure                     ( self                                 ) :
     ##########################################################################
-    self . stacked = QStackedWidget ( self                                   )
-    self . mdi     = QMdiArea       ( self . stacked                         )
+    self . stacked = StackedWidget  ( self           , self . PlanFunc       )
+    self . mdi     = MdiArea        ( self . stacked , self . PlanFunc       )
     self . stacked . addWidget      ( self . mdi                             )
     self . setCentralWidget         ( self . stacked                         )
     ##########################################################################
@@ -81,6 +83,52 @@ class MainWindow    ( QMainWindow , VirtualGui                             ) :
   ############################################################################
   def FocusOut                ( self                                       ) :
     return True
+  ############################################################################
+  def NormalWindow        ( self                                           ) :
+    self . showNormal     (                                                  )
+    return
+  ############################################################################
+  def FullScreen          ( self                                           ) :
+    self . showFullScreen (                                                  )
+    return
+  ############################################################################
+  def MinimizedWindow     ( self                                           ) :
+    self . showMinimized  (                                                  )
+    return
+  ############################################################################
+  def MaximizedWindow     ( self                                           ) :
+    self . showMaximized  (                                                  )
+    return
+  ############################################################################
+  def TileWindows               ( self                                     ) :
+    ##########################################################################
+    self . mdi . Tile           (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def CascadeWindows            ( self                                     ) :
+    ##########################################################################
+    self . mdi . Cascade        (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def TabbedView                ( self                                     ) :
+    ##########################################################################
+    self . mdi . Tabbed         (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def SubwindowView             ( self                                     ) :
+    ##########################################################################
+    self . mdi . Subwindow      (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def CloseAll                  ( self                                     ) :
+    ##########################################################################
+    self . mdi . CloseAll       (                                            )
+    ##########################################################################
+    return
   ############################################################################
   def addMdi                         ( self , widget , showOptions = 1     ) :
     ##########################################################################

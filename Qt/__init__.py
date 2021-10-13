@@ -8,6 +8,9 @@ from . MenuManager     import MenuManager     as MenuManager
 from . Widget          import Widget          as Widget
 from . DockWidget      import DockWidget      as DockWidget
 from . Dialog          import Dialog          as Dialog
+from . StackedWidget   import StackedWidget   as StackedWidget
+from . MdiSubWindow    import MdiSubWindow    as MdiSubWindow
+from . MdiArea         import MdiArea         as MdiArea
 from . LineEdit        import LineEdit        as LineEdit
 from . ComboBox        import ComboBox        as ComboBox
 from . SpinBox         import SpinBox         as SpinBox
@@ -28,6 +31,9 @@ __all__ = [ "AbstractGui"                                                    ,
             "Widget"                                                         ,
             "Dialog"                                                         ,
             "DockWidget"                                                     ,
+            "StackedWidget"                                                  ,
+            "MdiSubWindow"                                                   ,
+            "MdiArea"                                                        ,
             "LineEdit"                                                       ,
             "ComboBox"                                                       ,
             "SpinBox"                                                        ,

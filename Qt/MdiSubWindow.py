@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## DockWidget
+## MdiSubWindow
 ##############################################################################
 import os
 import sys
@@ -17,6 +17,7 @@ from   PyQt5                          import QtWidgets
 ##############################################################################
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
@@ -31,44 +32,43 @@ from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
+from   PyQt5 . QtWidgets              import QActionGroup
 from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QDockWidget
+from   PyQt5 . QtWidgets              import QMdiSubWindow
 ##############################################################################
-from         . VirtualGui             import VirtualGui as VirtualGui
-##############################################################################
-dockStyleSheet = \
-"""QDockWidget::title
- { background-color:qlineargradient
- (spread:reflect, x1:0.5, y1:0.5, x2:0.5, y2:0.0,
- stop:0 rgba(216,216,216,255),
- stop:1 rgba(240,240,240,255)) ;
- text-align: center center }"""
-##############################################################################
-class DockWidget                ( QDockWidget , VirtualGui                 ) :
+class MdiSubWindow              ( QMdiSubWindow                            ) :
   ############################################################################
-  def __init__                  ( self , parent = None , plan = None       ) :
+  def __init__                  ( self , parent = None                     ) :
     ##########################################################################
-    global dockStyleSheet
-    ##########################################################################
-    super ( QDockWidget , self ) . __init__ ( parent                         )
-    super ( VirtualGui  , self ) . __init__ (                                )
-    self . Initialize                       ( self                           )
-    self . setPlanFunction                  ( plan                           )
-    ##########################################################################
-    self . Regular      = True
-    self . DockGeometry = QRect (                                            )
-    ##########################################################################
-    self . setStyleSheet        ( dockStyleSheet                             )
-    self . setAttribute         ( Qt . WA_InputMethodEnabled                 )
+    super ( ) . __init__        ( parent                                     )
+    self      .  setAttribute   ( Qt . WA_InputMethodEnabled                 )
     ##########################################################################
     return
   ############################################################################
-  def event                              ( self , event                    ) :
-    super ( QDockWidget , self ) . event (        event                      )
+  def closeEvent                ( self , event                             ) :
+    ##########################################################################
+    """
+    if ( NULL != abstract )                                         {
+      if ( ! abstract -> canStop ( ) )                              {
+        e -> ignore ( )                                             ;
+        return                                                      ;
+      }                                                             ;
+    } else                                                          {
+      QWidget * w = widget ( )                                      ;
+      if ( NULL != w )                                              {
+        QVariant v = w -> property ( "AbstractGui" )                ;
+        if ( v . isValid ( ) && v . toBool ( ) )                    {
+          QVariant z = w -> property ( "CanStop" )                  ;
+          if ( z . isValid ( ) && ( ! getAbstractStopable ( z ) ) ) {
+            e -> ignore ( )                                         ;
+            return                                                  ;
+          }                                                         ;
+        }                                                           ;
+      }                                                             ;
+    }                                                               ;
+    """
+    ##########################################################################
+    super ( ) . closeEvent      (        event                               )
+    ##########################################################################
     return
-  ############################################################################
-  def sizeHint                   ( self                                    ) :
-    if                           ( not self . Regular                      ) :
-      return DockGeometry . size (                                           )
-    return super ( QDockWidget , self ) . sizeHint (                         )
 ##############################################################################
