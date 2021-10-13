@@ -8,6 +8,7 @@ from . MenuManager     import MenuManager     as MenuManager
 from . Widget          import Widget          as Widget
 from . DockWidget      import DockWidget      as DockWidget
 from . Dialog          import Dialog          as Dialog
+from . StatusBar       import StatusBar       as StatusBar
 from . StackedWidget   import StackedWidget   as StackedWidget
 from . MdiSubWindow    import MdiSubWindow    as MdiSubWindow
 from . MdiArea         import MdiArea         as MdiArea
@@ -31,6 +32,7 @@ __all__ = [ "AbstractGui"                                                    ,
             "Widget"                                                         ,
             "Dialog"                                                         ,
             "DockWidget"                                                     ,
+            "StatusBar"                                                      ,
             "StackedWidget"                                                  ,
             "MdiSubWindow"                                                   ,
             "MdiArea"                                                        ,

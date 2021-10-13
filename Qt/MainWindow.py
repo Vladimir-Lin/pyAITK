@@ -36,6 +36,7 @@ from   PyQt5 . QtWidgets              import QStackedWidget
 from   PyQt5 . QtWidgets              import QMainWindow
 ##############################################################################
 from         . VirtualGui             import VirtualGui    as VirtualGui
+from         . StatusBar              import StatusBar     as StatusBar
 from         . StackedWidget          import StackedWidget as StackedWidget
 from         . MdiArea                import MdiArea       as MdiArea
 ##############################################################################
@@ -56,6 +57,9 @@ class MainWindow    ( QMainWindow , VirtualGui                             ) :
     self . mdi     = MdiArea        ( self . stacked , self . PlanFunc       )
     self . stacked . addWidget      ( self . mdi                             )
     self . setCentralWidget         ( self . stacked                         )
+    ##########################################################################
+    SB   = StatusBar                ( self                                   )
+    self . setStatusBar             ( SB                                     )
     ##########################################################################
     return
   ############################################################################
