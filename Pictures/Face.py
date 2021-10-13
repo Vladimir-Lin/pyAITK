@@ -13,6 +13,7 @@ import gettext
 import binascii
 import hashlib
 import base64
+import glob
 ##############################################################################
 from   io           import BytesIO
 from   wand . image import Image
@@ -20,6 +21,7 @@ from   PIL          import Image as Pillow
 ##############################################################################
 import cv2
 import dlib
+import skimage
 import numpy as np
 ##############################################################################
 class Face        (                                                        ) :

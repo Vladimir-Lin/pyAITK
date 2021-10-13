@@ -13,13 +13,37 @@ import gettext
 import binascii
 import hashlib
 import base64
+import glob
+##############################################################################
 from   io           import BytesIO
 from   wand . image import Image
 from   PIL          import Image as Pillow
 ##############################################################################
+import cv2
+import dlib
+import skimage
+import numpy as np
+##############################################################################
+from   PyQt5                          import QtCore
+from   PyQt5                          import QtGui
+##############################################################################
+from   PyQt5 . QtCore                 import Qt
+from   PyQt5 . QtCore                 import QObject
+from   PyQt5 . QtCore                 import QPoint
+from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
+from   PyQt5 . QtCore                 import QByteArray
+##############################################################################
+from   PyQt5 . QtGui                  import QColor
+from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QPixmap
+from   PyQt5 . QtGui                  import QImage
+##############################################################################
 class Picture     (                                                        ) :
   ############################################################################
-  def __init__    ( self                                                   ) :
+  def __init__    ( self , Filename = ""                                   ) :
+    ##########################################################################
     self . UUID     = 0
     self . Filename = ""
     self . Data     = None
@@ -27,6 +51,10 @@ class Picture     (                                                        ) :
     self . Icon     = None
     self . IconData = None
     self . CRC32    = 0
+    ##########################################################################
+    if            ( len ( Filename ) > 0                                   ) :
+      self . Load ( Filename                                                 )
+    ##########################################################################
     return
   ############################################################################
   def __del__     ( self                                                   ) :
@@ -47,56 +75,123 @@ class Picture     (                                                        ) :
     ##########################################################################
     try                                                                      :
       self . Image = Image ( blob = self . Data )
-    except :
+    except                                                                   :
       return False
+    ##########################################################################
     return True
   ############################################################################
-  def Assign      ( self , DAT                                             ) :
+  def Assign               ( self , DAT                                    ) :
     ##########################################################################
     self. Data = DAT
     ##########################################################################
-    if ( self . Data == None )                                               :
+    if                     ( self . Data == None                           ) :
       return False
     ##########################################################################
-    if ( len ( self . Data ) <= 0 )                                          :
+    if                     ( len ( self . Data ) <= 0                      ) :
       return False
     ##########################################################################
     try                                                                      :
-      self . Image = Image ( blob = self . Data )
-    except :
+      self . Image = Image ( blob = self . Data                              )
+    except                                                                   :
       return False
+    ##########################################################################
     return True
   ############################################################################
-  def Iconize ( self )                                                       :
-    self . Icon = Image ( self . Image )
-    w = self . Icon . width
-    h = self . Icon . height
-    if ( ( w > 128 ) or ( h > 128 ) ) :
-      if ( w > h ) :
-        h = int ( h * 128 / w )
+  def Format ( self                                                        ) :
+    ##########################################################################
+    if       ( self . Image == None                                        ) :
+      return ""
+    ##########################################################################
+    return self . Image . format
+  ############################################################################
+  def Width  ( self                                                        ) :
+    ##########################################################################
+    if       ( self . Image == None                                        ) :
+      return ""
+    ##########################################################################
+    return self . Image . width
+  ############################################################################
+  def Height ( self                                                        ) :
+    ##########################################################################
+    if       ( self . Image == None                                        ) :
+      return ""
+    ##########################################################################
+    return self . Image . height
+  ############################################################################
+  def toQImage               ( self , Format = ""                          ) :
+    ##########################################################################
+    if                       ( len ( Format      ) <= 0                    ) :
+      Format = self . Format ( )
+    ##########################################################################
+    if                       ( len ( Format      ) <= 0                    ) :
+      return None
+    ##########################################################################
+    if                       ( len ( self . Data ) <= 0                    ) :
+      return None
+    ##########################################################################
+    try                                                                      :
+      IMG    = QImage        (                                               )
+      IMG    . loadFromData  ( self . Data                                   )
+    except                                                                   :
+      return None
+    ##########################################################################
+    return IMG
+  ############################################################################
+  def toOpenCV                ( self                                       ) :
+    ##########################################################################
+    if                        ( self . Image == None                       ) :
+      return None
+    ##########################################################################
+    IMG    = Image            ( self . Image                                 )
+    BLOB   = bytearray        ( IMG  . make_blob ( )                         )
+    BUFF   = np . asarray     ( BLOB , dtype = np . uint8                    )
+    ##########################################################################
+    if BUFF is not None                                                      :
+      return cv2 . imdecode   ( BUFF , cv2 . IMREAD_UNCHANGED                )
+    ##########################################################################
+    return None
+  ############################################################################
+  def Iconize                 ( self                                       ) :
+    ##########################################################################
+    self . Icon = Image       ( self . Image                                 )
+    w           = self . Icon . width
+    h           = self . Icon . height
+    ##########################################################################
+    if                        ( ( w > 128 ) or ( h > 128 )                 ) :
+      ########################################################################
+      if                      ( w > h                                      ) :
+        h = int               ( h * 128 / w                                  )
         w = 128
-      else :
-        w = int ( w * 128 / h )
+      else                                                                   :
+        w = int               ( w * 128 / h                                  )
         h = 128
-      self . Icon . resize ( w , h )
+      ########################################################################
+      self . Icon . resize    ( w , h                                        )
+    ##########################################################################
     self . Icon . format = "png"
     self . IconData = BytesIO ( )
-    self . Icon . save ( file = self . IconData )
+    self . Icon . save        ( file = self . IconData )
+    ##########################################################################
+    return
   ############################################################################
-  def toCRC32 ( self )                                                       :
-    self . CRC32 = binascii . crc32 ( self . Data )
+  def toCRC32                       ( self                                 ) :
+    self . CRC32 = binascii . crc32 ( self . Data                            )
     return self . CRC32
   ############################################################################
-  def toMD5 ( self )                                                         :
-    m = hashlib . md5 ( )
-    m . update        ( self . Data )
-    self . MD5 = m . hexdigest ( )
+  def toMD5                    ( self                                      ) :
+    ##########################################################################
+    m = hashlib . md5          (                                             )
+    m . update                 ( self . Data                                 )
+    self . MD5 = m . hexdigest (                                             )
+    ##########################################################################
     return self . MD5
   ############################################################################
-  def toSHA256 ( self )                                                      :
-    m = hashlib . sha256 ( )
-    m . update        ( self . Data )
-    self . SHA256 = base64 . b64encode ( m . digest ( ) ) . decode ('utf-8')
+  def toSHA256                         ( self                              ) :
+    ##########################################################################
+    m = hashlib . sha256               (                                     )
+    m . update                         ( self . Data                         )
+    self . SHA256 = base64 . b64encode ( m . digest ( ) ) . decode ( 'utf-8' )
+    ##########################################################################
     return self . SHA256
   ############################################################################
   def toHistogram                  ( self                                  ) :
@@ -129,16 +224,21 @@ class Picture     (                                                        ) :
     return
   ############################################################################
   def PrepareForDB     ( self                                              ) :
+    ##########################################################################
     self . Iconize     (                                                     )
     self . toCRC32     (                                                     )
     self . toMD5       (                                                     )
     self . toSHA256    (                                                     )
     self . toHistogram (                                                     )
+    ##########################################################################
+    return
   ############################################################################
   def HistogramToBytes ( self , HIST                                       ) :
+    ##########################################################################
     B = BytesIO        (                                                     )
     for v in HIST                                                            :
       B . write        ( int ( v ) . to_bytes ( 4 , 'big' )                  )
+    ##########################################################################
     return B
   ############################################################################
   def StoreHistogram   ( self , DB , TABLE , UUID , Item , Data )            :
@@ -153,16 +253,18 @@ class Picture     (                                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def ImportDB ( self , DB , Options ) :
+  def ImportDB       ( self , DB , Options                                 ) :
+    ##########################################################################
+    BASE   = Options [ "Base"                                                ]
+    PREFER = Options [ "Prefer"                                              ]
+    MASTER = Options [ "Master"                                              ]
+    DEPOT  = Options [ "Depot"                                               ]
+    THUMB  = Options [ "Thumb"                                               ]
+    TDEPOT = Options [ "ThumbDepot"                                          ]
+    HASH   = Options [ "Hash"                                                ]
+    HIST   = Options [ "Histogram"                                           ]
+    ##########################################################################
     UUIX   = 0
-    BASE   = Options [ "Base"       ]
-    PREFER = Options [ "Prefer"     ]
-    MASTER = Options [ "Master"     ]
-    DEPOT  = Options [ "Depot"      ]
-    THUMB  = Options [ "Thumb"      ]
-    TDEPOT = Options [ "ThumbDepot" ]
-    HASH   = Options [ "Hash"       ]
-    HIST   = Options [ "Histogram"  ]
     MIMEM  = "mimeexts"
     EXTMX  = "extensions"
     PRETAB = "pictureorders"
@@ -175,23 +277,39 @@ class Picture     (                                                        ) :
     TH     = self . Icon  . height
     TSIZE  = self . IconData . getbuffer ( ) . nbytes
     CRC32  = self . CRC32
-    DB     . LockWrites   ( [ MASTER , DEPOT , THUMB , TDEPOT , HASH , HIST , PRETAB , MIMEM , EXTMX ] )
+    ##########################################################################
+    DB     . LockWrites   ( [ MASTER                                       , \
+                              DEPOT                                        , \
+                              THUMB                                        , \
+                              TDEPOT                                       , \
+                              HASH                                         , \
+                              HIST                                         , \
+                              PRETAB                                       , \
+                              MIMEM                                        , \
+                              EXTMX                                        ] )
+    ##########################################################################
     QQ     = f"select `uuid` from {MASTER} where ( `filesize` = {SIZE} ) and ( `checksum` = {CRC32} ) and ( `width` = {SW} ) and ( `height` = {SH} ) ;"
     DB     . Query ( QQ )
     LL     = DB . FetchAll ( )
-    if ( ( LL == None ) or ( len ( LL ) <= 0 ) ) :
+    ##########################################################################
+    if ( ( LL == None ) or ( len ( LL ) <= 0 ) )                             :
+      ########################################################################
       UUIX = BASE
+      ########################################################################
       QQ   = f"select `uuid` from {MASTER} order by `id` desc limit 0,1 ;"
       DB   . Query ( QQ )
       LX   = DB . FetchOne ( )
-      if ( not ( ( LX == None ) or ( len ( LX ) <= 0 ) ) ) :
+      ########################################################################
+      if ( not ( ( LX == None ) or ( len ( LX ) <= 0 ) ) )                   :
         UUIX = LX [ 0 ]
+      ########################################################################
       UUIX = UUIX + 1
       MIMEID = 0
       QQ   = f"select `mime` from `mimeexts` where ( `extension` = ( select `id` from `extensions` where ( `extension` = '{FMT}' ) ) ) ;"
       DB   . Query ( QQ )
       FX   = DB . FetchAll ( )
-      if ( not ( ( FX == None ) or ( len ( FX ) <= 0 ) ) ) :
+      ########################################################################
+      if ( not ( ( FX == None ) or ( len ( FX ) <= 0 ) ) )                   :
         MIMEID = FX [ 0 ] [ 0 ]
       ########################################################################
       VAL = ( UUIX , MIMEID , FMT , SIZE , CRC32 , SW , SH , )
@@ -235,4 +353,6 @@ class Picture     (                                                        ) :
       ########################################################################
     DB     . UnlockTables (     )
     self . UUID = UUIX
+    ##########################################################################
     return True
+##############################################################################
