@@ -106,7 +106,8 @@ class Connection ( )                                                         :
                     user       = username ,                                  \
                     passwd     = password ,                                  \
                     database   = database ,                                  \
-                    autocommit = True                                        )
+                    autocommit = True     ,                                  \
+                    use_pure   = True                                        )
       self . Success = True
     except mysql . connector . Error as err                                  :
       self . Error = err
