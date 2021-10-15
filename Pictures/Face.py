@@ -32,6 +32,7 @@ class Face        (                                                        ) :
     self . Rectangle  = self . CreateRectangle ( 0 , 0 , 0 , 0               )
     self . Degree     = 0.0
     self . Weights    = 0.0
+    self . NoseBridge = 0.0
     self . Features   = [ ]
     self . EmptyLandmarks (                                                  )
     ##########################################################################
@@ -48,6 +49,19 @@ class Face        (                                                        ) :
   ############################################################################
   def __del__     ( self                                                   ) :
     pass
+  ############################################################################
+  def FromAnother      ( self , face                                       ) :
+    ##########################################################################
+    self . Classifier    = face . Classifier
+    self . EyesDetector  = face . EyesDetector
+    self . MouthDetector = face . MouthDetector
+    self . DlibDetector  = face . DlibDetector
+    self . CnnDetector   = face . CnnDetector
+    self . Fivemarks     = face . Fivemarks
+    self . Predictor     = face . Predictor
+    self . Facial        = face . Facial
+    ##########################################################################
+    return
   ############################################################################
   def EmptyLandmarks   ( self                                              ) :
     ##########################################################################
@@ -591,7 +605,87 @@ class Face        (                                                        ) :
     ##########################################################################
     return v
   ############################################################################
+  def AppendFaceRegion      ( self , DB , TABLE , Region , PICTURE , OWNER ) :
+    ##########################################################################
+    x        = Region       [ "X"                                            ]
+    y        = Region       [ "Y"                                            ]
+    width    = Region       [ "W"                                            ]
+    height   = Region       [ "H"                                            ]
+    right    = Region       [ "R"                                            ]
+    bottom   = Region       [ "B"                                            ]
+    cx       = Region       [ "CX"                                           ]
+    cy       = Region       [ "CY"                                           ]
+    angle    = Region       [ "Angle"                                        ]
+    ##########################################################################
+    HEAD     = 5100000000000000000
+    UUID     = DB . LastUuid ( TABLE , "uuid" , HEAD                         )
+    QQ       = f"""insert into {TABLE}
+                   ( `uuid` ,
+                     `picture` ,
+                     `owner` ,
+                     `x` ,
+                     `y` ,
+                     `width` ,
+                     `height` ,
+                     `right` ,
+                     `bottom` ,
+                     `cx` ,
+                     `cy` ,
+                     `rotation` )
+                     values
+                     ( {UUID} ,
+                       {PICTURE} ,
+                       {OWNER} ,
+                       {x} ,
+                       {y} ,
+                       {width} ,
+                       {height} ,
+                       {right} ,
+                       {bottom} ,
+                       {cx} ,
+                       {cy} ,
+                       {angle} ) ;"""
+    QQ = " " . join ( QQ . split ( ) )
+    DB       . Query         ( QQ                                            )
+    ##########################################################################
+    return UUID
   ############################################################################
+  def AppendFaceFeatures ( self , DB , TABLE , PICTURE , OWNER , FACE      ) :
+    ##########################################################################
+    weights = self . Weights
+    nose    = self . NoseBridge
+    FS      = " , " . join ( str(x) for x in self . Features )
+    ##########################################################################
+    KU      = [ ]
+    for i in range ( 1 , 129 ) :
+      V     = "{:03d}".format(i)
+      K     = f"`f{V}`"
+      KU    . append ( K )
+    KS      = " , " . join ( KU )
+    ##########################################################################
+    HEAD     = 8100000000000000000
+    UUID     = DB . LastUuid ( TABLE , "uuid" , HEAD                         )
+    ##########################################################################
+    QQ       = f"""insert into {TABLE}
+                   ( `uuid` ,
+                     `picture` ,
+                     `owner` ,
+                     `face` ,
+                     `weights` ,
+                     `nose` ,
+                     {KS} )
+                     values
+                     ( {UUID} ,
+                       {PICTURE} ,
+                       {OWNER} ,
+                       {FACE} ,
+                       {weights} ,
+                       {nose} ,
+                       {FS} ) ;"""
+    QQ = " " . join ( QQ . split ( ) )
+    DB       . Query ( QQ )
+    ##########################################################################
+    return UUID
   ############################################################################
   ############################################################################
   ############################################################################
