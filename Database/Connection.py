@@ -56,7 +56,7 @@ class Connection ( )                                                         :
   ## Connect to SQL Database
   ## 連線到指定資料庫
   ############################################################################
-  def ConnectTo ( self , DB )                                                :
+  def ConnectTo ( self , DB , ForcePure = False )                                                :
     ##########################################################################
     if ( not self . db )                                                     :
       pass
@@ -100,14 +100,23 @@ class Connection ( )                                                         :
       port = DB [ "port" ]
     ##########################################################################
     try                                                                      :
-      self . db = mysql . connector . connect                              ( \
-                    host       = hostname ,                                  \
-                    port       = port     ,                                  \
-                    user       = username ,                                  \
-                    passwd     = password ,                                  \
-                    database   = database ,                                  \
-                    autocommit = True     ,                                  \
-                    use_pure   = True                                        )
+      if ( ForcePure )                                                       :
+        self . db = mysql . connector . connect                            ( \
+                      host       = hostname ,                                \
+                      port       = port     ,                                \
+                      user       = username ,                                \
+                      passwd     = password ,                                \
+                      database   = database ,                                \
+                      autocommit = True     ,                                \
+                      use_pure   = True                                      )
+      else                                                                   :
+        self . db = mysql . connector . connect                            ( \
+                      host       = hostname ,                                \
+                      port       = port     ,                                \
+                      user       = username ,                                \
+                      passwd     = password ,                                \
+                      database   = database ,                                \
+                      autocommit = True                                      )
       self . Success = True
     except mysql . connector . Error as err                                  :
       self . Error = err
