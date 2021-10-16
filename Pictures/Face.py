@@ -699,7 +699,7 @@ class Face        (                                                        ) :
     ##########################################################################
     return UUID
   ############################################################################
-  def AssurePictureAnalyzLevel ( DB , TABLE , PICTURE , LEVEL              ) :
+  def AssurePictureAnalyzLevel ( self , DB , TABLE , PICTURE , LEVEL       ) :
     ##########################################################################
     QQ = f"""insert into {TABLE}
              ( `uuid` , `type` ,`name` , `value` )
