@@ -157,8 +157,15 @@ class IconDock           ( ListDock                                        ) :
     if                                ( len ( THUMB ) <= 0                 ) :
       return None
     ##########################################################################
+    BLOB       = THUMB                [ 0                                    ]
+    if                                ( isinstance ( BLOB , bytearray )    ) :
+      BLOB = bytes                    ( BLOB                                 )
+    ##########################################################################
+    if                                ( len ( BLOB ) <= 0                  ) :
+      return None
+    ##########################################################################
     IMG        = QImage               (                                      )
-    IMG        . loadFromData         ( QByteArray ( THUMB [ 0 ] ) , "PNG"   )
+    IMG        . loadFromData         ( QByteArray ( BLOB ) , "PNG"          )
     TSIZE      = IMG . size           (                                      )
     ##########################################################################
     ISIZE      = self . iconSize      (                                      )
@@ -184,7 +191,7 @@ class IconDock           ( ListDock                                        ) :
     if                                ( len ( UUIDs ) <= 0                 ) :
       return
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
+    DB      = self . ConnectDB        ( True                                 )
     if                                ( DB == None                         ) :
       return
     ##########################################################################

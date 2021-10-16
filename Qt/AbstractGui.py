@@ -308,10 +308,10 @@ class AbstractGui        (                                                 ) :
   def FocusOut                ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
-  def ConnectDB          ( self                                            ) :
+  def ConnectDB          ( self , UsePure = False                          ) :
     ##########################################################################
     DB = Connection      (                                                   )
-    if                   ( not DB . ConnectTo ( self . DB )                ) :
+    if                   ( not DB . ConnectTo ( self . DB , UsePure )      ) :
       return None
     DB . Prepare         (                                                   )
     ##########################################################################
