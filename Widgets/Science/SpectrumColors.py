@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## IconDock
+## SpectrumColors
 ##############################################################################
 import os
 import sys
@@ -45,14 +45,19 @@ from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QMenu
 ##############################################################################
 from   AITK . Qt       . AttachDock   import AttachDock        as AttachDock
+from   AITK . Qt       . MenuManager  import MenuManager       as MenuManager
 from   AITK . Qt       . Widget       import Widget            as Widget
+from   AITK . Qt       . SpinBox      import SpinBox           as SpinBox
 from   AITK . Pictures . Colors       import WaveLengthToRGB   as waveToRGB
 from   AITK . Pictures . Colors       import RatioToWaveLength as RatioToWave
 ##############################################################################
 class SpectrumColors         ( Widget , AttachDock                         ) :
   ############################################################################
+  attachNone    = pyqtSignal ( QWidget                                       )
   attachDock    = pyqtSignal ( QWidget , str , int , int                     )
   attachMdi     = pyqtSignal ( QWidget , int                                 )
+  Angstrom      = pyqtSignal ( float , float , int , int , int               )
+  Nanometer     = pyqtSignal ( float , float , int , int , int               )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
@@ -61,7 +66,7 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     self . InitializeDock                  (          plan                   )
     ##########################################################################
     self . dockingOrientation = 0
-    self . dockingPlace       = Qt . RightDockWidgetArea
+    self . dockingPlace       = Qt . BottomDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
@@ -69,17 +74,25 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     ##########################################################################
     ## WidgetClass                                            ;
     self . setFunction     ( self . FunctionDocking , True                   )
+    self . setLocalMessage ( self . AttachToNone    , "切換成獨立視窗" )
     self . setLocalMessage ( self . AttachToMdi     , "移動到視窗區域" )
     self . setLocalMessage ( self . AttachToDock    , "移動到停泊區域" )
     ##########################################################################
     self . setMouseTracking ( True )
-    ## self . Direction = "Left-Right"
-    self . Direction = "Right-Left"
-    ## self . Direction = "Top-Bottom"
-    ## self . Direction = "Bottom-Top"
-    self . FromWL = 380
-    self . ToWL   = 780
-    self . Image  = None
+    ## self . Direction   = "Left-Right"
+    self . Direction   = "Right-Left"
+    ## self . Direction   = "Top-Bottom"
+    ## self . Direction   = "Bottom-Top"
+    self . minWL       =  380
+    self . maxWL       =  780
+    self . FromWL      =  380
+    self . ToWL        =  780
+    self . Luminance   = 1000
+    self . minSpin     = None
+    self . maxSpin     = None
+    self . AudioReport = True
+    self . ShowToolTip = True
+    self . Image       = None
     ##########################################################################
     return
   ############################################################################
@@ -88,6 +101,34 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
   ############################################################################
   def setSpectrumDirection          ( self , direction                     ) :
     self . Direction = direction
+    return
+  ############################################################################
+  def focusInEvent           ( self , event                                ) :
+    ##########################################################################
+    if                       ( self . focusIn ( event )                    ) :
+      return
+    ##########################################################################
+    super ( ) . focusInEvent ( event                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def focusOutEvent           ( self , event                               ) :
+    ##########################################################################
+    if                        ( self . focusOut ( event )                  ) :
+      return
+    ##########################################################################
+    super ( ) . focusOutEvent ( event                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def contextMenuEvent           ( self , event                            ) :
+    ##########################################################################
+    if                           ( self . Menu ( event . pos ( ) )         ) :
+      event . accept             (                                           )
+      return
+    ##########################################################################
+    super ( ) . contextMenuEvent ( event                                     )
+    ##########################################################################
     return
   ############################################################################
   def mouseMoveEvent                ( self  , event                        ) :
@@ -123,6 +164,21 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     ##########################################################################
     return
   ############################################################################
+  def toWaveString           ( self , Lambda                               ) :
+    ##########################################################################
+    LSM = "{:4.3f}" . format (        Lambda                                 )
+    LSM = f"{LSM} Å"
+    ##########################################################################
+    return LSM
+  ############################################################################
+  def toFrequencyString ( self , Lambda                                    ) :
+    ##########################################################################
+    F   = 2997924.58 / Lambda
+    FSM = "{:4.3f}" . format (        F                                 )
+    FSM = f"{FSM} THz"
+    ##########################################################################
+    return FSM
+  ############################################################################
   def Visible        ( self , visible                                      ) :
     self . Visiblity (        visible                                        )
     return
@@ -141,24 +197,49 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     ##########################################################################
     return
   ############################################################################
-  def DockingMenu ( self , menu                                            ) :
+  def DockingMenu                    ( self , menu                         ) :
     ##########################################################################
-    if            ( not self . isFunction ( self . FunctionDocking )       ) :
+    canDock = self . isFunction      ( self . FunctionDocking                )
+    if                               ( not canDock                         ) :
       return
     ##########################################################################
-    """
-    QMdiSubWindow  * mdi    = Casting(QMdiSubWindow,parent())              ;
-    QDockWidget    * dock   = Casting(QDockWidget  ,parent())              ;
-    if (NotNull(dock) || NotNull(mdi)) Menu . addSeparator ( )             ;
-    nIfSafe(dock) Menu . add ( AttachToMdi  , LocalMsgs [ AttachToMdi  ] ) ;
-    nIfSafe(mdi ) Menu . add ( AttachToDock , LocalMsgs [ AttachToDock ] ) ;
-    """
+    p       = self . parent          (                                       )
+    S       = False
+    D       = False
+    M       = False
+    ##########################################################################
+    if                               ( p == None                           ) :
+      S     = True
+    else                                                                     :
+      ########################################################################
+      if                             ( self . isDocking ( )                ) :
+        D   = True
+      else                                                                   :
+        M   = True
+    ##########################################################################
+    menu    . addSeparator           (                                       )
+    ##########################################################################
+    if                               (     S or D                          ) :
+      msg   = self . getLocalMessage ( self . AttachToMdi                    )
+      menu  . addAction              ( self . AttachToMdi  , msg             )
+    ##########################################################################
+    if                               (     S or M                          ) :
+      msg   = self . getLocalMessage ( self . AttachToDock                   )
+      menu  . addAction              ( self . AttachToDock , msg             )
+    ##########################################################################
+    if                               ( not S                               ) :
+      msg   = self . getLocalMessage ( self . AttachToNone                   )
+      menu  . addAction              ( self . AttachToNone , msg             )
     ##########################################################################
     return
   ############################################################################
   def RunDocking               ( self , menu , action                      ) :
     ##########################################################################
     at = menu . at             ( action                                      )
+    ##########################################################################
+    if                         ( at == self . AttachToNone                 ) :
+      self . attachNone . emit ( self                                        )
+      return True
     ##########################################################################
     if                         ( at == self . AttachToMdi                  ) :
       self . attachMdi  . emit ( self , self . dockingOrientation            )
@@ -212,7 +293,7 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     ##########################################################################
     for i in range             ( 0 , w                                     ) :
       Lambda = self . PositionToWaveLength ( QPoint ( i , 0 )                )
-      R , G , B = waveToRGB    ( Lambda / 10.0                               )
+      R , G , B = waveToRGB    ( Lambda / 10.0 , self . Luminance            )
       C         = QColor       ( R , G , B                                   )
       painter   . setBrush     ( C                                           )
       painter   . setPen       ( QPen ( C , 1 , Qt.SolidLine )               )
@@ -228,7 +309,7 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     ##########################################################################
     for i in range             ( 0 , h                                     ) :
       Lambda = self . PositionToWaveLength ( QPoint ( 0 , i )                )
-      R , G , B = waveToRGB    ( Lambda / 10.0                               )
+      R , G , B = waveToRGB    ( Lambda / 10.0 , self . Luminance            )
       C         = QColor       ( R , G , B                                   )
       painter   . setBrush     ( C                                           )
       painter   . setPen       ( QPen ( C , 1 , Qt.SolidLine )               )
@@ -257,19 +338,220 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     ##########################################################################
     return
   ############################################################################
-  def HandleWaveLengthPosition             ( self , pos , globalPos        ) :
+  def HandleWaveLengthPosition              ( self , pos , globalPos       ) :
     ##########################################################################
-    Lambda   = self . PositionToWaveLength ( pos                             )
-    LSM      = "{:4.3f}" . format          ( Lambda                          )
-    LSM      = f"{LSM}Å"
-    QToolTip . showText                    ( globalPos , LSM                 )
+    if                                      ( not self . ShowToolTip       ) :
+      return
+    ##########################################################################
+    L         = self . Luminance
+    Lambda    = self . PositionToWaveLength ( pos                            )
+    LSM       = self . toWaveString         ( Lambda                         )
+    FSM       = self . toFrequencyString    ( Lambda                         )
+    R , G , B = waveToRGB                   ( Lambda / 10.0 , L              )
+    MSG       = f"{LSM} / {FSM} / ( {R} , {G} , {B} )"
+    QToolTip  . showText                    ( globalPos , MSG                )
     ##########################################################################
     return
   ############################################################################
-  def WaveLengthPressed                    ( self , pos                    ) :
+  def WaveLengthPressed                  ( self , pos                      ) :
     ##########################################################################
-    Lambda   = self . PositionToWaveLength ( pos                             )
+    L      = self . Luminance
+    Lambda = self . PositionToWaveLength (        pos                        )
+    R , G , B = waveToRGB                ( Lambda / 10.0 , L                 )
+    FREQ   = 2997924.58 / Lambda
+    self   . Angstrom  . emit            ( Lambda        , FREQ , R , G , B  )
+    self   . Nanometer . emit            ( Lambda / 10.0 , FREQ , R , G , B  )
+    ##########################################################################
+    if                                   ( self . AudioReport              ) :
+      ########################################################################
+      LSM  = "{:4.3f}" . format          (        Lambda                     )
+      LSM  = f"{LSM} Angstrom"
+      self . Go ( self . Talk , ( LSM , self . getLocality ( ) , )           )
     ##########################################################################
     return
   ############################################################################
+  def DirectionMenu          ( self , menu                                 ) :
+    ##########################################################################
+    LDM  = menu . addMenu    ( "顯示方向" )
+    ##########################################################################
+    msg  = "左高頻/右低頻"
+    hid  =                   ( self . Direction == "Left-Right"              )
+    menu . addActionFromMenu ( LDM , 20000001 , msg , True , hid             )
+    ##########################################################################
+    msg  = "左低頻/右高頻"
+    hid  =                   ( self . Direction == "Right-Left"              )
+    menu . addActionFromMenu ( LDM , 20000002 , msg , True , hid             )
+    ##########################################################################
+    msg  = "上高頻/下低頻"
+    hid  =                   ( self . Direction == "Top-Bottom"              )
+    menu . addActionFromMenu ( LDM , 20000003 , msg , True , hid             )
+    ##########################################################################
+    msg  = "上低頻/下高頻"
+    hid  =                   ( self . Direction == "Bottom-Top"              )
+    menu . addActionFromMenu ( LDM , 20000004 , msg , True , hid             )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunDirection             ( self , menu , action                      ) :
+    ##########################################################################
+    at = menu . at             ( action                                      )
+    ##########################################################################
+    if                         ( at == 20000001                            ) :
+      ########################################################################
+      self . Direction = "Left-Right"
+      self . PrepareImage      (                                             )
+      self . update            (                                             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                         ( at == 20000002                            ) :
+      ########################################################################
+      self . Direction = "Right-Left"
+      self . PrepareImage      (                                             )
+      self . update            (                                             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                         ( at == 20000003                            ) :
+      ########################################################################
+      self . Direction = "Top-Bottom"
+      self . PrepareImage      (                                             )
+      self . update            (                                             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                         ( at == 20000004                            ) :
+      ########################################################################
+      self . Direction = "Bottom-Top"
+      self . PrepareImage      (                                             )
+      self . update            (                                             )
+      ########################################################################
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
+  def LuminanceChanged            ( self , luminance                       ) :
+    ##########################################################################
+    self . Luminance = luminance
+    ##########################################################################
+    self   . PrepareImage         (                                          )
+    self   . update               (                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def MinWaveLengthChanged        ( self , waveAngstrom                    ) :
+    ##########################################################################
+    self   . FromWL = float ( waveAngstrom ) / 10.0
+    ##########################################################################
+    if                            ( self . maxSpin is not None             ) :
+      self . maxSpin . setMinimum ( int ( self . FromWL * 10 )               )
+      self . maxSpin . setMaximum ( int ( self . maxWL  * 10 )               )
+    ##########################################################################
+    self   . PrepareImage         (                                          )
+    self   . update               (                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def MaxWaveLengthChanged        ( self , waveAngstrom                    ) :
+    ##########################################################################
+    self   . ToWL   = float ( waveAngstrom ) / 10.0
+    ##########################################################################
+    if                            ( self . minSpin is not None             ) :
+      self . minSpin . setMinimum ( int ( self . minWL  * 10 )               )
+      self . minSpin . setMaximum ( int ( self . ToWL   * 10 )               )
+    ##########################################################################
+    self   . PrepareImage         (                                          )
+    self   . update               (                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def FrequencyMenu               ( self , menu                            ) :
+    ##########################################################################
+    LDM   = menu . addMenu         ( "光譜範圍" )
+    ##########################################################################
+    minSB = SpinBox                ( None , self . PlanFunc                  )
+    minSB . setMinimum             ( int ( self . minWL  * 10 )              )
+    minSB . setMaximum             ( int ( self . ToWL   * 10 )              )
+    minSB . setValue               ( int ( self . FromWL * 10 )              )
+    minSB . setAlignment           ( Qt . AlignRight                         )
+    minSB . setPrefix              ( "最小波長：" )
+    minSB . setSuffix              ( " Å " )
+    self  . minSpin = minSB
+    menu  . addWidgetWithMenu      ( LDM , 999712343 , minSB                 )
+    ##########################################################################
+    maxSB = SpinBox                ( None , self . PlanFunc                  )
+    maxSB . setMinimum             ( int ( self . FromWL * 10 )              )
+    maxSB . setMaximum             ( int ( self . maxWL  * 10 )              )
+    maxSB . setValue               ( int ( self . ToWL   * 10 )              )
+    maxSB . setAlignment           ( Qt . AlignRight                         )
+    maxSB . setPrefix              ( "最大波長：" )
+    maxSB . setSuffix              ( " Å " )
+    self  . maxSpin = maxSB
+    menu  . addWidgetWithMenu      ( LDM , 999712344 , maxSB                 )
+    ##########################################################################
+    minSB . valueChanged . connect ( self . MinWaveLengthChanged             )
+    maxSB . valueChanged . connect ( self . MaxWaveLengthChanged             )
+    ##########################################################################
+    return
+  ############################################################################
+  def Menu                          ( self , pos                           ) :
+    ##########################################################################
+    mm     = MenuManager            ( self                                   )
+    ##########################################################################
+    TRX    = self . Translations
+    ##########################################################################
+    msg    = "顯示數據"
+    mm     . addAction              ( 2001 , msg , True , self . ShowToolTip )
+    ##########################################################################
+    msg    = "語音報告"
+    mm     . addAction              ( 2002 , msg , True , self . AudioReport )
+    ##########################################################################
+    mm     . addSeparator           (                                        )
+    ligSB  = SpinBox                ( None , self . PlanFunc                 )
+    ligSB  . setMinimum             ( 1                                      )
+    ligSB  . setMaximum             ( 1000                                   )
+    ligSB  . setValue               ( int ( self . Luminance )               )
+    ## ligSB  . setAlignment           ( Qt . AlignRight                        )
+    ligSB  . setPrefix              ( "亮度：" )
+    ligSB  . valueChanged . connect ( self . LuminanceChanged                )
+    mm     . addWidget              ( 999712345 , ligSB                      )
+    ##########################################################################
+    mm     . addSeparator           (                                        )
+    ##########################################################################
+    self   . DirectionMenu          ( mm                                     )
+    self   . FrequencyMenu          ( mm                                     )
+    self   . DockingMenu            ( mm                                     )
+    ##########################################################################
+    mm     . setFont                ( self    . font ( )                     )
+    aa     = mm . exec_             ( QCursor . pos  ( )                     )
+    at     = mm . at                ( aa                                     )
+    ##########################################################################
+    self   . minSpin = None
+    self   . maxSpin = None
+    ##########################################################################
+    if                              ( self . RunDirection ( mm , aa )      ) :
+      return True
+    ##########################################################################
+    if                              ( self . RunDocking   ( mm , aa )      ) :
+      return True
+    ##########################################################################
+    if                              ( at == 2001                           ) :
+      ########################################################################
+      if                            ( self . ShowToolTip                   ) :
+        self . ShowToolTip = False
+      else                                                                   :
+        self . ShowToolTip = True
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 2002                           ) :
+      ########################################################################
+      if                            ( self . AudioReport                   ) :
+        self . AudioReport = False
+      else                                                                   :
+        self . AudioReport = True
+      ########################################################################
+      return True
+    ##########################################################################
+    return True
 ##############################################################################

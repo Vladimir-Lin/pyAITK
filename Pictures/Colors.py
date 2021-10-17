@@ -21,10 +21,11 @@ def ConstraintRGB             ( V                                          ) :
   ############################################################################
   return int                  ( V                                            )
 ##############################################################################
-def WaveLengthToRGB                ( Lambda                                ) :
+def WaveLengthToRGB                ( Lambda , Luminance = 1000             ) :
   ############################################################################
+  RAT = float ( Luminance ) / 1000.0
   XYZ = colour . wavelength_to_XYZ ( Lambda                                  )
-  RGB = colour . XYZ_to_sRGB       ( XYZ                                     )
+  RGB = colour . XYZ_to_sRGB       ( XYZ * RAT                               )
   R   = RGB                        [ 0                                       ]
   G   = RGB                        [ 1                                       ]
   B   = RGB                        [ 2                                       ]
