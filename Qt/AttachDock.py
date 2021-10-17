@@ -24,6 +24,7 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 ##############################################################################
 from   AITK . Calendars . StarDate    import StarDate
+from   AITK . Qt        . DockWidget  import DockWidget
 ##############################################################################
 class AttachDock         (                                                 ) :
   ############################################################################
@@ -38,7 +39,7 @@ class AttachDock         (                                                 ) :
   def __del__            ( self                                            ) :
     return
   ############################################################################
-  def InitializeDock        ( self , plan = None                           ) :
+  def InitializeDock     ( self , plan = None                              ) :
     ##########################################################################
     self . Trigger    = None
     self . Dock       = None
@@ -106,13 +107,30 @@ class AttachDock         (                                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def getAllowArea   ( self , AREAS , areas , area                         ) :
+    ##########################################################################
+    if               ( ( areas & area ) == area                            ) :
+      AREAS = AREAS | area
+    ##########################################################################
+    return AREAS
+  ############################################################################
+  def assignAllowAreas            ( self , areas                           ) :
+    ##########################################################################
+    A = 0
+    A = self . getAllowArea       ( A , areas , Qt . LeftDockWidgetArea      )
+    A = self . getAllowArea       ( A , areas , Qt . RightDockWidgetArea     )
+    A = self . getAllowArea       ( A , areas , Qt . TopDockWidgetArea       )
+    A = self . getAllowArea       ( A , areas , Qt . BottomDockWidgetArea    )
+    ##########################################################################
+    self . Dock . setAllowedAreas ( A                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def Store                   ( self , Main                                ) :
     ##########################################################################
+    self . LockDock           (                                              )
     ##########################################################################
     """
-    void N::AttachDock::Store(QMainWindow * Main)
-    {
-      LockDock                                        (            ) ;
       QRect     DR = Dock -> geometry                 (            ) ;
       QWidget * wx = Dock -> widget                   (            ) ;
       DockInformation DI                                             ;
@@ -130,95 +148,97 @@ class AttachDock         (                                                 ) :
         plan -> site . setValue   ( "HintHeight" , hs . height ( ) ) ;
         plan -> site . endGroup   (                                ) ;
       }                                                              ;
-      UnlockDock                                      (            ) ;
-    }
     """
+    ##########################################################################
+    self . UnlockDock         (                                              )
     ##########################################################################
     return
   ############################################################################
-  def Docking                ( self                                        , \
-                               Main                                        , \
-                               widget                                      , \
-                               title                                       , \
-                               area                                        , \
-                               areas                                       ) :
+  def Docking                        ( self                                , \
+                                       Main                                , \
+                                       widget                              , \
+                                       title                               , \
+                                       area                                , \
+                                       areas                               ) :
     ##########################################################################
+    if                               ( not self . hasDockPlan ( )          ) :
+      return
+    ##########################################################################
+    plan     = self . GetDockPlan    (                                       )
     ##########################################################################
     """
-    void N::AttachDock::Docking       (
-           QMainWindow       * Main   ,
-           QWidget           * widget ,
-           QString             title  ,
-           Qt::DockWidgetArea  area   ,
-           Qt::DockWidgetAreas areas  )
-    {
-      if ( IsNull ( plan ) ) return                                              ;
-      int             w       = plan -> screen . widthPixels ( 40 )              ;
-      bool            restore = false                                            ;
-      QSize           WS                                                         ;
-      DockInformation DI                                                         ;
-      ////////////////////////////////////////////////////////////////////////////
-      switch ( area )                                                            {
-        case Qt::LeftDockWidgetArea                                              :
-        case Qt::RightDockWidgetArea                                             :
-          DI . width    = w                                                      ;
-          DI . height   = Main -> height ( )                                     ;
-        break                                                                    ;
-        case Qt::TopDockWidgetArea                                               :
-        case Qt::BottomDockWidgetArea                                            :
-          DI . width    = Main -> width  ( )                                     ;
-          DI . height   = w                                                      ;
-        break                                                                    ;
-      }                                                                          ;
-      ////////////////////////////////////////////////////////////////////////////
-      DI    . floating = false                                                   ;
-      DI    . show     = true                                                    ;
-      DI    . area     = area                                                    ;
-      plan -> site . LoadDock            ( Scope , DI                          ) ;
-      Dock             = new DockWidget  ( Main                                ) ;
-      Dock            -> blockSignals    ( true                                ) ;
-      Dock            -> setFont         ( plan->fonts[N::Fonts::Default]      ) ;
-      Dock            -> setWindowTitle  ( title                               ) ;
-      Dock            -> setWidget       ( widget                              ) ;
-      Dock            -> setToolTip      ( title                               ) ;
-      Main            -> addDockWidget   ( (Qt::DockWidgetArea) DI.area , Dock ) ;
-      widget          -> setWindowTitle  ( title                               ) ;
-      DockLimits [ 2 ] = widget -> minimumSize (                               ) ;
-      DockLimits [ 3 ] = widget -> maximumSize (                               ) ;
-      ////////////////////////////////////////////////////////////////////////////
-      Dock            -> setAllowedAreas ( areas                               ) ;
-      if ( DI . geometry . size ( ) > 0 )                                        {
-        Dock -> restoreGeometry          ( DI . geometry                       ) ;
-      }                                                                          ;
-      Dock            -> setFloating     ( DI . floating                       ) ;
-      WS               . setWidth        ( DI . width                          ) ;
-      WS               . setHeight       ( DI . height                         ) ;
-      if ( ( WS . width ( ) > 0 ) && ( WS . height ( ) > 0 ) ) restore = true    ;
-      if ( restore )                                                             {
-        QSize DS = Dock -> maximumSize   (       )                               ;
-        widget          -> resize        ( WS    )                               ;
-        plan      -> site . beginGroup   ( Scope )                               ;
-        if ( plan -> site . contains ( "HintWidth" ) )                           {
-          if ( plan -> site . contains ( "HintHeight" ) )                        {
-            QSize         hs                                                     ;
-            AbstractGui * ag = dynamic_cast<AbstractGui *>(widget)               ;
-            hs . setWidth  ( plan -> site . value ( "HintWidth"  ) . toInt() )   ;
-            hs . setHeight ( plan -> site . value ( "HintHeight" ) . toInt() )   ;
-            if ( NotNull ( ag ) ) ag -> setSuggestion ( hs )                     ;
-          }                                                                      ;
-        }                                                                        ;
-        plan            -> site . endGroup                 (    )                ;
-        Dock            -> DockGeometry = Dock -> geometry (    )                ;
-        Dock            -> DockGeometry . setSize          ( WS )                ;
-        DockLimits [ 0 ] = WS                                                    ;
-        DockLimits [ 1 ] = DS                                                    ;
-      }                                                                          ;
-      Dock -> setVisible     ( DI . show )                                       ;
-      Dock -> blockSignals   ( false     )                                       ;
-      plan -> setFont        ( Dock      )                                       ;
-      plan -> processEvents  (           )                                       ;
-    }
+    int             w       = plan -> screen . widthPixels ( 40 ) 4公分             ;
+    bool            restore = false                                            ;
+    QSize           WS                                                         ;
+    DockInformation DI                                                         ;
     """
+    w        = 80
+    Restore  = False
+    DIW      = 0
+    DIH      = 0
+    Floating = False
+    Show     = True
+    ##########################################################################
+    if   ( area in [ Qt . LeftDockWidgetArea , Qt . RightDockWidgetArea  ] ) :
+      DIW    = w
+      DIH    = Main . height         (                                       )
+    elif ( area in [ Qt . TopDockWidgetArea  , Qt . BottomDockWidgetArea ] ) :
+      DIW    = Main . width          (                                       )
+      DIH    = w
+    ##########################################################################
+    ## plan -> site . LoadDock ( Scope , DI )
+    ##########################################################################
+    self     . Dock = DockWidget     ( Main , self . dockPlan                )
+    self     . Dock . blockSignals   ( True                                  )
+    ##########################################################################
+    ## Dock -> setFont ( plan->fonts[N::Fonts::Default] )
+    self     . Dock . setWindowTitle ( title                                 )
+    self     . Dock . setWidget      ( widget                                )
+    self     . Dock . setToolTip     ( title                                 )
+    Main     . addDockWidget         ( area , self . Dock                    )
+    widget   . setWindowTitle        ( title                                 )
+    ## DockLimits [ 2 ] = widget -> minimumSize ( )
+    ## DockLimits [ 3 ] = widget -> maximumSize ( )
+    self     . assignAllowAreas      ( areas                                 )
+    ## if ( DI . geometry . size ( ) > 0 )                                        {
+    ##   Dock -> restoreGeometry          ( DI . geometry                       ) ;
+    ## }                                                                          ;
+    self     . Dock . setFloating    ( Floating                              )
+    """
+    WS               . setWidth        ( DI . width                          ) ;
+    WS               . setHeight       ( DI . height                         ) ;
+    if ( ( WS . width ( ) > 0 ) && ( WS . height ( ) > 0 ) ) restore = true    ;
+    if ( restore )                                                             {
+      QSize DS = Dock -> maximumSize   (       )                               ;
+      widget          -> resize        ( WS    )                               ;
+      plan      -> site . beginGroup   ( Scope )                               ;
+      if ( plan -> site . contains ( "HintWidth" ) )                           {
+        if ( plan -> site . contains ( "HintHeight" ) )                        {
+          QSize         hs                                                     ;
+          AbstractGui * ag = dynamic_cast<AbstractGui *>(widget)               ;
+          hs . setWidth  ( plan -> site . value ( "HintWidth"  ) . toInt() )   ;
+          hs . setHeight ( plan -> site . value ( "HintHeight" ) . toInt() )   ;
+          if ( NotNull ( ag ) ) ag -> setSuggestion ( hs )                     ;
+        }                                                                      ;
+      }                                                                        ;
+      plan            -> site . endGroup                 (    )                ;
+      Dock            -> DockGeometry = Dock -> geometry (    )                ;
+      Dock            -> DockGeometry . setSize          ( WS )                ;
+      DockLimits [ 0 ] = WS                                                    ;
+      DockLimits [ 1 ] = DS                                                    ;
+    }                                                                          ;
+    """
+    ##########################################################################
+    self     . Dock . setVisible     ( True                                  )
+    self     . Dock . blockSignals   ( False                                 )
+    ## plan -> setFont        ( Dock      )
+    ##########################################################################
+    Located  = getattr               ( widget , "DockLocationChanged" , None )
+    if                               ( Located is not None                 ) :
+      if                             ( callable ( Located )                ) :
+        self . Dock . dockLocationChanged . connect ( Located                )
+    ##########################################################################
+    qApp     . processEvents         (                                       )
     ##########################################################################
     return
   ############################################################################

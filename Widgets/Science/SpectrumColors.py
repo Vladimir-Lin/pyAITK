@@ -51,21 +51,24 @@ from   AITK . Qt       . SpinBox      import SpinBox           as SpinBox
 from   AITK . Pictures . Colors       import WaveLengthToRGB   as waveToRGB
 from   AITK . Pictures . Colors       import RatioToWaveLength as RatioToWave
 ##############################################################################
-class SpectrumColors         ( Widget , AttachDock                         ) :
+class SpectrumColors      ( Widget , AttachDock                            ) :
   ############################################################################
-  attachNone    = pyqtSignal ( QWidget                                       )
-  attachDock    = pyqtSignal ( QWidget , str , int , int                     )
-  attachMdi     = pyqtSignal ( QWidget , int                                 )
-  Angstrom      = pyqtSignal ( float , float , int , int , int               )
-  Nanometer     = pyqtSignal ( float , float , int , int , int               )
+  HavingMenu = 1371434312
   ############################################################################
-  def __init__        ( self , parent = None , plan = None                 ) :
+  attachNone = pyqtSignal ( QWidget                                          )
+  attachDock = pyqtSignal ( QWidget , str , int , int                        )
+  attachMdi  = pyqtSignal ( QWidget , int                                    )
+  Angstrom   = pyqtSignal ( float , float , int , int , int                  )
+  Nanometer  = pyqtSignal ( float , float , int , int , int                  )
+  Leave      = pyqtSignal ( QWidget                                          )
+  ############################################################################
+  def __init__            ( self , parent = None , plan = None             ) :
     ##########################################################################
     super (                   ) . __init__ ( parent , plan                   )
     super ( AttachDock , self ) . __init__ (                                 )
     self . InitializeDock                  (          plan                   )
     ##########################################################################
-    self . dockingOrientation = 0
+    self . dockingOrientation = Qt . Horizontal
     self . dockingPlace       = Qt . BottomDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
@@ -74,9 +77,7 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     ##########################################################################
     ## WidgetClass                                            ;
     self . setFunction     ( self . FunctionDocking , True                   )
-    self . setLocalMessage ( self . AttachToNone    , "切換成獨立視窗" )
-    self . setLocalMessage ( self . AttachToMdi     , "移動到視窗區域" )
-    self . setLocalMessage ( self . AttachToDock    , "移動到停泊區域" )
+    self . setFunction     ( self . HavingMenu      , True                   )
     ##########################################################################
     self . setMouseTracking ( True )
     ## self . Direction   = "Left-Right"
@@ -101,6 +102,18 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
   ############################################################################
   def setSpectrumDirection          ( self , direction                     ) :
     self . Direction = direction
+    return
+  ############################################################################
+  def PrepareMessages            ( self                                    ) :
+    ##########################################################################
+    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
+    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
+    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
+    ##########################################################################
+    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
+    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
+    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
+    ##########################################################################
     return
   ############################################################################
   def focusInEvent           ( self , event                                ) :
@@ -164,6 +177,13 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     ##########################################################################
     return
   ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def toWaveString           ( self , Lambda                               ) :
     ##########################################################################
     LSM = "{:4.3f}" . format (        Lambda                                 )
@@ -179,6 +199,24 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     ##########################################################################
     return FSM
   ############################################################################
+  def DockLocationChanged ( self , area                                    ) :
+    ##########################################################################
+    if   ( area in [ Qt . LeftDockWidgetArea , Qt . RightDockWidgetArea  ] ) :
+      ########################################################################
+      self . dockingOrientation = Qt . Vertical
+      self . Direction = "Bottom-Top"
+      self . PrepareImage (                                                  )
+      self . update       (                                                  )
+      ########################################################################
+    elif ( area in [ Qt . TopDockWidgetArea  , Qt . BottomDockWidgetArea ] ) :
+      ########################################################################
+      self . dockingOrientation = Qt . Horizontal
+      self . Direction = "Right-Left"
+      self . PrepareImage (                                                  )
+      self . update       (                                                  )
+    ##########################################################################
+    return
+  ############################################################################
   def Visible        ( self , visible                                      ) :
     self . Visiblity (        visible                                        )
     return
@@ -189,7 +227,7 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
   ############################################################################
   def Docking            ( self , Main , title , area , areas              ) :
     ##########################################################################
-    super ( )  . Docking (        Main , title , area , areas                )
+    super ( )  . Docking (        Main , self ,  title , area , areas        )
     if                   ( self . Dock == None                             ) :
       return
     ##########################################################################
@@ -203,7 +241,7 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     if                               ( not canDock                         ) :
       return
     ##########################################################################
-    p       = self . parent          (                                       )
+    p       = self . parentWidget    (                                       )
     S       = False
     D       = False
     M       = False
@@ -495,6 +533,10 @@ class SpectrumColors         ( Widget , AttachDock                         ) :
     return
   ############################################################################
   def Menu                          ( self , pos                           ) :
+    ##########################################################################
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
+      return False
     ##########################################################################
     mm     = MenuManager            ( self                                   )
     ##########################################################################

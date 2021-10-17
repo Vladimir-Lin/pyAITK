@@ -63,12 +63,8 @@ class DockWidget                ( QDockWidget , VirtualGui                 ) :
     ##########################################################################
     return
   ############################################################################
-  def event                              ( self , event                    ) :
-    super ( QDockWidget , self ) . event (        event                      )
-    return
-  ############################################################################
   def sizeHint                   ( self                                    ) :
     if                           ( not self . Regular                      ) :
       return DockGeometry . size (                                           )
-    return super ( QDockWidget , self ) . sizeHint (                         )
+    return super ( ) . sizeHint  (                                           )
 ##############################################################################
