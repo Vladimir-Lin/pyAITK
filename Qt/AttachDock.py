@@ -194,7 +194,7 @@ class AttachDock         (                                                 ) :
     ## Dock -> setFont ( plan->fonts[N::Fonts::Default] )
     self     . Dock . setWindowTitle ( title                                 )
     self     . Dock . setWidget      ( widget                                )
-    self     . Dock . setToolTip     ( title                                 )
+    ## self     . Dock . setToolTip     ( title                                 )
     Main     . addDockWidget         ( area , self . Dock                    )
     widget   . setWindowTitle        ( title                                 )
     ## DockLimits [ 2 ] = widget -> minimumSize ( )
