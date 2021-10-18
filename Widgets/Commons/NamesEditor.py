@@ -392,18 +392,18 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard          ( self                                      ) :
+  def CopyToClipboard             ( self                                   ) :
     ##########################################################################
-    IT   = self . currentItem  (                                             )
-    if                         ( IT is None                                ) :
+    IT   = self . currentItem     (                                          )
+    if                            ( IT is None                             ) :
       return
     ##########################################################################
-    MSG  = IT . text           ( 1                                           )
-    LID  = IT . data           ( 2 , Qt . UserRole                           )
-    LID  = int                 ( LID                                         )
-    qApp . clipboard . setText ( MSG                                         )
+    MSG  = IT . text              ( 1                                        )
+    LID  = IT . data              ( 2 , Qt . UserRole                        )
+    LID  = int                    ( LID                                      )
+    qApp . clipboard ( ). setText ( MSG                                      )
     ##########################################################################
-    self . Go                  ( self . Talk , ( MSG , LID , )               )
+    self . Go                     ( self . Talk , ( MSG , LID , )            )
     ##########################################################################
     return
   ############################################################################
