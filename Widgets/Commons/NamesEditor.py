@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## TreeWidget
+## NamesEditor
 ##############################################################################
 import os
 import sys
@@ -51,7 +51,7 @@ from   AITK  . Qt        . TreeDock    import TreeDock    as TreeDock
 ##############################################################################
 from   AITK  . Documents . Name        import Name        as NameItem
 ##############################################################################
-class NamesEditor        ( TreeDock , NameItem                             ) :
+class NamesEditor              ( TreeDock , NameItem                       ) :
   ############################################################################
   HavingMenu      = 1371434312
   ############################################################################
@@ -60,8 +60,9 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
   emitNewItem     = pyqtSignal ( list                                        )
   emitRefreshItem = pyqtSignal ( QTreeWidgetItem , list                      )
   CloseMyself     = pyqtSignal ( QWidget , int                               )
+  Leave           = pyqtSignal ( QWidget                                     )
   ############################################################################
-  def __init__           ( self , parent = None , plan = None              ) :
+  def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
     super (                 ) . __init__ ( parent , plan                     )
     super ( NameItem , self ) . __init__ (                                   )
@@ -125,9 +126,6 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     self     . MountClicked        ( 1                                       )
     self     . MountClicked        ( 2                                       )
     ##########################################################################
-    QShortcut ( QKeySequence ( "Ins"                 ) , self ) . activated . connect ( self . InsertItem  )
-    QShortcut ( QKeySequence ( QKeySequence . Delete ) , self ) . activated . connect ( self . DeleteItems )
-    ##########################################################################
     self     . assignSelectionMode ( "ContiguousSelection"                   )
     ##########################################################################
     self     . setPrepared         ( True                                    )
@@ -151,13 +149,14 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     if                           ( not self . isPrepared ( )               ) :
       return False
     ##########################################################################
-    self . setActionLabel        ( "Label"      , self . windowTitle ( )     )
-    self . LinkAction            ( "Refresh"    , self . startup             )
+    self . setActionLabel        ( "Label"   , self . windowTitle ( )        )
+    self . LinkAction            ( "Refresh" , self . startup                )
     ##########################################################################
-    self . LinkAction            ( "Insert"     , self . InsertItem          )
-    self . LinkAction            ( "Delete"     , self . DeleteItems         )
+    self . LinkAction            ( "Insert"  , self . InsertItem             )
+    self . LinkAction            ( "Delete"  , self . DeleteItems            )
+    self . LinkAction            ( "Copy"    , self . CopyToClipboard        )
     ##########################################################################
-    ## self . LinkAction            ( "Rename"     , self . RenamePeople        )
+    self . LinkAction            ( "Rename"  , self . RenameItem             )
     ##########################################################################
     return True
   ############################################################################
@@ -380,6 +379,31 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
       return
     ##########################################################################
     self         . Go ( self . RemoveItems , ( Listings , )                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def RenameItem            ( self                                         ) :
+    ##########################################################################
+    IT = self . currentItem (                                                )
+    if                      ( IT is None                                   ) :
+      return
+    ##########################################################################
+    self . doubleClicked    ( IT , 1                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyToClipboard          ( self                                      ) :
+    ##########################################################################
+    IT   = self . currentItem  (                                             )
+    if                         ( IT is None                                ) :
+      return
+    ##########################################################################
+    MSG  = IT . text           ( 1                                           )
+    LID  = IT . data           ( 2 , Qt . UserRole                           )
+    LID  = int                 ( LID                                         )
+    qApp . clipboard . setText ( MSG                                         )
+    ##########################################################################
+    self . Go                  ( self . Talk , ( MSG , LID , )               )
     ##########################################################################
     return
   ############################################################################
@@ -671,6 +695,7 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     ##########################################################################
     self . setPrepared           ( False                                     )
     self . CloseMyself . emit    ( self , int ( self . get ( "uuid" ) )      )
+    self . Leave       . emit    ( self                                      )
     ##########################################################################
     return True
   ############################################################################
@@ -995,135 +1020,3 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     ##########################################################################
     return
 ##############################################################################
-
-"""
-
-bool N::PhonemeItems::FocusIn(void)
-{
-  LinkAction ( Insert     , New             ( ) ) ;
-  LinkAction ( Refresh    , startup         ( ) ) ;
-  LinkAction ( Copy       , CopyToClipboard ( ) ) ;
-  LinkAction ( SelectNone , SelectNone      ( ) ) ;
-  LinkAction ( SelectAll  , SelectAll       ( ) ) ;
-  return true                                     ;
-}
-
-void N::PhonemeItems::Configure(void)
-{
-  setEmpty                     (                                  ) ;
-  NewTreeWidgetItem            ( head                             ) ;
-  head -> setText              ( 0 , tr("Name"    )               ) ;
-  head -> setText              ( 1 , tr("Mnemonic")               ) ;
-  head -> setText              ( 2 , tr("Flags"   )               ) ;
-  head -> setText              ( 3 , tr("Code"    )               ) ;
-  head -> setText              ( 4 , tr("Type"    )               ) ;
-  head -> setText              ( 5 , tr("Start"   )               ) ;
-  head -> setText              ( 6 , tr("End"     )               ) ;
-  head -> setText              ( 7 , tr("Length"  )               ) ;
-  head -> setText              ( 8 , ""                           ) ;
-  ///////////////////////////////////////////////////////////////////
-  setWindowTitle               ( tr("Phoneme lists")              ) ;
-  setWindowIcon                ( QIcon(":/images/audiofiles.png") ) ;
-  setDragDropMode              ( DragDrop                         ) ;
-  setRootIsDecorated           ( false                            ) ;
-  setAlternatingRowColors      ( true                             ) ;
-  setSelectionMode             ( ExtendedSelection                ) ;
-  setColumnCount               ( 9                                ) ;
-  setHorizontalScrollBarPolicy ( Qt::ScrollBarAsNeeded            ) ;
-  setVerticalScrollBarPolicy   ( Qt::ScrollBarAsNeeded            ) ;
-  assignHeaderItems            ( head                             ) ;
-  MountClicked                 ( 2                                ) ;
-  setDropFlag                  ( DropPhoneme , true               ) ;
-  plan -> setFont              ( this                             ) ;
-}
-
-void N::PhonemeItems::List(void)
-{
-  blockSignals      ( true        )                           ;
-  SqlConnection  SC ( plan -> sql )                           ;
-  if ( SC . open ( "PhonemeItems" , "List" ) )                {
-    QString Q                                                 ;
-    QString N                                                 ;
-    UUIDs   U                                                 ;
-    SUID    u                                                 ;
-    ///////////////////////////////////////////////////////////
-    if (isFirst())                                            {
-      U = GroupItems :: Subordination                         (
-            SC                                                ,
-            first                                             ,
-            t1                                                ,
-            Types::Phoneme                                    ,
-            relation                                          ,
-            SC.OrderByAsc("position")                       ) ;
-    } else
-    if (isSecond())                                           {
-      U = GroupItems :: GetOwners                             (
-            SC                                                ,
-            second                                            ,
-            Types::Phoneme                                    ,
-            t2                                                ,
-            relation                                          ,
-            SC.OrderByAsc("id")                             ) ;
-    } else
-    if ( 0 == first )                                         {
-      U = SC . Uuids                                          (
-            PlanTable(Phonemes)                               ,
-            "uuid"                                            ,
-            SC.OrderByAsc("id")                             ) ;
-    }                                                         ;
-    ///////////////////////////////////////////////////////////
-    foreach ( u , U )                                         {
-      N = SC . getName                                        (
-            PlanTable(Names)                                  ,
-            "uuid"                                            ,
-            vLanguageId                                       ,
-            u                                               ) ;
-      Q = SC . sql . SelectFrom                               (
-            SC . Columns                                      (
-              7                                               ,
-              "mnemonic"                                      ,
-              "flags"                                         ,
-              "code"                                          ,
-              "type"                                          ,
-              "start"                                         ,
-              "end"                                           ,
-              "length"                                      ) ,
-            PlanTable ( Phonemes )                            ,
-            SC . WhereUuid ( u )                            ) ;
-      if (SC.Fetch(Q))                                        {
-        QByteArray MB = SC . ByteArray ( 0 )                  ;
-        int32_t    mb                                         ;
-        memcpy ( &mb , MB.data() , 4 )                        ;
-        NewTreeWidgetItem ( it )                              ;
-        Phoneme ph                                            ;
-        ph  . Mnemonic  = (unsigned int)mb                    ;
-        ph  . Flags     = SC . Value(1) . toUInt  (   )       ;
-        ph  . Code      = (unsigned char)SC . Int ( 2 )       ;
-        ph  . Type      = (unsigned char)SC . Int ( 3 )       ;
-        ph  . StartType = (unsigned char)SC . Int ( 4 )       ;
-        ph  . EndType   = (unsigned char)SC . Int ( 5 )       ;
-        ph  . Length    = (unsigned char)SC . Int ( 6 )       ;
-        it -> setData   ( 0 , Qt::UserRole , u              ) ;
-        it -> setText   ( 0 , N                             ) ;
-        it -> setText   ( 1 , ph.MnemonicString()           ) ;
-        it -> setText   ( 2 , QString::number(ph.Flags,16 ) ) ;
-        it -> setText   ( 3 , QString::number(ph.Code     ) ) ;
-        it -> setText   ( 4 , QString::number(ph.Type     ) ) ;
-        it -> setText   ( 5 , QString::number(ph.StartType) ) ;
-        it -> setText   ( 6 , QString::number(ph.EndType  ) ) ;
-        it -> setText   ( 7 , QString::number(ph.Length   ) ) ;
-        addTopLevelItem ( it                                ) ;
-      }                                                       ;
-    }                                                         ;
-    ///////////////////////////////////////////////////////////
-    SC . close          (                                   ) ;
-  }                                                           ;
-  SC . remove           (                                   ) ;
-  blockSignals          ( false                             ) ;
-  reportItems           (                                   ) ;
-  plan -> StopBusy      (                                   ) ;
-  emit AutoFit          (                                   ) ;
-  Alert                 ( Done                              ) ;
-}
-
-"""

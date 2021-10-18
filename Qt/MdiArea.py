@@ -464,17 +464,6 @@ void N::MdiArea::Leave(QWidget * widget)
   emit childChanged (        ) ;
 }
 
-QMdiSubWindow * N::MdiArea::append(QWidget * widget)
-{
-  MdiSubWindow * msw                                    ;
-  msw  = new MdiSubWindow (                           ) ;
-  msw -> setWidget        ( widget                    ) ;
-  msw -> setAttribute     ( Qt::WA_DeleteOnClose      ) ;
-  msw -> setAttribute     ( Qt::WA_InputMethodEnabled ) ;
-  addSubWindow            ( msw                       ) ;
-  return                    msw                         ;
-}
-
 void N::MdiArea::Fit(QWidget * widget)
 {
   QSize ws = widget->size()                                             ;
@@ -497,66 +486,6 @@ void N::MdiArea::Fit(QWidget * widget)
   msw->setWindowIcon(widget->windowIcon())                              ;
   MenuStatus ( )                                                        ;
   update     ( )                                                        ;
-}
-
-void N::MdiArea::Attach(QWidget * widget)
-{
-  QMdiSubWindow * msw = append(widget)                           ;
-  msw->setFont(plan->fonts[N::Fonts::Default])                   ;
-  QRect mw = geometry()                                          ;
-  QSize sw(mw.width()/4,mw.height()/4)                           ;
-  QSize sr(rand()%16,rand()%16)                                  ;
-  msw->move(sr.width()*sw.width()/16,sr.height()*sw.height()/16) ;
-  msw->resize(sw.width()*3,sw.height()*3)                        ;
-  msw->setWindowIcon(widget->windowIcon())                       ;
-  MenuStatus ( )                                                 ;
-  update     ( )                                                 ;
-}
-
-void N::MdiArea::Attach(QWidget * widget,int direction)
-{
-  QMdiSubWindow * msw = append(widget)                    ;
-  msw->setFont(plan->fonts[N::Fonts::Default])            ;
-  QRect  mw = geometry()                                  ;
-  QSize  sh = widget->sizeHint()                          ;
-  QSize  gw                                               ;
-  QPoint sp                                               ;
-  switch (direction)                                      {
-    case 0                                                :
-      gw = widget->size()                                 ;
-      sp.setX(((mw.width ()-gw.width ())/16)*(rand()%16)) ;
-      sp.setY(((mw.height()-gw.height())/16)*(rand()%16)) ;
-      if (gw.width()<sh.width())                          {
-        gw.setWidth(sh.width())                           ;
-      }                                                   ;
-      if (gw.height()<sh.height())                        {
-        gw.setHeight(sh.height())                         ;
-      }                                                   ;
-    break                                                 ;
-    case Qt::Vertical                                     :
-      sp.setX     ((mw.width()/16)*(rand()%10))           ;
-      sp.setY     (0)                                     ;
-      gw.setWidth (mw.width ()/5)                         ;
-      gw.setHeight(mw.height()  )                         ;
-      if (gw.width()<sh.width())                          {
-        gw.setWidth(sh.width())                           ;
-      }                                                   ;
-    break                                                 ;
-    case Qt::Horizontal                                   :
-      sp.setX     (0)                                     ;
-      sp.setY     ((mw.height()/16)*(rand()%8))           ;
-      gw.setWidth (mw.width())                            ;
-      gw.setHeight(mw.height()/3)                         ;
-      if (gw.height()<sh.height())                        {
-        gw.setHeight(sh.height())                         ;
-      }                                                   ;
-    break                                                 ;
-  }                                                       ;
-  msw->move          ( sp                   )             ;
-  msw->resize        ( gw                   )             ;
-  msw->setWindowIcon ( widget->windowIcon() )             ;
-  MenuStatus         (                      )             ;
-  update             (                      )             ;
 }
 
 void N::MdiArea::subActivated(QMdiSubWindow * window)
@@ -601,84 +530,6 @@ QList<QWidget *> N::MdiArea::getWidgets(QString accName)
     }                                              ;
   }                                                ;
   return Widgets                                   ;
-}
-
-void N::MdiArea::setWindowMenu(QMenu * menu)
-{
-  WindowLists = menu                         ;
-  if (IsNull(WindowLists)) return            ;
-  WindowLists -> setEnabled ( false )        ;
-  connect(WindowLists,SIGNAL(aboutToShow())  ,
-          this       ,SLOT  (menuToShow ())) ;
-}
-
-void N::MdiArea::menuToShow(void)
-{
-  nDropOut ( IsNull(WindowLists) )                                ;
-  WindowLists -> clear()                                          ;
-  MenuActions  . clear()                                          ;
-  QList<QMdiSubWindow *> subws = subWindowList ( )                ;
-  for (int i=0;i<subws.count();i++)                               {
-    QAction * a = WindowLists->addAction(subws[i]->windowTitle()) ;
-    a -> setCheckable ( true )                                    ;
-    nConnect ( a    , SIGNAL ( toggled         (bool))            ,
-               this , SLOT   ( subwindowChecked(bool))          ) ;
-    MenuActions << a                                              ;
-  }                                                               ;
-}
-
-void N::MdiArea::subwindowChecked(bool)
-{
-  if (IsNull(WindowLists)) return                  ;
-  QList<QMdiSubWindow *> subws = subWindowList ( ) ;
-  if (subws.count()!=MenuActions.count()) return   ;
-  for (int i=0;i<subws.count();i++)                {
-    if (MenuActions[i]->isChecked())               {
-      subws [i] -> show  (          )              ;
-      setActiveSubWindow ( subws[i] )              ;
-    }                                              ;
-  }                                                ;
-  MenuActions  . clear()                           ;
-  WindowLists -> clear()                           ;
-}
-
-void N::MdiArea::MenuStatus(void)
-{
-  if (IsNull(plan)) return                                       ;
-  plan -> processEvents ()                                       ;
-  QList<QMdiSubWindow *> subws = subWindowList ( )               ;
-  bool arrangement    = ( subws.count() > 0 )                    ;
-  if (NotNull(WindowLists)) WindowLists->setEnabled(arrangement) ;
-  QAction * closeall  = plan->Action(N::Menus::CloseAll )        ;
-  QAction * cascade   = plan->Action(N::Menus::Cascade  )        ;
-  QAction * tile      = plan->Action(N::Menus::Tile     )        ;
-  QAction * subwindow = plan->Action(N::Menus::Subwindow)        ;
-  QAction * tabbed    = plan->Action(N::Menus::Tabbed   )        ;
-  if (NotNull(closeall )) closeall  -> setEnabled  (arrangement) ;
-  if (NotNull(cascade  )) cascade   -> setEnabled  (arrangement) ;
-  if (NotNull(tile     )) tile      -> setEnabled  (arrangement) ;
-  if (NotNull(subwindow)) subwindow -> blockSignals(true       ) ;
-  if (NotNull(tabbed   )) tabbed    -> blockSignals(true       ) ;
-  switch (viewMode())                                            {
-    case SubWindowView                                           :
-      if (NotNull(subwindow)) subwindow -> setEnabled (false   ) ;
-      if (NotNull(tabbed   )) tabbed    -> setEnabled (true    ) ;
-    break                                                        ;
-    case TabbedView                                              :
-      if (NotNull(subwindow)) subwindow -> setEnabled (true    ) ;
-      if (NotNull(tabbed   )) tabbed    -> setEnabled (false   ) ;
-      if (arrangement)                                           {
-        if (NotNull(cascade)) cascade   -> setEnabled (false   ) ;
-        if (NotNull(tile   )) tile      -> setEnabled (false   ) ;
-      }                                                          ;
-    break                                                        ;
-  }                                                              ;
-  if (NotNull(subwindow)) subwindow -> blockSignals(false      ) ;
-  if (NotNull(tabbed   )) tabbed    -> blockSignals(false      ) ;
-  if (!arrangement)                                              {
-//    DisableAllActions (            )                             ;
-    AssignAction      ( Label , "" )                             ;
-  }                                                              ;
 }
 
 void N::MdiArea::Configure(void)
