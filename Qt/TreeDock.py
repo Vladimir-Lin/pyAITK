@@ -44,6 +44,9 @@ from         . AttachDock             import AttachDock as AttachDock
 ##############################################################################
 class TreeDock                ( TreeWidget , AttachDock                    ) :
   ############################################################################
+  attachNone = pyqtSignal     ( QWidget                                      )
+  attachDock = pyqtSignal     ( QWidget , str , int , int                    )
+  attachMdi  = pyqtSignal     ( QWidget , int                                )
   Clicked    = pyqtSignal     ( int                                          )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
@@ -64,9 +67,9 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##                      Qt::LeftDockWidgetArea      |
     ##                      Qt::RightDockWidgetArea     )
     ##########################################################################
-    self . setRootIsDecorated      ( False )
-    self . setAlternatingRowColors ( True  )
-    self . MountClicked ( 2 )
+    self . setRootIsDecorated      ( False                                   )
+    self . setAlternatingRowColors ( True                                    )
+    self . MountClicked            ( 2                                       )
     ##########################################################################
     ## setFunction             ( N::AttachDock::FunctionDocking , true ) ;
     ## LocalMsgs [ AttachToMdi  ] = tr("Move to window area")            ;
@@ -74,23 +77,27 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return
   ############################################################################
-  def Docking ( self , Main , title , area , areas ) :
+  def PrepareMessages            ( self                                    ) :
     ##########################################################################
-    super ( AttachDock , self ) . Docking ( Main , self , title , area , areas )
-    ## nConnect(Dock,SIGNAL(visibilityChanged(bool))   ,
-    ##          this,SLOT  (Visible          (bool)) ) ;
+    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
+    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
+    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
     ##########################################################################
-    return
-  ############################################################################
-  def DockIn  ( self , shown                                               ) :
-    ##########################################################################
-    super     ( AttachDock , self ) . ShowDock ( shown                       )
+    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
+    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
+    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
     ##########################################################################
     return
   ############################################################################
-  def Visible ( self , visible                                             ) :
+  def DockIn        ( self , shown                                         ) :
     ##########################################################################
-    super     ( AttachDock , self ) . Visible ( visible                      )
+    self . ShowDock (        shown                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def Visible        ( self , visible                                      ) :
+    ##########################################################################
+    self . Visiblity (        visible                                        )
     ##########################################################################
     return
   ############################################################################
@@ -101,32 +108,69 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return
   ############################################################################
-  def DockingMenu ( self , menu ) :
+  def Docking            ( self , Main , title , area , areas              ) :
     ##########################################################################
+    super ( )  . Docking (        Main , self ,  title , area , areas        )
+    if                   ( self . Dock == None                             ) :
+      return
     ##########################################################################
-    ## if ( ! isFunction ( N::AttachDock::FunctionDocking ) ) return          ;
-    ## QMdiSubWindow  * mdi    = Casting(QMdiSubWindow,parent())              ;
-    ## QDockWidget    * dock   = Casting(QDockWidget  ,parent())              ;
-    ## if (NotNull(dock) || NotNull(mdi)) Menu . addSeparator ( )             ;
-    ## nIfSafe(dock) Menu . add ( AttachToMdi  , LocalMsgs [ AttachToMdi  ] ) ;
-    ## nIfSafe(mdi ) Menu . add ( AttachToDock , LocalMsgs [ AttachToDock ] ) ;
+    self . Dock . visibilityChanged . connect ( self . Visible               )
     ##########################################################################
     return
   ############################################################################
-  def RunDocking ( self , menu , action ) :
+  def DockingMenu                    ( self , menu                         ) :
     ##########################################################################
-    at = menu . at ( action )
+    canDock = self . isFunction      ( self . FunctionDocking                )
+    if                               ( not canDock                         ) :
+      return
     ##########################################################################
-    if ( at == AttachDock . AttachToMdi ) :
-      ## emit attachMdi (this,dockingOrientation) ;
+    p       = self . parentWidget    (                                       )
+    S       = False
+    D       = False
+    M       = False
+    ##########################################################################
+    if                               ( p == None                           ) :
+      S     = True
+    else                                                                     :
+      ########################################################################
+      if                             ( self . isDocking ( )                ) :
+        D   = True
+      else                                                                   :
+        M   = True
+    ##########################################################################
+    menu    . addSeparator           (                                       )
+    ##########################################################################
+    if                               (     S or D                          ) :
+      msg   = self . getLocalMessage ( self . AttachToMdi                    )
+      menu  . addAction              ( self . AttachToMdi  , msg             )
+    ##########################################################################
+    if                               (     S or M                          ) :
+      msg   = self . getLocalMessage ( self . AttachToDock                   )
+      menu  . addAction              ( self . AttachToDock , msg             )
+    ##########################################################################
+    if                               ( not S                               ) :
+      msg   = self . getLocalMessage ( self . AttachToNone                   )
+      menu  . addAction              ( self . AttachToNone , msg             )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunDocking               ( self , menu , action                      ) :
+    ##########################################################################
+    at = menu . at             ( action                                      )
+    ##########################################################################
+    if                         ( at == self . AttachToNone                 ) :
+      self . attachNone . emit ( self                                        )
       return True
     ##########################################################################
-    if ( at == AttachDock . AttachToDock ) :
-      ## emit attachDock                          (
-      ##   this                                   ,
-      ##   windowTitle()                          ,
-      ##   dockingPlace                           ,
-      ##   dockingPlaces                        ) ;
+    if                         ( at == self . AttachToMdi                  ) :
+      self . attachMdi  . emit ( self , self . dockingOrientation            )
+      return True
+    ##########################################################################
+    if                         ( at == self . AttachToDock                 ) :
+      self . attachDock . emit ( self                                      , \
+                                 self . windowTitle ( )                    , \
+                                 self . dockingPlace                       , \
+                                 self . dockingPlaces                        )
       return True
     ##########################################################################
     return False

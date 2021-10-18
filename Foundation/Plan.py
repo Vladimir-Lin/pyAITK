@@ -183,11 +183,11 @@ class Plan                 ( PurePlan                                      ) :
   ############################################################################
   def PrepareActions   ( self , parent = None                              ) :
     ##########################################################################
-    s    = QShortcut   ( QKeySequence ( "Ins"                 ) , parent     )
-    self . addShortcut ( "Insert" , s                                        )
+    ## s    = QShortcut   ( QKeySequence ( "Ins"                 ) , parent     )
+    ## self . addShortcut ( "Insert" , s                                        )
     ##########################################################################
-    s    = QShortcut   ( QKeySequence ( QKeySequence . Delete ) , parent     )
-    self . addShortcut ( "Delete" , s                                        )
+    ## s    = QShortcut   ( QKeySequence ( QKeySequence . Delete ) , parent     )
+    ## self . addShortcut ( "Delete" , s                                        )
     ##########################################################################
     return
 ##############################################################################

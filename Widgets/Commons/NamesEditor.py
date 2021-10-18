@@ -12,6 +12,7 @@ import gettext
 import json
 ##############################################################################
 from   opencc                          import OpenCC
+from   googletrans                     import Translator
 ##############################################################################
 from   PyQt5                           import QtCore
 from   PyQt5                           import QtGui
@@ -52,6 +53,8 @@ from   AITK  . Documents . Name        import Name        as NameItem
 ##############################################################################
 class NamesEditor        ( TreeDock , NameItem                             ) :
   ############################################################################
+  HavingMenu      = 1371434312
+  ############################################################################
   emitNamesShow   = pyqtSignal (                                             )
   emitAllNames    = pyqtSignal ( list                                        )
   emitNewItem     = pyqtSignal ( list                                        )
@@ -60,14 +63,23 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
-    ## super ( TreeDock , self ) . __init__ ( parent , plan                     )
     super (                 ) . __init__ ( parent , plan                     )
     super ( NameItem , self ) . __init__ (                                   )
     ##########################################################################
+    self . dockingOrientation = Qt . Horizontal
+    self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
+                                Qt . BottomDockWidgetArea
+    ##########################################################################
+    self . setFunction     ( self . FunctionDocking , True                   )
+    self . setFunction     ( self . HavingMenu      , True                   )
+    ##########################################################################
     return
   ############################################################################
-  def sizeHint                    ( self                                   ) :
-    return QSize                  ( 800 , 480                                )
+  def sizeHint                     ( self                                  ) :
+    return QSize                   ( 1024 , 480                              )
+    ## return QSize                   (  800 , 480                              )
+    ## return QSize                   ( 1024 , 720                              )
   ############################################################################
   def Prepare                      ( self                                  ) :
     ##########################################################################
@@ -135,12 +147,24 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     return
   ############################################################################
   def FocusIn                    ( self                                    ) :
-    return False
+    ##########################################################################
+    if                           ( not self . isPrepared ( )               ) :
+      return False
+    ##########################################################################
+    self . setActionLabel        ( "Label"      , self . windowTitle ( )     )
+    self . LinkAction            ( "Refresh"    , self . startup             )
+    ##########################################################################
+    self . LinkAction            ( "Insert"     , self . InsertItem          )
+    self . LinkAction            ( "Delete"     , self . DeleteItems         )
+    ##########################################################################
+    ## self . LinkAction            ( "Rename"     , self . RenamePeople        )
+    ##########################################################################
+    return True
   ############################################################################
   def FocusOut                   ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
-      return True
+      return False
     ##########################################################################
     return False
   ############################################################################
@@ -409,6 +433,85 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     ##########################################################################
     return mm
   ############################################################################
+  def TranslateMenu                ( self , mm                             ) :
+    ##########################################################################
+    TRX    = self . Translations
+    LOC    = self . Translations   [ "NamesEditor" ] [ "Languages"           ]
+    ##########################################################################
+    msg    = TRX                   [ "UI::Translate"                         ]
+    LOM    = mm . addMenu          ( msg                                     )
+    ##########################################################################
+    KEYs   = LOC . keys            (                                         )
+    ##########################################################################
+    for K in KEYs                                                            :
+      ########################################################################
+      V    = int                   ( K                                       )
+      if                           ( V in [ 0 , 1004 , 1005 ]              ) :
+        continue
+      msg  = LOC                   [ K                                       ]
+      mm   . addActionFromMenu     ( LOM , 11000000 + V , msg                )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunTranslate                     ( self , menu , action              ) :
+    ##########################################################################
+    items  = self . selectedItems      (                                     )
+    ##########################################################################
+    if                                 ( len ( items ) != 1                ) :
+      return False
+    ##########################################################################
+    at     = menu . at                 (               action                )
+    ##########################################################################
+    if                                 ( at < 11000000                     ) :
+      return False
+    ##########################################################################
+    if                                 ( at > 11100000                     ) :
+      return False
+    ##########################################################################
+    IT     = items                     [ 0                                   ]
+    LID    = at   - 11000000
+    DID    = self . defaultLocality
+    SRC    = self . LocalityToGoogleLC ( DID                                 )
+    DEST   = self . LocalityToGoogleLC ( LID                                 )
+    ##########################################################################
+    if                                 ( len ( SRC ) <= 0                  ) :
+      return True
+    ##########################################################################
+    if                                 ( len ( DEST ) <= 0                 ) :
+      return True
+    ##########################################################################
+    pid    = IT . text                 ( 0                                   )
+    txt    = IT . text                 ( 1                                   )
+    pid    = int                       ( pid                                 )
+    ##########################################################################
+    if                                 ( len ( txt ) <= 0                  ) :
+      return True
+    ##########################################################################
+    gt     = Translator     ( service_urls = [ "translate.googleapis.com" ]  )
+    ##########################################################################
+    try                                                                      :
+      target = gt . translate ( txt , src = SRC , dest = DEST ) . text
+    except                                                                   :
+      return True
+    ##########################################################################
+    UTF8   = len                       ( target                              )
+    LENZ   = 0
+    ##########################################################################
+    try                                                                      :
+      S    = target . encode           ( "utf-8"                             )
+      LENZ = len                       ( S                                   )
+    except                                                                   :
+      return True
+    ##########################################################################
+    IT     . setText                   ( 1 , target                          )
+    IT     . setText                   ( 6 , str ( UTF8 )                    )
+    IT     . setText                   ( 7 , str ( LENZ )                    )
+    ##########################################################################
+    self   . Go                        ( self . UpdateUuidName             , \
+                                         ( IT , pid , target , )             )
+    ##########################################################################
+    return False
+  ############################################################################
   def RelevanceMenu                ( self , mm                             ) :
     ##########################################################################
     TRX    = self . Translations
@@ -462,7 +565,7 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
       S    = target . encode ( "utf-8"                                       )
       LENZ = len             ( S                                             )
     except                                                                   :
-      pass
+      return True
     ##########################################################################
     item   . setText         ( 1 , target                                    )
     item   . setText         ( 6 , str ( UTF8 )                              )
@@ -474,6 +577,10 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     return True
   ############################################################################
   def Menu                         ( self , pos                            ) :
+    ##########################################################################
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
     ##########################################################################
     items  = self . selectedItems  (                                         )
     mm     = MenuManager           ( self                                    )
@@ -498,15 +605,23 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
     ##########################################################################
     mm     = self . ColumnsMenu      ( mm                                    )
     if                               ( len ( items ) == 1                  ) :
+      mm   = self . TranslateMenu    ( mm                                    )
       mm   = self . TranslationsMenu ( mm                                    )
     mm     = self . LocalityMenu     ( mm                                    )
     mm     = self . RelevanceMenu    ( mm                                    )
+    self   . DockingMenu             ( mm                                    )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
     ##########################################################################
-    if                             ( at >= 10000000                        ) :
+    if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunTranslate ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if ( ( at >= 10000000 ) and ( at < 11000000 ) )                          :
       self . defaultLocality  = at - 10000000
       return True
     ##########################################################################
@@ -883,11 +998,6 @@ class NamesEditor        ( TreeDock , NameItem                             ) :
 
 """
 
-QSize N::PhonemeItems::sizeHint(void) const
-{
-  return QSize ( 1024 , 720 ) ;
-}
-
 bool N::PhonemeItems::FocusIn(void)
 {
   LinkAction ( Insert     , New             ( ) ) ;
@@ -1014,55 +1124,6 @@ void N::PhonemeItems::List(void)
   plan -> StopBusy      (                                   ) ;
   emit AutoFit          (                                   ) ;
   Alert                 ( Done                              ) ;
-}
-
-bool N::PhonemeItems::Menu(QPoint pos)
-{
-  nScopedMenu ( mm , this )                       ;
-  QAction         * aa                            ;
-  QTreeWidgetItem * it = itemAt ( pos )           ;
-  mm . add ( 101 , tr("New"         ) )           ;
-  if (NotNull(it))                                {
-    mm . add ( 102 , tr("Edit"      ) )           ;
-  }                                               ;
-  mm . add ( 103 , tr("Refresh"     ) )           ;
-  mm . addSeparator  (                )           ;
-  mm . add ( 201 , tr("Copy"        ) )           ;
-  mm . add ( 202 , tr("Select all"  ) )           ;
-  mm . add ( 203 , tr("Select none" ) )           ;
-  mm . addSeparator  (                )           ;
-  mm . add ( 901 , tr("Translations") )           ;
-  DockingMenu ( mm )                              ;
-  mm.setFont(plan)                                ;
-  aa = mm.exec()                                  ;
-  if (IsNull(aa)) return true                     ;
-  if (RunDocking(mm,aa)) return true              ;
-  UUIDs U                                         ;
-  switch (mm[aa])                                 {
-    case 101                                      :
-      New             ( )                         ;
-    break                                         ;
-    case 102                                      :
-      emit Edit ( it->text(0) , nTreeUuid(it,0) ) ;
-    break                                         ;
-    case 103                                      :
-      startup         ( )                         ;
-    break                                         ;
-    case 201                                      :
-      CopyToClipboard ( )                         ;
-    break                                         ;
-    case 202                                      :
-      SelectAll       ( )                         ;
-    break                                         ;
-    case 203                                      :
-      SelectNone      ( )                         ;
-    break                                         ;
-    case 901                                      :
-      U = itemUuids     ( 0                 )     ;
-      emit Translations ( windowTitle() , U )     ;
-    break                                         ;
-  }                                               ;
-  return true                                     ;
 }
 
 """
