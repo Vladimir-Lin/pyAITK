@@ -51,6 +51,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   emitPendingTopLevelItem = pyqtSignal ( QTreeWidgetItem                     )
   pickSelectionMode       = pyqtSignal ( str                                 )
+  Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################

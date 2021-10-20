@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## SexualityListings
+## EyeColorListings
 ##############################################################################
 import os
 import sys
@@ -45,17 +45,13 @@ from   AITK  . Qt . MajorListings     import MajorListings as MajorListings
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
 ##############################################################################
-class SexualityListings  ( MajorListings                                   ) :
+class EyeColorListings   ( MajorListings                                   ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
     super ( ) . __init__ (        parent        , plan                       )
-    ##########################################################################
-    self . IncludeUndecided = True
-    self . CreatureUuid     = 5431231000000000001
-    self . UsedOptions      = [ 1 , 2 , 3 , 4 ]
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -90,25 +86,15 @@ class SexualityListings  ( MajorListings                                   ) :
   ############################################################################
   def ObtainUuidsQuery                ( self                               ) :
     ##########################################################################
-    TABLE   = self . Tables           [ "Sexuality"                          ]
-    LISTs   =                         [ self . CreatureUuid                  ]
+    TABLE   = self . Tables           [ "Eyes"                               ]
     ##########################################################################
-    if                                ( self . IncludeUndecided            ) :
-      LISTs . append                  ( 0                                    )
+    QQ      = f"select `uuid` from {TABLE} order by `id` asc ;"
     ##########################################################################
-    LQ      = " , " . join            ( str(x) for x in LISTs                )
-    UQ      = " , " . join            ( str(x) for x in self . UsedOptions   )
-    ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` in ( {UQ} ) )
-                  and ( `creature` in ( {LQ} ) )
-                  order by `id` asc ;"""
-    ##########################################################################
-    return " " . join                 ( QQ . split ( )                       )
+    return QQ
   ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
-    LABELs = [ "性別名稱" ]
+    LABELs = [ "眼睛顏色" ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )

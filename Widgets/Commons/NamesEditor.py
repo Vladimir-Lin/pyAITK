@@ -60,7 +60,6 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
   emitNewItem     = pyqtSignal ( list                                        )
   emitRefreshItem = pyqtSignal ( QTreeWidgetItem , list                      )
   CloseMyself     = pyqtSignal ( QWidget , int                               )
-  Leave           = pyqtSignal ( QWidget                                     )
   ############################################################################
   def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
@@ -206,6 +205,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
                                    "activated"                               ,
                                    self . localityChanged                    )
       cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
       cb   . showPopup           (                                           )
     ##########################################################################
     elif                         ( column == 3                             ) :
@@ -218,6 +218,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
                                    "activated"                               ,
                                    self . relevanceChanged                   )
       cb   . addJson             ( RR , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
       cb   . showPopup           (                                           )
     ##########################################################################
     elif                         ( column in [ 4 , 5 ]                     ) :

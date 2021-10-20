@@ -207,7 +207,7 @@ class SexualityListings  ( MajorListings                                   ) :
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Tasks" , uuid , NAM             )
+      self . EditAllNames          ( self , "Sexuality" , uuid , NAM         )
       return True
     ##########################################################################
     return True
