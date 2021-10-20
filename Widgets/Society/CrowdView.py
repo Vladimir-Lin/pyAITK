@@ -57,12 +57,14 @@ from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class CrowdView               ( IconDock                                   ) :
   ############################################################################
+  HavingMenu = 1371434312
+  ############################################################################
   CrowdSubgroup = pyqtSignal  ( int , str                                    )
   PeopleGroup   = pyqtSignal  ( int , str                                    )
   ############################################################################
-  def __init__                ( self , parent = None , plan = None         ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__      (        parent        , plan                  )
+    super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . setRelation ( "Subordination"                          )
@@ -70,6 +72,8 @@ class CrowdView               ( IconDock                                   ) :
     self . Grouping = "Tag"
     ## self . Grouping = "Catalog"
     ## self . Grouping = "Subgroup"
+    ##########################################################################
+    self . setFunction            ( self . HavingMenu      , True            )
     ##########################################################################
     return
   ############################################################################
@@ -143,6 +147,10 @@ class CrowdView               ( IconDock                                   ) :
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
     items  = self . selectedItems  (                                         )
     atItem = self . itemAt         ( pos                                     )
     uuid   = 0
@@ -169,10 +177,14 @@ class CrowdView               ( IconDock                                   ) :
         mm . addSeparator          (                                         )
     ##########################################################################
     mm     = self . LocalityMenu   ( mm                                      )
+    self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
     ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
       return True

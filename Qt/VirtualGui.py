@@ -20,10 +20,17 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QMimeData
+from   PyQt5 . QtCore                 import QByteArray
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QPixmap
+from   PyQt5 . QtGui                  import QImage
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QMouseEvent
+from   PyQt5 . QtGui                  import QDrag
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -31,6 +38,7 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
+from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QAbstractItemView
 ##############################################################################
 from         . AbstractGui            import AbstractGui as AbstractGui
@@ -119,6 +127,35 @@ class VirtualGui               ( AbstractGui                               ) :
       return False
     ##########################################################################
     return False
+  ############################################################################
+  def StartingDrag                     ( self                              ) :
+    ##########################################################################
+    if                                 ( self . isDrag ( )                 ) :
+      return
+    ##########################################################################
+    if                                 ( not self . hasDragItem ( )        ) :
+      return
+    ##########################################################################
+    mime       = self . dragMime       (                                     )
+    if                                 ( mime is None                      ) :
+      return
+    ##########################################################################
+    DC                   = QCursor     ( Qt . ClosedHandCursor               )
+    self       . Dumping = True
+    self       . Drag    = QDrag       ( self . Gui                          )
+    self       . Drag    . setMimeData ( mime                                )
+    ##########################################################################
+    if                                 ( mime . hasImage ( )               ) :
+      image    = mime . imageData      (                                     )
+      self     . Drag . setPixmap      ( QPixmap . fromImage ( image )       )
+    else                                                                     :
+      self     . Drag . setPixmap      ( DC . pixmap ( )                     )
+    ##########################################################################
+    dropAction = self . Drag . exec_   ( Qt . CopyAction | Qt . MoveAction   )
+    self       . dragDone              ( dropAction , mime                   )
+    self       . Dumping = False
+    ##########################################################################
+    return
   ############################################################################
   def CopyToFile            ( self                                         , \
                               filename                                     , \

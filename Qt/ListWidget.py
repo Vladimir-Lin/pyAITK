@@ -21,10 +21,16 @@ from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QMimeData
+from   PyQt5 . QtCore                 import QByteArray
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QPixmap
+from   PyQt5 . QtGui                  import QImage
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QDrag
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -32,6 +38,7 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
+from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAbstractItemView
 from   PyQt5 . QtWidgets              import QListWidget
@@ -248,6 +255,14 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     ##########################################################################
     return
   ############################################################################
+  def hasDragItem                ( self                                    ) :
+    ##########################################################################
+    items = self . selectedItems (                                           )
+    if                           ( len ( items ) <= 0                      ) :
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
   def dragDone               ( self , dropIt , mime                        ) :
     return
   ############################################################################
@@ -262,6 +277,38 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     ## return self . dropItems  ( source , mime , pos )
     ##########################################################################
     return False
+  ############################################################################
+  def CreateDragMime                 ( self , widget , mtype , message     ) :
+    ##########################################################################
+    items     = self . selectedItems (                                       )
+    total     = len                  ( items                                 )
+    if                               ( len ( items ) <= 0                  ) :
+      return None
+    ##########################################################################
+    UUIDs     =                      [                                       ]
+    for it in items                                                          :
+      UUID    = it . data            ( Qt . UserRole                         )
+      UUIDs   . append               ( str ( UUID )                          )
+    ##########################################################################
+    JSONs     =                      { "Widget" : id ( widget )            , \
+                                       "UUIDs"  : UUIDs                      }
+    ##########################################################################
+    mime      = QMimeData            (                                       )
+    cit       = self . currentItem   (                                       )
+    self      . setMime              ( mime , mtype , JSONs                  )
+    ##########################################################################
+    if                               ( cit  is not None                    ) :
+      icon    = cit . icon           (                                       )
+      if                             ( icon is not None                    ) :
+        s     = self . iconSize      (                                       )
+        image = icon . pixmap ( s ) . toImage ( )
+        if                           ( image is not None                   ) :
+          mime . setImageData        ( image                                 )
+    ##########################################################################
+    tooltip   = message . format     ( total                                 )
+    QToolTip  . showText             ( QCursor . pos ( ) , tooltip           )
+    ##########################################################################
+    return mime
   ############################################################################
   @pyqtSlot(str)
   def assignSelectionMode     ( self , mode                                ) :

@@ -235,13 +235,13 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     ##########################################################################
     return
   ############################################################################
-  def append            ( self , widget                                    ) :
+  def append             ( self , widget                                   ) :
     ##########################################################################
-    msw  = MdiSubWindow (                                                    )
-    msw  . setWidget    ( widget                                             )
-    msw  . setAttribute ( Qt . WA_DeleteOnClose                              )
-    msw  . setAttribute ( Qt . WA_InputMethodEnabled                         )
-    self . addSubWindow ( msw                                                )
+    msw  = MdiSubWindow  (                                                   )
+    msw  . setWidget     ( widget                                            )
+    msw  . setAttribute  ( Qt . WA_DeleteOnClose                             )
+    msw  . setAttribute  ( Qt . WA_InputMethodEnabled                        )
+    self . addSubWindow  ( msw                                               )
     ##########################################################################
     return msw
   ############################################################################

@@ -72,6 +72,7 @@ class AbstractGui        (                                                 ) :
     self . Gui             = None
     self . Drag            = None
     self . PassDragDrop    = True
+    self . dragPoint       = None
     self . Dumping         = False
     self . focusState      = False
     self . CreatedDateTime = NOW . Stardate
@@ -499,11 +500,11 @@ class AbstractGui        (                                                 ) :
   def hasDragItem            ( self                                        ) :
     return False
   ############################################################################
-  def startDrag              ( self , mouseEvent                           ) :
-    return False
-  ############################################################################
   def dragStart              ( self , mouseEvent                           ) :
-    return self . startDrag  (        mouseEvent                             )
+    ##########################################################################
+    self . dragPoint = mouseEvent . pos ( )
+    ##########################################################################
+    return
   ############################################################################
   def fetchDrag              ( self , mouseEvent                           ) :
     return False

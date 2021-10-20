@@ -57,6 +57,8 @@ from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class PicturesView                ( IconDock                               ) :
   ############################################################################
+  HavingMenu = 1371434312
+  ############################################################################
   ShowPicture = pyqtSignal        ( str                                      )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
@@ -65,7 +67,7 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     self . Total     = 0
     self . StartId   = 0
-    self . Amount    = 65
+    self . Amount    = 60
     self . UsingName = False
     ##########################################################################
     self . Grouping = "Original"
@@ -82,6 +84,8 @@ class PicturesView                ( IconDock                               ) :
     self . Relation = Relation    (                                          )
     self . Relation . setT2       ( "Picture"                                )
     self . Relation . setRelation ( "Subordination"                          )
+    ##########################################################################
+    self . setFunction            ( self . HavingMenu      , True            )
     ##########################################################################
     return
   ############################################################################
@@ -311,6 +315,10 @@ class PicturesView                ( IconDock                               ) :
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
     items  = self . selectedItems  (                                         )
     atItem = self . itemAt         ( pos                                     )
     uuid   = 0
@@ -353,9 +361,14 @@ class PicturesView                ( IconDock                               ) :
       mm   . addSeparator          (                                         )
       mm   . addAction             ( 1101 ,  "觀看圖片" )
     ##########################################################################
+    self   . DockingMenu           ( mm                                      )
+    ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
     ##########################################################################
     if                             ( at == 1001                            ) :
       self . startup               (                                         )

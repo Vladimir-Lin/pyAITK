@@ -68,7 +68,8 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     self . setViewMode              ( QListView . IconMode                   )
     self . setIconSize              ( QSize ( 128 , 128 )                    )
-    self . setGridSize              ( QSize ( 140 , 192 )                    )
+    self . setGridSize              ( QSize ( 156 , 192 )                    )
+    self . setSpacing               ( 4                                      )
     self . setDragDropMode          ( QAbstractItemView . DropOnly           )
     self . setResizeMode            ( QListView . Adjust                     )
     self . setWordWrap              ( True                                   )

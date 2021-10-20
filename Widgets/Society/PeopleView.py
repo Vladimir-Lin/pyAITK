@@ -22,10 +22,16 @@ from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QMimeData
+from   PyQt5 . QtCore                 import QByteArray
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QPixmap
+from   PyQt5 . QtGui                  import QImage
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QMouseEvent
+from   PyQt5 . QtGui                  import QDrag
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -33,6 +39,7 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
+from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAbstractItemView
 from   PyQt5 . QtWidgets              import QListWidget
@@ -57,6 +64,8 @@ from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class PeopleView                   ( IconDock                              ) :
   ############################################################################
+  HavingMenu = 1371434312
+  ############################################################################
   ShowPersonalGallery = pyqtSignal ( int , str                               )
   ShowGalleries       = pyqtSignal ( int , str                               )
   ############################################################################
@@ -66,7 +75,7 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     self . Total    = 0
     self . StartId  = 0
-    self . Amount   = 65
+    self . Amount   = 60
     ##########################################################################
     self . Grouping = "Original"
     ## self . Grouping = "Subordination"
@@ -77,6 +86,12 @@ class PeopleView                   ( IconDock                              ) :
     self . Relation = Relation     (                                         )
     self . Relation . setT2        ( "People"                                )
     self . Relation . setRelation  ( "Subordination"                         )
+    ##########################################################################
+    self . setFunction             ( self . HavingMenu      , True           )
+    ##########################################################################
+    ## self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setDragEnabled          ( True                                    )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
@@ -218,6 +233,19 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "people/uuids"
+    message = "選擇了{0}個人物"
+    ##########################################################################
+    return self . CreateDragMime ( self , mtype , message                    )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
   def Prepare                  ( self                                      ) :
     ##########################################################################
     self . assignSelectionMode ( "ContiguousSelection"                       )
@@ -292,6 +320,10 @@ class PeopleView                   ( IconDock                              ) :
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
     items  = self . selectedItems  (                                         )
     atItem = self . itemAt         ( pos                                     )
     uuid   = 0
@@ -336,10 +368,14 @@ class PeopleView                   ( IconDock                              ) :
         mm . addSeparator          (                                         )
     ##########################################################################
     mm     = self . LocalityMenu   ( mm                                      )
+    self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
     ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
       return True
@@ -362,7 +398,7 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     if                             ( at == 1601                            ) :
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Projects" , uuid , NAM          )
+      self . EditAllNames          ( self , "People" , uuid , NAM            )
       return True
     ##########################################################################
     return True
