@@ -89,8 +89,8 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    ## self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     self . setDragEnabled          ( True                                    )
+    ## self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
@@ -245,6 +245,68 @@ class PeopleView                   ( IconDock                              ) :
     self . StartingDrag (                                                    )
     ##########################################################################
     return
+  ############################################################################
+  def allowedMimeTypes        ( self , mime                                ) :
+    formats = "people/uuids"
+    return self . MimeType    ( mime , formats                               )
+  ############################################################################
+  def acceptDrop              ( self , sourceWidget , mimeData             ) :
+    return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def dropNew                       ( self                                 , \
+                                      sourceWidget                         , \
+                                      mimeData                             , \
+                                      mousePos                             ) :
+    ##########################################################################
+    RDN     = self . RegularDropNew ( mimeData                               )
+    if                              ( not RDN                              ) :
+      return False
+    ##########################################################################
+    mtype   = self . DropInJSON     [ "Mime"                                 ]
+    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    ##########################################################################
+    if                              ( mtype in [ "people/uuids" ]          ) :
+      ########################################################################
+      title = sourceWidget . windowTitle (                                   )
+      CNT   = len                   ( UUIDs                                  )
+      if                            ( self == sourceWidget                 ) :
+        MSG = f"移動{CNT}個人物"
+      else                                                                   :
+        MSG = f"從「{title}」複製{CNT}個人物"
+      ########################################################################
+      self  . ShowStatus            ( MSG                                    )
+    ##########################################################################
+    return RDN
+  ############################################################################
+  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+    ##########################################################################
+    if                         ( self . droppingAction                     ) :
+      return False
+    ##########################################################################
+    if                         ( sourceWidget != self                      ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt     ( mousePos                                    )
+    if                         ( atItem is None                            ) :
+      return False
+    if                         ( atItem . isSelected ( )                   ) :
+      return False
+    ##########################################################################
+    ##########################################################################
+    return True
+  ############################################################################
+  def acceptPeopleDrop         ( self                                      ) :
+    return True
+  ############################################################################
+  def dropPeople               ( self , source , pos , JSOX                ) :
+    ##########################################################################
+    atItem = self . itemAt ( pos )
+    print("PeopleView::dropPeople")
+    print(JSOX)
+    if ( atItem is not None ) :
+      print("TO:",atItem.text())
+    ##########################################################################
+    return True
   ############################################################################
   def Prepare                  ( self                                      ) :
     ##########################################################################

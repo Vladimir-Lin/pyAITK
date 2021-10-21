@@ -51,6 +51,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   emitPendingTopLevelItem = pyqtSignal ( QTreeWidgetItem                     )
   pickSelectionMode       = pyqtSignal ( str                                 )
+  SubmitStatusMessage     = pyqtSignal ( str , int                           )
   Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
@@ -61,9 +62,18 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )
     ##########################################################################
-    self . CurrentItem =      {                                              }
-    self . emitPendingTopLevelItem.connect ( self.acceptPendingTopLevelItem  )
-    self . pickSelectionMode      .connect ( self.assignSelectionMode        )
+    self . CurrentItem =                    {                                }
+    self . emitPendingTopLevelItem.connect  ( self.acceptPendingTopLevelItem )
+    self . pickSelectionMode      .connect  ( self.assignSelectionMode       )
+    self . SubmitStatusMessage    .connect  ( self.AssignStatusMessage       )
+    ##########################################################################
+    self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
+    self . setAcceptDrops                   ( True                           )
+    self . setDragDropMode                  ( QAbstractItemView . DragDrop   )
+    self . setHorizontalScrollBarPolicy     ( Qt . ScrollBarAsNeeded         )
+    self . setVerticalScrollBarPolicy       ( Qt . ScrollBarAsNeeded         )
+    ##########################################################################
+    self . droppingAction = False
     ##########################################################################
     return
   ############################################################################
@@ -89,6 +99,175 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     super ( QTreeWidget , self ) . contextMenuEvent ( event                  )
     return
   ############################################################################
+  def dragEnterEvent    ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
+      if                ( self . dragEnter ( event )                       ) :
+        event . acceptProposedAction (                                       )
+        return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( QTreeWidget , self ) . dragEnterEvent ( event                  )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragLeaveEvent    ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . removeDrop ( )                            ) :
+      event . accept    (                                                    )
+      return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( QTreeWidget , self ) . dragLeaveEvent ( event                  )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragMoveEvent     ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
+      if                ( self . dragMove  ( event )                       ) :
+        event . acceptProposedAction (                                       )
+        return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( QTreeWidget , self ) . dragMoveEvent ( event                   )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dropEvent         ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
+      if                ( self . dropIn    ( event )                       ) :
+        event . acceptProposedAction (                                       )
+        return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( QTreeWidget , self ) . dropEvent ( event                       )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def mousePressEvent   ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . Dumping                                   ) :
+      event . ignore    (                                                    )
+      return
+    ##########################################################################
+    if                  ( self . allowDrag ( self . dragDropMode ( ) )     ) :
+      self . dragStart  ( event                                              )
+    ##########################################################################
+    super ( QTreeWidget , self ) . mousePressEvent ( event                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseMoveEvent    ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . Dumping                                   ) :
+      event . ignore    (                                                    )
+      return
+    ##########################################################################
+    moving = True
+    ##########################################################################
+    if                  ( self . allowDrag  ( self . dragDropMode ( ) )    ) :
+      if                ( self . dragMoving ( event )                      ) :
+        ######################################################################
+        event  . accept (                                                    )
+        moving = False
+        ######################################################################
+        super ( QTreeWidget , self ) . mouseReleaseEvent ( event             )
+        ######################################################################
+        self   . ReleasePickings (                                           )
+    ##########################################################################
+    if                  ( moving                                           ) :
+      super ( QTreeWidget , self ) . mouseMoveEvent ( event                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseReleaseEvent   ( self , event                                   ) :
+    ##########################################################################
+    if                    ( self . Dumping                                 ) :
+      event . ignore      (                                                  )
+      return
+    ##########################################################################
+    if                    ( self . allowDrag ( self . dragDropMode ( ) )   ) :
+      self . dragEnd      ( event                                            )
+    ##########################################################################
+    if                    ( self . isDrag ( )                              ) :
+      ########################################################################
+      self  . ReleaseDrag (                                                  )
+      event . accept      (                                                  )
+      ########################################################################
+      return
+    ##########################################################################
+    super ( QTreeWidget , self ) . mouseReleaseEvent ( event                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def hasDragItem                ( self                                    ) :
+    ##########################################################################
+    items = self . selectedItems (                                           )
+    if                           ( len ( items ) <= 0                      ) :
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def dragDone               ( self , dropIt , mime                        ) :
+    return
+  ############################################################################
+  def dropNew                ( self , sourceWidget , mimeData , mousePos   ) :
+    return True
+  ############################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return True
+  ############################################################################
+  def dropAppend             ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    if                       ( self . droppingAction                       ) :
+      return False
+    ##########################################################################
+    return self . dropItems  (        sourceWidget , mimeData , mousePos     )
+  ############################################################################
+  def removeDrop             ( self                                        ) :
+    return True
+  ############################################################################
+  def CreateDragMime                 ( self                                , \
+                                       widget                              , \
+                                       column                              , \
+                                       mtype                               , \
+                                       message                             ) :
+    ##########################################################################
+    items     = self . selectedItems (                                       )
+    total     = len                  ( items                                 )
+    if                               ( len ( items ) <= 0                  ) :
+      return None
+    ##########################################################################
+    UUIDs     =                      [                                       ]
+    for it in items                                                          :
+      UUID    = it . data            ( column , Qt . UserRole                )
+      UUIDs   . append               ( str ( UUID )                          )
+    ##########################################################################
+    JSONs     =                      { "Widget" : id ( widget )            , \
+                                       "UUIDs"  : UUIDs                      }
+    ##########################################################################
+    mime      = QMimeData            (                                       )
+    self      . setMime              ( mime , mtype , JSONs                  )
+    ##########################################################################
+    tooltip   = message . format     ( total                                 )
+    QToolTip  . showText             ( QCursor . pos ( ) , tooltip           )
+    ##########################################################################
+    return mime
+  ############################################################################
   def setCentralLabels        ( self , labels                              ) :
     ##########################################################################
     it = QTreeWidgetItem      ( labels                                       )
@@ -97,6 +276,15 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . setHeaderItem      ( it                                           )
     ##########################################################################
     return it
+  ############################################################################
+  @pyqtSlot(str,int)
+  def AssignStatusMessage     ( self , message , timeout = 0               ) :
+    self . statusMessage      (        message , timeout                     )
+    return
+  ############################################################################
+  def ShowStatus                      ( self , message , timeout = 0       ) :
+    self . SubmitStatusMessage . emit (        message , timeout             )
+    return
   ############################################################################
   @pyqtSlot(QTreeWidgetItem)
   def acceptPendingTopLevelItem ( self , item                              ) :

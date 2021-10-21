@@ -83,6 +83,11 @@ class AbstractGui        (                                                 ) :
     self . AllowDrops      = { }
     self . Functionalities = { }
     self . GuiMutex        = threading . Lock ( )
+    self . DropInJSON      = { }
+    self . DropDispatchers = [ { "Mime"     : "people/uuids"                 ,
+                                 "Function" : "acceptPeopleDrop"             ,
+                                 "Drop"     : "dropPeople"                 }
+                                                                             ]
     ##########################################################################
     return
   ############################################################################
@@ -236,6 +241,19 @@ class AbstractGui        (                                                 ) :
     if                       ( Id not in self . AllowDrops                 ) :
       return False
     return self . AllowDrops [ Id                                            ]
+  ############################################################################
+  def statusMessage       ( self , message , timeout = 0                   ) :
+    ##########################################################################
+    if                    ( not self . hasPlan ( )                         ) :
+      return
+    ##########################################################################
+    F   = self . PlanFunc (                                                  )
+    if                    ( F . statusMessage is None                      ) :
+      return
+    ##########################################################################
+    F . statusMessage     ( message , timeout                                )
+    ##########################################################################
+    return
   ############################################################################
   def LockGui                 ( self                                       ) :
     self . GuiMutex . acquire (                                              )
@@ -627,6 +645,21 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     return True
   ############################################################################
+  def JsonFromMime           ( self , mime , mimetype                      ) :
+    ##########################################################################
+    QB    = mime . data      ( mimetype                                      )
+    if                       ( QB . size ( ) <= 0                          ) :
+      return                 {                                               }
+    ##########################################################################
+    try                                                                      :
+      BDATA = QB    . data   (                                               )
+      QDATA = BDATA . decode ( "utf-8"                                       )
+      JSOX  = json  . loads  ( QDATA                                         )
+    except                                                                   :
+      return                 {                                               }
+    ##########################################################################
+    return JSOX
+  ############################################################################
   def MimeType               ( self , mime , formats                       ) :
     ##########################################################################
     mimes  = formats . split ( ";"                                           )
@@ -640,12 +673,156 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     return ""
   ############################################################################
+  def allowedMimeTypes        ( self , mime                                ) :
+    return ""
+  ############################################################################
   def setMime                     ( self , mime , mtype , jsox             ) :
     ##########################################################################
     B    = self . JsonToByteArray ( jsox                                     )
     mime . setData                ( mtype , B                                )
     ##########################################################################
     return
+  ############################################################################
+  def CallMimeHandler           ( self , CanDo , widget , func             ) :
+    ##########################################################################
+    if                          ( not CanDo                                ) :
+      return False
+    ##########################################################################
+    Caller = getattr            ( widget , func , None                       )
+    if                          ( callable ( Caller )                      ) :
+      return Caller             (                                            )
+    ##########################################################################
+    return False
+  ############################################################################
+  def CallDropHandler             ( self , mime , mimetype , widget , func ) :
+    return self . CallMimeHandler ( mime . hasFormat ( mimetype )          , \
+                                    widget                                 , \
+                                    func                                     )
+  ############################################################################
+  def dropHandler                   ( self , source , widget , mime        ) :
+    ##########################################################################
+    for dropItem in self . DropDispatchers                                   :
+      ########################################################################
+      MT   = dropItem               [ "Mime"                                 ]
+      MF   = dropItem               [ "Function"                             ]
+      AT   = self . CallDropHandler ( mime , MT , widget , MF                )
+      ########################################################################
+      if                            ( AT                                   ) :
+        return True
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasImage ( )                  , \
+                                      widget                               , \
+                                      "acceptImageDrop"                      )
+    if                              ( AT                                   ) :
+      return True
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasText  ( )                  , \
+                                      widget                               , \
+                                      "acceptTextDrop"                       )
+    if                              ( AT                                   ) :
+      return True
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasHtml  ( )                  , \
+                                      widget                               , \
+                                      "acceptHtmlDrop"                       )
+    if                              ( AT                                   ) :
+      return True
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasUrls  ( )                  , \
+                                      widget                               , \
+                                      "acceptUrlsDrop"                       )
+    if                              ( AT                                   ) :
+      return True
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasColor ( )                  , \
+                                      widget                               , \
+                                      "acceptColorDrop"                      )
+    if                              ( AT                                   ) :
+      return True
+    ##########################################################################
+    if ( self . acceptPrivate ( source , widget , mime ) )                   :
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def acceptPrivate                 ( self , source , widget , mime        ) :
+    return False
+  ############################################################################
+  def RegularDropNew                ( self , mimeData                      ) :
+    ##########################################################################
+    self  . DropInJSON =            {                                        }
+    mtype = self . allowedMimeTypes ( mimeData                               )
+    if                              ( len ( mtype ) <= 0                   ) :
+      return False
+    ##########################################################################
+    JSOX  = self . JsonFromMime     ( mimeData , mtype                       )
+    if                              ( "Widget" not in JSOX                 ) :
+      return False
+    if                              ( "UUIDs"  not in JSOX                 ) :
+      return False
+    ##########################################################################
+    if                              ( len ( JSOX [ "UUIDs" ] ) <= 0        ) :
+      return False
+    ##########################################################################
+    self  . DropInJSON = JSOX
+    self  . DropInJSON [ "Mime" ] = mtype
+    ##########################################################################
+    return True
+  ############################################################################
+  def CallDropItems  ( self , widget , func , source , pos , JSOX          ) :
+    ##########################################################################
+    Caller = getattr ( widget , func , None                                  )
+    if               ( callable ( Caller )                                 ) :
+      return Caller  (               source , pos , JSOX                     )
+    ##########################################################################
+    return False
+  ############################################################################
+  def dropItems              ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    widget = self . Gui
+    mtype  = self . allowedMimeTypes ( mimeData                              )
+    if                               ( len ( mtype ) <= 0                  ) :
+      return False
+    ##########################################################################
+    JSOX   = self . JsonFromMime     ( mimeData , mtype                      )
+    if                               ( "Widget" not in JSOX                ) :
+      return False
+    if                               ( "UUIDs"  not in JSOX                ) :
+      return False
+    ##########################################################################
+    for dropItem in self . DropDispatchers                                   :
+      ########################################################################
+      MT   = dropItem                [ "Mime"                                ]
+      ########################################################################
+      if                             ( MT != mtype                         ) :
+        continue
+      ########################################################################
+      MF   = dropItem                [ "Function"                            ]
+      DF   = dropItem                [ "Drop"                                ]
+      AT   = self . CallDropHandler  ( mimeData , MT , widget , MF           )
+      ########################################################################
+      if                             ( not AT                              ) :
+        continue
+      ########################################################################
+      CDI  = self . CallDropItems    ( widget                              , \
+                                       DF                                  , \
+                                       sourceWidget                        , \
+                                       mousePos                            , \
+                                       JSOX                                  )
+      if                             ( not CDI                             ) :
+        return False
+      ########################################################################
+      return True
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    return False
+  ############################################################################
+  ############################################################################
   ############################################################################
   ############################################################################
   ############################################################################
@@ -1804,123 +1981,6 @@ VG( acceptModels        , DropModel         )
 VG( acceptReality       , DropReality       )
 
 #undef  VG
-
-bool N::AbstractGui::dropHandler(const QMimeData * mime)
-{
-  bool Accepted = false                                   ;
-  #define CHECK(FORMAT,FUNCX)                             \
-    if (mime->hasFormat(FORMAT) && FUNCX()) Accepted = true
-  #define VERIF(HasSome,DropF)                            \
-    if (mime->HasSome() && DropF()) Accepted = true
-  CHECK( "uuid/uuid"           , acceptUuids         ) ;
-  CHECK( "uuid/uuids"          , acceptUuids         ) ;
-  CHECK( "division/uuid"       , acceptDivisionDrop  ) ;
-  CHECK( "division/uuids"      , acceptDivisionDrop  ) ;
-  CHECK( "gender/uuid"         , acceptGenderDrop    ) ;
-  CHECK( "tag/uuid"            , acceptTagDrop       ) ;
-  CHECK( "tag/uuids"           , acceptDivisionDrop  ) ;
-  CHECK( "name/uuid"           , acceptNames         ) ;
-  CHECK( "name/uuids"          , acceptNames         ) ;
-  CHECK( "picture/uuid"        , acceptPictureDrop   ) ;
-  CHECK( "picture/uuids"       , acceptPictureDrop   ) ;
-  CHECK( "people/uuid"         , acceptPeopleDrop    ) ;
-  CHECK( "people/uuids"        , acceptPeopleDrop    ) ;
-  CHECK( "audio/uuid"          , acceptAudioDrop     ) ;
-  CHECK( "audio/uuids"         , acceptAudioDrop     ) ;
-  CHECK( "video/uuid"          , acceptVideoDrop     ) ;
-  CHECK( "video/uuids"         , acceptVideoDrop     ) ;
-  CHECK( "album/uuid"          , acceptAlbumDrop     ) ;
-  CHECK( "album/uuids"         , acceptAlbumDrop     ) ;
-  CHECK( "uri/uuid"            , acceptUriDrop       ) ;
-  CHECK( "uri/uuids"           , acceptUriDrop       ) ;
-  CHECK( "bookmark/uuid"       , acceptBookmarkDrop  ) ;
-  CHECK( "bookmark/uuids"      , acceptBookmarkDrop  ) ;
-  CHECK( "shape/uuid"          , acceptShapes        ) ;
-  CHECK( "shape/uuids"         , acceptShapes        ) ;
-  CHECK( "member/uuid"         , acceptMembers       ) ;
-  CHECK( "member/uuids"        , acceptMembers       ) ;
-  CHECK( "set/uuid"            , acceptSets          ) ;
-  CHECK( "set/uuids"           , acceptSets          ) ;
-  CHECK( "action/uuid"         , acceptActions       ) ;
-  CHECK( "action/uuids"        , acceptActions       ) ;
-  CHECK( "decision/uuid"       , acceptDecision      ) ;
-  CHECK( "decision/uuids"      , acceptDecision      ) ;
-  CHECK( "condition/uuid"      , acceptCondition     ) ;
-  CHECK( "condition/uuids"     , acceptCondition     ) ;
-  CHECK( "execution/uuid"      , acceptExecution     ) ;
-  CHECK( "execution/uuids"     , acceptExecution     ) ;
-  CHECK( "sql/uuid"            , acceptSqlTable      ) ;
-  CHECK( "sql/uuids"           , acceptSqlTable      ) ;
-  CHECK( "database/uuid"       , acceptDatabase      ) ;
-  CHECK( "database/uuids"      , acceptDatabase      ) ;
-  CHECK( "task/uuid"           , acceptTask          ) ;
-  CHECK( "task/uuids"          , acceptTask          ) ;
-  CHECK( "nation/uuid"         , acceptNation        ) ;
-  CHECK( "nation/uuids"        , acceptNation        ) ;
-  CHECK( "contour/uuid"        , acceptContour       ) ;
-  CHECK( "contour/uuids"       , acceptContour       ) ;
-  CHECK( "manifold/uuid"       , acceptManifold      ) ;
-  CHECK( "manifold/uuids"      , acceptManifold      ) ;
-  CHECK( "source/uuid"         , acceptSources       ) ;
-  CHECK( "source/uuids"        , acceptSources       ) ;
-  CHECK( "document/uuid"       , acceptDocuments     ) ;
-  CHECK( "document/uuids"      , acceptDocuments     ) ;
-  CHECK( "eyes/uuid"           , acceptEyes          ) ;
-  CHECK( "eyes/uuids"          , acceptEyes          ) ;
-  CHECK( "hairs/uuid"          , acceptHairs         ) ;
-  CHECK( "hairs/uuids"         , acceptHairs         ) ;
-  CHECK( "keyword/uuid"        , acceptKeywords      ) ;
-  CHECK( "keyword/uuids"       , acceptKeywords      ) ;
-  CHECK( "terminology/uuid"    , acceptTerminologies ) ;
-  CHECK( "terminology/uuids"   , acceptTerminologies ) ;
-  CHECK( "knowledge/uuid"      , acceptKnowledge     ) ;
-  CHECK( "knowledge/uuids"     , acceptKnowledge     ) ;
-  CHECK( "field/uuid"          , acceptFields        ) ;
-  CHECK( "field/uuids"         , acceptFields        ) ;
-  CHECK( "knowledgebase/uuid"  , acceptKnowledgeBase ) ;
-  CHECK( "knowledgebase/uuids" , acceptKnowledgeBase ) ;
-  CHECK( "sqlcolumn/uuid"      , acceptSqlColumn     ) ;
-  CHECK( "sqlcolumn/uuids"     , acceptSqlColumn     ) ;
-  CHECK( "commodity/uuid"      , acceptCommodities   ) ;
-  CHECK( "commodity/uuids"     , acceptCommodities   ) ;
-  CHECK( "organization/uuid"   , acceptOrganizations ) ;
-  CHECK( "organization/uuids"  , acceptOrganizations ) ;
-  CHECK( "blob/uuid"           , acceptBlobs         ) ;
-  CHECK( "blob/uuids"          , acceptBlobs         ) ;
-  CHECK( "variable/uuid"       , acceptVariables     ) ;
-  CHECK( "variable/uuids"      , acceptVariables     ) ;
-  CHECK( "torrent/uuid"        , acceptTorrents      ) ;
-  CHECK( "torrent/uuids"       , acceptTorrents      ) ;
-  CHECK( "camera/uuid"         , acceptCameras       ) ;
-  CHECK( "camera/uuids"        , acceptCameras       ) ;
-  CHECK( "face/uuid"           , acceptFaces         ) ;
-  CHECK( "face/uuids"          , acceptFaces         ) ;
-  CHECK( "star/uuid"           , acceptStars         ) ;
-  CHECK( "star/uuids"          , acceptStars         ) ;
-  CHECK( "phoneme/uuid"        , acceptPhonemes      ) ;
-  CHECK( "phoneme/uuids"       , acceptPhonemes      ) ;
-  CHECK( "model/uuid"          , acceptModels        ) ;
-  CHECK( "model/uuids"         , acceptModels        ) ;
-  CHECK( "reality/uuid"        , acceptReality       ) ;
-  CHECK( "reality/uuids"       , acceptReality       ) ;
-  CHECK( "colorgroup/uuid"     , acceptColorGroups   ) ;
-  CHECK( "colorgroup/uuids"    , acceptColorGroups   ) ;
-  CHECK( "setsalgebra/uuid"    , acceptSetsAlgebras  ) ;
-  CHECK( "setsalgebra/uuids"   , acceptSetsAlgebras  ) ;
-  CHECK( "font/uuid"           , acceptFont          ) ;
-  CHECK( "pen/uuids"           , acceptPen           ) ;
-  CHECK( "brush/uuid"          , acceptBrush         ) ;
-  CHECK( "gradient/uuids"      , acceptGradient      ) ;
-  VERIF( hasImage              , acceptImageDrop     ) ;
-  VERIF( hasText               , acceptTextDrop      ) ;
-  VERIF( hasHtml               , acceptHtmlDrop      ) ;
-  VERIF( hasUrls               , acceptUrlsDrop      ) ;
-  VERIF( hasColor              , acceptColorDrop     ) ;
-  if ( acceptPrivate ( mime ) ) Accepted = true        ;
-  #undef  VERIF
-  #undef  CHECK
-  return Accepted                                      ;
-}
 
 bool N::AbstractGui::dropItems(QWidget * source,const QMimeData * mime,QPoint pt)
 {

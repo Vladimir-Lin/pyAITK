@@ -64,6 +64,12 @@ class MainWindow    ( QMainWindow , VirtualGui                             ) :
     SB   = StatusBar                ( self                                   )
     self . setStatusBar             ( SB                                     )
     ##########################################################################
+    if                              ( self . PlanFunc is None              ) :
+      return
+    ##########################################################################
+    PF   = self . PlanFunc          (                                        )
+    PF   . statusMessage = SB . showMessage
+    ##########################################################################
     return
   ############################################################################
   def focusInEvent    ( self , event                                       ) :

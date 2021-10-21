@@ -54,6 +54,7 @@ from         . VirtualGui             import VirtualGui as VirtualGui
 class ListWidget      ( QListWidget , VirtualGui                           ) :
   ############################################################################
   pickSelectionMode       = pyqtSignal ( str                                 )
+  SubmitStatusMessage     = pyqtSignal ( str , int                           )
   Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
@@ -71,7 +72,10 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     self . setVerticalScrollBarPolicy       ( Qt . ScrollBarAsNeeded         )
     self . setFunction                      ( self . FunctionDocking , False )
     ##########################################################################
-    self . pickSelectionMode . connect      ( self . assignSelectionMode     )
+    self . pickSelectionMode   . connect    ( self . assignSelectionMode     )
+    self . SubmitStatusMessage . connect    ( self . AssignStatusMessage     )
+    ##########################################################################
+    self . droppingAction = False
     ##########################################################################
     return
   ############################################################################
@@ -274,9 +278,13 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   ############################################################################
   def dropAppend             ( self , sourceWidget , mimeData , mousePos   ) :
     ##########################################################################
-    ## return self . dropItems  ( source , mime , pos )
+    if                       ( self . droppingAction                       ) :
+      return False
     ##########################################################################
-    return False
+    return self . dropItems  (        sourceWidget , mimeData , mousePos     )
+  ############################################################################
+  def removeDrop             ( self                                        ) :
+    return True
   ############################################################################
   def CreateDragMime                 ( self , widget , mtype , message     ) :
     ##########################################################################
@@ -309,6 +317,15 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     QToolTip  . showText             ( QCursor . pos ( ) , tooltip           )
     ##########################################################################
     return mime
+  ############################################################################
+  @pyqtSlot(str,int)
+  def AssignStatusMessage     ( self , message , timeout = 0               ) :
+    self . statusMessage      (        message , timeout                     )
+    return
+  ############################################################################
+  def ShowStatus                      ( self , message , timeout = 0       ) :
+    self . SubmitStatusMessage . emit (        message , timeout             )
+    return
   ############################################################################
   @pyqtSlot(str)
   def assignSelectionMode     ( self , mode                                ) :
