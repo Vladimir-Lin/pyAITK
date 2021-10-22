@@ -84,10 +84,36 @@ class AbstractGui        (                                                 ) :
     self . Functionalities = { }
     self . GuiMutex        = threading . Lock ( )
     self . DropInJSON      = { }
-    self . DropDispatchers = [ { "Mime"     : "people/uuids"                 ,
+    self . DropDispatchers = [ { "Mime"     : "division/uuids"               ,
+                                 "Function" : "acceptDivisionDrop"           ,
+                                 "Drop"     : "dropDivision"               } ,
+                               { "Mime"     : "gender/uuids"                 ,
+                                 "Function" : "acceptGenderDrop"             ,
+                                 "Drop"     : "dropGender"                 } ,
+                               { "Mime"     : "tag/uuids"                    ,
+                                 "Function" : "acceptTagDrop"                ,
+                                 "Drop"     : "dropTags"                   } ,
+                               { "Mime"     : "picture/uuids"                ,
+                                 "Function" : "acceptPictureDrop"            ,
+                                 "Drop"     : "dropPictures"               } ,
+                               { "Mime"     : "people/uuids"                 ,
                                  "Function" : "acceptPeopleDrop"             ,
-                                 "Drop"     : "dropPeople"                 }
-                                                                             ]
+                                 "Drop"     : "dropPeople"                 } ,
+                               { "Mime"     : "audio/uuids"                  ,
+                                 "Function" : "acceptAudioDrop"              ,
+                                 "Drop"     : "dropAudios"                 } ,
+                               { "Mime"     : "video/uuids"                  ,
+                                 "Function" : "acceptVideoDrop"              ,
+                                 "Drop"     : "dropVideos"                 } ,
+                               { "Mime"     : "album/uuids"                  ,
+                                 "Function" : "acceptAlbumDrop"              ,
+                                 "Drop"     : "dropAlbums"                 } ,
+                               { "Mime"     : "eyes/uuids"                   ,
+                                 "Function" : "acceptEyesDrop"               ,
+                                 "Drop"     : "dropEyes"                   } ,
+                               { "Mime"     : "hairs/uuids"                  ,
+                                 "Function" : "acceptHairsDrop"              ,
+                                 "Drop"     : "dropHairs"                  } ]
     ##########################################################################
     return
   ############################################################################

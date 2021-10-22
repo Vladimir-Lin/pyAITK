@@ -87,6 +87,10 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     self . setFunction            ( self . HavingMenu      , True            )
     ##########################################################################
+    self . setDragEnabled         ( True                                     )
+    ## self . setDragDropMode        ( QAbstractItemView . DropOnly             )
+    self . setDragDropMode        ( QAbstractItemView . DragDrop             )
+    ##########################################################################
     return
   ############################################################################
   def sizeHint                ( self                                       ) :
@@ -204,6 +208,81 @@ class PicturesView                ( IconDock                               ) :
     self . LinkAction            ( "PageUp"   , self . PageUp                )
     self . LinkAction            ( "PageDown" , self . PageDown              )
     self . LinkAction            ( "Refresh"  , self . startup               )
+    ##########################################################################
+    return True
+  ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "picture/uuids"
+    message = "選擇了{0}張圖片"
+    ##########################################################################
+    return self . CreateDragMime ( self , mtype , message                    )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def allowedMimeTypes        ( self , mime                                ) :
+    formats = "picture/uuids"
+    return self . MimeType    ( mime , formats                               )
+  ############################################################################
+  def acceptDrop              ( self , sourceWidget , mimeData             ) :
+    return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def dropNew                       ( self                                 , \
+                                      sourceWidget                         , \
+                                      mimeData                             , \
+                                      mousePos                             ) :
+    ##########################################################################
+    RDN     = self . RegularDropNew ( mimeData                               )
+    if                              ( not RDN                              ) :
+      return False
+    ##########################################################################
+    mtype   = self . DropInJSON     [ "Mime"                                 ]
+    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    ##########################################################################
+    if                              ( mtype in [ "picture/uuids" ]         ) :
+      ########################################################################
+      title = sourceWidget . windowTitle (                                   )
+      CNT   = len                   ( UUIDs                                  )
+      if                            ( self == sourceWidget                 ) :
+        MSG = f"移動{CNT}張圖片"
+      else                                                                   :
+        MSG = f"從「{title}」複製{CNT}張圖片"
+      ########################################################################
+      self  . ShowStatus            ( MSG                                    )
+    ##########################################################################
+    return RDN
+  ############################################################################
+  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+    ##########################################################################
+    if                         ( self . droppingAction                     ) :
+      return False
+    ##########################################################################
+    if                         ( sourceWidget != self                      ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt     ( mousePos                                    )
+    if                         ( atItem is None                            ) :
+      return False
+    if                         ( atItem . isSelected ( )                   ) :
+      return False
+    ##########################################################################
+    ##########################################################################
+    return True
+  ############################################################################
+  def acceptPictureDrop        ( self                                      ) :
+    return True
+  ############################################################################
+  def dropPictures             ( self , source , pos , JSOX                ) :
+    ##########################################################################
+    atItem = self . itemAt ( pos )
+    print("PictureView::dropPictures")
+    print(JSOX)
+    if ( atItem is not None ) :
+      print("TO:",atItem.text())
     ##########################################################################
     return True
   ############################################################################

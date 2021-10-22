@@ -66,7 +66,7 @@ class PeopleView                   ( IconDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  ShowPersonalGallery = pyqtSignal ( int , str                               )
+  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
   ShowGalleries       = pyqtSignal ( int , str                               )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
@@ -82,6 +82,8 @@ class PeopleView                   ( IconDock                              ) :
     ## self . Grouping = "Reverse"
     ##########################################################################
     self . GroupOrder = "asc"
+    ##########################################################################
+    self . dockingPlace       = Qt . BottomDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
     self . Relation . setT2        ( "People"                                )
@@ -247,7 +249,7 @@ class PeopleView                   ( IconDock                              ) :
     return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
+    formats = "people/uuids;picture/uuids"
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
@@ -273,6 +275,17 @@ class PeopleView                   ( IconDock                              ) :
         MSG = f"移動{CNT}個人物"
       else                                                                   :
         MSG = f"從「{title}」複製{CNT}個人物"
+      ########################################################################
+      self  . ShowStatus            ( MSG                                    )
+    ##########################################################################
+    elif                            ( mtype in [ "picture/uuids" ]         ) :
+      ########################################################################
+      title = sourceWidget . windowTitle (                                   )
+      CNT   = len                   ( UUIDs                                  )
+      if                            ( self == sourceWidget                 ) :
+        MSG = f"移動{CNT}張圖片"
+      else                                                                   :
+        MSG = f"從「{title}」複製{CNT}張圖片"
       ########################################################################
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
@@ -302,6 +315,19 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     atItem = self . itemAt ( pos )
     print("PeopleView::dropPeople")
+    print(JSOX)
+    if ( atItem is not None ) :
+      print("TO:",atItem.text())
+    ##########################################################################
+    return True
+  ############################################################################
+  def acceptPictureDrop        ( self                                      ) :
+    return True
+  ############################################################################
+  def dropPictures             ( self , source , pos , JSOX                ) :
+    ##########################################################################
+    atItem = self . itemAt ( pos )
+    print("PeopleView::dropPictures")
     print(JSOX)
     if ( atItem is not None ) :
       print("TO:",atItem.text())
@@ -451,7 +477,13 @@ class PeopleView                   ( IconDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1201                            ) :
-      self . ShowPersonalGallery . emit ( 7 , str ( uuid )                   )
+      ########################################################################
+      text = atItem . text         (                                         )
+      icon = atItem . icon         (                                         )
+      xsid = str                   ( uuid                                    )
+      ########################################################################
+      self . ShowPersonalGallery . emit ( text , 7 , xsid , icon             )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1202                            ) :
