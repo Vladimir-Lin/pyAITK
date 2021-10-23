@@ -29,7 +29,6 @@ from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
@@ -68,7 +67,7 @@ class SexualityListings  ( MajorListings                                   ) :
     self . setFunction     ( self . FunctionDocking , True                   )
     self . setFunction     ( self . HavingMenu      , True                   )
     ##########################################################################
-    self . setDragEnabled  ( True                                            )
+    self . setDragEnabled  ( False                                           )
     self . setDragDropMode ( QAbstractItemView . DropOnly                    )
     ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
     ##########################################################################

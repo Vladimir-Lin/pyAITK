@@ -29,10 +29,10 @@ from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QAbstractItemView
 from   PyQt5 . QtWidgets              import QTreeWidget
 from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
@@ -49,9 +49,9 @@ class EyeColorListings   ( MajorListings                                   ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  def __init__           ( self , parent = None , plan = None              ) :
+  def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
-    super ( ) . __init__ (        parent        , plan                       )
+    super ( ) . __init__   (        parent        , plan                     )
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -62,6 +62,10 @@ class EyeColorListings   ( MajorListings                                   ) :
     ##########################################################################
     self . setFunction     ( self . FunctionDocking , True                   )
     self . setFunction     ( self . HavingMenu      , True                   )
+    ##########################################################################
+    self . setDragEnabled  ( False                                           )
+    self . setDragDropMode ( QAbstractItemView . DropOnly                    )
+    ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
     ##########################################################################
     return
   ############################################################################
@@ -91,6 +95,72 @@ class EyeColorListings   ( MajorListings                                   ) :
     QQ      = f"select `uuid` from {TABLE} order by `id` asc ;"
     ##########################################################################
     return QQ
+  ############################################################################
+  def allowedMimeTypes        ( self , mime                                ) :
+    formats = "people/uuids"
+    return self . MimeType    ( mime , formats                               )
+  ############################################################################
+  def acceptDrop              ( self , sourceWidget , mimeData             ) :
+    ##########################################################################
+    if                        ( self == sourceWidget                       ) :
+      return False
+    ##########################################################################
+    return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def dropNew                       ( self                                 , \
+                                      sourceWidget                         , \
+                                      mimeData                             , \
+                                      mousePos                             ) :
+    ##########################################################################
+    if                              ( self == sourceWidget                 ) :
+      return False
+    ##########################################################################
+    RDN     = self . RegularDropNew ( mimeData                               )
+    if                              ( not RDN                              ) :
+      return False
+    ##########################################################################
+    mtype   = self . DropInJSON     [ "Mime"                                 ]
+    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    ##########################################################################
+    if                              ( mtype in [ "people/uuids" ]          ) :
+      ########################################################################
+      title = sourceWidget . windowTitle ( )
+      CNT   = len                   ( UUIDs                                  )
+      MSG   = f"從「{title}」複製{CNT}個人物"
+      self  . ShowStatus            ( MSG                                    )
+    ##########################################################################
+    return RDN
+  ############################################################################
+  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+    ##########################################################################
+    if                         ( self . droppingAction                     ) :
+      return False
+    ##########################################################################
+    if                         ( sourceWidget != self                      ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt     ( mousePos                                    )
+    if                         ( atItem is None                            ) :
+      return False
+    if                         ( atItem . isSelected ( )                   ) :
+      return False
+    ##########################################################################
+    ##########################################################################
+    return True
+  ############################################################################
+  def acceptPeopleDrop         ( self                                      ) :
+    return True
+  ############################################################################
+  def dropPeople               ( self , source , pos , JSOX                ) :
+    ##########################################################################
+    atItem = self . itemAt ( pos )
+    print("SexualityListings::dropPeople")
+    print(JSOX)
+    if ( atItem is not None ) :
+      UUID = atItem . data ( 0 , Qt . UserRole )
+      print("TO : " , UUID , " => " , atItem . text ( 0 ) )
+    ##########################################################################
+    return True
   ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
