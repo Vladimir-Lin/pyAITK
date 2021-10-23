@@ -347,6 +347,22 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     uuid = item . data          ( column , Qt . UserRole                     )
     return int                  ( uuid                                       )
   ############################################################################
+  def uuidAtItem                  ( self , UUID , column = 0               ) :
+    ##########################################################################
+    UXID    = int                 ( UUID                                     )
+    for i in range                ( 0 , self . topLevelItemCount ( )       ) :
+      ########################################################################
+      IT    = self . topLevelItem ( i                                        )
+      if                          ( IT is None                             ) :
+        continue
+      ########################################################################
+      itid  = IT . data           ( column , Qt . UserRole                   )
+      itid  = int                 ( itid                                     )
+      if                          ( itid == UXID                           ) :
+        return IT
+    ##########################################################################
+    return None
+  ############################################################################
   def isItemPicked              ( self                                     ) :
     ##########################################################################
     if                          ( not hasattr ( self , 'CurrentItem' )     ) :

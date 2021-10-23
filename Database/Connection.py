@@ -404,9 +404,9 @@ class Connection ( )                                                         :
              where ( `used` = 0 )
              order by {Item} asc
              limit 0,1 ;"""
+    QQ = " " . join ( QQ . split ( ) )
     ##########################################################################
-    if ( not self . Query ( QQ ) )                                           :
-      return False
+    self . Query ( QQ )
     NN = self . FetchOne ( )
     ##########################################################################
     if ( not NN )                                                            :

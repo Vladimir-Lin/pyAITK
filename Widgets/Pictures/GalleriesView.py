@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## PeopleView
+## GalleriesView
 ##############################################################################
 import os
 import sys
@@ -62,12 +62,11 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
-class PeopleView                   ( IconDock                              ) :
+class GalleriesView                ( IconDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
-  ShowGalleries       = pyqtSignal ( str , int , str , QIcon                 )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -132,7 +131,7 @@ class PeopleView                   ( IconDock                              ) :
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
-    TABLE  = self . Tables     [ "People"                                    ]
+    TABLE  = self . Tables     [ "Galleries"                                 ]
     QQ     = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
     DB     . Query             ( QQ                                          )
     ONE    = DB . FetchOne     (                                             )
@@ -157,12 +156,12 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery         ( self                                      ) :
+  def ObtainUuidsQuery            ( self                                   ) :
     ##########################################################################
-    TABLE  = self . Tables      [ "People"                                    ]
+    TABLE  = self . Tables        [ "Galleries"                              ]
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder ( )
+    ORDER  = self . getGroupOrder (                                          )
     QQ     = f"select `uuid` from {TABLE} where ( `used` = 1 ) order by `id` {ORDER} limit {SID} , {AMOUNT} ;"
     ##########################################################################
     return QQ
@@ -425,7 +424,7 @@ class PeopleView                   ( IconDock                              ) :
     TRX    = self . Translations
     ##########################################################################
     T      = self . Total
-    MSG    = f"總人數:{T}"
+    MSG    = f"總圖庫量:{T}"
     mm     . addAction             ( 9999991 , MSG                           )
     ##########################################################################
     SIDB   = SpinBox               ( None , self . PlanFunc                  )
@@ -447,7 +446,6 @@ class PeopleView                   ( IconDock                              ) :
     if                             ( uuid > 0                              ) :
       mm   . addSeparator          (                                         )
       mm   . addAction             ( 1201 ,  TRX [ "UI::PersonalGallery"   ] )
-      mm   . addAction             ( 1202 ,  TRX [ "UI::Galleries"         ] )
     ##########################################################################
     mm     . addSeparator          (                                         )
     if                             ( atItem != None                        ) :
@@ -482,17 +480,7 @@ class PeopleView                   ( IconDock                              ) :
       icon = atItem . icon         (                                         )
       xsid = str                   ( uuid                                    )
       ########################################################################
-      self . ShowPersonalGallery . emit ( text , 7 , xsid , icon             )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 1202                            ) :
-      ########################################################################
-      text = atItem . text         (                                         )
-      icon = atItem . icon         (                                         )
-      xsid = str                   ( uuid                                    )
-      ########################################################################
-      self . ShowGalleries       . emit ( text , 7 , xsid , icon             )
+      self . ShowPersonalGallery . emit ( text , 64 , xsid , icon            )
       ########################################################################
       return True
     ##########################################################################
