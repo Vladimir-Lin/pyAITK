@@ -949,7 +949,6 @@ class AbstractGui        (                                                 ) :
       ########################################################################
       LC       = self . LocalityToGoogleLC ( L                               )
       target   = ""
-      print("GT : " , UUID , " : " , zhTW , " => " , LC)
       ########################################################################
       try                                                                    :
         target = gt . translate ( TN , src = zhTW , dest = LC ) . text
@@ -991,7 +990,6 @@ class AbstractGui        (                                                 ) :
       ########################################################################
       LC       = self . LocalityToGoogleLC ( L                               )
       target   = ""
-      print("GT : " , UUID , " : " , enUS , " => " , LC)
       ########################################################################
       try                                                                    :
         target = gt . translate ( EN , src = enUS , dest = LC ) . text
