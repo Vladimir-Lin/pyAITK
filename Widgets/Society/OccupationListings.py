@@ -68,7 +68,7 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     self . Total    = 0
     self . StartId  = 0
-    self . Amount   = 25
+    self . Amount   = 28
     self . Order    = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
@@ -109,13 +109,20 @@ class OccupationListings           ( TreeDock                              ) :
     if                             ( not self . isPrepared ( )             ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"   , self . windowTitle ( )      )
-    self . LinkAction              ( "Refresh" , self . startup              )
+    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
+    self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
-    self . LinkAction              ( "Insert"  , self . InsertItem           )
-    self . LinkAction              ( "Copy"    , self . CopyToClipboard      )
+    self . LinkAction              ( "Insert"     , self . InsertItem        )
+    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
+    self . LinkAction              ( "Home"       , self . PageHome          )
+    self . LinkAction              ( "End"        , self . PageEnd           )
+    self . LinkAction              ( "PageUp"     , self . PageUp            )
+    self . LinkAction              ( "PageDown"   , self . PageDown          )
     ##########################################################################
-    self . LinkAction              ( "Rename"  , self . RenameItem           )
+    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
+    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    ##########################################################################
+    self . LinkAction              ( "Rename"     , self . RenameItem        )
     ##########################################################################
     return True
   ############################################################################
@@ -345,6 +352,43 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ImportAll                   ( self                                   ) :
+    ##########################################################################
+    print("ImportAll")
+    DB    = self . ConnectDB      (                                          )
+    if                            ( DB == None                             ) :
+      return
+    ##########################################################################
+    RELTAB  = self . Tables       [ "Relation"                               ]
+    REL     = Relation            (                                          )
+    ##########################################################################
+    REL     . set                 ( "first" , 2800004000000000048            )
+    REL     . set                 ( "t1"    , 158                            )
+    REL     . setT2               ( "People"                                 )
+    REL     . setRelation         ( "Subordination"                          )
+    print("Read Japan")
+    JAPAN   = REL . Subordination ( DB , RELTAB                              )
+    print ( "Get Japan : " , len ( JAPAN ) )
+    ##########################################################################
+    REL     . set                 ( "first" , 2800004000000000047            )
+    print("Read Western")
+    WESTS   = REL . Subordination ( DB , RELTAB                              )
+    print ( "Get Western : " , len ( WESTS ) )
+    ##########################################################################
+    REL     . set               ( "first" , 2600000000000000054              )
+    REL     . setT1             ( "Occupation"                               )
+    REL     . setT2             ( "People"                                   )
+    REL     . setRelation       ( "Subordination"                            )
+    ##########################################################################
+    print ( "Import Japan : " , len ( JAPAN ) )
+    REL     . Joins             ( DB , RELTAB , JAPAN                        )
+    print ( "Import Western : " , len ( WESTS ) )
+    REL     . Joins             ( DB , RELTAB , WESTS                        )
+    ##########################################################################
+    DB    . Close               (                                            )
+    ##########################################################################
+    return
+  ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
     IDPMSG = self . Translations [ "Docking" ] [ "None" ]
@@ -452,14 +496,75 @@ class OccupationListings           ( TreeDock                              ) :
   ############################################################################
   def dropPeople               ( self , source , pos , JSOX                ) :
     ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("SexualityListings::dropPeople")
-    print(JSOX)
-    if ( atItem is not None ) :
-      UUID = atItem . data ( 0 , Qt . UserRole )
-      print("TO : " , UUID , " => " , atItem . text ( 0 ) )
+    if                         ( "UUIDs" not in JSOX                       ) :
+      return True
+    ##########################################################################
+    UUIDs  = JSOX              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt     ( pos                                         )
+    if                         ( atItem is None                            ) :
+      return True
+    ##########################################################################
+    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
+    UUID   = int               ( UUID                                        )
+    ##########################################################################
+    if                         ( UUID <= 0                                 ) :
+      return True
+    ##########################################################################
+    self . Go                  ( self . PeopleJoinOccupation               , \
+                                 ( UUID , UUIDs , )                          )
     ##########################################################################
     return True
+  ############################################################################
+  def PeopleJoinOccupation          ( self , UUID , UUIDs                  ) :
+    ##########################################################################
+    if                              ( UUID <= 0                            ) :
+      return
+    ##########################################################################
+    COUNT   = len                   ( UUIDs                                  )
+    if                              ( COUNT <= 0                           ) :
+      return
+    ##########################################################################
+    Hide    = self . isColumnHidden ( 1                                      )
+    ##########################################################################
+    DB      = self . ConnectDB      (                                        )
+    if                              ( DB == None                           ) :
+      return
+    ##########################################################################
+    MSG     = "加入{0}個人物" . format ( COUNT )
+    self    . ShowStatus            ( MSG                                    )
+    self    . TtsTalk               ( MSG , 1002                             )
+    ##########################################################################
+    RELTAB  = self . Tables         [ "Relation"                             ]
+    REL     = Relation              (                                        )
+    REL     . set                   ( "first" , UUID                         )
+    REL     . setT1                 ( "Occupation"                           )
+    REL     . setT2                 ( "People"                               )
+    REL     . setRelation           ( "Subordination"                        )
+    DB      . LockWrites            ( [ RELTAB ]                             )
+    REL     . Joins                 ( DB , RELTAB , UUIDs                    )
+    DB      . UnlockTables          (                                        )
+    ##########################################################################
+    if                              ( not Hide                             ) :
+      TOTAL = REL . CountSecond     ( DB , RELTAB                            )
+    ##########################################################################
+    DB      . Close                 (                                        )
+    ##########################################################################
+    self    . ShowStatus            ( ""                                     )
+    ##########################################################################
+    if                              ( Hide                                 ) :
+      return
+    ##########################################################################
+    IT      = self . uuidAtItem     ( UUID , 0                               )
+    if                              ( IT is None                           ) :
+      return
+    ##########################################################################
+    IT      . setText               ( 1 , str ( TOTAL )                      )
+    self    . DoUpdate              (                                        )
+    ##########################################################################
+    return
   ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
@@ -470,6 +575,48 @@ class OccupationListings           ( TreeDock                              ) :
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def PageHome                     ( self                                  ) :
+    ##########################################################################
+    self . StartId  = 0
+    ##########################################################################
+    self . clear                   (                                         )
+    self . startup                 (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def PageEnd                      ( self                                  ) :
+    ##########################################################################
+    self . StartId    = self . Total - self . Amount
+    if                             ( self . StartId <= 0                   ) :
+      self . StartId  = 0
+    ##########################################################################
+    self . clear                   (                                         )
+    self . startup                 (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def PageUp                       ( self                                  ) :
+    ##########################################################################
+    self . StartId    = self . StartId - self . Amount
+    if                             ( self . StartId <= 0                   ) :
+      self . StartId  = 0
+    ##########################################################################
+    self . clear                   (                                         )
+    self . startup                 (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def PageDown                     ( self                                  ) :
+    ##########################################################################
+    self . StartId    = self . StartId + self . Amount
+    if                             ( self . StartId > self . Total         ) :
+      self . StartId  = self . Total
+    ##########################################################################
+    self . clear                   (                                         )
+    self . startup                 (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -583,6 +730,7 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
+    mm     . addAction             ( 7001 ,  "匯入" )
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
     ##########################################################################
@@ -643,6 +791,10 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 3001                            ) :
       self . Go                    ( self . TranslateAll                     )
+      return True
+    ##########################################################################
+    if                             ( at == 7001                            ) :
+      self . Go                    ( self . ImportAll                        )
       return True
     ##########################################################################
     return True

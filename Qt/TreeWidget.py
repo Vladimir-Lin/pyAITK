@@ -52,6 +52,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   emitPendingTopLevelItem = pyqtSignal ( QTreeWidgetItem                     )
   pickSelectionMode       = pyqtSignal ( str                                 )
   SubmitStatusMessage     = pyqtSignal ( str , int                           )
+  SubmitTtsTalk           = pyqtSignal ( str , int                           )
+  SubmitUpdate            = pyqtSignal (                                     )
   Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
@@ -66,6 +68,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . emitPendingTopLevelItem.connect  ( self.acceptPendingTopLevelItem )
     self . pickSelectionMode      .connect  ( self.assignSelectionMode       )
     self . SubmitStatusMessage    .connect  ( self.AssignStatusMessage       )
+    self . SubmitTtsTalk          .connect  ( self.DoTtsTalk                 )
+    self . SubmitUpdate           .connect  ( self.update                    )
     ##########################################################################
     self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
     self . setAcceptDrops                   ( True                           )
@@ -284,6 +288,24 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   def ShowStatus                      ( self , message , timeout = 0       ) :
     self . SubmitStatusMessage . emit (        message , timeout             )
+    return
+  ############################################################################
+  def DoTtsTalk                 ( self , message , locality                ) :
+    ##########################################################################
+    self . Talk                 (        message , locality                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def TtsTalk                   ( self , message , locality                ) :
+    ##########################################################################
+    self . SubmitTtsTalk . emit (        message , locality                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoUpdate                  ( self                                     ) :
+    ##########################################################################
+    self . SubmitUpdate . emit  (                                            )
+    ##########################################################################
     return
   ############################################################################
   @pyqtSlot(QTreeWidgetItem)
@@ -528,6 +550,31 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . setLocality             ( atId - 10000000                         )
     ##########################################################################
     return True
+  ############################################################################
+  @pyqtSlot                      (                                           )
+  def SelectNone                 ( self                                    ) :
+    ##########################################################################
+    items = self . selectedItems (                                           )
+    if                           ( len ( items ) <= 0                      ) :
+      return
+    ##########################################################################
+    for IT in items                                                          :
+      IT  . setSelected          ( False                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      (                                           )
+  def SelectAll                  ( self                                    ) :
+    ##########################################################################
+    items = self . selectedItems (                                           )
+    if                           ( self . topLevelItemCount ( ) <= 0       ) :
+      return
+    ##########################################################################
+    for i in range               ( 0 , self . topLevelItemCount ( )        ) :
+      IT  = self . topLevelItem  ( i                                         )
+      IT  . setSelected          ( True                                      )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked           ( self , item , column                       ) :
     raise NotImplementedError (                                              )
