@@ -339,7 +339,7 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     TABLE = self . Tables       [ "Names"                                    ]
     FMT   = self . Translations [ "UI::Translating"                          ]
-    self  . DoTranslateAll      ( DB , TABLE , FMT , 8.0                     )
+    self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
     ##########################################################################
     DB    . Close               (                                            )
     ##########################################################################
