@@ -68,7 +68,8 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     self . Total    = 0
     self . StartId  = 0
-    self . Amount   = 30
+    self . Amount   = 25
+    self . Order    = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -318,6 +319,32 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ObtainAllUuids             ( self , DB                               ) :
+    ##########################################################################
+    TABLE = self . Tables        [ "Occupations"                             ]
+    ##########################################################################
+    QQ    = f"""select `uuid` from {TABLE}
+                  where ( `used` = 1 )
+                  order by `id` asc ;"""
+    ##########################################################################
+    QQ    = " " . join           ( QQ . split ( )                            )
+    ##########################################################################
+    return DB . ObtainUuids      ( QQ , 0                                    )
+  ############################################################################
+  def TranslateAll              ( self                                     ) :
+    ##########################################################################
+    DB    = self . ConnectDB    (                                            )
+    if                          ( DB == None                               ) :
+      return
+    ##########################################################################
+    TABLE = self . Tables       [ "Names"                                    ]
+    FMT   = self . Translations [ "UI::Translating"                          ]
+    self  . DoTranslateAll      ( DB , TABLE , FMT , 8.0                     )
+    ##########################################################################
+    DB    . Close               (                                            )
+    ##########################################################################
+    return
+  ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
     IDPMSG = self . Translations [ "Docking" ] [ "None" ]
@@ -354,13 +381,19 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery                ( self                               ) :
+  def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TABLE   = self . Tables           [ "Occupations"                        ]
+    TABLE   = self . Tables   [ "Occupations"                                ]
+    STID    = self . StartId
+    AMOUNT  = self . Amount
+    ORDER   = self . Order
     ##########################################################################
-    QQ      = f"select `uuid` from {TABLE} where ( `used` = 1 ) order by `id` asc ;"
+    QQ      = f"""select `uuid` from {TABLE}
+                  where ( `used` = 1 )
+                  order by `id` {ORDER}
+                  limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return QQ
+    return " " . join         ( QQ . split ( )                               )
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     formats = "people/uuids"
@@ -537,12 +570,14 @@ class OccupationListings           ( TreeDock                              ) :
     SIDB   = SpinBox               ( None , self . PlanFunc                  )
     SIDB   . setRange              ( 0 , self . Total                        )
     SIDB   . setValue              ( self . StartId                          )
+    SIDB   . setPrefix             ( "本頁開始:" )
     mm     . addWidget             ( 9999992 , SIDB                          )
     SIDB   . valueChanged . connect ( self . GotoId                          )
     ##########################################################################
     SIDP   = SpinBox               ( None , self . PlanFunc                  )
     SIDP   . setRange              ( 0 , self . Total                        )
     SIDP   . setValue              ( self . Amount                           )
+    SIDP   . setPrefix             ( "每頁數量:" )
     mm     . addWidget             ( 9999993 , SIDP                          )
     SIDP   . valueChanged . connect ( self . AssignAmount                    )
     ##########################################################################
@@ -551,9 +586,11 @@ class OccupationListings           ( TreeDock                              ) :
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
     ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     . addAction             ( 1201 ,  TRX [ "UI::AttachCrowds"      ] )
+    if                             ( atItem != None                        ) :
+      FMT  = TRX                   [ "UI::AttachCrowds"                      ]
+      MSG  = FMT . format          ( atItem . text ( 0 )                     )
+      mm   . addSeparator          (                                         )
+      mm   . addAction             ( 1201 ,  MSG                             )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
@@ -564,6 +601,8 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
+    mm     . addSeparator          (                                         )
+    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
@@ -600,6 +639,10 @@ class OccupationListings           ( TreeDock                              ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
       self . EditAllNames          ( self , "Tasks" , uuid , NAM             )
+      return True
+    ##########################################################################
+    if                             ( at == 3001                            ) :
+      self . Go                    ( self . TranslateAll                     )
       return True
     ##########################################################################
     return True

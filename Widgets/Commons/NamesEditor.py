@@ -109,6 +109,12 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     LABELs   . append              ( ""                                      )
     self     . setCentralLabels    ( LABELs                                  )
     ##########################################################################
+    self     . setColumnWidth      ( 1         , 320                         )
+    self     . setColumnWidth      ( 2         , 160                         )
+    self     . setColumnWidth      ( 3         , 100                         )
+    self     . setColumnWidth      ( 4         , 100                         )
+    self     . setColumnWidth      ( 6         ,  60                         )
+    self     . setColumnWidth      ( 7         ,  60                         )
     self     . setColumnWidth      ( TOTAL     , 3                           )
     ##########################################################################
     self     . setColumnHidden     ( 0         , True                        )
@@ -983,9 +989,9 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     ##########################################################################
     self    . emitNamesShow . emit    (                                      )
     ##########################################################################
-    if                                ( self . ShowCompact                 ) :
-      TOTAL = len                     ( self . KEYs                          )
-      self  . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )              )
+    ## if                                ( self . ShowCompact                 ) :
+    ##   TOTAL = len                     ( self . KEYs                          )
+    ##   self  . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )              )
     ##########################################################################
     return
   ############################################################################
