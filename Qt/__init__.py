@@ -15,6 +15,7 @@ from . MdiArea         import MdiArea         as MdiArea
 from . LineEdit        import LineEdit        as LineEdit
 from . ComboBox        import ComboBox        as ComboBox
 from . SpinBox         import SpinBox         as SpinBox
+from . CheckBox        import CheckBox        as CheckBox
 from . TreeWidget      import TreeWidget      as TreeWidget
 from . TreeDock        import TreeDock        as TreeDock
 from . ListWidget      import ListWidget      as ListWidget
@@ -39,6 +40,7 @@ __all__ = [ "AbstractGui"                                                    ,
             "LineEdit"                                                       ,
             "ComboBox"                                                       ,
             "SpinBox"                                                        ,
+            "CheckBox"                                                       ,
             "TreeWidget"                                                     ,
             "TreeDock"                                                       ,
             "ListWidget"                                                     ,

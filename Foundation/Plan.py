@@ -48,6 +48,7 @@ class Plan                 ( PurePlan                                      ) :
     self . Stacked       = None
     self . Mdi           = None
     self . statusMessage = None
+    self . Ratio         = None
     ##########################################################################
     return
   ############################################################################
