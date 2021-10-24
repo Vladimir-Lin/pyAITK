@@ -840,6 +840,106 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     return False
   ############################################################################
+  def HandleDropInImage      ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    widget = self . Gui
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasImage ( )                  , \
+                                      widget                               , \
+                                      "acceptImageDrop"                      )
+    if                              ( AT                                   ) :
+      return True , False
+    ##########################################################################
+    Caller = getattr                ( widget , "dropImage" , None            )
+    if                              ( callable ( Caller )                  ) :
+      ########################################################################
+      img  = mimeData . imageData   (                                        )
+      R    = Caller                 ( sourceWidget , mousePos , img          )
+      ########################################################################
+      return False , R
+    ##########################################################################
+    return True , False
+  ############################################################################
+  def HandleDropInText       ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    widget = self . Gui
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasText  ( )                  , \
+                                      widget                               , \
+                                      "acceptTextDrop"                       )
+    if                              ( AT                                   ) :
+      return True , False
+    ##########################################################################
+    Caller = getattr                ( widget , "dropText" , None             )
+    if                              ( callable ( Caller )                  ) :
+      ########################################################################
+      txt  = mimeData . text        (                                        )
+      R    = Caller                 ( sourceWidget , mousePos , txt          )
+      ########################################################################
+      return False , R
+    ##########################################################################
+    return True , False
+  ############################################################################
+  def HandleDropInHtml       ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    widget = self . Gui
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasHtml  ( )                  , \
+                                      widget                               , \
+                                      "acceptHtmlDrop"                       )
+    if                              ( AT                                   ) :
+      return True , False
+    ##########################################################################
+    Caller = getattr                ( widget , "dropHtml" , None             )
+    if                              ( callable ( Caller )                  ) :
+      ########################################################################
+      html = mimeData . html        (                                        )
+      R    = Caller                 ( sourceWidget , mousePos , html         )
+      ########################################################################
+      return False , R
+    ##########################################################################
+    return True , False
+  ############################################################################
+  def HandleDropInURLs       ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    widget = self . Gui
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasUrls  ( )                  , \
+                                      widget                               , \
+                                      "acceptUrlsDrop"                       )
+    if                              ( AT                                   ) :
+      return True , False
+    ##########################################################################
+    Caller = getattr                ( widget , "dropUrls" , None             )
+    if                              ( callable ( Caller )                  ) :
+      ########################################################################
+      urls = mimeData . urls        (                                        )
+      R    = Caller                 ( sourceWidget , mousePos , urls         )
+      ########################################################################
+      return False , R
+    ##########################################################################
+    return True , False
+  ############################################################################
+  def HandleDropInColor      ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    widget = self . Gui
+    ##########################################################################
+    AT     = self . CallMimeHandler ( mime . hasColor ( )                  , \
+                                      widget                               , \
+                                      "acceptColorDrop"                      )
+    if                              ( AT                                   ) :
+      return True , False
+    ##########################################################################
+    Caller = getattr                ( widget , "dropColor" , None            )
+    if                              ( callable ( Caller )                  ) :
+      ########################################################################
+      cld  = mimeData . colorData   (                                        )
+      R    = Caller                 ( sourceWidget , mousePos , cld          )
+      ########################################################################
+      return False , R
+    ##########################################################################
+    return True , False
+  ############################################################################
   def dropItems              ( self , sourceWidget , mimeData , mousePos   ) :
     ##########################################################################
     widget = self . Gui
@@ -877,11 +977,35 @@ class AbstractGui        (                                                 ) :
       ########################################################################
       return True
     ##########################################################################
+    Bypass , Result = self . HandleDropInImage ( sourceWidget              , \
+                                                 mimeData                  , \
+                                                 mousePos                    )
+    if                               ( not Bypass                          ) :
+      return Result
     ##########################################################################
+    Bypass , Result = self . HandleDropInText  ( sourceWidget              , \
+                                                 mimeData                  , \
+                                                 mousePos                    )
+    if                               ( not Bypass                          ) :
+      return Result
     ##########################################################################
+    Bypass , Result = self . HandleDropInHtml  ( sourceWidget              , \
+                                                 mimeData                  , \
+                                                 mousePos                    )
+    if                               ( not Bypass                          ) :
+      return Result
     ##########################################################################
+    Bypass , Result = self . HandleDropInURLs  ( sourceWidget              , \
+                                                 mimeData                  , \
+                                                 mousePos                    )
+    if                               ( not Bypass                          ) :
+      return Result
     ##########################################################################
-    ##########################################################################
+    Bypass , Result = self . HandleDropInColor ( sourceWidget              , \
+                                                 mimeData                  , \
+                                                 mousePos                    )
+    if                               ( not Bypass                          ) :
+      return Result
     ##########################################################################
     return False
   ############################################################################

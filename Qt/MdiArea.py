@@ -40,9 +40,15 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QMdiArea
 ##############################################################################
 from         . VirtualGui             import VirtualGui   as VirtualGui
+from         . MenuManager            import MenuManager  as MenuManager
 from         . MdiSubWindow           import MdiSubWindow as MdiSubWindow
 ##############################################################################
 class MdiArea         ( QMdiArea , VirtualGui                              ) :
+  ############################################################################
+  HavingMenu = 1371434312
+  ############################################################################
+  SubmitStatusMessage  = pyqtSignal ( str , int                              )
+  Files                = pyqtSignal ( list                                   )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
@@ -53,20 +59,228 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     self . setAttribute                   ( Qt . WA_InputMethodEnabled       )
     ##########################################################################
     self . setViewMode                    ( self . SubWindowView             )
-    self . setHorizontalScrollBarPolicy   ( Qt . ScrollBarAlwaysOff          )
-    self . setVerticalScrollBarPolicy     ( Qt . ScrollBarAlwaysOff          )
+    self . setHorizontalScrollBarPolicy   ( Qt . ScrollBarAsNeeded           )
+    self . setVerticalScrollBarPolicy     ( Qt . ScrollBarAsNeeded           )
     self . setAcceptDrops                 ( True                             )
     ##########################################################################
-    self . menu          = None
-    self . group         = None
+    self . SubmitStatusMessage . connect  ( self . AssignStatusMessage       )
     ##########################################################################
-    self . styleMenu     = None
-    self . subWindow     = None
-    self . tabbedAction  = None
-    self . cascadeAction = None
-    self . tiledAction   = None
-    self . closeAll      = None
+    self . setFunction                    ( self . HavingMenu , True         )
     ##########################################################################
+    self . droppingAction = False
+    ##########################################################################
+    self . menu           = None
+    self . group          = None
+    ##########################################################################
+    self . styleMenu      = None
+    self . subWindow      = None
+    self . tabbedAction   = None
+    self . cascadeAction  = None
+    self . tiledAction    = None
+    self . closeAll       = None
+    ##########################################################################
+    ## WidgetClass                   ;
+    ## addIntoWidget ( parent,this ) ;
+    ##########################################################################
+    return
+  ############################################################################
+  def focusInEvent               ( self , event                            ) :
+    ##########################################################################
+    if                           ( self . focusIn ( event )                ) :
+      return
+    ##########################################################################
+    super ( ) . focusInEvent     (        event                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def focusOutEvent              ( self , event                            ) :
+    ##########################################################################
+    if                           ( self . focusOut ( event )               ) :
+      return
+    ##########################################################################
+    super ( ) . focusOutEvent    (        event                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def contextMenuEvent           ( self , event                            ) :
+    ##########################################################################
+    if                           ( self . Menu ( event . pos ( ) )         ) :
+      event . accept             (                                           )
+      return
+    ##########################################################################
+    super ( ) . contextMenuEvent (        event                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def closeEvent                 ( self , event                            ) :
+    ##########################################################################
+    if                           ( self . Shutdown ( )                     ) :
+      event . accept             (                                           )
+      return
+    ##########################################################################
+    super ( ) . closeEvent       (        event                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def resizeEvent                ( self , event                            ) :
+    ##########################################################################
+    if                           ( self . Relocation ( )                   ) :
+      event . accept             (                                           )
+      return
+    ##########################################################################
+    super ( ) . resizeEvent      (        event                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def showEvent                  ( self , event                            ) :
+    ##########################################################################
+    super ( ) . showEvent        (        event                              )
+    self . Relocation            (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragEnterEvent    ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
+      if                ( self . dragEnter ( event )                       ) :
+        event . acceptProposedAction (                                       )
+        return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( ) . dragEnterEvent ( event                                     )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragLeaveEvent    ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . removeDrop ( )                            ) :
+      event . accept    (                                                    )
+      return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( ) . dragLeaveEvent ( event                                     )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragMoveEvent     ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
+      if                ( self . dragMove  ( event )                       ) :
+        event . acceptProposedAction (                                       )
+        return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( ) . dragMoveEvent ( event                                      )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dropEvent         ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
+      if                ( self . dropIn    ( event )                       ) :
+        event . acceptProposedAction (                                       )
+        return
+    ##########################################################################
+    if                  ( self . PassDragDrop                              ) :
+      super ( ) . dropEvent ( event                                          )
+      return
+    ##########################################################################
+    event . ignore      (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragDone               ( self , dropIt , mime                        ) :
+    return
+  ############################################################################
+  def dropNew                ( self , sourceWidget , mimeData , mousePos   ) :
+    return True
+  ############################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return True
+  ############################################################################
+  def dropAppend             ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    if                       ( self . droppingAction                       ) :
+      return False
+    ##########################################################################
+    return self . dropItems  (        sourceWidget , mimeData , mousePos     )
+  ############################################################################
+  def removeDrop             ( self                                        ) :
+    return True
+  ############################################################################
+  def allowedMimeTypes        ( self , mime                                ) :
+    formats = "url/uuids"
+    return self . MimeType    ( mime , formats                               )
+  ############################################################################
+  def acceptDrop              ( self , sourceWidget , mimeData             ) :
+    return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def acceptUrlsDrop          ( self                                       ) :
+    return True
+  ############################################################################
+  def dropUrls                ( self , sourceWidget , pos , Urls           ) :
+    ##########################################################################
+    print (Urls)
+    ## self . Files . emit ( URLs )
+    ##########################################################################
+    return True
+  ############################################################################
+  def contains                   ( self , accessibleName                   ) :
+    ##########################################################################
+    subws = self . subWindowList (                                           )
+    for subw in subws                                                        :
+      if ( subw . widget ( ) . accessibleName ( ) == accessibleName )        :
+        return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def findWidget                 ( self , accessibleName                   ) :
+    ##########################################################################
+    subws = self . subWindowList (                                           )
+    for subw in subws                                                        :
+      if ( subw . widget ( ) . accessibleName ( ) == accessibleName )        :
+        return subw . widget     (                                           )
+    ##########################################################################
+    return None
+  ############################################################################
+  def getWidgets                 ( self , accessibleName                   ) :
+    ##########################################################################
+    subws = self . subWindowList (                                           )
+    wgts  =                      [                                           ]
+    for subw in subws                                                        :
+      if ( subw . widget ( ) . accessibleName ( ) == accessibleName )        :
+        wgts . append            ( subw . widget ( )                         )
+    ##########################################################################
+    return wgts
+  ############################################################################
+  def Shutdown                ( self                                       ) :
+    return True
+  ############################################################################
+  def Relocation              ( self                                       ) :
+    return False
+  ############################################################################
+  def FocusIn                 ( self                                       ) :
+    return True
+  ############################################################################
+  def FocusOut                ( self                                       ) :
+    return True
+  ############################################################################
+  @pyqtSlot                   (        str     , int                         )
+  def AssignStatusMessage     ( self , message , timeout = 0               ) :
+    self . statusMessage      (        message , timeout                     )
+    return
+  ############################################################################
+  def ShowStatus                      ( self , message , timeout = 0       ) :
+    self . SubmitStatusMessage . emit (        message , timeout             )
     return
   ############################################################################
   @pyqtSlot                           (                                      )
@@ -295,109 +509,81 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ScrollBarMenu                ( self , mm                             ) :
+    ##########################################################################
+    TRX    = self . Translations
+    ##########################################################################
+    LOM    = mm   . addMenu        ( TRX [ "UI::ScrollBar" ]                 )
+    ##########################################################################
+    status = self . horizontalScrollBarPolicy (                              )
+    hid    =                       ( status == Qt . ScrollBarAsNeeded        )
+    msg    = TRX                   [ "UI::Horizontal"                        ]
+    mm     . addActionFromMenu     ( LOM , 60001 , msg , True , hid          )
+    ##########################################################################
+    status = self . verticalScrollBarPolicy   (                              )
+    hid    =                       ( status == Qt . ScrollBarAsNeeded        )
+    msg    = TRX                   [ "UI::Vertical"                          ]
+    mm     . addActionFromMenu     ( LOM , 60002 , msg , True , hid          )
+    ##########################################################################
+    return mm
   ############################################################################
+  def RunScrollBar                          ( self , menu , aa             ) :
+    ##########################################################################
+    at     = menu . at                      ( aa                             )
+    ##########################################################################
+    if                                      ( at == 60001                  ) :
+      ########################################################################
+      if                                    ( aa . isChecked ( )           ) :
+        self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAsNeeded         )
+      else                                                                   :
+        self . setHorizontalScrollBarPolicy ( Qt . ScrollBarAlwaysOff        )
+      ########################################################################
+      return True
+    ##########################################################################
+    elif                                    ( at == 60002                  ) :
+      ########################################################################
+      if                                    ( aa . isChecked ( )           ) :
+        self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAsNeeded         )
+      else                                                                   :
+        self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAlwaysOff        )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
   ############################################################################
-  ############################################################################
-  ############################################################################
+  def Menu                         ( self , pos                            ) :
+    ##########################################################################
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
+    mm     = MenuManager           ( self                                    )
+    ##########################################################################
+    TRX    = self . Translations
+    ##########################################################################
+    vp     = self . viewport       (                                         )
+    W      = vp   . width          (                                         )
+    H      = vp   . height         (                                         )
+    MSG    = f"{W} x {H}"
+    mm     . addAction             ( 9900124101 , MSG                        )
+    mm     . addSeparator          (                                         )
+    ##########################################################################
+    mm     = self . ScrollBarMenu  ( mm                                      )
+    ##########################################################################
+    mm     . setFont               ( self    . font ( )                      )
+    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunScrollBar ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    return True
   ############################################################################
   ############################################################################
   ############################################################################
 ##############################################################################
 
 """
-
-N::MdiArea:: MdiArea     (QWidget * parent,Plan * p     )
-           : QMdiArea    (          parent              )
-           , VirtualGui  (          this  ,       p     )
-           , Thread      (          0     ,       false )
-           , WindowLists (NULL                          )
-{
-  WidgetClass                   ;
-  addIntoWidget ( parent,this ) ;
-  Configure     (             ) ;
-}
-
-void N::MdiArea::focusInEvent(QFocusEvent * event)
-{
-  if (!focusIn (event))            {
-    QMdiArea::focusInEvent (event) ;
-  }                                ;
-  MenuStatus ( )                   ;
-}
-
-void N::MdiArea::focusOutEvent(QFocusEvent * event)
-{
-  if (!focusOut(event))            {
-    QMdiArea::focusOutEvent(event) ;
-  }                                ;
-  MenuStatus ( )                   ;
-}
-
-void N::MdiArea::contextMenuEvent(QContextMenuEvent * event)
-{
-  if (Menu(event->pos())) event->accept(); else
-  QMdiArea::contextMenuEvent(event)           ;
-}
-
-void N::MdiArea::dragEnterEvent(QDragEnterEvent * event)
-{
-  if (dragEnter(event)) event->acceptProposedAction() ; else {
-    if (PassDragDrop) QMdiArea::dragEnterEvent(event)        ;
-    else event->ignore()                                     ;
-  }                                                          ;
-}
-
-void N::MdiArea::dragLeaveEvent(QDragLeaveEvent * event)
-{
-  if (removeDrop()) event->accept() ; else            {
-    if (PassDragDrop) QMdiArea::dragLeaveEvent(event) ;
-    else event->ignore()                              ;
-  }                                                   ;
-}
-
-void N::MdiArea::dragMoveEvent(QDragMoveEvent * event)
-{
-  if (dragMove(event)) event->acceptProposedAction() ; else {
-    if (PassDragDrop) QMdiArea::dragMoveEvent(event)        ;
-    else event->ignore()                                    ;
-  }                                                         ;
-}
-
-void N::MdiArea::dropEvent(QDropEvent * event)
-{
-  if (drop(event)) event->acceptProposedAction() ; else {
-    if (PassDragDrop) QMdiArea::dropEvent(event)        ;
-    else event->ignore()                                ;
-  }                                                     ;
-}
-
-bool N::MdiArea::acceptDrop(QWidget * source,const QMimeData * mime)
-{
-  Q_UNUSED ( source ) ;
-  Q_UNUSED ( mime   ) ;
-  return true         ;
-}
-
-bool N::MdiArea::dropNew(QWidget * source,const QMimeData * mime,QPoint pos)
-{
-  Q_UNUSED ( source ) ;
-  Q_UNUSED ( mime   ) ;
-  Q_UNUSED ( pos    ) ;
-  return true         ;
-}
-
-bool N::MdiArea::dropMoving(QWidget * source,const QMimeData * mime,QPoint pos)
-{
-  Q_UNUSED ( source ) ;
-  Q_UNUSED ( mime   ) ;
-  Q_UNUSED ( pos    ) ;
-  return true         ;
-}
-
-bool N::MdiArea::dropAppend(QWidget * source,const QMimeData * mime,QPoint pos)
-{
-  return dropItems ( source , mime , pos ) ;
-}
 
 void N::MdiArea::Connect(QWidget * widget)
 {
@@ -495,43 +681,6 @@ void N::MdiArea::subActivated(QMdiSubWindow * window)
   update     ()                         ;
 }
 
-bool N::MdiArea::contains(QString accName)
-{
-  QList<QMdiSubWindow *> subws = subWindowList()   ;
-  QMdiSubWindow       *  subw                      ;
-  foreach (subw,subws)                             {
-    if (subw->widget()->accessibleName()==accName) {
-      return true                                  ;
-    }                                              ;
-  }                                                ;
-  return false                                     ;
-}
-
-QWidget * N::MdiArea::findWidget(QString accName)
-{
-  QList<QMdiSubWindow *> subws = subWindowList()   ;
-  QMdiSubWindow       *  subw                      ;
-  foreach (subw,subws)                             {
-    if (subw->widget()->accessibleName()==accName) {
-      return subw->widget()                        ;
-    }                                              ;
-  }                                                ;
-  return NULL                                      ;
-}
-
-QList<QWidget *> N::MdiArea::getWidgets(QString accName)
-{
-  QList<QWidget       *> Widgets                   ;
-  QList<QMdiSubWindow *> subws = subWindowList()   ;
-  QMdiSubWindow       *  subw                      ;
-  foreach (subw,subws)                             {
-    if (subw->widget()->accessibleName()==accName) {
-      Widgets << subw->widget()                    ;
-    }                                              ;
-  }                                                ;
-  return Widgets                                   ;
-}
-
 void N::MdiArea::Configure(void)
 {
   setViewMode                  ( SubWindowView                      ) ;
@@ -562,40 +711,6 @@ void N::MdiArea::Configure(void)
   if ( NotNull ( plan ) )                                             {
     Data . Controller = & ( plan->canContinue )                       ;
   }                                                                   ;
-}
-
-bool N::MdiArea::dropUrls(QWidget * source,QPointF pos,const QList<QUrl> & urls)
-{ Q_UNUSED  ( source ) ;
-  Q_UNUSED  ( pos    ) ;
-  emit Files( urls   ) ;
-  return true          ;
-}
-
-bool N::MdiArea::Menu(QPoint pos)
-{ Q_UNUSED    ( pos       )                                                                        ;
-  nScopedMenu ( mm , this )                                                                        ;
-  QAction     * aa                                                                                 ;
-  QMenu       * me                                                                                 ;
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  me = mm . addMenu ( tr("Scroll bar")                                                           ) ;
-  mm . add ( me,60001,tr("Horizontal"),true,horizontalScrollBarPolicy() == Qt::ScrollBarAsNeeded ) ;
-  mm . add ( me,60002,tr("Vertical"  ),true,verticalScrollBarPolicy  () == Qt::ScrollBarAsNeeded ) ;
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  mm . setFont ( plan                )                                                             ;
-  aa = mm.exec (                     )                                                             ;
-  nKickOut     ( IsNull(aa) , true   )                                                             ;
-  //////////////////////////////////////////////////////////////////////////////////////////////////
-  switch ( mm [ aa ] )                                                                             {
-    case 60001                                                                                     :
-      if ( aa->isChecked() ) setHorizontalScrollBarPolicy ( Qt::ScrollBarAsNeeded  )               ;
-                        else setHorizontalScrollBarPolicy ( Qt::ScrollBarAlwaysOff )               ;
-    break                                                                                          ;
-    case 60002                                                                                     :
-      if ( aa->isChecked() ) setVerticalScrollBarPolicy   ( Qt::ScrollBarAsNeeded  )               ;
-                        else setVerticalScrollBarPolicy   ( Qt::ScrollBarAlwaysOff )               ;
-    break                                                                                          ;
-  }                                                                                                ;
-  return true                                                                                      ;
 }
 
 """
