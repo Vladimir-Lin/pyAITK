@@ -352,43 +352,6 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ImportAll                   ( self                                   ) :
-    ##########################################################################
-    print("ImportAll")
-    DB    = self . ConnectDB      (                                          )
-    if                            ( DB == None                             ) :
-      return
-    ##########################################################################
-    RELTAB  = self . Tables       [ "Relation"                               ]
-    REL     = Relation            (                                          )
-    ##########################################################################
-    REL     . set                 ( "first" , 2800004000000000048            )
-    REL     . set                 ( "t1"    , 158                            )
-    REL     . setT2               ( "People"                                 )
-    REL     . setRelation         ( "Subordination"                          )
-    print("Read Japan")
-    JAPAN   = REL . Subordination ( DB , RELTAB                              )
-    print ( "Get Japan : " , len ( JAPAN ) )
-    ##########################################################################
-    REL     . set                 ( "first" , 2800004000000000047            )
-    print("Read Western")
-    WESTS   = REL . Subordination ( DB , RELTAB                              )
-    print ( "Get Western : " , len ( WESTS ) )
-    ##########################################################################
-    REL     . set               ( "first" , 2600000000000000054              )
-    REL     . setT1             ( "Occupation"                               )
-    REL     . setT2             ( "People"                                   )
-    REL     . setRelation       ( "Subordination"                            )
-    ##########################################################################
-    print ( "Import Japan : " , len ( JAPAN ) )
-    REL     . Joins             ( DB , RELTAB , JAPAN                        )
-    print ( "Import Western : " , len ( WESTS ) )
-    REL     . Joins             ( DB , RELTAB , WESTS                        )
-    ##########################################################################
-    DB    . Close               (                                            )
-    ##########################################################################
-    return
-  ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
     IDPMSG = self . Translations [ "Docking" ] [ "None" ]
@@ -730,7 +693,6 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    mm     . addAction             ( 7001 ,  "匯入" )
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
     ##########################################################################
@@ -791,10 +753,6 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 3001                            ) :
       self . Go                    ( self . TranslateAll                     )
-      return True
-    ##########################################################################
-    if                             ( at == 7001                            ) :
-      self . Go                    ( self . ImportAll                        )
       return True
     ##########################################################################
     return True
