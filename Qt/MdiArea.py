@@ -59,8 +59,8 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     self . setAttribute                   ( Qt . WA_InputMethodEnabled       )
     ##########################################################################
     self . setViewMode                    ( self . SubWindowView             )
-    self . setHorizontalScrollBarPolicy   ( Qt . ScrollBarAsNeeded           )
-    self . setVerticalScrollBarPolicy     ( Qt . ScrollBarAsNeeded           )
+    self . setHorizontalScrollBarPolicy   ( Qt . ScrollBarAlwaysOff          )
+    self . setVerticalScrollBarPolicy     ( Qt . ScrollBarAlwaysOff          )
     self . setAcceptDrops                 ( True                             )
     ##########################################################################
     self . SubmitStatusMessage . connect  ( self . AssignStatusMessage       )

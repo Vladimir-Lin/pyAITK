@@ -41,7 +41,7 @@ class CheckBox              ( QCheckBox , VirtualGui                       ) :
   ############################################################################
   def __init__              ( self , parent = None , plan = None           ) :
     ##########################################################################
-    super ( QCheckBox   , self ) . __init__ ( parent                         )
+    super ( ) . __init__                    ( parent                         )
     super ( VirtualGui  , self ) . __init__ (                                )
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )

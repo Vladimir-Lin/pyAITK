@@ -39,6 +39,7 @@ from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QCheckBox
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
@@ -58,7 +59,6 @@ class ObjectTypesEditor            ( TreeDock                              ) :
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -78,9 +78,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnCount          ( 9                                       )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -91,13 +89,14 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
-    self . emitAssignAmounts . connect ( self . AssignAmounts                )
+    self . itemChanged       . connect ( self . AcceptItemChanged            )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
+    self . setAcceptDrops          ( False                                   )
     self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
     return
   ############################################################################
@@ -112,8 +111,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
     self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
+    ## self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     self . LinkAction              ( "Home"       , self . PageHome          )
     self . LinkAction              ( "End"        , self . PageEnd           )
     self . LinkAction              ( "PageUp"     , self . PageUp            )
@@ -122,7 +120,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
     ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
+    ## self . LinkAction              ( "Rename"     , self . RenameItem        )
     ##########################################################################
     return True
   ############################################################################
@@ -154,14 +152,43 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
+  def PrepareItem                ( self , UUID , TYPE                      ) :
     ##########################################################################
     UXID = str                   ( UUID                                      )
     IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , NAME                                  )
-    IT   . setToolTip            ( 0 , UXID                                  )
+    IT   . setFlags              ( IT . flags ( ) | Qt . ItemIsUserCheckable )
     IT   . setData               ( 0 , Qt . UserRole , UUID                  )
+    ##########################################################################
+    USED = TYPE                  [ 1                                         ]
+    USED = int                   ( USED                                      )
+    if                           ( USED == 0                               ) :
+      IT . setCheckState         ( 0 , Qt . Unchecked                        )
+    else                                                                     :
+      IT . setCheckState         ( 0 , Qt . Checked                          )
+    ##########################################################################
+    IT   . setText               ( 1 , str ( TYPE [ 0 ] )                    )
     IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    ##########################################################################
+    NAME = self . BlobToString   ( TYPE [ 2 ]                                )
+    IT   . setText               ( 2 , NAME                                  )
+    ##########################################################################
+    WIKI = self . BlobToString   ( TYPE [ 7 ]                                )
+    IT   . setText               ( 3 , WIKI                                  )
+    ##########################################################################
+    HEAD = int                   ( TYPE [ 3 ]                                )
+    IT   . setText               ( 4 , str ( HEAD )                          )
+    IT   . setTextAlignment      ( 4 , Qt.AlignRight                         )
+    ##########################################################################
+    DIGS = int                   ( TYPE [ 4 ]                                )
+    IT   . setText               ( 5 , str ( DIGS )                          )
+    IT   . setTextAlignment      ( 5 , Qt.AlignRight                         )
+    ##########################################################################
+    READ = int                   ( TYPE [ 5 ]                                )
+    IT   . setText               ( 6 , str ( READ )                          )
+    IT   . setTextAlignment      ( 6 , Qt.AlignRight                         )
+    ##########################################################################
+    COMM = self . BlobToString   ( TYPE [ 6 ]                                )
+    IT   . setText               ( 7 , COMM                                  )
     ##########################################################################
     return IT
   ############################################################################
@@ -215,20 +242,45 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def AcceptItemChanged          ( self , item , column                    ) :
+    ##########################################################################
+    if                           ( column not in [ 0 ]                     ) :
+      return
+    ##########################################################################
+    UUID     = item . data       ( 0 , Qt . UserRole                         )
+    UUID     = int               ( UUID                                      )
+    ##########################################################################
+    if                           ( column == 0                             ) :
+      ########################################################################
+      cstate = item . checkState ( 0                                         )
+      USED   = 0
+      ########################################################################
+      if                         ( cstate == Qt . Unchecked                ) :
+        USED = 0
+      elif                       ( cstate == Qt . Checked                  ) :
+        USED = 1
+      ########################################################################
+      print(UUID,USED)
+    ##########################################################################
+    return
+  ############################################################################
   @pyqtSlot(dict)
   def refresh                         ( self , JSON                        ) :
     ##########################################################################
     self    . clear                   (                                      )
     ##########################################################################
     UUIDs   = JSON                    [ "UUIDs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
+    TYPEs   = JSON                    [ "TYPEs"                              ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
+      IT    = self . PrepareItem      ( U , TYPEs [ U ]                      )
       self  . addTopLevelItem         ( IT                                   )
     ##########################################################################
     self    . emitNamesShow . emit    (                                      )
+    ##########################################################################
+    TOTAL   = self . columnCount      (                                      )
+    self    . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )              )
     ##########################################################################
     return
   ############################################################################
@@ -241,49 +293,25 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return UUIDs
   ############################################################################
-  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
+  def ObtainsUuidTypes                ( self , DB , UUIDs                  ) :
     ##########################################################################
-    NAMEs   =                         {                                      }
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      return                          {                                      }
     ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
-    ##########################################################################
-    return NAMEs
-  ############################################################################
-  @pyqtSlot                           (        str  , int                    )
-  def AssignAmounts                   ( self , UUID , Amounts              ) :
-    ##########################################################################
-    IT    = self . uuidAtItem         ( UUID , 0                             )
-    if                                ( IT is None                         ) :
-      return
-    ##########################################################################
-    IT . setText                      ( 1 , str ( Amounts )                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportBelongings                 ( self , UUIDs                      ) :
-    ##########################################################################
-    time    . sleep                    ( 1.0                                 )
-    ##########################################################################
-    RELTAB  = self . Tables            [ "Relation"                          ]
-    REL     = Relation                 (                                     )
-    REL     . setT1                    ( "Occupation"                        )
-    REL     . setT2                    ( "People"                            )
-    REL     . setRelation              ( "Subordination"                     )
-    ##########################################################################
-    DB      = self . ConnectDB         (                                     )
+    TYPEs   =                         {                                      }
+    TABLE   = self . Tables           [ "Types"                              ]
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      REL   . set                      ( "first" , UUID                      )
-      CNT   = REL . CountSecond        ( DB , RELTAB                         )
-      ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
+      QQ    = f"""select `id`,`used`,`name`,`head`,`digits`,`ready`,`comment`,`wiki` from {TABLE}
+                  where ( `uuid` = {UUID} ) ;"""
+      QQ    = " " . join              ( QQ . split ( )                       )
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      if ( ( RR is not False ) and ( RR is not None ) )                      :
+        TYPEs [ UUID ] = RR
     ##########################################################################
-    DB      . Close                    (                                     )
-    ##########################################################################
-    return
+    return TYPEs
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
@@ -296,7 +324,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+      TYPEs = self . ObtainsUuidTypes ( DB , UUIDs                           )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
@@ -306,13 +334,9 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     JSON             =                {                                      }
     JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
+    JSON [ "TYPEs" ] = TYPEs
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
-    ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
     ##########################################################################
     return
   ############################################################################
@@ -328,11 +352,9 @@ class ObjectTypesEditor            ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    TABLE = self . Tables        [ "Occupations"                             ]
+    TABLE = self . Tables        [ "Types"                                   ]
     ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
-                  order by `id` asc ;"""
+    QQ    = f"""select `uuid` from {TABLE} order by `id` asc ;"""
     ##########################################################################
     QQ    = " " . join           ( QQ . split ( )                            )
     ##########################################################################
@@ -375,7 +397,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "Occupations"                        ]
+    TABLE   = self . Tables           [ "Types"                              ]
     ##########################################################################
     QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
     DB      . Query                   ( QQ                                   )
@@ -390,151 +412,24 @@ class ObjectTypesEditor            ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Occupations"                                ]
+    TABLE   = self . Tables   [ "Types"                                      ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . Order
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
     return " " . join         ( QQ . split ( )                               )
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
-  ############################################################################
-  def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
-    return self . dropHandler ( sourceWidget , self , mimeData               )
-  ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
-    ##########################################################################
-    if                              ( self == sourceWidget                 ) :
-      return False
-    ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
-      return False
-    ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
-    ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
-      ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
-    ##########################################################################
-    return RDN
-  ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    ##########################################################################
-    return True
-  ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem is None                            ) :
-      return True
-    ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
-    ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
-    ##########################################################################
-    self . Go                  ( self . PeopleJoinOccupation               , \
-                                 ( UUID , UUIDs , )                          )
-    ##########################################################################
-    return True
-  ############################################################################
-  def PeopleJoinOccupation          ( self , UUID , UUIDs                  ) :
-    ##########################################################################
-    if                              ( UUID <= 0                            ) :
-      return
-    ##########################################################################
-    COUNT   = len                   ( UUIDs                                  )
-    if                              ( COUNT <= 0                           ) :
-      return
-    ##########################################################################
-    Hide    = self . isColumnHidden ( 1                                      )
-    ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return
-    ##########################################################################
-    MSG     = "加入{0}個人物" . format ( COUNT )
-    self    . ShowStatus            ( MSG                                    )
-    self    . TtsTalk               ( MSG , 1002                             )
-    ##########################################################################
-    RELTAB  = self . Tables         [ "Relation"                             ]
-    REL     = Relation              (                                        )
-    REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Occupation"                           )
-    REL     . setT2                 ( "People"                               )
-    REL     . setRelation           ( "Subordination"                        )
-    DB      . LockWrites            ( [ RELTAB ]                             )
-    REL     . Joins                 ( DB , RELTAB , UUIDs                    )
-    DB      . UnlockTables          (                                        )
-    ##########################################################################
-    if                              ( not Hide                             ) :
-      TOTAL = REL . CountSecond     ( DB , RELTAB                            )
-    ##########################################################################
-    DB      . Close                 (                                        )
-    ##########################################################################
-    self    . ShowStatus            ( ""                                     )
-    ##########################################################################
-    if                              ( Hide                                 ) :
-      return
-    ##########################################################################
-    IT      = self . uuidAtItem     ( UUID , 0                               )
-    if                              ( IT is None                           ) :
-      return
-    ##########################################################################
-    IT      . setText               ( 1 , str ( TOTAL )                      )
-    self    . DoUpdate              (                                        )
-    ##########################################################################
-    return
-  ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
-    self   . setColumnWidth   ( 2 , 3                                        )
+    ## self   . setColumnWidth   ( 0 , 24                                       )
+    self   . setColumnWidth   ( 8 , 3                                        )
     ##########################################################################
     TRX    = self . Translations
-    LABELs = [ TRX [ "UI::Occupations" ] , TRX [ "UI::PeopleAmount" ] , "" ]
+    LABELs = [ "" , "編號" , "名稱" , "維基" , "起頭" , "位數" , "完成度" , "註解" , "" ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )
@@ -580,31 +475,6 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     self . clear                   (                                         )
     self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
-    ##########################################################################
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
-      return
-    ##########################################################################
-    OCPTAB  = self . Tables        [ "Occupations"                           ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
-    ##########################################################################
-    DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
-    ##########################################################################
-    uuid    = int                  ( uuid                                    )
-    if                             ( uuid <= 0                             ) :
-      ########################################################################
-      uuid  = DB . UnusedUuid      ( OCPTAB                                  )
-      DB    . UseUuid              ( OCPTAB , uuid                           )
-    ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
-    ##########################################################################
-    DB      . Close                (                                         )
-    ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
     ##########################################################################
     return
   ############################################################################
@@ -685,7 +555,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     SIDB   . valueChanged . connect ( self . GotoId                          )
     ##########################################################################
     SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
+    SIDP   . setRange              ( 0 , 10000                               )
     SIDP   . setValue              ( self . Amount                           )
     SIDP   . setPrefix             ( "每頁數量:" )
     mm     . addWidget             ( 9999993 , SIDP                          )
@@ -694,7 +564,6 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
@@ -731,14 +600,10 @@ class ObjectTypesEditor            ( TreeDock                              ) :
       self . startup               (                                         )
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
-      return True
-    ##########################################################################
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Tasks" , uuid , NAM             )
+      self . EditAllNames          ( self , "Types" , uuid , NAM             )
       return True
     ##########################################################################
     if                             ( at == 3001                            ) :
