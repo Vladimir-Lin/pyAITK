@@ -72,7 +72,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     self . Order    = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
-    self . dockingPlace       = Qt . RightDockWidgetArea
+    self . dockingPlace       = Qt . BottomDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
