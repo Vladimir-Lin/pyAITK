@@ -49,6 +49,7 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
   ############################################################################
   SubmitStatusMessage  = pyqtSignal ( str , int                              )
   Files                = pyqtSignal ( list                                   )
+  childChanged         = pyqtSignal (                                        )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
@@ -79,8 +80,19 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     self . tiledAction    = None
     self . closeAll       = None
     ##########################################################################
-    ## WidgetClass                   ;
-    ## addIntoWidget ( parent,this ) ;
+    """
+    WidgetClass                   ;
+    addIntoWidget ( parent,this ) ;
+    Shadow = new QGraphicsDropShadowEffect ( this )                     ;
+    setGraphicsEffect ( Shadow )                                        ;
+    Shadow -> setBlurRadius ( 3                     )                   ;
+    Shadow -> setColor      ( QColor  (224,224,224) )                   ;
+    Shadow -> setOffset     ( QPointF (  3,  3    ) )                   ;
+    Shadow -> setEnabled    ( true                  )                   ;
+    if ( NotNull ( plan ) )                                             {
+      Data . Controller = & ( plan->canContinue )                       ;
+    }                                                                   ;
+    """
     ##########################################################################
     return
   ############################################################################
@@ -261,6 +273,90 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
         wgts . append            ( subw . widget ( )                         )
     ##########################################################################
     return wgts
+  ############################################################################
+  @pyqtSlot                    (       QWidget                               )
+  def Leave                    ( self , widget                             ) :
+    ##########################################################################
+    self . childChanged . emit (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      (       QWidget , QSize                     )
+  def Adjustment                 ( self , msw ,  size                      ) :
+    ##########################################################################
+    ws     = size
+    mw     = self . geometry     (                                           )
+    wm     = QSize               ( mw . width ( ) , mw . height ( )          )
+    fg     = msw . frameGeometry (                                           )
+    wg     = msw . geometry      (                                           )
+    ms     = QSize               ( fg . width ( ) , fg . height ( )          )
+    ds     = QSize               ( wg . width ( ) , wg . height ( )          )
+    ##########################################################################
+    ms     = ms - ds
+    ms     = ms + ws
+    wm     = wm - ms
+    ##########################################################################
+    WW     = ( wm . width  ( ) * ( randint ( 0 , 200 ) % 16 ) / 16           )
+    HH     = ( wm . height ( ) * ( randint ( 0 , 200 ) % 16 ) / 16           )
+    ds     = QSize               ( WW , HH                                   )
+    ##########################################################################
+    if                           ( ds . width  ( ) < 0                     ) :
+      ds   . setWidth            ( 0                                         )
+    if                           ( ds . height ( ) < 0                     ) :
+      ds   . setHeight           ( 0                                         )
+    ##########################################################################
+    msw    . move                ( ds . width ( ) , ds . height ( )          )
+    msw    . resize              ( ms                                        )
+    self   . update              (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      (       QWidget                             )
+  def Fit                        ( self , widget                           ) :
+    ##########################################################################
+    ws     = widget . size       (                                           )
+    msw    = self   . append     ( widget                                    )
+    ##########################################################################
+    ## msw->setFont(plan->fonts[N::Fonts::Default])                          ;
+    ##########################################################################
+    mw     = self . geometry     (                                           )
+    wm     = QSize               ( mw . width ( ) , mw . height ( )          )
+    fg     = msw . frameGeometry (                                           )
+    wg     = msw . geometry      (                                           )
+    ms     = QSize               ( fg . width ( ) , fg . height ( )          )
+    ds     = QSize               ( wg . width ( ) , wg . height ( )          )
+    ##########################################################################
+    ms     = ms - ds
+    ms     = ms + ws
+    wm     = wm - ms
+    ##########################################################################
+    WW     = ( wm . width  ( ) * ( randint ( 0 , 200 ) % 16 ) / 16           )
+    HH     = ( wm . height ( ) * ( randint ( 0 , 200 ) % 16 ) / 16           )
+    ds     = QSize               ( WW , HH                                   )
+    ##########################################################################
+    if                           ( ds . width  ( ) < 0                     ) :
+      ds   . setWidth            ( 0                                         )
+    if                           ( ds . height ( ) < 0                     ) :
+      ds   . setHeight           ( 0                                         )
+    ##########################################################################
+    msw    . move                ( ds . width ( ) , ds . height ( )          )
+    msw    . resize              ( ms                                        )
+    msw    . setWindowIcon       ( widget . windowIcon ( )                   )
+    self   . update              (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def Connect                 ( self , widget                              ) :
+    ##########################################################################
+    Caller   = getattr        ( widget , "Adjustment" , None                 )
+    if                        ( callable ( Caller )                        ) :
+      Caller . connect        ( self . Adjustment                            )
+    ##########################################################################
+    Caller   = getattr        ( widget , "Leave"      , None                 )
+    if                        ( callable ( Caller )                        ) :
+      Caller . connect        ( self . Leave                                 )
+    ##########################################################################
+    return
   ############################################################################
   def Shutdown                ( self                                       ) :
     return True
@@ -578,139 +674,4 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
       return True
     ##########################################################################
     return True
-  ############################################################################
-  ############################################################################
-  ############################################################################
 ##############################################################################
-
-"""
-
-void N::MdiArea::Connect(QWidget * widget)
-{
-  nConnect ( widget , SIGNAL(Adjustment(QWidget*,QSize))   ,
-             this   , SLOT  (Adjustment(QWidget*,QSize)) ) ;
-  nConnect ( widget , SIGNAL(Adjustment(QWidget*      ))   ,
-             this   , SLOT  (Adjustment(QWidget*      )) ) ;
-  nConnect ( widget , SIGNAL(Leave     (QWidget*      ))   ,
-             this   , SLOT  (Leave     (QWidget*      )) ) ;
-}
-
-void N::MdiArea::Adjustment(QWidget * widget,QSize size)
-{
-  QMdiSubWindow * msw = Casting(QMdiSubWindow,widget)                   ;
-  if (IsNull(msw)) return                                               ;
-  QSize ws = size                                                       ;
-  QRect mw = geometry()                                                 ;
-  QSize wm = QSize(mw.width(),mw.height())                              ;
-  QRect fg = msw->frameGeometry()                                       ;
-  QRect wg = msw->geometry()                                            ;
-  QSize ms = QSize(fg.width(),fg.height())                              ;
-  QSize ds = QSize(wg.width(),wg.height())                              ;
-  ms -= ds                                                              ;
-  ms += ws                                                              ;
-  wm -= ms                                                              ;
-  ds  = QSize((wm.width()*(rand()%16)/16),(wm.height()*(rand()%16)/16)) ;
-  if (ds.width ()<0) ds.setWidth (0)                                    ;
-  if (ds.height()<0) ds.setHeight(0)                                    ;
-  msw->move(ds.width(),ds.height())                                     ;
-  msw->resize(ms)                                                       ;
-  msw->setWindowIcon(widget->windowIcon())                              ;
-  MenuStatus ( )                                                        ;
-  update     ( )                                                        ;
-}
-
-void N::MdiArea::Adjustment(QWidget * widget)
-{
-  QMdiSubWindow * msw = Casting(QMdiSubWindow,widget)                   ;
-  if (IsNull(msw)) return                                               ;
-  QSize ws = widget -> size ( )                                         ;
-  QRect mw = geometry()                                                 ;
-  QSize wm = QSize(mw.width(),mw.height())                              ;
-  QRect fg = msw->frameGeometry()                                       ;
-  QRect wg = msw->geometry()                                            ;
-  QSize ms = QSize(fg.width(),fg.height())                              ;
-  QSize ds = QSize(wg.width(),wg.height())                              ;
-  ms -= ds                                                              ;
-  ms += ws                                                              ;
-  wm -= ms                                                              ;
-  ds  = QSize((wm.width()*(rand()%16)/16),(wm.height()*(rand()%16)/16)) ;
-  if (ds.width ()<0) ds.setWidth (0)                                    ;
-  if (ds.height()<0) ds.setHeight(0)                                    ;
-  msw->move(ds.width(),ds.height())                                     ;
-  msw->resize(ms)                                                       ;
-  msw->setWindowIcon(widget->windowIcon())                              ;
-  MenuStatus ( )                                                        ;
-  update     ( )                                                        ;
-}
-
-void N::MdiArea::Leave(QWidget * widget)
-{ Q_UNUSED          ( widget ) ;
-  MenuStatus        (        ) ;
-  update            (        ) ;
-  emit childChanged (        ) ;
-}
-
-void N::MdiArea::Fit(QWidget * widget)
-{
-  QSize ws = widget->size()                                             ;
-  QMdiSubWindow * msw = append(widget)                                  ;
-  msw->setFont(plan->fonts[N::Fonts::Default])                          ;
-  QRect mw = geometry()                                                 ;
-  QSize wm = QSize(mw.width(),mw.height())                              ;
-  QRect fg = msw->frameGeometry()                                       ;
-  QRect wg = msw->geometry()                                            ;
-  QSize ms = QSize(fg.width(),fg.height())                              ;
-  QSize ds = QSize(wg.width(),wg.height())                              ;
-  ms -= ds                                                              ;
-  ms += ws                                                              ;
-  wm -= ms                                                              ;
-  ds  = QSize((wm.width()*(rand()%16)/16),(wm.height()*(rand()%16)/16)) ;
-  if (ds.width ()<0) ds.setWidth (0)                                    ;
-  if (ds.height()<0) ds.setHeight(0)                                    ;
-  msw->move(ds.width(),ds.height())                                     ;
-  msw->resize(ms)                                                       ;
-  msw->setWindowIcon(widget->windowIcon())                              ;
-  MenuStatus ( )                                                        ;
-  update     ( )                                                        ;
-}
-
-void N::MdiArea::subActivated(QMdiSubWindow * window)
-{
-  if (IsNull(window)) emit lastClosed() ;
-  MenuStatus ()                         ;
-  update     ()                         ;
-}
-
-void N::MdiArea::Configure(void)
-{
-  setViewMode                  ( SubWindowView                      ) ;
-  setAttribute                 ( Qt::WA_InputMethodEnabled          ) ;
-  setHorizontalScrollBarPolicy ( Qt::ScrollBarAlwaysOff             ) ;
-  setVerticalScrollBarPolicy   ( Qt::ScrollBarAlwaysOff             ) ;
-  setAcceptDrops               ( true                               ) ;
-  setDropFlag                  ( DropUrls , true                    ) ;
-  /////////////////////////////////////////////////////////////////////
-  Shadow = new QGraphicsDropShadowEffect ( this )                     ;
-  setGraphicsEffect ( Shadow )                                        ;
-  Shadow -> setBlurRadius ( 3                     )                   ;
-  Shadow -> setColor      ( QColor  (224,224,224) )                   ;
-  Shadow -> setOffset     ( QPointF (  3,  3    ) )                   ;
-  Shadow -> setEnabled    ( true                  )                   ;
-  /////////////////////////////////////////////////////////////////////
-  addConnector  ( "Activated"                                         ,
-                  this , SIGNAL(subWindowActivated(QMdiSubWindow*))   ,
-                  this , SLOT  (subActivated      (QMdiSubWindow*)) ) ;
-  addConnector  ( "Commando"                                          ,
-                  Commando                                            ,
-                  SIGNAL ( timeout      ( ) )                         ,
-                  this                                                ,
-                  SLOT   ( DropCommands ( ) )                       ) ;
-  onlyConnector ( "Activated"                                       ) ;
-  onlyConnector ( "Commando"                                        ) ;
-  /////////////////////////////////////////////////////////////////////
-  if ( NotNull ( plan ) )                                             {
-    Data . Controller = & ( plan->canContinue )                       ;
-  }                                                                   ;
-}
-
-"""
