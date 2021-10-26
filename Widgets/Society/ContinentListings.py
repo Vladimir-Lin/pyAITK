@@ -190,7 +190,7 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
+  @pyqtSlot                           (        dict                          )
   def refresh                         ( self , JSON                        ) :
     ##########################################################################
     self    . clear                   (                                      )
@@ -239,29 +239,29 @@ class ContinentListings            ( TreeDock                              ) :
   ############################################################################
   def ReportBelongings                 ( self , UUIDs                      ) :
     ##########################################################################
-    time    . sleep                    ( 1.0                                 )
+    ## time    . sleep                    ( 1.0                                 )
     ##########################################################################
-    TABLE = self . Tables              [ "Countries"                         ]
+    ## TABLE = self . Tables              [ "Continents"                        ]
     ##########################################################################
-    DB      = self . ConnectDB         (                                     )
+    ## DB      = self . ConnectDB         (                                     )
     ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      CNT   = 0
-      TYPE  = int                      ( UUID % 10000                        )
-      QQ    = f"""select count(*) from {TABLE}
-                  where ( `used` = 1 )
-                  and ( `type` = {TYPE} ) ;"""
-      QQ    = " " . join               ( QQ . split ( )                      )
-      DB    . Query                    ( QQ                                  )
-      RR    = DB . FetchOne            (                                     )
-      ########################################################################
-      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )          :
-        CNT = RR                       [ 0                                   ]
-      ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
+    ## for UUID in UUIDs                                                        :
+    ##   ########################################################################
+    ##   CNT   = 0
+    ##   TYPE  = int                      ( UUID % 10000                        )
+    ##   QQ    = f"""select count(*) from {TABLE}
+    ##               where ( `used` = 1 )
+    ##               and ( `type` = {TYPE} ) ;"""
+    ##   QQ    = " " . join               ( QQ . split ( )                      )
+    ##   DB    . Query                    ( QQ                                  )
+    ##   RR    = DB . FetchOne            (                                     )
+    ##   ########################################################################
+    ##   if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )          :
+    ##     CNT = RR                       [ 0                                   ]
+    ##   ########################################################################
+    ##   self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
     ##########################################################################
-    DB      . Close                    (                                     )
+    ## DB      . Close                    (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -294,7 +294,7 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
+  @pyqtSlot                      (                                           )
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -306,7 +306,7 @@ class ContinentListings            ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    TABLE = self . Tables        [ "NationTypes"                             ]
+    TABLE = self . Tables        [ "Continents"                              ]
     ##########################################################################
     QQ    = f"select `uuid` from {TABLE} order by `id` asc ;"
     ##########################################################################
@@ -347,7 +347,7 @@ class ContinentListings            ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery    ( self                                           ) :
     ##########################################################################
-    TABLE = self . Tables [ "NationTypes"                                    ]
+    TABLE = self . Tables [ "Continents"                                     ]
     ##########################################################################
     return f"select `uuid` from {TABLE} order by `id` asc ;"
   ############################################################################
@@ -356,8 +356,8 @@ class ContinentListings            ( TreeDock                              ) :
     self   . setColumnWidth   ( 2 , 3                                        )
     ##########################################################################
     TRX    = self . Translations
-    LABELs =                  [ TRX [ "UI::NationTypes" ]                  , \
-                                TRX [ "UI::Amount"      ]                  , \
+    LABELs =                  [ TRX [ "UI::Continents" ]                   , \
+                                TRX [ "UI::Amount"     ]                   , \
                                 ""                                           ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
@@ -440,8 +440,8 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
-    ## mm     . addSeparator          (                                         )
-    ## mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
+    mm     . addSeparator          (                                         )
+    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
@@ -469,7 +469,7 @@ class ContinentListings            ( TreeDock                              ) :
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "NationTypes" , uuid , NAM       )
+      self . EditAllNames          ( self , "Continents" , uuid , NAM        )
       return True
     ##########################################################################
     if                             ( at == 3001                            ) :
