@@ -1155,6 +1155,17 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def DoAutoTranslation        ( self , DB , TABLE , UUID , FMT , interval ) :
+    ##########################################################################
+    GURL = "translate.googleapis.com"
+    gt   = Translator          ( service_urls = [ GURL ]                     )
+    ##########################################################################
+    MSG  = FMT . format        ( UUID                                        )
+    self . ShowStatus          ( MSG                                         )
+    self . AutoTranslateUUID   ( gt , interval , DB , TABLE , UUID           )
+    ##########################################################################
+    return
+  ############################################################################
   def DoTranslateAll               ( self , DB , TABLE , FMT , interval    ) :
     ##########################################################################
     UUIDs  = self . ObtainAllUuids ( DB                                      )
