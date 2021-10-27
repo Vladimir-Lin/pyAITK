@@ -821,13 +821,13 @@ class OrganizationListings ( TreeDock                                      ) :
       return True
     ##########################################################################
     if                             ( at == 1201                            ) :
-      self . PeopleGroup   . emit  ( 40 , str ( uuid )                       )
+      self . PeopleGroup   . emit  ( 38 , str ( uuid )                       )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Tasks" , uuid , NAM             )
+      self . EditAllNames          ( self , "Organization" , uuid , NAM      )
       return True
     ##########################################################################
     if                             ( at == 3001                            ) :
