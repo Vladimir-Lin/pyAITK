@@ -372,7 +372,7 @@ class OrganizationListings ( TreeDock                                      ) :
     ORDER   = self . Order
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
+                  where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
@@ -407,7 +407,7 @@ class OrganizationListings ( TreeDock                                      ) :
     ##########################################################################
     TABLE   = self . Tables           [ "Organizations"                      ]
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    QQ      = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
@@ -421,7 +421,7 @@ class OrganizationListings ( TreeDock                                      ) :
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
     TABLE  = self . Tables     [ "Organizations"                             ]
-    QQ     = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    QQ     = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
     DB     . Query             ( QQ                                          )
     ONE    = DB . FetchOne     (                                             )
     ##########################################################################
@@ -453,7 +453,7 @@ class OrganizationListings ( TreeDock                                      ) :
     ORDER   = self . Order
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
+                  where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
