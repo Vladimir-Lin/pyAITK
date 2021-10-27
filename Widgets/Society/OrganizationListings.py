@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## OccupationListings
+## OrganizationListings
 ##############################################################################
 import os
 import sys
@@ -22,6 +22,7 @@ from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -51,7 +52,7 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
 ##############################################################################
-class OccupationListings           ( TreeDock                              ) :
+class OrganizationListings ( TreeDock                                      ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
@@ -60,7 +61,7 @@ class OccupationListings           ( TreeDock                              ) :
   emitAssignAmounts = pyqtSignal   ( str , int                               )
   PeopleGroup       = pyqtSignal   ( int , str                               )
   ############################################################################
-  def __init__                     ( self , parent = None , plan = None    ) :
+  def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
@@ -71,12 +72,20 @@ class OccupationListings           ( TreeDock                              ) :
     self . Amount   = 28
     self . Order    = "asc"
     ##########################################################################
+    self . Grouping = "Original"
+    ## self . Grouping = "Subordination"
+    ## self . Grouping = "Reverse"
+    ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
+    ##########################################################################
+    self . Relation = Relation     (                                         )
+    self . Relation . setT2        ( "Organization"                          )
+    self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 3                                       )
     self . setColumnHidden         ( 1 , True                                )
@@ -103,6 +112,20 @@ class OccupationListings           ( TreeDock                              ) :
   ############################################################################
   def sizeHint                     ( self                                  ) :
     return QSize                   ( 320 , 640                               )
+  ############################################################################
+  def setGrouping             ( self , group                               ) :
+    self . Grouping = group
+    return self . Grouping
+  ############################################################################
+  def getGrouping             ( self                                       ) :
+    return self . Grouping
+  ############################################################################
+  def setGroupOrder           ( self , order                               ) :
+    self . Order = order
+    return self . Order
+  ############################################################################
+  def getGroupOrder           ( self                                       ) :
+    return self . Order
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -232,14 +255,29 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ObtainSubgroupUuids      ( self , DB                                 ) :
+    ##########################################################################
+    SID    = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getGroupOrder ( )
+    LMTS   = f"limit {SID} , {AMOUNT}"
+    RELTAB = self . Tables [ "Relation" ]
+    ##########################################################################
+    if                         ( self . Grouping == "Subordination"        ) :
+      OPTS = f"order by `position` {ORDER}"
+      return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
+    if                         ( self . Grouping == "Reverse"              ) :
+      OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
+      return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
+    ##########################################################################
+    return                     [                                             ]
+  ############################################################################
   def ObtainsItemUuids                ( self , DB                          ) :
     ##########################################################################
-    QQ      = self . ObtainUuidsQuery (                                      )
-    UUIDs   =                         [                                      ]
-    if                                ( len ( QQ ) > 0                     ) :
-      UUIDs = DB   . ObtainUuids      ( QQ                                   )
+    if                                ( self . Grouping == "Original"      ) :
+      return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
-    return UUIDs
+    return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
   def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
     ##########################################################################
@@ -268,7 +306,7 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     RELTAB  = self . Tables            [ "Relation"                          ]
     REL     = Relation                 (                                     )
-    REL     . setT1                    ( "Occupation"                        )
+    REL     . setT1                    ( "Organization"                      )
     REL     . setT2                    ( "People"                            )
     REL     . setRelation              ( "Subordination"                     )
     ##########################################################################
@@ -328,11 +366,15 @@ class OccupationListings           ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    TABLE = self . Tables        [ "Occupations"                             ]
+    TABLE   = self . Tables   [ "Organizations"                              ]
+    STID    = self . StartId
+    AMOUNT  = self . Amount
+    ORDER   = self . Order
     ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
+    QQ      = f"""select `uuid` from {TABLE}
                   where ( `used` = 1 )
-                  order by `id` asc ;"""
+                  order by `id` {ORDER}
+                  limit {STID} , {AMOUNT} ;"""
     ##########################################################################
     QQ    = " " . join           ( QQ . split ( )                            )
     ##########################################################################
@@ -352,18 +394,6 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  ############################################################################
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
     self . Leave . emit    ( self                                            )
@@ -375,7 +405,7 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "Occupations"                        ]
+    TABLE   = self . Tables           [ "Organizations"                      ]
     ##########################################################################
     QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
     DB      . Query                   ( QQ                                   )
@@ -388,9 +418,36 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def FetchRegularDepotCount   ( self , DB                                 ) :
+    ##########################################################################
+    TABLE  = self . Tables     [ "Organizations"                             ]
+    QQ     = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    DB     . Query             ( QQ                                          )
+    ONE    = DB . FetchOne     (                                             )
+    ##########################################################################
+    if                         ( ONE == None                               ) :
+      return 0
+    ##########################################################################
+    if                         ( len ( ONE ) <= 0                          ) :
+      return 0
+    ##########################################################################
+    return ONE                 [ 0                                           ]
+  ############################################################################
+  def FetchGroupMembersCount             ( self , DB                       ) :
+    ##########################################################################
+    RELTAB = self . Tables               [ "Relation"                        ]
+    ##########################################################################
+    return self . Relation . CountSecond ( DB , RELTAB                       )
+  ############################################################################
+  def FetchGroupOwnersCount              ( self , DB                       ) :
+    ##########################################################################
+    RELTAB = self . Tables               [ "Relation"                        ]
+    ##########################################################################
+    return self . Relation . CountFirst  ( DB , RELTAB                       )
+  ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Occupations"                                ]
+    TABLE   = self . Tables   [ "Organizations"                              ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . Order
@@ -401,6 +458,28 @@ class OccupationListings           ( TreeDock                              ) :
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
     return " " . join         ( QQ . split ( )                               )
+  ############################################################################
+  def FetchSessionInformation         ( self , DB                          ) :
+    ##########################################################################
+    if                                ( self . Grouping == "Original"      ) :
+      ########################################################################
+      self . Total = self . FetchRegularDepotCount ( DB                      )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                ( self . Grouping == "Subordination" ) :
+      ########################################################################
+      self . Total = self . FetchGroupMembersCount ( DB                      )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                ( self . Grouping == "Reverse"       ) :
+      ########################################################################
+      self . Total = self . FetchGroupOwnersCount  ( DB                      )
+      ########################################################################
+      return
+    ##########################################################################
+    return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     formats = "people/uuids"
@@ -476,12 +555,12 @@ class OccupationListings           ( TreeDock                              ) :
     if                         ( UUID <= 0                                 ) :
       return True
     ##########################################################################
-    self . Go                  ( self . PeopleJoinOccupation               , \
+    self . Go                  ( self . PeopleJoinOrganization             , \
                                  ( UUID , UUIDs , )                          )
     ##########################################################################
     return True
   ############################################################################
-  def PeopleJoinOccupation          ( self , UUID , UUIDs                  ) :
+  def PeopleJoinOrganization        ( self , UUID , UUIDs                  ) :
     ##########################################################################
     if                              ( UUID <= 0                            ) :
       return
@@ -503,7 +582,7 @@ class OccupationListings           ( TreeDock                              ) :
     RELTAB  = self . Tables         [ "Relation"                             ]
     REL     = Relation              (                                        )
     REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Occupation"                           )
+    REL     . setT1                 ( "Organization"                         )
     REL     . setT2                 ( "People"                               )
     REL     . setRelation           ( "Subordination"                        )
     DB      . LockWrites            ( [ RELTAB ]                             )
@@ -534,7 +613,7 @@ class OccupationListings           ( TreeDock                              ) :
     self   . setColumnWidth   ( 2 , 3                                        )
     ##########################################################################
     TRX    = self . Translations
-    LABELs = [ TRX [ "UI::Occupations" ] , TRX [ "UI::PeopleAmount" ] , "" ]
+    LABELs = [ "組織名稱" , TRX [ "UI::PeopleAmount" ] , "" ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )
@@ -589,7 +668,7 @@ class OccupationListings           ( TreeDock                              ) :
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    OCPTAB  = self . Tables        [ "Occupations"                           ]
+    OCPTAB  = self . Tables        [ "Organizations"                         ]
     NAMTAB  = self . Tables        [ "Names"                                 ]
     ##########################################################################
     DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
@@ -597,8 +676,8 @@ class OccupationListings           ( TreeDock                              ) :
     uuid    = int                  ( uuid                                    )
     if                             ( uuid <= 0                             ) :
       ########################################################################
-      uuid  = DB . UnusedUuid      ( OCPTAB                                  )
-      DB    . UseUuid              ( OCPTAB , uuid                           )
+      uuid  = DB . LastUuid        ( OCPTAB , "uuid" , 1600000000000000000   )
+      DB    . AppendUuid           ( OCPTAB , uuid                           )
     ##########################################################################
     self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
     ##########################################################################
@@ -637,7 +716,7 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return mm
   ############################################################################
-  @pyqtSlot(int)
+  @pyqtSlot                        (        int                              )
   def GotoId                       ( self , Id                             ) :
     ##########################################################################
     self . StartId    = Id
