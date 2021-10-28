@@ -410,6 +410,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
+    TYPEs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
       TYPEs = self . ObtainsUuidTypes ( DB , UUIDs                           )

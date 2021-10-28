@@ -78,7 +78,7 @@ class EnumerationEditor            ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 9                                       )
+    self . setColumnCount          ( 8                                       )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -87,9 +87,9 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
-    self . emitNamesShow     . connect ( self . show                         )
-    self . emitAllNames      . connect ( self . refresh                      )
-    self . itemChanged       . connect ( self . AcceptItemChanged            )
+    self . emitNamesShow . connect ( self . show                             )
+    self . emitAllNames  . connect ( self . refresh                          )
+    self . itemChanged   . connect ( self . AcceptItemChanged                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -112,6 +112,7 @@ class EnumerationEditor            ( TreeDock                              ) :
     self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
+    self . LinkAction              ( "Insert"     , self . InsertItem        )
     self . LinkAction              ( "Home"       , self . PageHome          )
     self . LinkAction              ( "End"        , self . PageEnd           )
     self . LinkAction              ( "PageUp"     , self . PageUp            )
@@ -120,7 +121,7 @@ class EnumerationEditor            ( TreeDock                              ) :
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
     ##########################################################################
-    ## self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self . LinkAction              ( "Rename"     , self . RenameItem        )
     ##########################################################################
     return True
   ############################################################################
@@ -141,9 +142,10 @@ class EnumerationEditor            ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 2 , 3 , 4 , 5 , 6 , 7 ]  ) :
+    if                          ( column < 7                               ) :
       return
     ##########################################################################
+    """
     if                          ( column in [ 2 , 3 , 4 , 7 ]              ) :
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
@@ -169,48 +171,50 @@ class EnumerationEditor            ( TreeDock                              ) :
                                   self . spinChanged                         )
       sb   . setAlignment       ( Qt . AlignRight                            )
       sb   . setFocus           ( Qt . TabFocusReason                        )
+    """
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , TYPE                      ) :
+  def PrepareItem                ( self , UUID , ENUM                      ) :
     ##########################################################################
     UXID = str                   ( UUID                                      )
     IT   = QTreeWidgetItem       (                                           )
-    IT   . setFlags              ( IT . flags ( ) | Qt . ItemIsUserCheckable )
     IT   . setData               ( 0 , Qt . UserRole , UUID                  )
     ##########################################################################
-    USED = TYPE                  [ 1                                         ]
-    USED = int                   ( USED                                      )
-    if                           ( USED == 0                               ) :
-      IT . setCheckState         ( 0 , Qt . Unchecked                        )
-    else                                                                     :
-      IT . setCheckState         ( 0 , Qt . Checked                          )
+    IT   . setText               ( 0 , str ( ENUM [ 0 ] )                    )
     ##########################################################################
-    IT   . setText               ( 1 , str ( TYPE [ 0 ] )                    )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    NAME = self . BlobToString   ( ENUM [ 4 ]                                )
+    IT   . setText               ( 1 , NAME                                  )
     ##########################################################################
-    NAME = self . BlobToString   ( TYPE [ 2 ]                                )
-    IT   . setText               ( 2 , NAME                                  )
+    WIKI = self . BlobToString   ( ENUM [ 6 ]                                )
+    IT   . setText               ( 2 , WIKI                                  )
     ##########################################################################
-    WIKI = self . BlobToString   ( TYPE [ 7 ]                                )
-    IT   . setText               ( 3 , WIKI                                  )
+    IT   . setText               ( 3 , str ( ENUM [ 1 ] )                    )
+    IT   . setTextAlignment      ( 3 , Qt.AlignRight                         )
     ##########################################################################
-    HEAD = int                   ( TYPE [ 3 ]                                )
-    IT   . setText               ( 4 , str ( HEAD )                          )
-    IT   . setTextAlignment      ( 4 , Qt.AlignRight                         )
+    COL  = self . BlobToString   ( ENUM [ 2 ]                                )
+    IT   . setText               ( 4 , COL                                   )
     ##########################################################################
-    DIGS = int                   ( TYPE [ 4 ]                                )
-    IT   . setText               ( 5 , str ( DIGS )                          )
+    IT   . setText               ( 5 , str ( ENUM [ 3 ] )                    )
     IT   . setTextAlignment      ( 5 , Qt.AlignRight                         )
     ##########################################################################
-    READ = int                   ( TYPE [ 5 ]                                )
-    IT   . setText               ( 6 , str ( READ )                          )
-    IT   . setTextAlignment      ( 6 , Qt.AlignRight                         )
-    ##########################################################################
-    COMM = self . BlobToString   ( TYPE [ 6 ]                                )
-    IT   . setText               ( 7 , COMM                                  )
+    COL  = self . BlobToString   ( ENUM [ 5 ]                                )
+    IT   . setText               ( 6 , COL                                   )
     ##########################################################################
     return IT
+  ############################################################################
+  @pyqtSlot                      (                                           )
+  def InsertItem                 ( self                                    ) :
+    ##########################################################################
+    """
+    IT = self . currentItem      (                                           )
+    if                           ( IT is None                              ) :
+      return
+    ##########################################################################
+    self . doubleClicked         ( IT , 0                                    )
+    """
+    ##########################################################################
+    return
   ############################################################################
   @pyqtSlot                      (                                           )
   def RenameItem                 ( self                                    ) :
@@ -352,17 +356,17 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
+  @pyqtSlot                           (        dict                          )
   def refresh                         ( self , JSON                        ) :
     ##########################################################################
     self    . clear                   (                                      )
     ##########################################################################
     UUIDs   = JSON                    [ "UUIDs"                              ]
-    TYPEs   = JSON                    [ "TYPEs"                              ]
+    ENUMs   = JSON                    [ "ENUMs"                              ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , TYPEs [ U ]                      )
+      IT    = self . PrepareItem      ( U , ENUMs [ U ]                      )
       self  . addTopLevelItem         ( IT                                   )
     ##########################################################################
     self    . emitNamesShow . emit    (                                      )
@@ -381,25 +385,25 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     return UUIDs
   ############################################################################
-  def ObtainsUuidTypes                ( self , DB , UUIDs                  ) :
+  def ObtainsUuidEnumerations         ( self , DB , UUIDs                  ) :
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
       return                          {                                      }
     ##########################################################################
-    TYPEs   =                         {                                      }
-    TABLE   = self . Tables           [ "Types"                              ]
+    ENUMs   =                         {                                      }
+    TABLE   = self . Tables           [ "Enumerations"                       ]
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      QQ    = f"""select `id`,`used`,`name`,`head`,`digits`,`ready`,`comment`,`wiki` from {TABLE}
+      QQ    = f"""select `uuid`,`type`,`column`,`value`,`name`,`comment`,`wiki` from {TABLE}
                   where ( `uuid` = {UUID} ) ;"""
       QQ    = " " . join              ( QQ . split ( )                       )
       DB    . Query                   ( QQ                                   )
       RR    = DB . FetchOne           (                                      )
       if ( ( RR is not False ) and ( RR is not None ) )                      :
-        TYPEs [ UUID ] = RR
+        ENUMs [ UUID ] = RR
     ##########################################################################
-    return TYPEs
+    return ENUMs
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
@@ -410,9 +414,10 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
+    ENUMs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
-      TYPEs = self . ObtainsUuidTypes ( DB , UUIDs                           )
+      ENUMs = self . ObtainsUuidEnumerations ( DB , UUIDs                    )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
@@ -422,7 +427,7 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     JSON             =                {                                      }
     JSON [ "UUIDs" ] = UUIDs
-    JSON [ "TYPEs" ] = TYPEs
+    JSON [ "ENUMs" ] = ENUMs
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
     ##########################################################################
@@ -440,11 +445,9 @@ class EnumerationEditor            ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    TABLE = self . Tables        [ "Types"                                   ]
+    TABLE = self . Tables        [ "Enumerations"                            ]
     ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
-                where ( `used` = 1 )
-                order by `id` asc ;"""
+    QQ    = f"select `uuid` from {TABLE} order by `id` asc ;"
     ##########################################################################
     QQ    = " " . join           ( QQ . split ( )                            )
     ##########################################################################
@@ -470,7 +473,7 @@ class EnumerationEditor            ( TreeDock                              ) :
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    TYPTAB  = self . Tables        [ "Types"                                 ]
+    TYPTAB  = self . Tables        [ "Enumerations"                          ]
     ##########################################################################
     DB      . LockWrites           ( [ TYPTAB                              ] )
     ##########################################################################
@@ -494,7 +497,7 @@ class EnumerationEditor            ( TreeDock                              ) :
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    TYPTAB  = self . Tables        [ "Types"                                 ]
+    TYPTAB  = self . Tables        [ "Enumerations"                          ]
     ##########################################################################
     DB      . LockWrites           ( [ TYPTAB                              ] )
     ##########################################################################
@@ -530,9 +533,9 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "Types"                              ]
+    TABLE   = self . Tables           [ "Enumerations"                       ]
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    QQ      = f"select count(*) from {TABLE} ;"
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
@@ -545,7 +548,7 @@ class EnumerationEditor            ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Types"                                      ]
+    TABLE   = self . Tables   [ "Enumerations"                               ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . Order
@@ -559,10 +562,10 @@ class EnumerationEditor            ( TreeDock                              ) :
   def Prepare                 ( self                                       ) :
     ##########################################################################
     ## self   . setColumnWidth   ( 0 , 24                                       )
-    self   . setColumnWidth   ( 8 , 3                                        )
+    self   . setColumnWidth   ( 7 , 3                                        )
     ##########################################################################
     TRX    = self . Translations
-    LABELs = [ "" , "編號" , "名稱" , "維基" , "起頭" , "位數" , "完成度" , "註解" , "" ]
+    LABELs = [ "長編號" , "名稱" , "維基" , "物件類型" , "欄位" , "值" , "註解" , "" ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )
@@ -614,7 +617,7 @@ class EnumerationEditor            ( TreeDock                              ) :
   def CopyToClipboard               ( self                                 ) :
     ##########################################################################
     column = self . currentColumn   (                                        )
-    if ( column not in [ 1 , 2 , 3 , 4 , 5 , 6 , 7 ] )                       :
+    if                              ( column < 7                           ) :
       return
     ##########################################################################
     IT     = self . currentItem     (                                        )
@@ -625,7 +628,7 @@ class EnumerationEditor            ( TreeDock                              ) :
     LID    = self . getLocality     (                                        )
     qApp   . clipboard ( ). setText ( MSG                                    )
     ##########################################################################
-    self   . Go                     ( self . Talk , ( MSG , LID , )          )
+    self   . TtsTalk                ( MSG , LID                              )
     ##########################################################################
     return
   ############################################################################
