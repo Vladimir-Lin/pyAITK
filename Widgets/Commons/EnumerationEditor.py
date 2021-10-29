@@ -278,6 +278,7 @@ class EnumerationEditor            ( TreeDock                              ) :
         item . setData           ( 0 , Qt . UserRole , uxid                  )
         if                       ( uuid == 0                               ) :
           item . setData         ( 3 , Qt . UserRole , 0                     )
+          item . setData         ( 5 , Qt . UserRole , 0                     )
           self . Go              ( self . AppendTypeItem , ( uxid , )        )
         else                                                                 :
           self . Go              ( self . UpdateTypeItemValue              , \
@@ -515,6 +516,9 @@ class EnumerationEditor            ( TreeDock                              ) :
     QQ      = f"insert into {TYPTAB} ( `uuid` ) values ( {uuid} ) ;"
     DB      . Query                ( QQ                                      )
     ##########################################################################
+    QQ      = f"update {TYPTAB} set `value` = `id` where ( `uuid` = {uuid} ) ;"
+    DB      . Query                ( QQ                                      )
+    ##########################################################################
     DB      . Close                (                                         )
     ##########################################################################
     return
@@ -532,6 +536,7 @@ class EnumerationEditor            ( TreeDock                              ) :
     uuid    = int                  ( uuid                                    )
     ##########################################################################
     QQ      = f"update {TYPTAB} set `{item}` = {value} where ( `uuid` = {uuid} ) ;"
+    print(QQ)
     DB      . Query                ( QQ                                      )
     ##########################################################################
     DB      . Close                (                                         )
