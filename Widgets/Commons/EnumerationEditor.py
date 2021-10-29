@@ -66,10 +66,12 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 25
-    self . Order    = "asc"
+    self . Total     = 0
+    self . StartId   = 0
+    self . Amount    = 25
+    self . Order     = "asc"
+    self . TypeIDs   =             [                                         ]
+    self . TypeNames =             {                                         }
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -142,26 +144,35 @@ class EnumerationEditor            ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column < 7                               ) :
+    if                          ( column > 6                               ) :
       return
     ##########################################################################
-    """
-    if                          ( column in [ 2 , 3 , 4 , 7 ]              ) :
+    if                          ( column in [ 0 , 1 , 2 , 4 , 6 ]          ) :
+      ########################################################################
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
                                   "editingFinished"                        , \
                                   self . nameChanged                         )
       line . setFocus           ( Qt . TabFocusReason                        )
+      ########################################################################
       return
     ##########################################################################
-    if                          ( column in [ 5 , 6 ]                      ) :
+    if                          ( column in [ 3 ]                          ) :
       ########################################################################
-      IV   = 0
-      AV   = 100
+      LL   = self . TypeNames
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . comboChanged                       )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
+      cb   . showPopup           (                                           )
       ########################################################################
-      if                        ( column == 5                              ) :
-        ######################################################################
-        AV = 18
+      return
+    ##########################################################################
+    if                          ( column in [ 5 ]                          ) :
       ########################################################################
       sb   = self . setSpinBox  ( item                                       ,
                                   column                                     ,
@@ -171,7 +182,6 @@ class EnumerationEditor            ( TreeDock                              ) :
                                   self . spinChanged                         )
       sb   . setAlignment       ( Qt . AlignRight                            )
       sb   . setFocus           ( Qt . TabFocusReason                        )
-    """
     ##########################################################################
     return
   ############################################################################
@@ -179,9 +189,8 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     UXID = str                   ( UUID                                      )
     IT   = QTreeWidgetItem       (                                           )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    ##########################################################################
     IT   . setText               ( 0 , str ( ENUM [ 0 ] )                    )
+    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
     ##########################################################################
     NAME = self . BlobToString   ( ENUM [ 4 ]                                )
     IT   . setText               ( 1 , NAME                                  )
@@ -189,8 +198,10 @@ class EnumerationEditor            ( TreeDock                              ) :
     WIKI = self . BlobToString   ( ENUM [ 6 ]                                )
     IT   . setText               ( 2 , WIKI                                  )
     ##########################################################################
-    IT   . setText               ( 3 , str ( ENUM [ 1 ] )                    )
-    IT   . setTextAlignment      ( 3 , Qt.AlignRight                         )
+    TID  = int                   ( ENUM [ 1 ]                                )
+    TNAM = self . TypeNames      [ TID                                       ]
+    IT   . setText               ( 3 , TNAM                                  )
+    IT   . setData               ( 3 , Qt . UserRole , TID                   )
     ##########################################################################
     COL  = self . BlobToString   ( ENUM [ 2 ]                                )
     IT   . setText               ( 4 , COL                                   )
@@ -206,13 +217,10 @@ class EnumerationEditor            ( TreeDock                              ) :
   @pyqtSlot                      (                                           )
   def InsertItem                 ( self                                    ) :
     ##########################################################################
-    """
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
-    """
+    item = QTreeWidgetItem       (                                           )
+    item . setData               ( 0 , Qt . UserRole , 0                     )
+    self . addTopLevelItem       ( item                                      )
+    self . doubleClicked         ( item , 0                                  )
     ##########################################################################
     return
   ############################################################################
@@ -240,64 +248,90 @@ class EnumerationEditor            ( TreeDock                              ) :
     msg    = line . text         (                                           )
     uuid   = self . itemUuid     ( item , 0                                  )
     ##########################################################################
-    na     = ""
+    if                           ( text == msg                             ) :
+      self . removeParked        (                                           )
+      return
     ##########################################################################
-    if                           ( column == 2                             ) :
+    if                           ( column == 0                             ) :
       ########################################################################
-      na   = "name"
+      ALLOW    = False
+      uxid     = 0
       ########################################################################
-    elif                         ( column == 3                             ) :
+      if                         ( len ( msg ) == 19                       ) :
+        try                                                                  :
+          uxid = int             ( msg                                       )
+        except                                                               :
+          pass
       ########################################################################
-      na   = "wiki"
+      if                         ( uxid > 0                                ) :
+        head = int               ( uxid / 1000000000000000                   )
+        if                       ( head == 5502                            ) :
+          ALLOW = True
       ########################################################################
-    elif                         ( column == 4                             ) :
-      ########################################################################
-      na   = "head"
-      if                         ( len ( msg ) not in [ 1 , 19 ]           ) :
-        ######################################################################
+      if                         ( ALLOW                                   ) :
+        item . setText           ( column , msg                              )
+        item . setData           ( 0 , Qt . UserRole , uxid                  )
+        if                       ( uuid == 0                               ) :
+          self . Go              ( self . AppendTypeItem , ( uxid , )        )
+        else :
+          self . Go              ( self . UpdateTypeItemValue              , \
+                                   ( uuid , "uuid" , uxid , )                )
+      else                                                                   :
         item . setText           ( column , text                             )
-        self . removeParked      (                                           )
-        ######################################################################
-        return
       ########################################################################
-      try                                                                    :
-        hu = int                 ( msg                                       )
-        ######################################################################
-        if                       ( hu < 1000000000000000000                ) :
-          if                     ( hu > 0                                  ) :
-            item . setText       ( column , text                             )
-            self . removeParked  (                                           )
-            return
-        ######################################################################
-        if                       ( hu > 9223372000000000000                ) :
-          item   . setText       ( column , text                             )
-          self   . removeParked  (                                           )
-          return
-        ######################################################################
-      except                                                                 :
-        item     . setText       ( column , text                             )
-        self     . removeParked  (                                           )
-        return
-      ########################################################################
-      item . setText             ( column , msg                              )
       self . removeParked        (                                           )
       ########################################################################
-      self . Go                  ( self . UpdateTypeItemValue              , \
-                                   ( uuid , na , hu , )                      )
+      return
+    ##########################################################################
+    if                           ( column not in [ 1 , 2 , 4 , 6 ]         ) :
+      ########################################################################
+      item . setText             ( column , text                             )
+      self . removeParked        (                                           )
       ########################################################################
       return
-    elif                         ( column == 7                             ) :
-      ########################################################################
+    ##########################################################################
+    if                           ( column == 1                             ) :
+      na   = "name"
+    elif                         ( column == 2                             ) :
+      na   = "wiki"
+    elif                         ( column == 4                             ) :
+      na   = "column"
+    elif                         ( column == 6                             ) :
       na   = "comment"
     ##########################################################################
-    if                           ( len ( na ) > 0                          ) :
-      ########################################################################
-      item . setText             ( column ,              msg                 )
-      ########################################################################
-      self . Go                  ( self . UpdateTypeItemBlob               , \
+    self   . Go                  ( self . UpdateTypeItemBlob               , \
                                    ( uuid , na , msg , )                     )
     ##########################################################################
+    item   . setText             ( column ,              msg                 )
     self   . removeParked        (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def comboChanged               ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    sb     = self . CurrentItem  [ "Widget"                                  ]
+    v      = self . CurrentItem  [ "Value"                                   ]
+    v      = int                 ( v                                         )
+    nv     = sb   . itemData     ( sb . currentIndex ( )                     )
+    uuid   = self . itemUuid     ( item , 0                                  )
+    ##########################################################################
+    if                          ( v == nv                                  ) :
+      name = self . TypeNames   [ v                                          ]
+      item . setText            ( column , name                              )
+      self . removeParked       (                                            )
+      return
+    ##########################################################################
+    self . Go                   ( self . UpdateTypeItemValue               , \
+                                  ( uuid , "type" , nv , )                   )
+    ##########################################################################
+    name = self . TypeNames     [ nv                                         ]
+    item . setText              ( column , name                              )
+    self . removeParked         (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -314,21 +348,15 @@ class EnumerationEditor            ( TreeDock                              ) :
     nv     = sb   . value       (                                            )
     uuid   = self . itemUuid    ( item , 0                                   )
     ##########################################################################
-    if                          ( v != nv                                  ) :
-      ########################################################################
-      na   = ""
-      ########################################################################
-      item . setText            ( column , str ( nv )                        )
-      ########################################################################
-      if                        ( column == 5                              ) :
-        na = "digits"
-      elif                      ( column == 6                              ) :
-        na = "ready"
-      ########################################################################
-      if                        ( len ( na ) > 0                           ) :
-        self . Go               ( self . UpdateTypeItemValue               , \
-                                  ( uuid , na , nv , )                       )
+    if                          ( v == nv                                  ) :
+      item . setText            ( column , str ( v )                         )
+      self . removeParked       (                                            )
+      return
     ##########################################################################
+    self . Go                   ( self . UpdateTypeItemValue               , \
+                                  ( uuid , "value" , nv , )                  )
+    ##########################################################################
+    item . setText              ( column , str ( nv )                        )
     self . removeParked         (                                            )
     ##########################################################################
     return
@@ -412,6 +440,7 @@ class EnumerationEditor            ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . ObtainTypeListings      ( DB                                   )
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     ENUMs   =                         {                                      }
@@ -464,6 +493,23 @@ class EnumerationEditor            ( TreeDock                              ) :
     self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
     ##########################################################################
     DB    . Close               (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def AppendTypeItem               ( self , uuid                           ) :
+    ##########################################################################
+    DB      = self . ConnectDB     (                                         )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    TYPTAB  = self . Tables        [ "Enumerations"                          ]
+    ##########################################################################
+    DB      . LockWrites           ( [ TYPTAB                              ] )
+    ##########################################################################
+    QQ      = f"insert into {TYPTAB} ( `uuid` ) values ( {uuid} ) ;"
+    DB      . Query                ( QQ                                      )
+    ##########################################################################
+    DB      . Close                (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -529,6 +575,46 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ObtainTypeListings              ( self , DB                          ) :
+    ##########################################################################
+    self    . Total = 0
+    ##########################################################################
+    TYPTAB  = self . Tables           [ "Types"                              ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
+    ##########################################################################
+    self    . TypeIDs   =             [                                      ]
+    self    . TypeNames =             {                                      }
+    UUIDs   =                         [                                      ]
+    UuidIDs =                         {                                      }
+    ##########################################################################
+    QQ      = f"""select `id`,`uuid` from {TYPTAB}
+                  where ( `used` > 0 )
+                  order by `id` asc ;"""
+    QQ      = " " . join              ( QQ . split ( )                       )
+    DB      . Query                   ( QQ                                   )
+    RR      = DB . FetchAll           (                                      )
+    ##########################################################################
+    if ( ( RR in [ None , False ] ) or ( len ( RR ) <= 0 ) )                 :
+      return
+    ##########################################################################
+    for R in RR                                                              :
+      ID    =  R                      [ 0                                    ]
+      UUID  =  R                      [ 1                                    ]
+      self  . TypeIDs . append        ( ID                                   )
+      UUIDs . append                  ( UUID                                 )
+      UuidIDs [ UUID ] = ID
+    ##########################################################################
+    if                                ( len ( UUIDs ) > 0                  ) :
+      NAMEs = self . GetNames         ( DB , NAMTAB, UUIDs                   )
+      for UUID in UUIDs                                                      :
+        ID  = UuidIDs                 [ UUID                                 ]
+        NAM = ""
+        if                            ( UUID in NAMEs                      ) :
+          NAM = NAMEs                 [ UUID                                 ]
+        self . TypeNames [ ID ] = NAM
+    ##########################################################################
+    return
+  ############################################################################
   def ObtainsInformation              ( self , DB                          ) :
     ##########################################################################
     self    . Total = 0
@@ -561,7 +647,6 @@ class EnumerationEditor            ( TreeDock                              ) :
   ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
-    ## self   . setColumnWidth   ( 0 , 24                                       )
     self   . setColumnWidth   ( 7 , 3                                        )
     ##########################################################################
     TRX    = self . Translations
@@ -617,7 +702,7 @@ class EnumerationEditor            ( TreeDock                              ) :
   def CopyToClipboard               ( self                                 ) :
     ##########################################################################
     column = self . currentColumn   (                                        )
-    if                              ( column < 7                           ) :
+    if                              ( column > 6                           ) :
       return
     ##########################################################################
     IT     = self . currentItem     (                                        )
@@ -637,13 +722,9 @@ class EnumerationEditor            ( TreeDock                              ) :
     TRX    = self . Translations
     COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
-    ##########################################################################
     msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    hid    = self . isColumnHidden ( 7                                       )
+    mm     . addActionFromMenu     ( COL , 9007 , msg , True , not hid       )
     ##########################################################################
     return mm
   ############################################################################
@@ -728,12 +809,10 @@ class EnumerationEditor            ( TreeDock                              ) :
     if                             ( self . HandleLocalityMenu ( at )      ) :
       return True
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9000 ) and ( at <= 9007 )         :
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
-        self . startup             (                                         )
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
