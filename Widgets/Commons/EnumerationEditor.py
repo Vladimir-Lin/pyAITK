@@ -91,7 +91,6 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitAllNames  . connect ( self . refresh                          )
-    self . itemChanged   . connect ( self . AcceptItemChanged                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -280,6 +279,7 @@ class EnumerationEditor            ( TreeDock                              ) :
           item . setData         ( 3 , Qt . UserRole , 0                     )
           item . setData         ( 5 , Qt . UserRole , 0                     )
           item . setText         ( 5 , "0"                                   )
+          item . setTextAlignment ( 5 , Qt.AlignRight                        )
           self . Go              ( self . AppendTypeItem , ( uxid , )        )
         else                                                                 :
           self . Go              ( self . UpdateTypeItemValue              , \
@@ -339,56 +339,35 @@ class EnumerationEditor            ( TreeDock                              ) :
     ##########################################################################
     name = self . TypeNames      [ nv                                        ]
     item . setText               ( column , name                             )
+    item . setData               ( column , Qt . UserRole , nv               )
     self . removeParked          (                                           )
     ##########################################################################
     return
   ############################################################################
-  def spinChanged               ( self                                     ) :
+  def spinChanged                ( self                                    ) :
     ##########################################################################
-    if                          ( not self . isItemPicked ( )              ) :
+    if                           ( not self . isItemPicked ( )             ) :
       return False
     ##########################################################################
-    item   = self . CurrentItem [ "Item"                                     ]
-    column = self . CurrentItem [ "Column"                                   ]
-    sb     = self . CurrentItem [ "Widget"                                   ]
-    v      = item . data        ( column , Qt . UserRole                     )
-    v      = int                ( v                                          )
-    nv     = sb   . value       (                                            )
-    uuid   = self . itemUuid    ( item , 0                                   )
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    sb     = self . CurrentItem  [ "Widget"                                  ]
+    v      = item . data         ( column , Qt . UserRole                    )
+    v      = int                 ( v                                         )
+    nv     = sb   . value        (                                           )
+    uuid   = self . itemUuid     ( item , 0                                  )
     ##########################################################################
-    if                          ( v == nv                                  ) :
-      item . setText            ( column , str ( v )                         )
-      self . removeParked       (                                            )
+    if                           ( v == nv                                 ) :
+      item . setText             ( column , str ( v )                        )
+      self . removeParked        (                                           )
       return
     ##########################################################################
-    self . Go                   ( self . UpdateTypeItemValue               , \
-                                  ( uuid , "value" , nv , )                  )
+    self . Go                    ( self . UpdateTypeItemValue              , \
+                                   ( uuid , "value" , nv , )                 )
     ##########################################################################
-    item . setText              ( column , str ( nv )                        )
-    self . removeParked         (                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def AcceptItemChanged          ( self , item , column                    ) :
-    ##########################################################################
-    if                           ( column not in [ 0 ]                     ) :
-      return
-    ##########################################################################
-    UUID     = item . data       ( 0 , Qt . UserRole                         )
-    UUID     = int               ( UUID                                      )
-    ##########################################################################
-    if                           ( column == 0                             ) :
-      ########################################################################
-      cstate = item . checkState ( 0                                         )
-      USED   = 0
-      ########################################################################
-      if                         ( cstate == Qt . Unchecked                ) :
-        USED = 0
-      elif                       ( cstate == Qt . Checked                  ) :
-        USED = 1
-      ########################################################################
-      self   . Go                ( self . UpdateTypeItemValue              , \
-                                   ( UUID , "used" , USED , )                )
+    item . setText               ( column , str ( nv )                       )
+    item . setData               ( column , Qt . UserRole , nv               )
+    self . removeParked          (                                           )
     ##########################################################################
     return
   ############################################################################
