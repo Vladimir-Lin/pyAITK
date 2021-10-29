@@ -172,16 +172,19 @@ class EnumerationEditor            ( TreeDock                              ) :
       ########################################################################
       return
     ##########################################################################
-    if                          ( column in [ 5 ]                          ) :
+    if                           ( column in [ 5 ]                          ) :
       ########################################################################
-      sb   = self . setSpinBox  ( item                                       ,
-                                  column                                     ,
-                                  IV                                         ,
-                                  AV                                         ,
-                                  "editingFinished"                          ,
-                                  self . spinChanged                         )
-      sb   . setAlignment       ( Qt . AlignRight                            )
-      sb   . setFocus           ( Qt . TabFocusReason                        )
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      sb   = self . setSpinBox   ( item                                      ,
+                                   column                                    ,
+                                   0                                         ,
+                                   1000000000                                ,
+                                   "editingFinished"                         ,
+                                   self . spinChanged                        )
+      sb   . setValue            ( val                                       )
+      sb   . setAlignment        ( Qt . AlignRight                           )
+      sb   . setFocus            ( Qt . TabFocusReason                       )
     ##########################################################################
     return
   ############################################################################
@@ -206,7 +209,9 @@ class EnumerationEditor            ( TreeDock                              ) :
     COL  = self . BlobToString   ( ENUM [ 2 ]                                )
     IT   . setText               ( 4 , COL                                   )
     ##########################################################################
-    IT   . setText               ( 5 , str ( ENUM [ 3 ] )                    )
+    VID  = int                   ( ENUM [ 3 ]                                )
+    IT   . setText               ( 5 , str ( VID )                           )
+    IT   . setData               ( 5 , Qt . UserRole , VID                   )
     IT   . setTextAlignment      ( 5 , Qt.AlignRight                         )
     ##########################################################################
     COL  = self . BlobToString   ( ENUM [ 5 ]                                )
@@ -272,8 +277,9 @@ class EnumerationEditor            ( TreeDock                              ) :
         item . setText           ( column , msg                              )
         item . setData           ( 0 , Qt . UserRole , uxid                  )
         if                       ( uuid == 0                               ) :
+          item . setData         ( 3 , Qt . UserRole , 0                     )
           self . Go              ( self . AppendTypeItem , ( uxid , )        )
-        else :
+        else                                                                 :
           self . Go              ( self . UpdateTypeItemValue              , \
                                    ( uuid , "uuid" , uxid , )                )
       else                                                                   :
@@ -315,23 +321,23 @@ class EnumerationEditor            ( TreeDock                              ) :
     item   = self . CurrentItem  [ "Item"                                    ]
     column = self . CurrentItem  [ "Column"                                  ]
     sb     = self . CurrentItem  [ "Widget"                                  ]
-    v      = self . CurrentItem  [ "Value"                                   ]
+    v      = item . data         ( column , Qt . UserRole                    )
     v      = int                 ( v                                         )
     nv     = sb   . itemData     ( sb . currentIndex ( )                     )
     uuid   = self . itemUuid     ( item , 0                                  )
     ##########################################################################
-    if                          ( v == nv                                  ) :
-      name = self . TypeNames   [ v                                          ]
-      item . setText            ( column , name                              )
-      self . removeParked       (                                            )
+    if                           ( v == nv                                 ) :
+      name = self . TypeNames    [ v                                         ]
+      item . setText             ( column , name                             )
+      self . removeParked        (                                           )
       return
     ##########################################################################
-    self . Go                   ( self . UpdateTypeItemValue               , \
-                                  ( uuid , "type" , nv , )                   )
+    self . Go                    ( self . UpdateTypeItemValue              , \
+                                   ( uuid , "type" , nv , )                  )
     ##########################################################################
-    name = self . TypeNames     [ nv                                         ]
-    item . setText              ( column , name                              )
-    self . removeParked         (                                            )
+    name = self . TypeNames      [ nv                                        ]
+    item . setText               ( column , name                             )
+    self . removeParked          (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -343,7 +349,7 @@ class EnumerationEditor            ( TreeDock                              ) :
     item   = self . CurrentItem [ "Item"                                     ]
     column = self . CurrentItem [ "Column"                                   ]
     sb     = self . CurrentItem [ "Widget"                                   ]
-    v      = self . CurrentItem [ "Value"                                    ]
+    v      = item . data        ( column , Qt . UserRole                     )
     v      = int                ( v                                          )
     nv     = sb   . value       (                                            )
     uuid   = self . itemUuid    ( item , 0                                   )
