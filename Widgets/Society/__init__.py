@@ -3,6 +3,7 @@
 from . PeopleView            import PeopleView            as PeopleView
 from . CrowdView             import CrowdView             as CrowdView
 from . NationTypeListings    import NationTypeListings    as NationTypeListings
+from . CountryListings       import CountryListings       as CountryListings
 from . ContinentListings     import ContinentListings     as ContinentListings
 from . OccupationListings    import OccupationListings    as OccupationListings
 from . RoleListings          import RoleListings          as RoleListings
@@ -12,6 +13,7 @@ from . OrganizationGroupView import OrganizationGroupView as OrganizationGroupVi
 __all__ = [ "PeopleView"                                                   , \
             "CrowdView"                                                    , \
             "NationTypeListings"                                           , \
+            "CountryListings"                                              , \
             "ContinentListings"                                            , \
             "OccupationListings"                                           , \
             "RoleListings"                                                 , \
