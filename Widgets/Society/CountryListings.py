@@ -328,10 +328,10 @@ class CountryListings              ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    TABLE = self . Tables        [ "Occupations"                             ]
+    TABLE = self . Tables        [ "Countries"                               ]
     ##########################################################################
     QQ    = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
+                  where ( `used` > 0 )
                   order by `id` asc ;"""
     ##########################################################################
     QQ    = " " . join           ( QQ . split ( )                            )
@@ -375,9 +375,9 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "Occupations"                        ]
+    TABLE   = self . Tables           [ "Countries"                          ]
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    QQ      = f"select count(*) from {TABLE} ;"
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
@@ -390,13 +390,12 @@ class CountryListings              ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Occupations"                                ]
+    TABLE   = self . Tables   [ "Countries"                                  ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . Order
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
@@ -591,7 +590,7 @@ class CountryListings              ( TreeDock                              ) :
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    OCPTAB  = self . Tables        [ "Occupations"                           ]
+    OCPTAB  = self . Tables        [ "Countries"                             ]
     NAMTAB  = self . Tables        [ "Names"                                 ]
     ##########################################################################
     DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
