@@ -66,10 +66,13 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 28
-    self . Order    = "asc"
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 28
+    self . Order              = "asc"
+    ##########################################################################
+    self . NationTypes        =    {                                         }
+    self . CountryUsed        =    {                                         }
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -78,9 +81,9 @@ class CountryListings              ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnCount          ( 10                                      )
+    for i in range                 ( 1 , 10                                ) :
+      self . setColumnHidden       ( i , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -112,7 +115,6 @@ class CountryListings              ( TreeDock                              ) :
     self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
     self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     self . LinkAction              ( "Home"       , self . PageHome          )
     self . LinkAction              ( "End"        , self . PageEnd           )
@@ -141,43 +143,115 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def doubleClicked              ( self , item , column                    ) :
     ##########################################################################
-    if                        ( column not in [ 0 ]                        ) :
+    if                           ( column not in range ( 0 , 8 )           ) :
       return
     ##########################################################################
-    line = self . setLineEdit ( item                                       , \
-                                0                                          , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
+    if ( ( self . EditAllNames != None ) and ( column in [ 0 ] ) )           :
+      ########################################################################
+      uuid = self . itemUuid     ( item , 0                                  )
+      NAM  = self . Tables       [ "Names"                                   ]
+      self . EditAllNames        ( self , "Country" , uuid , NAM             )
+      ########################################################################
+      return
     ##########################################################################
-    return
-  ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
-    ##########################################################################
-    UXID = str                   ( UUID                                      )
-    IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , NAME                                  )
-    IT   . setToolTip            ( 0 , UXID                                  )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
-    ##########################################################################
-    return IT
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def InsertItem                 ( self                                    ) :
-    ##########################################################################
-    item = QTreeWidgetItem       (                                           )
-    item . setData               ( 0 , Qt . UserRole , 0                     )
-    self . addTopLevelItem       ( item                                      )
-    line = self . setLineEdit    ( item                                    , \
-                                   0                                       , \
+    if                           ( column in [ 1 , 5 , 6 , 7 ]             ) :
+      line = self . setLineEdit  ( item                                    , \
+                                   column                                  , \
                                    "editingFinished"                       , \
                                    self . nameChanged                        )
-    line . setFocus              ( Qt . TabFocusReason                       )
+      line . setFocus            ( Qt . TabFocusReason                       )
+      return
+    ##########################################################################
+    if                           ( column in [ 2 ]                         ) :
+      ########################################################################
+      LL   = self . NationTypes
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . comboChanged                       )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
+      cb   . showPopup           (                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( column in [ 3 ]                         ) :
+      ########################################################################
+      LL   = self . CountryUsed
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . comboChanged                       )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
+      cb   . showPopup           (                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( column in [ 4 ]                         ) :
+      ########################################################################
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      sb   = self . setSpinBox   ( item                                      ,
+                                   column                                    ,
+                                   0                                         ,
+                                   1000000000                                ,
+                                   "editingFinished"                         ,
+                                   self . spinChanged                        )
+      sb   . setValue            ( val                                       )
+      sb   . setAlignment        ( Qt . AlignRight                           )
+      sb   . setFocus            ( Qt . TabFocusReason                       )
     ##########################################################################
     return
+  ############################################################################
+  def PrepareItem                ( self , UUID , NAME , INFO               ) :
+    ##########################################################################
+    UUID = int                   ( UUID                                      )
+    UXID = str                   ( UUID                                      )
+    ##########################################################################
+    IT   = QTreeWidgetItem       (                                           )
+    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
+    ##########################################################################
+    IT   . setText               ( 0 , NAME                                  )
+    IT   . setToolTip            ( 0 , UXID                                  )
+    ##########################################################################
+    NAME = self . BlobToString   ( INFO [ 7 ]                                )
+    IT   . setText               ( 1 , NAME                                  )
+    ##########################################################################
+    TYID = int                   ( INFO [ 1 ]                                )
+    IT   . setText               ( 2 , self . NationTypes [ TYID ]           )
+    IT   . setData               ( 2 , Qt . UserRole , TYID                  )
+    ##########################################################################
+    USID = int                   ( INFO [ 2 ]                                )
+    IT   . setText               ( 3 , self . CountryUsed [ USID ]           )
+    IT   . setData               ( 3 , Qt . UserRole , USID                  )
+    ##########################################################################
+    CODE = int                   ( INFO [ 3 ]                                )
+    IT   . setText               ( 4 , str ( CODE )                          )
+    IT   . setTextAlignment      ( 4 , Qt . AlignRight                       )
+    IT   . setData               ( 4 , Qt . UserRole , CODE                  )
+    ##########################################################################
+    TWO  = self . BlobToString   ( INFO [ 4 ]                                )
+    IT   . setText               ( 5 , TWO                                   )
+    ##########################################################################
+    THRE = self . BlobToString   ( INFO [ 5 ]                                )
+    IT   . setText               ( 6 , THRE                                  )
+    ##########################################################################
+    FOUR = self . BlobToString   ( INFO [ 6 ]                                )
+    IT   . setText               ( 7 , FOUR                                  )
+    ##########################################################################
+    IT   . setText               ( 8 , ""                                    )
+    IT   . setTextAlignment      ( 8 , Qt . AlignRight                       )
+    ##########################################################################
+    IT   . setText               ( 9 , ""                                    )
+    ##########################################################################
+    return IT
   ############################################################################
   @pyqtSlot                      (                                           )
   def RenameItem                 ( self                                    ) :
@@ -203,15 +277,90 @@ class CountryListings              ( TreeDock                              ) :
     msg    = line . text         (                                           )
     uuid   = self . itemUuid     ( item , 0                                  )
     ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
+    if                           (    ( column not in [ 1 , 5 , 6 , 7 ]    ) \
+                                   or ( len ( msg ) <= 0                   ) \
+                                   or ( msg == text                      ) ) :
+      item . setText             ( column , text                             )
+      self . removeParked        (                                           )
       return
     ##########################################################################
-    item   . setText             ( column ,              msg                 )
+    if                           ( column == 1                             ) :
+      na   = "name"
+    elif                         ( column == 5                             ) :
+      na   = "two"
+    elif                         ( column == 6                             ) :
+      na   = "three"
+    elif                         ( column == 7                             ) :
+      na   = "four"
     ##########################################################################
+    self   . Go                  ( self . UpdateTypeItemBlob               , \
+                                   ( uuid , na , msg , )                     )
+    ##########################################################################
+    item   . setText             ( column ,              msg                 )
     self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def comboChanged               ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    sb     = self . CurrentItem  [ "Widget"                                  ]
+    v      = item . data         ( column , Qt . UserRole                    )
+    v      = int                 ( v                                         )
+    nv     = sb   . itemData     ( sb . currentIndex ( )                     )
+    uuid   = self . itemUuid     ( item , 0                                  )
+    ##########################################################################
+    name   = ""
+    na     = ""
+    if                           ( column in [ 2 ]                         ) :
+      name = self . NationTypes  [ nv                                        ]
+      na   = "type"
+    elif                         ( column in [ 3 ]                         ) :
+      name = self . CountryUsed  [ nv                                        ]
+      na   = "used"
+    ##########################################################################
+    if                           ( v == nv                                 ) :
+      item . setText             ( column , name                             )
+      self . removeParked        (                                           )
+      return
+    ##########################################################################
+    self . Go                    ( self . UpdateTypeItemValue              , \
+                                   ( uuid , na , nv , )                      )
+    ##########################################################################
+    item . setText               ( column , name                             )
+    item . setData               ( column , Qt . UserRole , nv               )
+    self . removeParked          (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def spinChanged                ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    sb     = self . CurrentItem  [ "Widget"                                  ]
+    v      = item . data         ( column , Qt . UserRole                    )
+    v      = int                 ( v                                         )
+    nv     = sb   . value        (                                           )
+    uuid   = self . itemUuid     ( item , 0                                  )
+    ##########################################################################
+    if                           ( ( v == nv ) or ( column not in [ 4 ] ) )  :
+      item . setText             ( column , str ( v )                        )
+      self . removeParked        (                                           )
+      return
+    ##########################################################################
+    self . Go                    ( self . UpdateTypeItemValue              , \
+                                   ( uuid , "code" , nv , )                  )
+    ##########################################################################
+    item . setText               ( column , str ( nv )                       )
+    item . setData               ( column , Qt . UserRole , nv               )
+    self . removeParked          (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -221,11 +370,12 @@ class CountryListings              ( TreeDock                              ) :
     self    . clear                   (                                      )
     ##########################################################################
     UUIDs   = JSON                    [ "UUIDs"                              ]
+    INFOs   = JSON                    [ "INFOs"                              ]
     NAMEs   = JSON                    [ "NAMEs"                              ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
+      IT    = self . PrepareItem      ( U , NAMEs [ U ] , INFOs [ U ]        )
       self  . addTopLevelItem         ( IT                                   )
     ##########################################################################
     self    . emitNamesShow . emit    (                                      )
@@ -241,15 +391,34 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return UUIDs
   ############################################################################
-  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
+  def ObtainsUuidInfos                ( self , DB , UUIDs                  ) :
     ##########################################################################
-    NAMEs   =                         {                                      }
+    INFOs   =                         {                                      }
     ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      return INFOs
     ##########################################################################
-    return NAMEs
+    CUYTAB  = self . Tables           [ "Countries"                          ]
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ    = f"""select `uuid`,`type`,`used`,`code`,
+                  `two`,`three`,`four`,`name` from {CUYTAB}
+                  where ( `uuid` = {UUID} ) ;"""
+      QQ    = " " . join              ( QQ . split ( )                       )
+      ########################################################################
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      ########################################################################
+      if                              ( RR in [ None , False ]             ) :
+        continue
+      ########################################################################
+      if                              ( len ( RR ) <= 0                    ) :
+        continue
+      ########################################################################
+      INFOs [ UUID ] = RR
+    ##########################################################################
+    return INFOs
   ############################################################################
   @pyqtSlot                           (        str  , int                    )
   def AssignAmounts                   ( self , UUID , Amounts              ) :
@@ -258,7 +427,7 @@ class CountryListings              ( TreeDock                              ) :
     if                                ( IT is None                         ) :
       return
     ##########################################################################
-    IT . setText                      ( 1 , str ( Amounts )                  )
+    IT . setText                      ( 8 , str ( Amounts )                  )
     ##########################################################################
     return
   ############################################################################
@@ -268,7 +437,7 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     RELTAB  = self . Tables            [ "Relation"                          ]
     REL     = Relation                 (                                     )
-    REL     . setT1                    ( "Occupation"                        )
+    REL     . setT1                    ( "Nation"                            )
     REL     . setT2                    ( "People"                            )
     REL     . setRelation              ( "Subordination"                     )
     ##########################################################################
@@ -292,11 +461,15 @@ class CountryListings              ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    NAMTAB  = self . Tables           [ "Names"                              ]
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
+    INFOs   =                         {                                      }
+    NAMEs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+      INFOs = self . ObtainsUuidInfos ( DB , UUIDs                           )
+      NAMEs = self . GetNames         ( DB , NAMTAB , UUIDs                  )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
@@ -306,11 +479,12 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     JSON             =                {                                      }
     JSON [ "UUIDs" ] = UUIDs
+    JSON [ "INFOs" ] = INFOs
     JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
     ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
+    if                                ( not self . isColumnHidden ( 7 )    ) :
       self . Go                       ( self . ReportBelongings            , \
                                         ( UUIDs , )                          )
     ##########################################################################
@@ -373,9 +547,27 @@ class CountryListings              ( TreeDock                              ) :
   ############################################################################
   def ObtainsInformation              ( self , DB                          ) :
     ##########################################################################
-    self    . Total = 0
-    ##########################################################################
+    NTSTAB  = self . Tables           [ "NationTypes"                        ]
+    ENUTAB  = self . Tables           [ "Enumerations"                       ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
     TABLE   = self . Tables           [ "Countries"                          ]
+    ##########################################################################
+    QQ      = f"select `uuid` from {NTSTAB} order by `id` asc ;"
+    NTIDs   = DB . ObtainUuids        ( QQ                                   )
+    ##########################################################################
+    if                                ( len ( NTIDs ) > 0                  ) :
+      NTS   = self . GetNames         ( DB , NAMTAB , NTIDs                  )
+      for NTID in NTIDs                                                      :
+        ID = int                      ( int ( NTID ) - 7400000000100000000   )
+        self . NationTypes [ ID ] = NTS [ NTID                               ]
+    ##########################################################################
+    self . CountryUsed = self . GetEnumerations ( DB                       , \
+                                                  ENUTAB                   , \
+                                                  NAMTAB                   , \
+                                                  "used"                   , \
+                                                  43                         )
+    ##########################################################################
+    self    . Total = 0
     ##########################################################################
     QQ      = f"select count(*) from {TABLE} ;"
     DB      . Query                   ( QQ                                   )
@@ -475,12 +667,12 @@ class CountryListings              ( TreeDock                              ) :
     if                         ( UUID <= 0                                 ) :
       return True
     ##########################################################################
-    self . Go                  ( self . PeopleJoinOccupation               , \
+    self . Go                  ( self . PeopleJoinCountry                  , \
                                  ( UUID , UUIDs , )                          )
     ##########################################################################
     return True
   ############################################################################
-  def PeopleJoinOccupation          ( self , UUID , UUIDs                  ) :
+  def PeopleJoinCountry             ( self , UUID , UUIDs                  ) :
     ##########################################################################
     if                              ( UUID <= 0                            ) :
       return
@@ -502,7 +694,7 @@ class CountryListings              ( TreeDock                              ) :
     RELTAB  = self . Tables         [ "Relation"                             ]
     REL     = Relation              (                                        )
     REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Occupation"                           )
+    REL     . setT1                 ( "Nation"                               )
     REL     . setT2                 ( "People"                               )
     REL     . setRelation           ( "Subordination"                        )
     DB      . LockWrites            ( [ RELTAB ]                             )
@@ -530,11 +722,18 @@ class CountryListings              ( TreeDock                              ) :
   ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
-    self   . setColumnWidth   ( 2 , 3                                        )
+    self   . setColumnWidth   ( 9 , 3                                        )
     ##########################################################################
     TRX    = self . Translations
-    LABELs =                  [ TRX [ "UI::Country"      ]                 , \
-                                TRX [ "UI::PeopleAmount" ]                 , \
+    LABELs =                  [ "國家" , \
+                                "英文" , \
+                                "種類" , \
+                                "狀態" , \
+                                "國碼" , \
+                                "兩碼" , \
+                                "三碼" , \
+                                "四碼" , \
+                                "總人數" , \
                                 ""                                           ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
@@ -584,28 +783,46 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def UpdateTypeItemValue          ( self , uuid , item , value            ) :
     ##########################################################################
     DB      = self . ConnectDB     (                                         )
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    OCPTAB  = self . Tables        [ "Countries"                             ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
+    TYPTAB  = self . Tables        [ "Countries"                             ]
     ##########################################################################
-    DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
+    DB      . LockWrites           ( [ TYPTAB                              ] )
     ##########################################################################
     uuid    = int                  ( uuid                                    )
-    if                             ( uuid <= 0                             ) :
-      ########################################################################
-      uuid  = DB . UnusedUuid      ( OCPTAB                                  )
-      DB    . UseUuid              ( OCPTAB , uuid                           )
     ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    QQ      = f"update {TYPTAB} set `{item}` = {value} where ( `uuid` = {uuid} ) ;"
+    DB      . Query                ( QQ                                      )
     ##########################################################################
     DB      . Close                (                                         )
     ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
+    return
+  ############################################################################
+  def UpdateTypeItemBlob           ( self , uuid , item , blob             ) :
+    ##########################################################################
+    try                                                                      :
+      blob  = blob . encode        ( "utf-8"                                 )
+    except                                                                   :
+      pass
+    ##########################################################################
+    DB      = self . ConnectDB     (                                         )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    TYPTAB  = self . Tables        [ "Countries"                             ]
+    ##########################################################################
+    DB      . LockWrites           ( [ TYPTAB                              ] )
+    ##########################################################################
+    uuid    = int                  ( uuid                                    )
+    ##########################################################################
+    QQ      = f"update {TYPTAB} set `{item}` = %s where ( `uuid` = {uuid} ) ;"
+    DB      . QueryValues          ( QQ , ( blob , )                         )
+    ##########################################################################
+    DB      . Close                (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -615,7 +832,7 @@ class CountryListings              ( TreeDock                              ) :
     if                            ( IT is None                             ) :
       return
     ##########################################################################
-    MSG  = IT . text              ( 0                                        )
+    MSG  = IT . text              ( self . currentColumn ( )                 )
     LID  = self . getLocality     (                                          )
     qApp . clipboard ( ). setText ( MSG                                      )
     ##########################################################################
@@ -628,13 +845,16 @@ class CountryListings              ( TreeDock                              ) :
     TRX    = self . Translations
     COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
+    cols   = self . columnCount    (                                         )
+    HIT    = self . headerItem     (                                         )
     ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    for i in range                 ( 1 , cols                              ) :
+      ########################################################################
+      T    = HIT . text            ( i                                       )
+      if                           ( len ( T ) <= 0                        ) :
+        T  = TRX                   [ "UI::Whitespace"                        ]
+      hid  = self . isColumnHidden ( i                                       )
+      mm   . addActionFromMenu     ( COL , 9000 + i , T , True , not hid     )
     ##########################################################################
     return mm
   ############################################################################
@@ -695,7 +915,6 @@ class CountryListings              ( TreeDock                              ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
     ##########################################################################
     if                             ( atItem != None                        ) :
       FMT  = TRX                   [ "UI::AttachCrowds"                      ]
@@ -726,20 +945,16 @@ class CountryListings              ( TreeDock                              ) :
     if                             ( self . HandleLocalityMenu ( at )      ) :
       return True
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9001 ) and ( at <= 9010 )         :
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
+      if                           ( ( at == 9008 ) and ( hid )            ) :
         self . startup             (                                         )
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
       self . startup               (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
       return True
     ##########################################################################
     if                             ( at == 1201                            ) :
