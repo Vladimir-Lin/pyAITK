@@ -220,6 +220,28 @@ class BloodGroupListings   ( MajorListings                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def ObtainAllUuids             ( self , DB                               ) :
+    ##########################################################################
+    TABLE = self . Tables        [ "BloodGroups"                             ]
+    ##########################################################################
+    QQ    = f"select `uuid` from {TABLE} order by `id` asc ;"
+    ##########################################################################
+    return DB . ObtainUuids      ( QQ , 0                                    )
+  ############################################################################
+  def TranslateAll              ( self                                     ) :
+    ##########################################################################
+    DB    = self . ConnectDB    (                                            )
+    if                          ( DB == None                               ) :
+      return
+    ##########################################################################
+    TABLE = self . Tables       [ "Names"                                    ]
+    FMT   = self . Translations [ "UI::Translating"                          ]
+    self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
+    ##########################################################################
+    DB    . Close               (                                            )
+    ##########################################################################
+    return
+  ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
@@ -240,6 +262,8 @@ class BloodGroupListings   ( MajorListings                                 ) :
         mm . addSeparator          (                                         )
     ##########################################################################
     mm     = self . LocalityMenu   ( mm                                      )
+    mm     . addSeparator          (                                         )
+    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
@@ -264,6 +288,10 @@ class BloodGroupListings   ( MajorListings                                 ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
       self . EditAllNames          ( self , "Sexuality" , uuid , NAM         )
+      return True
+    ##########################################################################
+    if                             ( at == 3001                            ) :
+      self . Go                    ( self . TranslateAll                     )
       return True
     ##########################################################################
     return True
