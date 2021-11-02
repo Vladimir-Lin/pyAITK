@@ -676,10 +676,10 @@ class RaceListings                 ( TreeDock                              ) :
       UTF8   = len              ( L                                          )
       LENU   = len              ( B                                          )
       UUID   = 5433124000000000000 + ID
-      QQ     = f"""insert into {TABLE}
+      QQ     = f"insert into {TABLE}
                    ( `uuid`,`locality`,`priority`,`relevance`,`utf8`,`length`,`name` )
                    values
-                   ( {UUID} , 1002 , 0 , 0 , {UTF8} , {LENU} , %s ) ;"""
+                   ( {UUID} , 1002 , 0 , 0 , {UTF8} , {LENU} , %s ) ;"
       DB     . QueryValues      ( QQ , ( B , )                               )
       print(QQ)
       ID     = ID + 1
