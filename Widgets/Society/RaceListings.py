@@ -268,7 +268,7 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     RELTAB  = self . Tables            [ "Relation"                          ]
     REL     = Relation                 (                                     )
-    REL     . setT1                    ( "Occupation"                        )
+    REL     . setT1                    ( "Race"                              )
     REL     . setT2                    ( "People"                            )
     REL     . setRelation              ( "Subordination"                     )
     ##########################################################################
@@ -328,7 +328,7 @@ class RaceListings                 ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    TABLE = self . Tables        [ "Occupations"                             ]
+    TABLE = self . Tables        [ "Races"                                   ]
     ##########################################################################
     QQ    = f"""select `uuid` from {TABLE}
                   where ( `used` = 1 )
@@ -375,7 +375,7 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "Occupations"                        ]
+    TABLE   = self . Tables           [ "Races"                              ]
     ##########################################################################
     QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
     DB      . Query                   ( QQ                                   )
@@ -390,7 +390,7 @@ class RaceListings                 ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Occupations"                                ]
+    TABLE   = self . Tables   [ "Races"                                      ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . Order
@@ -476,12 +476,12 @@ class RaceListings                 ( TreeDock                              ) :
     if                         ( UUID <= 0                                 ) :
       return True
     ##########################################################################
-    self . Go                  ( self . PeopleJoinOccupation               , \
+    self . Go                  ( self . PeopleJoinRace                     , \
                                  ( UUID , UUIDs , )                          )
     ##########################################################################
     return True
   ############################################################################
-  def PeopleJoinOccupation          ( self , UUID , UUIDs                  ) :
+  def PeopleJoinRace                ( self , UUID , UUIDs                  ) :
     ##########################################################################
     if                              ( UUID <= 0                            ) :
       return
@@ -503,7 +503,7 @@ class RaceListings                 ( TreeDock                              ) :
     RELTAB  = self . Tables         [ "Relation"                             ]
     REL     = Relation              (                                        )
     REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Occupation"                           )
+    REL     . setT1                 ( "Race"                                 )
     REL     . setT2                 ( "People"                               )
     REL     . setRelation           ( "Subordination"                        )
     DB      . LockWrites            ( [ RELTAB ]                             )
@@ -589,7 +589,7 @@ class RaceListings                 ( TreeDock                              ) :
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    OCPTAB  = self . Tables        [ "Occupations"                           ]
+    OCPTAB  = self . Tables        [ "Races"                                 ]
     NAMTAB  = self . Tables        [ "Names"                                 ]
     ##########################################################################
     DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
@@ -655,6 +655,40 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  """
+  def ImportRaces               ( self                                     ) :
+    ##########################################################################
+    DB    = self . ConnectDB    (                                            )
+    if                          ( DB == None                               ) :
+      return
+    ##########################################################################
+    TABLE = self . Tables       [ "Names"                                    ]
+    ##########################################################################
+    with open                   ( "races.txt" , encoding = "utf-8" ) as F    :
+      LINES  = F . readlines    (                                            )
+    ##########################################################################
+    ID = 1
+    for L in LINES                                                           :
+      L      = L . strip        (                                            )
+      L      = L . rstrip       (                                            )
+      B      = L
+      B      = B . encode       ( "utf-8"                                    )
+      UTF8   = len              ( L                                          )
+      LENU   = len              ( B                                          )
+      UUID   = 5433124000000000000 + ID
+      QQ     = f"""insert into {TABLE}
+                   ( `uuid`,`locality`,`priority`,`relevance`,`utf8`,`length`,`name` )
+                   values
+                   ( {UUID} , 1002 , 0 , 0 , {UTF8} , {LENU} , %s ) ;"""
+      DB     . QueryValues      ( QQ , ( B , )                               )
+      print(QQ)
+      ID     = ID + 1
+    ##########################################################################
+    DB    . Close               (                                            )
+    ##########################################################################
+    return
+  """
+  ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
@@ -693,6 +727,7 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
+    ## mm     . addAction             ( 5001 , "匯入種族" )
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
     ##########################################################################
@@ -754,6 +789,12 @@ class RaceListings                 ( TreeDock                              ) :
     if                             ( at == 3001                            ) :
       self . Go                    ( self . TranslateAll                     )
       return True
+    ##########################################################################
+    """
+    if                             ( at == 5001                            ) :
+      self . Go                    ( self . ImportRaces                      )
+      return True
+    """
     ##########################################################################
     return True
 ##############################################################################
