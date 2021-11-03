@@ -23,10 +23,12 @@ from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
 from   PyQt5 . QtCore                 import QSizeF
+from   PyQt5 . QtCore                 import QUrl
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QDesktopServices
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -84,12 +86,10 @@ class WebPageListings              ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Organization"                          )
+    self . Relation . setT2        ( "WebPage"                               )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnCount          ( 1                                       )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -111,7 +111,7 @@ class WebPageListings              ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 320 , 640                               )
+    return QSize                   ( 640 , 1024                              )
   ############################################################################
   def setGrouping             ( self , group                               ) :
     self . Grouping = group
@@ -233,8 +233,10 @@ class WebPageListings              ( TreeDock                              ) :
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
+    """
     self   . Go                  ( self . AssureUuidItem                   , \
                                    ( item , uuid , msg , )                   )
+    """
     ##########################################################################
     return
   ############################################################################
@@ -244,11 +246,11 @@ class WebPageListings              ( TreeDock                              ) :
     self    . clear                   (                                      )
     ##########################################################################
     UUIDs   = JSON                    [ "UUIDs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
+    URLs    = JSON                    [ "URLs"                               ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
+      IT    = self . PrepareItem      ( U , URLs [ U ]                       )
       self  . addTopLevelItem         ( IT                                   )
     ##########################################################################
     self    . emitNamesShow . emit    (                                      )
@@ -279,15 +281,29 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
-  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
+  def ObtainsUuidURLs                 ( self , DB , UUIDs                  ) :
     ##########################################################################
-    NAMEs   =                         {                                      }
+    URLs    =                         {                                      }
     ##########################################################################
     if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
+      TABLE = self . Tables           [ "WebPages"                           ]
+      for UUID in UUIDs                                                      :
+        ######################################################################
+        QQ  = f"select `name` from {TABLE} where ( `uuid` = {UUID} ) ;"
+        DB  . Query                   ( QQ                                   )
+        RR  = DB . FetchOne           (                                      )
+        ######################################################################
+        if ( ( RR not in [ None , False ] ) and ( len ( RR ) == 1 ) )        :
+          ####################################################################
+          SS = RR                     [ 0                                    ]
+          try                                                                :
+            SS = SS . decode          ( "utf-8"                              )
+          except                                                             :
+            pass
+          ####################################################################
+          URLs [ UUID ] = SS
     ##########################################################################
-    return NAMEs
+    return URLs
   ############################################################################
   @pyqtSlot                           (        str  , int                    )
   def AssignAmounts                   ( self , UUID , Amounts              ) :
@@ -297,29 +313,6 @@ class WebPageListings              ( TreeDock                              ) :
       return
     ##########################################################################
     IT . setText                      ( 1 , str ( Amounts )                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportBelongings                 ( self , UUIDs                      ) :
-    ##########################################################################
-    time    . sleep                    ( 1.0                                 )
-    ##########################################################################
-    RELTAB  = self . Tables            [ "Relation"                          ]
-    REL     = Relation                 (                                     )
-    REL     . setT1                    ( "Organization"                      )
-    REL     . setT2                    ( "People"                            )
-    REL     . setRelation              ( "Subordination"                     )
-    ##########################################################################
-    DB      = self . ConnectDB         (                                     )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      REL   . set                      ( "first" , UUID                      )
-      CNT   = REL . CountSecond        ( DB , RELTAB                         )
-      ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
-    ##########################################################################
-    DB      . Close                    (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -333,8 +326,9 @@ class WebPageListings              ( TreeDock                              ) :
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    URLs    =                         {                                      }
     if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+      URLs  = self . ObtainsUuidURLs  ( DB , UUIDs                           )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
@@ -344,13 +338,9 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     JSON             =                {                                      }
     JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
+    JSON [ "URLs"  ] = URLs
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
-    ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
     ##########################################################################
     return
   ############################################################################
@@ -361,36 +351,6 @@ class WebPageListings              ( TreeDock                              ) :
       self . Prepare             (                                           )
     ##########################################################################
     self   . Go                  ( self . loading                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
-    ##########################################################################
-    TABLE   = self . Tables   [ "Organizations"                              ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . Order
-    ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
-    ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
-    ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
-  ############################################################################
-  def TranslateAll              ( self                                     ) :
-    ##########################################################################
-    DB    = self . ConnectDB    (                                            )
-    if                          ( DB == None                               ) :
-      return
-    ##########################################################################
-    TABLE = self . Tables       [ "Names"                                    ]
-    FMT   = self . Translations [ "UI::Translating"                          ]
-    self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
-    ##########################################################################
-    DB    . Close               (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -405,7 +365,7 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "Organizations"                      ]
+    TABLE   = self . Tables           [ "WebPages"                           ]
     ##########################################################################
     QQ      = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
     DB      . Query                   ( QQ                                   )
@@ -420,7 +380,7 @@ class WebPageListings              ( TreeDock                              ) :
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
-    TABLE  = self . Tables     [ "Organizations"                             ]
+    TABLE  = self . Tables     [ "WebPages"                                  ]
     QQ     = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
     DB     . Query             ( QQ                                          )
     ONE    = DB . FetchOne     (                                             )
@@ -447,7 +407,7 @@ class WebPageListings              ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Organizations"                              ]
+    TABLE   = self . Tables   [ "WebPages"                                   ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . Order
@@ -610,10 +570,8 @@ class WebPageListings              ( TreeDock                              ) :
   ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
-    self   . setColumnWidth   ( 2 , 3                                        )
-    ##########################################################################
     TRX    = self . Translations
-    LABELs = [ "組織名稱" , TRX [ "UI::PeopleAmount" ] , "" ]
+    LABELs = [ "網頁" ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )
@@ -701,21 +659,6 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
-    ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
-    ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
-    ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
-    ##########################################################################
-    return mm
-  ############################################################################
   @pyqtSlot                        (        int                              )
   def GotoId                       ( self , Id                             ) :
     ##########################################################################
@@ -752,6 +695,10 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
+    if                             ( atItem != None                        ) :
+      mm   . addAction             ( 7001 , "打開網址" )
+      mm   . addSeparator          (                                         )
+    ##########################################################################
     T      = self . Total
     MSG    = f"總數量:{T}"
     mm     . addAction             ( 9999991 , MSG                           )
@@ -772,26 +719,10 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      FMT  = TRX                   [ "UI::AttachCrowds"                      ]
-      MSG  = FMT . format          ( atItem . text ( 0 )                     )
-      mm   . addSeparator          (                                         )
-      mm   . addAction             ( 1201 ,  MSG                             )
+    mm     . addAction             ( 1001 , TRX [ "UI::Refresh" ]            )
+    mm     . addAction             ( 1101 , TRX [ "UI::Insert"  ]            )
     ##########################################################################
     mm     . addSeparator          (                                         )
-    ##########################################################################
-    if                             ( len ( items ) == 1                    ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
-    ##########################################################################
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    mm     . addSeparator          (                                         )
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
@@ -799,17 +730,6 @@ class WebPageListings              ( TreeDock                              ) :
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
-      return True
-    ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
-      return True
-    ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
-        self . startup             (                                         )
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
@@ -820,18 +740,11 @@ class WebPageListings              ( TreeDock                              ) :
       self . InsertItem            (                                         )
       return True
     ##########################################################################
-    if                             ( at == 1201                            ) :
-      self . PeopleGroup   . emit  ( 38 , str ( uuid )                       )
-      return True
-    ##########################################################################
-    if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Organization" , uuid , NAM      )
-      return True
-    ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
+    if                             ( at == 7001                            ) :
+      ########################################################################
+      URL  = atItem . text         ( 0                                       )
+      QDesktopServices . openUrl   ( QUrl ( URL )                            )
+      ########################################################################
       return True
     ##########################################################################
     return True
