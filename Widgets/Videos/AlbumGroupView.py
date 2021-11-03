@@ -59,8 +59,8 @@ class AlbumGroupView              ( IconDock                               ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  AlbumSubgroup = pyqtSignal      ( int , str                                )
-  AlbumGroup    = pyqtSignal      ( int , str                                )
+  AlbumSubgroup = pyqtSignal      ( str , int , str                          )
+  AlbumGroup    = pyqtSignal      ( str , int , str                          )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -269,71 +269,73 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                          ( self , pos                           ) :
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
       return False
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . itemAt         ( pos                                     )
+    items  = self . selectedItems   (                                        )
+    atItem = self . itemAt          ( pos                                    )
     uuid   = 0
     ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( Qt . UserRole                           )
-      uuid = int                   ( uuid                                    )
+    if                              ( atItem != None                       ) :
+      uuid = atItem . data          ( Qt . UserRole                          )
+      uuid = int                    ( uuid                                   )
     ##########################################################################
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    if                             ( uuid > 0                              ) :
-      mm   . addAction             ( 2001 ,  "子群組" )
-      if                           ( self . Grouping == "Subgroup"         ) :
-        mm . addAction             ( 2002 ,  "群組成員" )
-      mm   . addSeparator          (                                         )
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
-    mm     . addSeparator          (                                         )
-    if                             ( atItem != None                        ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
+    if                              ( uuid > 0                             ) :
+      mm   . addAction              ( 2001 ,  "子群組" )
+      if                            ( self . Grouping == "Subgroup"        ) :
+        mm . addAction              ( 2002 ,  "影片群組" )
+      mm   . addSeparator           (                                        )
+    mm     . addAction              ( 1001 ,  TRX [ "UI::Refresh"  ]         )
+    mm     . addAction              ( 1101 ,  TRX [ "UI::Insert"   ]         )
+    mm     . addSeparator           (                                        )
+    if                              ( atItem != None                       ) :
+      if                            ( self . EditAllNames != None          ) :
+        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
+        mm . addSeparator           (                                        )
     ##########################################################################
-    mm     = self . LocalityMenu   ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    mm     = self . LocalityMenu    ( mm                                     )
+    self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
-    at     = mm . at               ( aa                                      )
+    mm     . setFont                ( self    . font ( )                     )
+    aa     = mm . exec_             ( QCursor . pos  ( )                     )
+    at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
+    if                              ( self . RunDocking   ( mm , aa )      ) :
       return True
     ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
+    if                              ( self . HandleLocalityMenu ( at )     ) :
       return True
     ##########################################################################
-    if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+    if                              ( at == 1001                           ) :
+      self . startup                (                                        )
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
+    if                              ( at == 1101                           ) :
+      self . InsertItem             (                                        )
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Albums" , uuid , NAM            )
+    if                              ( at == 1601                           ) :
+      NAM  = self . Tables          [ "Names"                                ]
+      self . EditAllNames           ( self , "Albums" , uuid , NAM           )
       return True
     ##########################################################################
-    if                             ( at == 2001                            ) :
-      tid  = self . Relation . get ( "t2"                                    )
-      self . CrowdSubgroup . emit  ( tid , str ( uuid )                      )
+    if                              ( at == 2001                           ) :
+      title = atItem . text         (                                        )
+      tid   = self . Relation . get ( "t2"                                   )
+      self  . AlbumSubgroup . emit  ( title , tid , str ( uuid )             )
       return True
     ##########################################################################
-    if                             ( at == 2002                            ) :
-      tid  = self . Relation . get ( "t2"                                    )
-      self . PeopleGroup   . emit  ( tid , str ( uuid )                      )
+    if                              ( at == 2002                           ) :
+      title = atItem . text         (                                        )
+      tid   = self . Relation . get ( "t2"                                   )
+      self  . AlbumGroup    . emit  ( title , tid , str ( uuid )             )
       return True
     ##########################################################################
     return True

@@ -130,6 +130,7 @@ class IconDock           ( ListDock                                        ) :
     IT   = QListWidgetItem            (                                      )
     if                                ( self . UsingName                   ) :
       IT . setText                    ( NAME                                 )
+    IT   . setToolTip                 ( str ( UUID )                         )
     IT   . setTextAlignment           ( Qt   . AlignCenter                   )
     IT   . setData                    ( Qt   . UserRole , str ( UUID )       )
     IT   . setIcon                    ( self . defaultIcon ( )               )
