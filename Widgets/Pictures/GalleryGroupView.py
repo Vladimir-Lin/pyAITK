@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## AlbumGroupView
+## GalleryGroupView
 ##############################################################################
 import os
 import sys
@@ -55,12 +55,12 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
-class AlbumGroupView              ( IconDock                               ) :
+class GalleryGroupView            ( IconDock                               ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  AlbumSubgroup = pyqtSignal      ( int , str                                )
-  AlbumGroup    = pyqtSignal      ( int , str                                )
+  GallerySubgroup = pyqtSignal    ( int , str                                )
+  GalleryGroup    = pyqtSignal    ( int , str                                )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -117,7 +117,7 @@ class AlbumGroupView              ( IconDock                               ) :
   def ObtainUuidsQuery         ( self                                      ) :
     ##########################################################################
     TABLE = self . Tables      [ "Tags"                                      ]
-    QQ    = f"select `uuid` from {TABLE} where ( `used` = 1 ) and ( `type` = 76 ) order by `id` asc ;"
+    QQ    = f"select `uuid` from {TABLE} where ( `used` = 1 ) and ( `type` = 64 ) order by `id` asc ;"
     ##########################################################################
     return QQ
   ############################################################################
@@ -323,7 +323,7 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     if                             ( at == 1601                            ) :
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Albums" , uuid , NAM            )
+      self . EditAllNames          ( self , "Gallery" , uuid , NAM           )
       return True
     ##########################################################################
     if                             ( at == 2001                            ) :
