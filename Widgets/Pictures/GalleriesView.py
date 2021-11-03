@@ -85,12 +85,13 @@ class GalleriesView                ( IconDock                              ) :
     self . dockingPlace       = Qt . BottomDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "People"                                )
+    self . Relation . setT2        ( "Gallery"                               )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
     self . setDragEnabled          ( True                                    )
+    self . setAcceptDrops          ( True                                    )
     ## self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
