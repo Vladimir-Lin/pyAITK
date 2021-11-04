@@ -8,6 +8,7 @@ from . FaceShapeListings  import FaceShapeListings  as FaceShapeListings
 from . HumanBloodListings import HumanBloodListings as HumanBloodListings
 from . BloodGroupListings import BloodGroupListings as BloodGroupListings
 from . RegnaListings      import RegnaListings      as RegnaListings
+from . SpeciesListings    import SpeciesListings    as SpeciesListings
 ##############################################################################
 __all__ = [ "SexualityListings"                                            , \
             "EyeColorListings"                                             , \
@@ -16,5 +17,6 @@ __all__ = [ "SexualityListings"                                            , \
             "FaceShapeListings"                                            , \
             "HumanBloodListings"                                           , \
             "BloodGroupListings"                                           , \
-            "RegnaListings"                                                  ]
+            "RegnaListings"                                                , \
+            "SpeciesListings"                                                ]
 ##############################################################################
