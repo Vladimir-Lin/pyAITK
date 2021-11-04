@@ -10,6 +10,8 @@ from . RoleListings          import RoleListings          as RoleListings
 from . RaceListings          import RaceListings          as RaceListings
 from . OrganizationListings  import OrganizationListings  as OrganizationListings
 from . OrganizationGroupView import OrganizationGroupView as OrganizationGroupView
+from . PlaceListings         import PlaceListings         as PlaceListings
+from . PositionListings      import PositionListings      as PositionListings
 ##############################################################################
 __all__ = [ "PeopleView"                                                   , \
             "CrowdView"                                                    , \
@@ -20,5 +22,7 @@ __all__ = [ "PeopleView"                                                   , \
             "RoleListings"                                                 , \
             "RaceListings"                                                 , \
             "OrganizationListings"                                         , \
-            "OrganizationGroupView"                                          ]
+            "OrganizationGroupView"                                        , \
+            "PlaceListings"                                                , \
+            "PositionListings"                                               ]
 ##############################################################################
