@@ -330,9 +330,7 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     TABLE = self . Tables        [ "Positions"                               ]
     ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
-                  order by `id` asc ;"""
+    QQ    = f"""select `uuid` from {TABLE} order by `id` asc ;"""
     ##########################################################################
     QQ    = " " . join           ( QQ . split ( )                            )
     ##########################################################################
@@ -377,7 +375,7 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     TABLE   = self . Tables           [ "Positions"                          ]
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    QQ      = f"select count(*) from {TABLE} ;"
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
@@ -396,7 +394,6 @@ class PositionListings             ( TreeDock                              ) :
     ORDER   = self . Order
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
