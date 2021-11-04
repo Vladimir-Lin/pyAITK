@@ -11,31 +11,32 @@ class PurePlan           ( VirtualProgress                                 ) :
     ##########################################################################
     super ( ) . __init__ (                                                   )
     ##########################################################################
-    self . Application = ""
-    self . Machine     = ""
-    self . Hostname    = ""
-    self . Root        = ""
-    self . Home        = ""
-    self . User        = ""
-    self . Bin         = ""
-    self . Arguments   = [ ]
-    self . PluginPaths = [ ]
-    self . Locality    = 1002
-    self . UserUuid    =    0
-    self . uid         =  500
-    self . gid         =  500
-    self . Verbose     =   20
-    self . MaxLogs     =    0
-    self . Visible     = True
-    self . scene       = False
-    self . canContinue = True
-    self . Tables      = { }
-    self . Values      = { }
-    self . Booleans    = { }
-    self . Uuids       = [ ]
-    self . SQLs        = { }
-    self . Dirs        = { }
-    self . Variables   = { }
+    self . Application  = ""
+    self . Machine      = ""
+    self . Hostname     = ""
+    self . Root         = ""
+    self . Home         = ""
+    self . User         = ""
+    self . Bin          = ""
+    self . Arguments    = [ ]
+    self . PluginPaths  = [ ]
+    self . Locality     = 1002
+    self . UserUuid     =    0
+    self . uid          =  500
+    self . gid          =  500
+    self . Verbose      =   20
+    self . MaxLogs      =    0
+    self . Visible      = True
+    self . scene        = False
+    self . canContinue  = True
+    self . Tables       = { }
+    self . Values       = { }
+    self . Booleans     = { }
+    self . Uuids        = [ ]
+    self . SQLs         = { }
+    self . Dirs         = { }
+    self . Variables    = { }
+    self . Notification = None
     ##########################################################################
     return
   ############################################################################
@@ -83,6 +84,15 @@ class PurePlan           ( VirtualProgress                                 ) :
   ############################################################################
   def ProgressReady           ( self , Id , msecs = 1000                   ) :
     return True
+  ############################################################################
+  def Notify                  ( self , Id                                  ) :
+    ##########################################################################
+    if                        ( self . Notification == None                ) :
+      return
+    ##########################################################################
+    self . Notification       ( Id                                           )
+    ##########################################################################
+    return
 ##############################################################################
 
 """
