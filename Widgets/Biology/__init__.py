@@ -7,6 +7,7 @@ from . HairColorListings  import HairColorListings  as HairColorListings
 from . FaceShapeListings  import FaceShapeListings  as FaceShapeListings
 from . HumanBloodListings import HumanBloodListings as HumanBloodListings
 from . BloodGroupListings import BloodGroupListings as BloodGroupListings
+from . RegnaListings      import RegnaListings      as RegnaListings
 ##############################################################################
 __all__ = [ "SexualityListings"                                            , \
             "EyeColorListings"                                             , \
@@ -14,5 +15,6 @@ __all__ = [ "SexualityListings"                                            , \
             "HairColorListings"                                            , \
             "FaceShapeListings"                                            , \
             "HumanBloodListings"                                           , \
-            "BloodGroupListings"                                             ]
+            "BloodGroupListings"                                           , \
+            "RegnaListings"                                                  ]
 ##############################################################################
