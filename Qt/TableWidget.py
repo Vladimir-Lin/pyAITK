@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## Widget
+## TableWidget
 ##############################################################################
 import os
 import sys
@@ -27,13 +27,13 @@ from   PyQt5 . QtGui                  import QKeySequence
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QWidget
+from   PyQt5 . QtWidgets              import QTableWidget
 ##############################################################################
 from         . VirtualGui             import VirtualGui  as VirtualGui
 ##############################################################################
-class Widget   ( QWidget , VirtualGui                                      ) :
+class TableWidget ( QTableWidget , VirtualGui                              ) :
   ############################################################################
-  def __init__ ( self , parent = None , plan = None                        ) :
+  def __init__    ( self , parent = None , plan = None                     ) :
     ##########################################################################
     super (                   ) . __init__ ( parent                          )
     super ( VirtualGui , self ) . __init__ (                                 )

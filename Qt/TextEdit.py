@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## Widget
+## TextEdit
 ##############################################################################
 import os
 import sys
@@ -27,11 +27,11 @@ from   PyQt5 . QtGui                  import QKeySequence
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QWidget
+from   PyQt5 . QtWidgets              import QTextEdit
 ##############################################################################
 from         . VirtualGui             import VirtualGui  as VirtualGui
 ##############################################################################
-class Widget   ( QWidget , VirtualGui                                      ) :
+class TextEdit ( QTextEdit , VirtualGui                                    ) :
   ############################################################################
   def __init__ ( self , parent = None , plan = None                        ) :
     ##########################################################################
