@@ -66,6 +66,7 @@ class Recognizer         (                                                 ) :
     self . Parser    = None
     self . Error     = None
     self . Reading   = None
+    self . DoSplit   = True
     self . Again     = self . Background
     self . NOW       = StarDate ( )
     self . Score     = 0
@@ -74,6 +75,8 @@ class Recognizer         (                                                 ) :
     self . Average   = 0
     self . Continue  = 0
     self . Phrase    = 8000.0
+    self . Silence   =  600
+    self . Thresh    =  -45
     self . Language  = "en-US"
     self . Languages = [ "en-US" , "zh-TW" ]
     ##########################################################################
@@ -241,7 +244,7 @@ class Recognizer         (                                                 ) :
     ##########################################################################
     return True
   ############################################################################
-  def ParallelParse                  ( self , audio , Language             ) :
+  def ParseSingleOne                 ( self , audio , Language             ) :
     ##########################################################################
     line = self . ListenInBackground (        audio , Language               )
     if                               ( len ( line ) <= 0                   ) :
@@ -250,6 +253,31 @@ class Recognizer         (                                                 ) :
     self . NOW . Now ( )
     TS   = self . NOW . Stardate
     self . Parser                    ( Language , line , TS                  )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ParallelParse                  ( self , audio , Language             ) :
+    ##########################################################################
+    if                               ( not self . DoSplit                  ) :
+      return self . ParseSingleOne   (        audio , Language               )
+    ##########################################################################
+    rate = audio . sample_rate
+    bw   = audio . sample_width
+    seg  = AudioSegment              ( audio . get_raw_data ( )            , \
+                                       sample_width = bw                   , \
+                                       frame_rate   = rate                 , \
+                                       channels     = 1                      )
+    ##########################################################################
+    chunks = split_on_silence        ( seg                                 , \
+                                       min_silence_len = self . Silence    , \
+                                       silence_thresh  = self . Thresh       )
+    ##########################################################################
+    if                               ( len ( chunks ) <= 0                 ) :
+      return False
+    ##########################################################################
+    for chunk in chunks                                                      :
+      ack  = vrt . AudioData         ( chunk . raw_data , rate, bw           )
+      self . ParseSingleOne          ( ack , Language                        )
     ##########################################################################
     return True
   ############################################################################

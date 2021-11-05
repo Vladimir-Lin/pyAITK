@@ -79,10 +79,9 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     self . Execution   = None
     self . DoExecution = True
     self . ShowParser  = True
-    self . ShowError   = True
-    ## self . ShowError   = False
-    self . ShowReading = True
-    ## self . ShowReading = False
+    self . ShowError   = False
+    self . ShowReading = False
+    self . DoSplit     = True
     ##########################################################################
     self . LangOn      = { "zh-TW" : False , "en-US" : False , "ja" : False  }
     self . onOff       = False
@@ -143,21 +142,26 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
   ############################################################################
   def Parser                   ( self , language , message , timestamp     ) :
     ##########################################################################
+    if                         ( len ( message ) <= 0                      ) :
+      return
+    ##########################################################################
+    if                         ( self . ShowParser                         ) :
+      ########################################################################
+      NOW = StarDate           (                                             )
+      NOW . Stardate = timestamp
+      CMT = NOW . toDateTimeString ( self.TZ , " " , "%Y/%m/%d" , "%H:%M:%S" )
+      ########################################################################
+      MSG = f"{CMT} ( {language} ) : {message}"
+      self . addText           ( MSG                                         )
+    ##########################################################################
     if                         ( self . DoExecution                        ) :
       ########################################################################
       if                       ( self . Execution != None                  ) :
         ######################################################################
-        self . Execution       ( language , message , timestamp              )
-    ##########################################################################
-    if                         ( not self . ShowParser                     ) :
-      return
-    ##########################################################################
-    NOW = StarDate               (                                           )
-    NOW . Stardate = timestamp
-    CMT = NOW . toDateTimeString ( self . TZ , " " , "%Y/%m/%d" , "%H:%M:%S" )
-    ##########################################################################
-    MSG = f"{CMT} ( {language} ) : {message}"
-    self . addText             ( MSG                                         )
+        RR = self . Execution  ( language , message , timestamp              )
+        if                     ( "Match" in RR                             ) :
+          if                   ( RR [ "Match"   ]                          ) :
+            self . addText     ( RR [ "Message" ]                            )
     ##########################################################################
     return
   ############################################################################
@@ -284,6 +288,10 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
                                      TRX [ "UI::Execution" ]               , \
                                      True                                  , \
                                      self . DoExecution                      )
+    mm     . addAction             ( 2002                                  , \
+                                     "語音活動偵測" , \
+                                     True                                  , \
+                                     self . DoSplit                          )
     mm     . addSeparator          (                                         )
     ##########################################################################
     mm     = self . LocalityMenu   ( mm                                      )
@@ -325,6 +333,14 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
         self . DoExecution = False
       else                                                                   :
         self . DoExecution = True
+    ##
+    ##########################################################################
+    if                             ( at == 2002                            ) :
+      if                           ( self . DoSplit                        ) :
+        self . DoSplit  = False
+      else                                                                   :
+        self . DoSplit  = True
+      self . Recognizer . DoSplit = self . DoSplit
     ##########################################################################
     return True
 ##############################################################################
