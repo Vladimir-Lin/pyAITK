@@ -250,6 +250,9 @@ class AbstractGui        (                                                 ) :
   def getMenus           ( self                                            ) :
     return self . Menus
   ############################################################################
+  def getMenuItem        ( self , item                                     ) :
+    return self . Menus  [ item                                              ]
+  ############################################################################
   def setPlanFunction       ( self , func                                  ) :
     ##########################################################################
     self . PlanFunc = func

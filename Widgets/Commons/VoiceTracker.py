@@ -232,6 +232,9 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
   ############################################################################
   def LocalityMenu                 ( self , mm                             ) :
     ##########################################################################
+    if                             ( self . Recognizer == None             ) :
+      return mm
+    ##########################################################################
     TRX   = self . Translations
     LOC   = self . Translations   [ "NamesEditor" ] [ "Languages"           ]
     ##########################################################################
@@ -259,6 +262,9 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     LC = self . LocIdToLC ( V                                                )
     ##########################################################################
     if                    ( len ( LC ) <= 0                                ) :
+      return True
+    ##########################################################################
+    if                    ( self . Recognizer == None                      ) :
       return True
     ##########################################################################
     if                    ( LC in self . Recognizer . Languages            ) :
@@ -294,7 +300,8 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
                                      TRX [ "UI::Execution" ]               , \
                                      True                                  , \
                                      self . DoExecution                      )
-    mm     . addAction             ( 2002                                  , \
+    if                             ( self . Recognizer != None             ) :
+      mm   . addAction             ( 2002                                  , \
                                      "語音活動偵測" , \
                                      True                                  , \
                                      self . DoSplit                          )
@@ -348,14 +355,16 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
         self . DoExecution = False
       else                                                                   :
         self . DoExecution = True
-    ##
     ##########################################################################
     if                             ( at == 2002                            ) :
+      ########################################################################
       if                           ( self . DoSplit                        ) :
         self . DoSplit  = False
       else                                                                   :
         self . DoSplit  = True
-      self . Recognizer . DoSplit = self . DoSplit
+      ########################################################################
+      if                           ( self . Recognizer != None             ) :
+        self . Recognizer . DoSplit = self . DoSplit
     ##########################################################################
     return True
 ##############################################################################

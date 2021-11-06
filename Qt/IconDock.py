@@ -49,6 +49,7 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
+from         . LineEdit               import LineEdit as LineEdit
 from         . ListDock               import ListDock as ListDock
 ##############################################################################
 class IconDock           ( ListDock                                        ) :
@@ -64,6 +65,7 @@ class IconDock           ( ListDock                                        ) :
     self . EditAllNames  = None
     self . IconFont      = None
     self . UsingName     = True
+    self . SortOrder     = "asc"
     self . UuidItemMaps  =          {                                        }
     ##########################################################################
     self . setViewMode              ( QListView . IconMode                   )
@@ -136,10 +138,47 @@ class IconDock           ( ListDock                                        ) :
     IT   . setIcon                    ( self . defaultIcon ( )               )
     IT   . setFont                    ( FT                                   )
     ##########################################################################
+    JSOX =                            { "Uuid" : UUID , "Name" : NAME        }
+    self . setItemJson                ( IT , JSOX                            )
+    ##########################################################################
     return IT
   ############################################################################
+  def PrepareEmptyItem                ( self                               ) :
+    ##########################################################################
+    FT   = self . iconFont            (                                      )
+    IT   = QListWidgetItem            (                                      )
+    if                                ( self . UsingName                   ) :
+      IT . setText                    ( ""                                   )
+    IT   . setTextAlignment           ( Qt   . AlignCenter                   )
+    IT   . setData                    ( Qt   . UserRole , str ( 0 )          )
+    IT   . setIcon                    ( self . defaultIcon ( )               )
+    IT   . setFont                    ( FT                                   )
+    ##########################################################################
+    JSOX =                            { "Uuid" : 0 , "Name" : ""             }
+    self . setItemJson                ( IT , JSOX                            )
+    ##########################################################################
+    return IT
   ############################################################################
-  ############################################################################
+  def setLineEdit        ( self , item , signal , method                   ) :
+    ##########################################################################
+    text = item . text   (                                                   )
+    LE   = LineEdit      ( self , self . PlanFunc                            )
+    LE   . setFont       ( self . iconFont ( )                               )
+    LE   . setText       ( text                                              )
+    ##########################################################################
+    self . EditItem   = item
+    self . EditWidget = LE
+    ##########################################################################
+    try                                                                      :
+      S  = getattr       ( LE, signal                                        )
+      S  . connect       ( method                                            )
+    except AttributeError                                                    :
+      pass
+    ##########################################################################
+    self . setItemWidget ( item , LE                                         )
+    LE   . setFocus      ( Qt . TabFocusReason                               )
+    ##########################################################################
+    return
   ############################################################################
   def FetchIcon                       ( self , DB , PUID                   ) :
     ##########################################################################

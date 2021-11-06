@@ -58,6 +58,7 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   Leave                   = pyqtSignal ( QWidget                             )
   emitSelectAll           = pyqtSignal (                                     )
   emitSelectNone          = pyqtSignal (                                     )
+  emitAssignToolTip       = pyqtSignal ( QListWidgetItem , str               )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
@@ -78,9 +79,13 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     self . SubmitStatusMessage . connect    ( self . AssignStatusMessage     )
     self . emitSelectAll       . connect    ( self . SelectAll               )
     self . emitSelectNone      . connect    ( self . SelectNone              )
+    self . emitAssignToolTip   . connect    ( self . AcceptToolTip           )
     ##########################################################################
     self . droppingAction = False
     self . VoiceJSON      =                 {                                }
+    ##########################################################################
+    self . EditItem       = None
+    self . EditWidget     = None
     ##########################################################################
     return
   ############################################################################
@@ -323,7 +328,16 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     ##########################################################################
     return mime
   ############################################################################
-  @pyqtSlot(str,int)
+  @pyqtSlot                   (        QListWidgetItem , str                 )
+  def AcceptToolTip           ( self , item            , tooltip           ) :
+    item . setToolTip         ( tooltip                                      )
+    return
+  ############################################################################
+  def assignToolTip                 ( self , item , tooltip                ) :
+    self . emitAssignToolTip . emit (        item , tooltip                  )
+    return
+  ############################################################################
+  @pyqtSlot                   (        str     , int                         )
   def AssignStatusMessage     ( self , message , timeout = 0               ) :
     self . statusMessage      (        message , timeout                     )
     return
@@ -392,6 +406,18 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   def Relocation              ( self                                       ) :
     return False
   ############################################################################
+  def setItemJson             ( self , item , JSOZ                         ) :
+    return item . setData     ( Qt . UserRole + 1 , JSOZ                     )
+  ############################################################################
+  def itemJson                ( self , item                                ) :
+    return item . data        ( Qt . UserRole + 1                            )
+  ############################################################################
+  def currentJson             ( self                                       ) :
+    item = self . currentItem (                                              )
+    if                        ( item == None                               ) :
+      return                  {                                              }
+    return self . itemJson    ( item                                         )
+  ############################################################################
   def ReleasePickings         ( self                                       ) :
     """
     if (PickedUuids.count()>0)                 {
@@ -401,23 +427,36 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     """
     return
   ############################################################################
+  def WithinCommand     ( self , language , key , message                  ) :
+    ##########################################################################
+    if                  ( language not in self . VoiceJSON                 ) :
+      return False
+    ##########################################################################
+    if                  ( key      not in self . VoiceJSON [ language ]    ) :
+      return False
+    ##########################################################################
+    if                  ( message in self . VoiceJSON [ language ] [ key ] ) :
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
   def FocusIn                 ( self                                       ) :
     return True
   ############################################################################
   def FocusOut                ( self                                       ) :
     return True
   ############################################################################
-  def SelectNone              ( self                                       ) :
+  def SelectNone               ( self                                      ) :
     ##########################################################################
-    if                        ( self . count ( ) <= 0                      ) :
+    if                         ( self . count ( ) <= 0                     ) :
       return
     ##########################################################################
-    m = "清除選取"
-    self . Talk               ( m , 1002                                     )
+    m    = self . Translations [ "UI::SelectNone"                            ]
+    self . Talk                ( m , self . getLocality ( )                  )
     ##########################################################################
-    for i in range            ( 0 , self . count ( )                       ) :
-      it = self . item        ( i                                            )
-      it . setSelected        ( False                                        )
+    for i in range             ( 0 , self . count ( )                      ) :
+      it = self . item         ( i                                           )
+      it . setSelected         ( False                                       )
     ##########################################################################
     return
   ############################################################################
@@ -427,17 +466,17 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     ##########################################################################
     return
   ############################################################################
-  def SelectAll               ( self                                       ) :
+  def SelectAll                ( self                                      ) :
     ##########################################################################
-    if                        ( self . count ( ) <= 0                      ) :
+    if                         ( self . count ( ) <= 0                     ) :
       return
     ##########################################################################
-    m = "選取全部"
-    self . Talk               ( m , 1002                                     )
+    m    = self . Translations [ "UI::SelectAll"                             ]
+    self . Talk                ( m , self . getLocality ( )                  )
     ##########################################################################
-    for i in range            ( 0 , self . count ( )                       ) :
-      it = self . item        ( i                                            )
-      it . setSelected        ( True                                         )
+    for i in range             ( 0 , self . count ( )                      ) :
+      it = self . item         ( i                                           )
+      it . setSelected         ( True                                        )
     ##########################################################################
     return
   ############################################################################

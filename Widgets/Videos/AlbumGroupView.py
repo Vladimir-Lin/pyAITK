@@ -76,11 +76,11 @@ class AlbumGroupView              ( IconDock                               ) :
     ## self . Grouping = "Subgroup"
     ## self . Grouping = "Reverse"
     ##########################################################################
-    self . setFunction            ( self . HavingMenu      , True            )
+    self . setFunction            ( self . HavingMenu , True                 )
     ##########################################################################
-    ## self . setDragDropMode         ( QAbstractItemView . DropOnly            )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setDragEnabled         ( True                                     )
+    self . setAcceptDrops         ( True                                     )
+    self . setDragDropMode        ( QAbstractItemView . DragDrop             )
     ##########################################################################
     return
   ############################################################################
@@ -165,6 +165,36 @@ class AlbumGroupView              ( IconDock                               ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
+  ############################################################################
+  def ReloadLocality                ( self , DB                            ) :
+    ##########################################################################
+    SCOPE   = self . Grouping
+    ALLOWED =                       [ "Subgroup" , "Reverse"                 ]
+    ##########################################################################
+    if                              ( SCOPE not in ALLOWED                 ) :
+      return
+    ##########################################################################
+    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    ##########################################################################
+    if                              ( SCOPE == "Subgroup"                  ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t1"                                   )
+      UUID  = self . Relation . get ( "first"                                )
+      ########################################################################
+    elif                            ( SCOPE == "Reverse"                   ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t2"                                   )
+      UUID  = self . Relation . get ( "second"                               )
+    ##########################################################################
+    self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchSessionInformation ( self , DB                                  ) :
+    ##########################################################################
+    self . ReloadLocality     (        DB                                    )
+    ##########################################################################
+    return
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
@@ -288,17 +318,83 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                        (                                         )
-  def InsertItem                   ( self                                  ) :
+  def LineEditorFinished                ( self                             ) :
     ##########################################################################
-    print("InsertItem")
+    if                                  ( self . EditItem   == None        ) :
+      return
+    ##########################################################################
+    if                                  ( self . EditWidget == None        ) :
+      return
+    ##########################################################################
+    IT                = self . EditItem
+    LE                = self . EditWidget
+    self . EditItem   = None
+    self . EditWidget = None
+    CORRECT           = True
+    ##########################################################################
+    JSON              = self . itemJson ( IT                                 )
+    TEXT              = LE   . text     (                                    )
+    NAME              = ""
+    UUID              = 0
+    LE                . deleteLater     (                                    )
+    ##########################################################################
+    if ( ( CORRECT ) and ( "Uuid" not in JSON ) )                            :
+      CORRECT         = False
+    else                                                                     :
+      UUID            = JSON            [ "Uuid"                             ]
+    ##########################################################################
+    if ( ( CORRECT ) and ( "Name" in JSON ) )                                :
+      NAME            = JSON            [ "Name"                             ]
+    ##########################################################################
+    if ( ( CORRECT ) and ( UUID == 0 ) and ( len ( TEXT ) <= 0 ) )           :
+      CORRECT         = False
+    ##########################################################################
+    if ( ( CORRECT ) and ( UUID >  0 ) and ( NAME == TEXT ) )                :
+      CORRECT         = False
+    ##########################################################################
+    if                                  ( not CORRECT                      ) :
+      if                                ( UUID <= 0                        ) :
+        self . takeItem                 ( self . row ( IT )                  )
+      return
+    ##########################################################################
+    if                                  ( UUID > 0                         ) :
+      ########################################################################
+      if                                ( self . UsingName                 ) :
+        IT . setText                    ( TEXT                               )
+      ########################################################################
+      ## Update UUID Name
+      print("Update UUID Name : " , UUID , TEXT )
+      ########################################################################
+      return
+    ##########################################################################
+    ## Append New Item
+    ##########################################################################
+    print("Append New Item")
+    IT . setText                        ( TEXT                               )
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                          (                                       )
+  def InsertItem                     ( self                                ) :
+    ##########################################################################
+    IT     = self . PrepareEmptyItem (                                       )
+    if                               ( self . SortOrder == "asc"           ) :
+      self . addItem                 (     IT                                )
+    else                                                                     :
+      self . insertItem              ( 0 , IT                                )
+    ##########################################################################
+    self   . setLineEdit             ( IT                                  , \
+                                       "editingFinished"                   , \
+                                       self . LineEditorFinished             )
     ##########################################################################
     return
   ############################################################################
   @pyqtSlot                        (                                         )
   def DeleteItems                  ( self                                  ) :
     ##########################################################################
-    print("InsertItem")
+    print("DeleteItems")
     ##########################################################################
     return
   ############################################################################
@@ -312,20 +408,53 @@ class AlbumGroupView              ( IconDock                               ) :
   @pyqtSlot                        (                                         )
   def RenameItem                   ( self                                  ) :
     ##########################################################################
-    print("InsertItem")
+    IT   = self . currentItem      (                                         )
+    ##########################################################################
+    if                             ( IT == None                            ) :
+      return
+    ##########################################################################
+    self . setLineEdit             ( IT                                    , \
+                                     "editingFinished"                     , \
+                                     self . LineEditorFinished               )
     ##########################################################################
     return
   ############################################################################
   @pyqtSlot                        (                                         )
   def CopyToClipboard              ( self                                  ) :
     ##########################################################################
-    print("InsertItem")
+    print("CopyToClipboard")
     ##########################################################################
     return
   ############################################################################
   def UpdateLocalityUsage           ( self                                 ) :
     ##########################################################################
-    print("InsertItem")
+    SCOPE   = self . Grouping
+    ALLOWED =                       [ "Subgroup" , "Reverse"                 ]
+    ##########################################################################
+    if                              ( SCOPE not in ALLOWED                 ) :
+      return False
+    ##########################################################################
+    DB      = self . ConnectDB      (                                        )
+    if                              ( DB == None                           ) :
+      return False
+    ##########################################################################
+    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    DB      . LockWrites            ( [ PAMTAB ]                             )
+    ##########################################################################
+    if                              ( SCOPE == "Subgroup"                  ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t1"                                   )
+      UUID  = self . Relation . get ( "first"                                )
+      ########################################################################
+    elif                            ( SCOPE == "Reverse"                   ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t2"                                   )
+      UUID  = self . Relation . get ( "second"                               )
+    ##########################################################################
+    self    . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    ##########################################################################
+    DB      . UnlockTables          (                                        )
+    DB      . Close                 (                                        )
     ##########################################################################
     return True
   ############################################################################
@@ -348,12 +477,18 @@ class AlbumGroupView              ( IconDock                               ) :
     TRX    = self . Translations
     ##########################################################################
     if                              ( uuid > 0                             ) :
-      mm   . addAction              ( 2001 ,  "子群組" )
+      ########################################################################
+      mg   = self . getMenuItem     ( "Subgroup"                             )
+      mm   . addAction              ( 2001 , mg                              )
+      ########################################################################
       if                            ( self . Grouping == "Subgroup"        ) :
-        mm . addAction              ( 2002 ,  "影片群組" )
+        mg = self . getMenuItem     ( "Albums"                               )
+        mm . addAction              ( 2002 , mg                              )
       mm   . addSeparator           (                                        )
-    mm     . addAction              ( 1001 ,  TRX [ "UI::Refresh"  ]         )
-    mm     . addAction              ( 1101 ,  TRX [ "UI::Insert"   ]         )
+    ##########################################################################
+    mm     . addAction              ( 1001 , TRX [ "UI::Refresh" ]           )
+    mm     . addAction              ( 1101 , TRX [ "UI::Insert"  ]           )
+    mm     . addAction              ( 1102 , TRX [ "UI::Rename"  ]           )
     mm     . addSeparator           (                                        )
     if                              ( atItem != None                       ) :
       if                            ( self . EditAllNames != None          ) :
@@ -381,6 +516,10 @@ class AlbumGroupView              ( IconDock                               ) :
       self . InsertItem             (                                        )
       return True
     ##########################################################################
+    if                              ( at == 1102                           ) :
+      self . RenameItem             (                                        )
+      return True
+    ##########################################################################
     if                              ( at == 1601                           ) :
       NAM  = self . Tables          [ "Names"                                ]
       self . EditAllNames           ( self , "Albums" , uuid , NAM           )
@@ -400,9 +539,65 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return True
   ############################################################################
+  def OpenCurrentSubgroup          ( self                                  ) :
+    ##########################################################################
+    atItem = self . currentItem    (                                         )
+    ##########################################################################
+    if                             ( atItem == None                        ) :
+      return False
+    ##########################################################################
+    uuid   = atItem . data         ( Qt . UserRole                           )
+    uuid   = int                   ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return False
+    ##########################################################################
+    title  = atItem . text         (                                         )
+    tid    = self . Relation . get ( "t2"                                    )
+    self   . AlbumSubgroup . emit  ( title , tid , str ( uuid )              )
+    ##########################################################################
+    return True
+  ############################################################################
+  def OpenCurrentAlbum          ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem    (                                         )
+    ##########################################################################
+    if                             ( atItem == None                        ) :
+      return False
+    ##########################################################################
+    uuid   = atItem . data         ( Qt . UserRole                           )
+    uuid   = int                   ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return False
+    ##########################################################################
+    title  = atItem . text         (                                         )
+    tid    = self . Relation . get ( "t2"                                    )
+    self   . AlbumGroup    . emit  ( title , tid , str ( uuid )              )
+    ##########################################################################
+    return True
+  ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
-    print("CommandParser:",language , message , timestamp)
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::OpenSubgroup" , message )  ) :
+      if            ( self . OpenCurrentSubgroup ( )                       ) :
+        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
+      else                                                                   :
+        return      { "Match" : True                                         }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::OpenAlbums"   , message )  ) :
+      if            ( self . OpenCurrentAlbum ( )                          ) :
+        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
+      else                                                                   :
+        return      { "Match" : True                                         }
     ##########################################################################
     return          { "Match" : False                                        }
 ##############################################################################
