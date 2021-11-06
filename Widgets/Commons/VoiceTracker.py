@@ -53,8 +53,9 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
   ############################################################################
   HavingMenu  = 1371434312
   ############################################################################
-  emitAddText    = pyqtSignal ( str                                          )
-  emitWindowIcon = pyqtSignal ( bool                                         )
+  emitAddText     = pyqtSignal ( str                                         )
+  emitWindowIcon  = pyqtSignal ( bool                                        )
+  ReloadVoiceJSON = pyqtSignal (                                             )
   ############################################################################
   def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
@@ -283,6 +284,8 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     mm     . addAction             ( 1004 , "放大" )
     mm     . addAction             ( 1005 , "縮小" )
     mm     . addSeparator          (                                         )
+    mm     . addAction             ( 1101 , "重新載入語音命令" )
+    mm     . addSeparator          (                                         )
     ##########################################################################
     mm     . addAction             ( 2001                                  , \
                                      TRX [ "UI::Execution" ]               , \
@@ -326,6 +329,10 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     ##########################################################################
     if                             ( at == 1005                            ) :
       self . ZoomOut               (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1101                            ) :
+      self . ReloadVoiceJSON . emit (                                        )
       return True
     ##########################################################################
     if                             ( at == 2001                            ) :
