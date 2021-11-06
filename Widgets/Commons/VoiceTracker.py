@@ -76,6 +76,7 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     ##########################################################################
     self . setReadOnly     ( True                                            )
     self . TZ          = "Asia/Taipei"
+    self . VoiceJSON   = { }
     self . Recognizer  = None
     self . Execution   = None
     self . DoExecution = True
@@ -162,7 +163,8 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
         RR = self . Execution  ( language , message , timestamp              )
         if                     ( "Match" in RR                             ) :
           if                   ( RR [ "Match"   ]                          ) :
-            self . addText     ( RR [ "Message" ]                            )
+            if                 ( "Message" in RR                           ) :
+              self . addText   ( RR [ "Message" ]                            )
     ##########################################################################
     return
   ############################################################################
@@ -285,6 +287,7 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     mm     . addAction             ( 1005 , "縮小" )
     mm     . addSeparator          (                                         )
     mm     . addAction             ( 1101 , "重新載入語音命令" )
+    mm     . addAction             ( 1102 , "報告語音命令列表" )
     mm     . addSeparator          (                                         )
     ##########################################################################
     mm     . addAction             ( 2001                                  , \
@@ -333,6 +336,11 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . ReloadVoiceJSON . emit (                                        )
+      return True
+    ##########################################################################
+    if                             ( at == 1102                            ) :
+      VJ = json . dumps ( self . VoiceJSON , ensure_ascii = False )
+      self . addText               ( VJ                                      )
       return True
     ##########################################################################
     if                             ( at == 2001                            ) :
