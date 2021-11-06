@@ -40,6 +40,7 @@ class Dialog            ( QDialog , VirtualGui                             ) :
     ##########################################################################
     ## WidgetClass
     self . setAttribute ( Qt . WA_InputMethodEnabled                         )
+    self . VoiceJSON = { }
     ##########################################################################
     if                  ( plan != None                                     ) :
       ## Data . Controller = & ( plan->canContinue ) ;

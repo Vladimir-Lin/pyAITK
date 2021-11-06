@@ -78,6 +78,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . setVerticalScrollBarPolicy       ( Qt . ScrollBarAsNeeded         )
     ##########################################################################
     self . droppingAction = False
+    self . VoiceJSON      = { }
     ##########################################################################
     return
   ############################################################################
@@ -548,7 +549,11 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
       return False
     ##########################################################################
     self . setLocality             ( atId - 10000000                         )
+    self . Go                      ( self . UpdateLocalityUsage              )
     ##########################################################################
+    return True
+  ############################################################################
+  def UpdateLocalityUsage     ( self                                       ) :
     return True
   ############################################################################
   @pyqtSlot                      (                                           )

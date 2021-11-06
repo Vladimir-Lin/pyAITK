@@ -46,6 +46,7 @@ class LineEdit            ( QLineEdit , VirtualGui                         ) :
     self . setPlanFunction                  ( plan                           )
     ##########################################################################
     self . setAttribute   ( Qt . WA_InputMethodEnabled                       )
+    self . VoiceJSON =    {                                                  }
     ##########################################################################
     return
   ############################################################################

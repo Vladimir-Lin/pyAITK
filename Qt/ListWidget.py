@@ -56,6 +56,8 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   pickSelectionMode       = pyqtSignal ( str                                 )
   SubmitStatusMessage     = pyqtSignal ( str , int                           )
   Leave                   = pyqtSignal ( QWidget                             )
+  emitSelectAll           = pyqtSignal (                                     )
+  emitSelectNone          = pyqtSignal (                                     )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
@@ -74,8 +76,11 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     ##########################################################################
     self . pickSelectionMode   . connect    ( self . assignSelectionMode     )
     self . SubmitStatusMessage . connect    ( self . AssignStatusMessage     )
+    self . emitSelectAll       . connect    ( self . SelectAll               )
+    self . emitSelectNone      . connect    ( self . SelectNone              )
     ##########################################################################
     self . droppingAction = False
+    self . VoiceJSON      =                 {                                }
     ##########################################################################
     return
   ############################################################################
@@ -370,7 +375,11 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
       return False
     ##########################################################################
     self . setLocality             ( atId - 10000000                         )
+    self . Go                      ( self . UpdateLocalityUsage              )
     ##########################################################################
+    return True
+  ############################################################################
+  def UpdateLocalityUsage     ( self                                       ) :
     return True
   ############################################################################
   def startup                 ( self                                       ) :
@@ -412,6 +421,12 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     ##########################################################################
     return
   ############################################################################
+  def DoSelectNone               ( self                                    ) :
+    ##########################################################################
+    self . emitSelectNone . emit (                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def SelectAll               ( self                                       ) :
     ##########################################################################
     if                        ( self . count ( ) <= 0                      ) :
@@ -423,6 +438,12 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     for i in range            ( 0 , self . count ( )                       ) :
       it = self . item        ( i                                            )
       it . setSelected        ( True                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoSelectAll                ( self                                    ) :
+    ##########################################################################
+    self . emitSelectAll  . emit (                                           )
     ##########################################################################
     return
   ############################################################################

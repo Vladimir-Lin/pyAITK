@@ -56,6 +56,7 @@ class TextEdit            ( QTextEdit , VirtualGui , AttachDock            ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . setAttribute ( Qt . WA_InputMethodEnabled                         )
+    self . VoiceJSON =  {                                                    }
     ##########################################################################
     return
   ############################################################################

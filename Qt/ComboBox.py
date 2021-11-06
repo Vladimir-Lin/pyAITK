@@ -41,6 +41,7 @@ class ComboBox ( QComboBox , VirtualGui                                    ) :
     super ( VirtualGui , self ) . __init__ (                                 )
     self . Initialize                      ( self                            )
     self . setPlanFunction                 ( plan                            )
+    self . VoiceJSON =                     {                                 }
     ##########################################################################
     return
   ############################################################################

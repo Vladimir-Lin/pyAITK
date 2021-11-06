@@ -45,15 +45,16 @@ import mysql . connector
 from   mysql . connector              import Error
 ##############################################################################
 import AITK
-from   AITK . Database  . Query       import Query
-from   AITK . Database  . Connection  import Connection
-from   AITK . Database  . Pair        import Pair
-from   AITK . Database  . Columns     import Columns
+from   AITK . Database  . Query          import Query
+from   AITK . Database  . Connection     import Connection
+from   AITK . Database  . Pair           import Pair
+from   AITK . Database  . Columns        import Columns
 ##############################################################################
-from   AITK . Documents . Name        import Name   as NameItem
-from   AITK . Documents . Name        import Naming as Naming
+from   AITK . Documents . Name           import Name           as NameItem
+from   AITK . Documents . Name           import Naming         as Naming
+from   AITK . Documents . ParameterQuery import ParameterQuery as ParameterQuery
 ##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
+from   AITK . Calendars . StarDate       import StarDate
 ##############################################################################
 class AbstractGui        (                                                 ) :
   ############################################################################
@@ -177,11 +178,46 @@ class AbstractGui        (                                                 ) :
   def getLocality        ( self                                            ) :
     return self . Locality
   ############################################################################
+  def getLocalityUuid                ( self                                ) :
+    return 1900000000000000000 + int ( self . Locality                       )
+  ############################################################################
   def setLocality        ( self , locality                                 ) :
     ##########################################################################
     self . Locality = locality
     ##########################################################################
     return self . Locality
+  ############################################################################
+  def setLocalityUuid         ( self , UUID                                ) :
+    ##########################################################################
+    UUIDSEGS  = 1900000000000000000
+    UUIDENDS  = UUIDSEGS + 10000000
+    ##########################################################################
+    if                        ( UUID < 1900000000000000000                 ) :
+      return
+    ##########################################################################
+    if                        ( UUID > UUIDENDS                            ) :
+      return
+    ##########################################################################
+    return self . setLocality ( int ( UUID - UUIDSEGS )                      )
+  ############################################################################
+  def GetLocalityByUuid   ( self , DB , TABLE , UUID , TYPE , SCOPE        ) :
+    ##########################################################################
+    PQ = ParameterQuery   ( TYPE , 89   , SCOPE , TABLE                      )
+    RR = PQ . Value       ( DB   , UUID , "Language"                         )
+    ##########################################################################
+    if                    ( len ( str ( RR ) ) <= 0                        ) :
+      return
+    ##########################################################################
+    self . Locality = int ( RR                                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def SetLocalityByUuid   ( self , DB , TABLE , UUID , TYPE , SCOPE        ) :
+    ##########################################################################
+    PQ = ParameterQuery   ( TYPE , 89   , SCOPE , TABLE                      )
+    PQ . assureValue      (        DB , UUID , "Language" , self . Locality  )
+    ##########################################################################
+    return
   ############################################################################
   def setLanguages       ( self , languages                                ) :
     ##########################################################################
