@@ -345,10 +345,14 @@ class IconDock           ( ListDock                                        ) :
       self . emitIconsShow . emit     (                                      )
       return
     ##########################################################################
+    self    . setBustle               (                                      )
+    ##########################################################################
     self    . FetchSessionInformation ( DB                                   )
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( self . UsingName                   ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+    ##########################################################################
+    self    . setVacancy              (                                      )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################

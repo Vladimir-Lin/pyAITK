@@ -166,10 +166,21 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
   ############################################################################
+  def ObtainReverseUuids       ( self , DB                                 ) :
+    ##########################################################################
+    ORDER  = self . SortOrder
+    OPTS   = f"order by `reverse` {ORDER}"
+    RELTAB = self . Tables [ "Relation" ]
+    ##########################################################################
+    return self . Relation . GetOwners     ( DB , RELTAB , OPTS              )
+  ############################################################################
   def ObtainsItemUuids                ( self , DB                          ) :
     ##########################################################################
     if                                ( self . Grouping == "Tag"           ) :
       return self . DefaultObtainsItemUuids ( DB                             )
+    ##########################################################################
+    if                                ( self . Grouping == "Reverse"       ) :
+      return self . ObtainReverseUuids      ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################

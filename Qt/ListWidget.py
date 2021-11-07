@@ -59,6 +59,8 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   emitSelectAll           = pyqtSignal (                                     )
   emitSelectNone          = pyqtSignal (                                     )
   emitAssignToolTip       = pyqtSignal ( QListWidgetItem , str               )
+  emitBustle              = pyqtSignal (                                     )
+  emitVacancy             = pyqtSignal (                                     )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
@@ -80,6 +82,8 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     self . emitSelectAll       . connect    ( self . SelectAll               )
     self . emitSelectNone      . connect    ( self . SelectNone              )
     self . emitAssignToolTip   . connect    ( self . AcceptToolTip           )
+    self . emitBustle          . connect    ( self . DoBustle                )
+    self . emitVacancy         . connect    ( self . DoVacancy               )
     ##########################################################################
     self . droppingAction = False
     self . VoiceJSON      =                 {                                }
@@ -327,6 +331,24 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     QToolTip  . showText             ( QCursor . pos ( ) , tooltip           )
     ##########################################################################
     return mime
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DoBustle                ( self                                       ) :
+    self . Bustle             (                                              )
+    return
+  ############################################################################
+  def setBustle               ( self                                       ) :
+    self . emitBustle  . emit (                                              )
+    return
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DoVacancy               ( self                                       ) :
+    self . Vacancy            (                                              )
+    return
+  ############################################################################
+  def setVacancy              ( self                                       ) :
+    self . emitVacancy . emit (                                              )
+    return
   ############################################################################
   @pyqtSlot                   (        QListWidgetItem , str                 )
   def AcceptToolTip           ( self , item            , tooltip           ) :
