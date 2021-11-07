@@ -151,7 +151,7 @@ class IconDock           ( ListDock                                        ) :
     item = QListWidgetItem            (                                      )
     self . setItemJson                ( item , { }                           )
     ##########################################################################
-    return self . PrepareItemContent  ( self , item , UUID , NAME            )
+    return self . PrepareItemContent  ( item , UUID , NAME                   )
   ############################################################################
   def PrepareEmptyItem                ( self                               ) :
     ##########################################################################
@@ -259,7 +259,33 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
+  def SortingMenu                  ( self , mm                             ) :
+    ##########################################################################
+    TRX    = self  . Translations
+    LOM    = mm    . addMenu       ( TRX [ "UI::Sorting" ]                   )
+    ##########################################################################
+    hid    =                       ( self . SortOrder == "asc"               )
+    msg    = TRX                   [ "UI::SortAsc"                           ]
+    mm     . addActionFromMenu     ( LOM , 20000001 , msg , True , hid       )
+    ##########################################################################
+    hid    =                       ( self . SortOrder == "desc"              )
+    msg    = TRX                   [ "UI::SortDesc"                          ]
+    mm     . addActionFromMenu     ( LOM , 20000002 , msg , True , hid       )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunSortingMenu               ( self , atId                           ) :
+    ##########################################################################
+    if                             ( atId == 20000001                      ) :
+      self . SortOrder = "asc"
+      return True
+    if                             ( atId == 20000002                      ) :
+      self . SortOrder = "desc"
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
+  @pyqtSlot                           (        dict                          )
   def refresh                         ( self , JSON                        ) :
     ##########################################################################
     self    . clear                   (                                      )

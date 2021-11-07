@@ -150,16 +150,18 @@ class AlbumGroupView              ( IconDock                               ) :
   def ObtainUuidsQuery         ( self                                      ) :
     ##########################################################################
     TABLE = self . Tables      [ "Tags"                                      ]
+    ORDER = self . SortOrder
     QQ    = f"""select `uuid` from {TABLE}
                 where ( `used` = 1 )
                 and ( `type` = 76 )
-                order by `id` asc ;"""
+                order by `id` {ORDER} ;"""
     ##########################################################################
     return " " . join          ( QQ . split ( )                              )
   ############################################################################
   def ObtainSubgroupUuids      ( self , DB                                 ) :
     ##########################################################################
-    OPTS   = "order by `position` desc"
+    ORDER  = self . SortOrder
+    OPTS   = f"order by `position` {ORDER}"
     RELTAB = self . Tables [ "Relation" ]
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
@@ -601,6 +603,7 @@ class AlbumGroupView              ( IconDock                               ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
         mm . addSeparator           (                                        )
     ##########################################################################
+    mm     = self . SortingMenu     ( mm                                     )
     mm     = self . LocalityMenu    ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
@@ -612,6 +615,10 @@ class AlbumGroupView              ( IconDock                               ) :
       return True
     ##########################################################################
     if                              ( self . HandleLocalityMenu ( at )     ) :
+      return True
+    ##########################################################################
+    if                              ( self . RunSortingMenu     ( at )     ) :
+      self . startup                (                                        )
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :
