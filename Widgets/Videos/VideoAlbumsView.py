@@ -115,7 +115,7 @@ class VideoAlbumsView              ( IconDock                              ) :
   ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
-    RELTAB = self . Tables       [ "RelationVideos"                          ]
+    RELTAB = self . Tables       [ "Relation"                                ]
     REL    = Relation            (                                           )
     REL    . set                 ( "first" , Uuid                            )
     REL    . setT1               ( "Album"                                   )
