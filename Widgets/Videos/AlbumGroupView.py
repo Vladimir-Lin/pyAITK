@@ -126,14 +126,17 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return False
   ############################################################################
-  ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
-    """
+    if                           ( self . Grouping in [ "Tag" ]            ) :
+      T1   =  75
+    else                                                                     :
+      T1   = 158
+    ##########################################################################
     RELTAB = self . Tables       [ "Relation"                                ]
     REL    = Relation            (                                           )
     REL    . set                 ( "first" , Uuid                            )
-    REL    . setT1               ( "People"                                  )
+    REL    . set                 ( "t1"    , T1                              )
     REL    . setT2               ( "Picture"                                 )
     REL    . setRelation         ( "Using"                                   )
     ##########################################################################
@@ -141,16 +144,18 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     if                           ( len ( PICS ) > 0                        ) :
       return PICS                [ 0                                         ]
-    """
     ##########################################################################
     return 0
   ############################################################################
   def ObtainUuidsQuery         ( self                                      ) :
     ##########################################################################
     TABLE = self . Tables      [ "Tags"                                      ]
-    QQ    = f"select `uuid` from {TABLE} where ( `used` = 1 ) and ( `type` = 76 ) order by `id` asc ;"
+    QQ    = f"""select `uuid` from {TABLE}
+                where ( `used` = 1 )
+                and ( `type` = 76 )
+                order by `id` asc ;"""
     ##########################################################################
-    return QQ
+    return " " . join          ( QQ . split ( )                              )
   ############################################################################
   def ObtainSubgroupUuids      ( self , DB                                 ) :
     ##########################################################################
@@ -362,6 +367,7 @@ class AlbumGroupView              ( IconDock                               ) :
       if                                ( self . UsingName                 ) :
         ######################################################################
         IT   . setText                  ( TEXT                               )
+        self . PrepareItemContent       ( IT , UUID , TEXT                   )
         self . Go                       ( self . UpdateItemName            , \
                                           ( IT , UUID , TEXT , )             )
       ########################################################################
@@ -456,15 +462,105 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return True
   ############################################################################
-  def UpdateItemName                ( self , item , uuid , name            ) :
+  def UpdateItemName                   ( self , item , uuid , name         ) :
     ##########################################################################
-      print("Update UUID Name : " , uuid , name )
+    DB      = self . ConnectDB         (                                     )
+    if                                 ( DB == None                        ) :
+      return
+    ##########################################################################
+    NAMTAB  = self . Tables            [ "Names"                             ]
+    DB      . LockWrites               ( [ NAMTAB ]                          )
+    ##########################################################################
+    self    . AssureUuidNameByLocality ( DB                                , \
+                                         NAMTAB                            , \
+                                         uuid                              , \
+                                         name                              , \
+                                         self . getLocality ( )              )
+    ##########################################################################
+    DB      . UnlockTables             (                                     )
+    DB      . Close                    (                                     )
     ##########################################################################
     return
   ############################################################################
-  def AppendItemName                ( self , item , name                   ) :
+  def AppendTagItem                 ( self , DB                            ) :
     ##########################################################################
-    print("Append New Item : " , name )
+    TAGTAB = self . Tables          [ "Tags"                                 ]
+    uuid   = DB   . LastUuid        ( TAGTAB , "uuid" , 2800000000000000000  )
+    DB     . AddUuid                ( TAGTAB ,  uuid  , 76                   )
+    ##########################################################################
+    return uuid
+  ############################################################################
+  def AppendSubgroupItem            ( self , DB                            ) :
+    ##########################################################################
+    SUBTAB = self . Tables          [ "Subgroups"                            ]
+    uuid   = DB   . LastUuid        ( SUBTAB , "uuid" , 2800004000000000000  )
+    DB     . AddUuid                ( SUBTAB ,  uuid  , 76                   )
+    ##########################################################################
+    return uuid
+  ############################################################################
+  def AppendItemName                     ( self , item , name              ) :
+    ##########################################################################
+    DB       = self . ConnectDB          (                                   )
+    if                                   ( DB == None                      ) :
+      return
+    ##########################################################################
+    TAGTAB   = self . Tables             [ "Tags"                            ]
+    SUBTAB   = self . Tables             [ "Subgroups"                       ]
+    NAMTAB   = self . Tables             [ "Names"                           ]
+    RELTAB   = self . Tables             [ "RelationVideos"                  ]
+    TABLES   =                           [ NAMTAB , RELTAB                   ]
+    ##########################################################################
+    if                                   ( self . Grouping in [ "Tag" ]    ) :
+      TABLES . append                    ( TAGTAB                            )
+      T1     =  75
+      T2     = 158
+      RR     =   1
+    else                                                                     :
+      TABLES . append                    ( SUBTAB                            )
+      T1     = self . Relation . get     ( "t1"                              )
+      T2     = self . Relation . get     ( "t2"                              )
+      RR     = self . Relation . get     ( "relation"                        )
+    ##########################################################################
+    DB       . LockWrites                ( TABLES                            )
+    ##########################################################################
+    if                                   ( self . Grouping in [ "Tag" ]    ) :
+      uuid   = self . AppendTagItem      ( DB                                )
+    else                                                                     :
+      ########################################################################
+      uuid   = self . AppendSubgroupItem ( DB                                )
+      ########################################################################
+      REL    = Relation                  (                                   )
+      REL    . set                       ( "relation" , RR                   )
+      ########################################################################
+      if                                 ( self . Grouping == "Subgroup"   ) :
+        ######################################################################
+        PUID = self . Relation . get     ( "first"                           )
+        REL  . set                       ( "first"    , PUID                 )
+        REL  . set                       ( "second"   , uuid                 )
+        REL  . set                       ( "t1"       , T1                   )
+        REL  . set                       ( "t2"       , 158                  )
+        ######################################################################
+      elif                               ( self . Grouping == "Reverse"    ) :
+        ######################################################################
+        PUID = self . Relation . get     ( "second"                          )
+        REL  . set                       ( "first"    , uuid                 )
+        REL  . set                       ( "second"   , PUID                 )
+        REL  . set                       ( "t1"       , 158                  )
+        REL  . set                       ( "t2"       , T2                   )
+      ########################################################################
+      REL    . Join                      ( DB , RELTAB                       )
+    ##########################################################################
+    self     . AssureUuidNameByLocality  ( DB                              , \
+                                           NAMTAB                          , \
+                                           uuid                            , \
+                                           name                            , \
+                                           self . getLocality ( )            )
+    ##########################################################################
+    DB       . UnlockTables              (                                   )
+    DB       . Close                     (                                   )
+    ##########################################################################
+    self     . PrepareItemContent        ( item , uuid , name                )
+    self     . assignToolTip             ( item , str ( uuid )               )
     ##########################################################################
     return
   ############################################################################

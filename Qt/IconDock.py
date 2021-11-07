@@ -126,22 +126,32 @@ class IconDock           ( ListDock                                        ) :
     item . setIcon                    ( icon                                 )
     return
   ############################################################################
-  def PrepareItem                     ( self , UUID , NAME                 ) :
+  def PrepareItemContent              ( self , item , UUID , NAME          ) :
     ##########################################################################
-    FT   = self . iconFont            (                                      )
-    IT   = QListWidgetItem            (                                      )
+    FT     = self . iconFont          (                                      )
     if                                ( self . UsingName                   ) :
-      IT . setText                    ( NAME                                 )
-    IT   . setToolTip                 ( str ( UUID )                         )
-    IT   . setTextAlignment           ( Qt   . AlignCenter                   )
-    IT   . setData                    ( Qt   . UserRole , str ( UUID )       )
-    IT   . setIcon                    ( self . defaultIcon ( )               )
-    IT   . setFont                    ( FT                                   )
+      item . setText                  ( NAME                                 )
+    item   . setToolTip               ( str ( UUID )                         )
+    item   . setTextAlignment         ( Qt   . AlignCenter                   )
+    item   . setData                  ( Qt   . UserRole , str ( UUID )       )
+    item   . setIcon                  ( self . defaultIcon ( )               )
+    item   . setFont                  ( FT                                   )
     ##########################################################################
-    JSOX =                            { "Uuid" : UUID , "Name" : NAME        }
-    self . setItemJson                ( IT , JSOX                            )
+    JSOX   = self . itemJson          ( item                                 )
     ##########################################################################
-    return IT
+    JSOX [ "Uuid" ] = UUID
+    JSOX [ "Name" ] = NAME
+    ##########################################################################
+    self . setItemJson                ( item , JSOX                          )
+    ##########################################################################
+    return item
+  ############################################################################
+  def PrepareItem                     ( self ,        UUID , NAME          ) :
+    ##########################################################################
+    item = QListWidgetItem            (                                      )
+    self . setItemJson                ( item , { }                           )
+    ##########################################################################
+    return self . PrepareItemContent  ( self , item , UUID , NAME            )
   ############################################################################
   def PrepareEmptyItem                ( self                               ) :
     ##########################################################################
