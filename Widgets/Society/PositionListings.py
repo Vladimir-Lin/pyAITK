@@ -58,7 +58,7 @@ class PositionListings             ( TreeDock                              ) :
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
   emitAssignAmounts = pyqtSignal   ( str , int                               )
-  PeopleGroup       = pyqtSignal   ( int , str                               )
+  PeopleGroup       = pyqtSignal   ( str , int , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -743,7 +743,8 @@ class PositionListings             ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1201                            ) :
-      self . PeopleGroup   . emit  ( 40 , str ( uuid )                       )
+      head = atItem . text         ( 0                                       )
+      self . PeopleGroup   . emit  ( head , 66 , str ( uuid )                )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :

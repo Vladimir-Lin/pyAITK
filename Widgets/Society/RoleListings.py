@@ -58,7 +58,7 @@ class RoleListings                 ( TreeDock                              ) :
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
   emitAssignAmounts = pyqtSignal   ( str , int                               )
-  PeopleGroup       = pyqtSignal   ( int , str                               )
+  PeopleGroup       = pyqtSignal   ( str , int , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -746,13 +746,14 @@ class RoleListings                 ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1201                            ) :
-      self . PeopleGroup   . emit  ( 40 , str ( uuid )                       )
+      head = atItem . text         ( 0                                       )
+      self . PeopleGroup   . emit  ( head , 40 , str ( uuid )                )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Tasks" , uuid , NAM             )
+      self . EditAllNames          ( self , "Roles" , uuid , NAM             )
       return True
     ##########################################################################
     if                             ( at == 3001                            ) :
