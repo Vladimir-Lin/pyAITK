@@ -67,6 +67,7 @@ class VideoAlbumsView              ( IconDock                              ) :
   HavingMenu = 1371434312
   ############################################################################
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
+  GalleryGroup        = pyqtSignal ( str , int , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -444,11 +445,12 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
+    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
+    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
     if                             ( uuid > 0                              ) :
       mm   . addSeparator          (                                         )
       mm   . addAction             ( 1201 ,  TRX [ "UI::PersonalGallery"   ] )
+      mm   . addAction             ( 1202 ,  TRX [ "UI::Galleries"         ] )
     ##########################################################################
     mm     . addSeparator          (                                         )
     if                             ( atItem != None                        ) :
@@ -484,6 +486,16 @@ class VideoAlbumsView              ( IconDock                              ) :
       xsid = str                   ( uuid                                    )
       ########################################################################
       self . ShowPersonalGallery . emit ( text , 76 , xsid , icon            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1202                            ) :
+      ########################################################################
+      text = atItem . text         (                                         )
+      icon = atItem . icon         (                                         )
+      xsid = str                   ( uuid                                    )
+      ########################################################################
+      self . GalleryGroup . emit   ( text , 76 , xsid                        )
       ########################################################################
       return True
     ##########################################################################
