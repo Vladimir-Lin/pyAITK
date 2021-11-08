@@ -208,7 +208,7 @@ class ParameterQuery       (                                               ) :
     else                                                                     :
       QQ = self . UpdateId           ( Id , "data" , "%s"                    )
     ##########################################################################
-    return DB . mc . execute         ( QQ , BLOB                             )
+    return DB   . QueryValues        ( QQ , ( BLOB , )                       )
 ##############################################################################
 def GetParameterData     ( DB , PUID , Item , T , V , S                    ) :
   PQ = ParameterQuery    (                    T , V , S                      )
