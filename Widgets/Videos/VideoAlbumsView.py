@@ -500,7 +500,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
     if                             ( uuid > 0                              ) :
       mm   . addSeparator          (                                         )
