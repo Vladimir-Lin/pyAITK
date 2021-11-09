@@ -430,6 +430,8 @@ class VideoAlbumsView              ( IconDock                              ) :
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
+    self    . LoopRunning = False
+    ##########################################################################
     DB      = self . ConnectDB        (                                      )
     if                                ( DB == None                         ) :
       self . emitIconsShow . emit     (                                      )
@@ -445,6 +447,8 @@ class VideoAlbumsView              ( IconDock                              ) :
     self    . setVacancy              (                                      )
     ##########################################################################
     DB      . Close                   (                                      )
+    ##########################################################################
+    self    . LoopRunning = True
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
       self . emitIconsShow . emit     (                                      )
@@ -494,23 +498,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    T      = self . Total
-    MSG    = f"總影片量:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
-    ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    ## SIDB   . valueChanged . connect ( self . GotoId                          )
-    ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    ## SIDP   . valueChanged . connect ( self . AssignAmount                    )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
+    mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
     mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
@@ -532,12 +520,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
     ##########################################################################
-    SID    = SIDB . value          (                                         )
-    AMT    = SIDP . value          (                                         )
-    if ( ( SID != self . StartId ) or ( AMT != self . Amount ) )             :
-      ########################################################################
-      self . StartId = SID
-      self . Amount  = AMT
+    if                             ( self . RunAmountIndexMenu ( )         ) :
       ########################################################################
       self . clear                 (                                         )
       self . startup               (                                         )

@@ -49,8 +49,11 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from         . LineEdit               import LineEdit as LineEdit
-from         . ListDock               import ListDock as ListDock
+from         . MenuManager            import MenuManager as MenuManager
+from         . LineEdit               import LineEdit    as LineEdit
+from         . ComboBox               import ComboBox    as ComboBox
+from         . SpinBox                import SpinBox     as SpinBox
+from         . ListDock               import ListDock    as ListDock
 ##############################################################################
 class IconDock           ( ListDock                                        ) :
   ############################################################################
@@ -66,6 +69,12 @@ class IconDock           ( ListDock                                        ) :
     self . IconFont      = None
     self . UsingName     = True
     self . SortOrder     = "asc"
+    self . Total         = 0
+    self . StartId       = 0
+    self . Amount        = 60
+    self . LoopRunning   = True
+    self . SpinStartId   = None
+    self . SpinAmount    = None
     self . UuidItemMaps  =          {                                        }
     ##########################################################################
     self . setViewMode              ( QListView . IconMode                   )
@@ -247,6 +256,8 @@ class IconDock           ( ListDock                                        ) :
       return
     ##########################################################################
     for U in UUIDs                                                           :
+      if                              ( not self . LoopRunning             ) :
+        continue
       if                              ( U in self . UuidItemMaps           ) :
         item = self . UuidItemMaps    [ U                                    ]
         PUID = self . GetUuidIcon     ( DB , U                               )
@@ -284,6 +295,64 @@ class IconDock           ( ListDock                                        ) :
       return True
     ##########################################################################
     return   False
+  ############################################################################
+  def AmountIndexMenu                 ( self , mm                          ) :
+    ##########################################################################
+    T    = self . Total
+    MSG  = self . getMenuItem         ( "Total"                              )
+    SSI  = self . getMenuItem         ( "SpinStartId"                        )
+    SSA  = self . getMenuItem         ( "SpinAmount"                         )
+    MSG  = MSG . format               ( T                                    )
+    ##########################################################################
+    mm   . addAction                  ( 9999991 , MSG                        )
+    ##########################################################################
+    self . SpinStartId = SpinBox      ( None , self . PlanFunc               )
+    self . SpinStartId . setPrefix    ( SSI                                  )
+    self . SpinStartId . setRange     ( 0 , self . Total                     )
+    self . SpinStartId . setValue     ( self . StartId                       )
+    self . SpinStartId . setAlignment ( Qt . AlignRight                      )
+    mm   . addWidget                  ( 9999992 , self . SpinStartId         )
+    ##########################################################################
+    self . SpinAmount  = SpinBox      ( None , self . PlanFunc               )
+    self . SpinAmount  . setPrefix    ( SSA                                  )
+    self . SpinAmount  . setRange     ( 0 , self . Total                     )
+    self . SpinAmount  . setValue     ( self . Amount                        )
+    self . SpinAmount  . setAlignment ( Qt . AlignRight                      )
+    mm   . addWidget                  ( 9999993 , self . SpinAmount          )
+    ##########################################################################
+    mm   . addSeparator               (                                      )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunAmountIndexMenu                ( self                             ) :
+    ##########################################################################
+    if                                  ( self . SpinStartId == None       ) :
+      return False
+    ##########################################################################
+    if                                  ( self . SpinAmount  == None       ) :
+      return False
+    ##########################################################################
+    SID    = self . SpinStartId . value (                                    )
+    AMT    = self . SpinAmount  . value (                                    )
+    ##########################################################################
+    self . SpinStartId = None
+    self . SpinAmount  = None
+    ##########################################################################
+    if ( ( SID != self . StartId ) or ( AMT != self . Amount ) )             :
+      ########################################################################
+      self . StartId = SID
+      self . Amount  = AMT
+      ########################################################################
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
+  def Shutdown                ( self                                       ) :
+    ##########################################################################
+    self . LoopRunning = False
+    self . Leave . emit       ( self                                         )
+    ##########################################################################
+    return True
   ############################################################################
   @pyqtSlot                           (        dict                          )
   def refresh                         ( self , JSON                        ) :
@@ -340,6 +409,8 @@ class IconDock           ( ListDock                                        ) :
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
+    self    . LoopRunning = False
+    ##########################################################################
     DB      = self . ConnectDB        (                                      )
     if                                ( DB == None                         ) :
       self . emitIconsShow . emit     (                                      )
@@ -355,6 +426,8 @@ class IconDock           ( ListDock                                        ) :
     self    . setVacancy              (                                      )
     ##########################################################################
     DB      . Close                   (                                      )
+    ##########################################################################
+    self    . LoopRunning = True
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
       self . emitIconsShow . emit     (                                      )
