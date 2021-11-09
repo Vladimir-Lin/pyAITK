@@ -298,8 +298,9 @@ class IconDock           ( ListDock                                        ) :
   ############################################################################
   def AppendRefreshAction             ( self , mm , Id                     ) :
     ##########################################################################
-    icon = QIcon                      ( ":/images/reload.png"                )
+    TRX  = self . Translations
     msg  = TRX                        [ "UI::Refresh"                        ]
+    icon = QIcon                      ( ":/images/reload.png"                )
     mm   . addActionWithIcon          ( Id , icon , msg                      )
     ##########################################################################
     return mm
