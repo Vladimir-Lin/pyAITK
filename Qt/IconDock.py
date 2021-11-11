@@ -251,6 +251,8 @@ class IconDock           ( ListDock                                        ) :
     if                                ( len ( UUIDs ) <= 0                 ) :
       return
     ##########################################################################
+    FMT     = self . Translations     [ "UI::LoadIcon"                       ]
+    ##########################################################################
     DB      = self . ConnectDB        ( True                                 )
     if                                ( DB == None                         ) :
       return
@@ -262,11 +264,22 @@ class IconDock           ( ListDock                                        ) :
         item = self . UuidItemMaps    [ U                                    ]
         PUID = self . GetUuidIcon     ( DB , U                               )
         if                            ( PUID > 0                           ) :
+          ####################################################################
+          JSOX = self . itemJson      ( item                                 )
+          if                          ( "Name" in JSOX                     ) :
+            title = JSOX              [ "Name"                               ]
+            if                        ( len ( title ) > 0                  ) :
+              MSG = FMT . format      ( title                                )
+              self . ShowStatus       ( MSG                                  )
+          ####################################################################
           icon = self . FetchIcon     ( DB , PUID                            )
           if                          ( icon != None                       ) :
             self . emitAssignIcon . emit ( item , icon                       )
     ##########################################################################
     DB      . Close                   (                                      )
+    ##########################################################################
+    self    . Notify                  ( 2                                    )
+    self    . ShowStatus              ( ""                                   )
     ##########################################################################
     return
   ############################################################################
@@ -301,6 +314,15 @@ class IconDock           ( ListDock                                        ) :
     TRX  = self . Translations
     msg  = TRX                        [ "UI::Refresh"                        ]
     icon = QIcon                      ( ":/images/reload.png"                )
+    mm   . addActionWithIcon          ( Id , icon , msg                      )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def AppendInsertAction              ( self , mm , Id                     ) :
+    ##########################################################################
+    TRX  = self . Translations
+    msg  = TRX                        [ "UI::Insert"                         ]
+    icon = QIcon                      ( ":/images/plus.png"                  )
     mm   . addActionWithIcon          ( Id , icon , msg                      )
     ##########################################################################
     return mm
@@ -425,6 +447,11 @@ class IconDock           ( ListDock                                        ) :
       self . emitIconsShow . emit     (                                      )
       return
     ##########################################################################
+    self    . Notify                  ( 3                                    )
+    ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
     self    . setBustle               (                                      )
     ##########################################################################
     self    . FetchSessionInformation ( DB                                   )
@@ -433,20 +460,21 @@ class IconDock           ( ListDock                                        ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     self    . setVacancy              (                                      )
-    ##########################################################################
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     self    . LoopRunning = True
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
-      self . emitIconsShow . emit     (                                      )
+      self  . emitIconsShow . emit    (                                      )
     ##########################################################################
     JSON               =              {                                      }
     JSON   [ "UUIDs" ] = UUIDs
     if                                ( self . UsingName                   ) :
       JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
-    self   . emitAllIcons . emit      ( JSON                                 )
+    self    . Notify                  ( 0                                    )
+    self    . emitAllIcons . emit     ( JSON                                 )
     ##########################################################################
     return
   ############################################################################
