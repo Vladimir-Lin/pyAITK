@@ -17,27 +17,6 @@ import speech_recognition                           as     vrt
 ##############################################################################
 from   AITK  . Calendars . StarDate import StarDate as StarDate
 ##############################################################################
-"""
-def SplitVoiceByWords ( wave , chunkHeader , settings = { } ) :
-  sound_file = AudioSegment . from_wav ( wave )
-  silence    =  1000
-  thresh     = -16
-  lastest    = -1
-  if ( "silence" in settings ) :
-    silence = settings [ "silence" ]
-  if ( "thresh" in settings ) :
-    thresh = settings [ "thresh" ]
-  audio_chunks = split_on_silence            (
-                   sound_file                ,
-                   min_silence_len = silence ,
-                   silence_thresh  = thresh  )
-  for i , chunk in enumerate ( audio_chunks ) :
-    lastest  = i + 1
-    out_file = "{0}-{1}.wav" . format ( chunkHeader , lastest )
-    chunk . export ( out_file , format = "wav" )
-  return lastest
-"""
-##############################################################################
 class Recognizer         (                                                 ) :
   ############################################################################
   def __init__           ( self , Engine = 1                               ) :

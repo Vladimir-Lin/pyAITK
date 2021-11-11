@@ -47,6 +47,7 @@ from   PyQt5 . QtWidgets                 import QSpinBox
 from   AITK  . Calendars . StarDate      import StarDate      as StarDate
 ##############################################################################
 from   AITK  . Qt        . MenuManager   import MenuManager   as MenuManager
+from   AITK  . Qt        . SpinBox       import SpinBox       as SpinBox
 from   AITK  . Qt        . PlainTextEdit import PlainTextEdit as PlainTextEdit
 ##############################################################################
 class VoiceTracker         ( PlainTextEdit                                 ) :
@@ -274,52 +275,18 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     ##########################################################################
     return True
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def TextingMenu               ( self , mm                                ) :
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
-      return False
+    TRX = self . Translations
+    LOM = mm   . addMenu        (              TRX [ "UI::Texting"         ] )
     ##########################################################################
-    mm     = MenuManager           ( self                                    )
+    mm  . addActionFromMenu     ( LOM , 1001 , TRX [ "UI::ClearAll"        ] )
+    mm  . addActionFromMenu     ( LOM , 1002 , TRX [ "UI::CopyToClipboard" ] )
+    mm  . addActionFromMenu     ( LOM , 1003 , TRX [ "UI::SelectAll"       ] )
     ##########################################################################
-    TRX    = self . Translations
-    ##########################################################################
-    mm     . addAction             ( 1001 , "清除全部" )
-    mm     . addAction             ( 1002 , "複製" )
-    mm     . addAction             ( 1003 , "選取全部" )
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     . addAction             ( 1004 , "放大" )
-    mm     . addAction             ( 1005 , "縮小" )
-    mm     . addSeparator          (                                         )
-    mm     . addAction             ( 1101 , "重新載入語音命令" )
-    mm     . addAction             ( 1102 , "報告語音命令列表" )
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     . addAction             ( 2001                                  , \
-                                     TRX [ "UI::Execution" ]               , \
-                                     True                                  , \
-                                     self . DoExecution                      )
-    if                             ( self . Recognizer != None             ) :
-      mm   . addAction             ( 2002                                  , \
-                                     "語音活動偵測" , \
-                                     True                                  , \
-                                     self . DoSplit                          )
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     = self . LocalityMenu   ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
-    ##########################################################################
-    self   . Notify                ( 0                                       )
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
-    at     = mm . at               ( aa                                      )
-    ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
-      return True
-    ##########################################################################
-    if                             ( self . RunLocality  ( at      )       ) :
-      return True
+    return mm
+  ############################################################################
+  def RunTextingMenu               ( self , at                             ) :
     ##########################################################################
     if                             ( at == 1001                            ) :
       self . clear                 (                                         )
@@ -333,12 +300,133 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
       self . selectAll             (                                         )
       return True
     ##########################################################################
+    return False
+  ############################################################################
+  def DisplayMenu               ( self , mm                                ) :
+    ##########################################################################
+    TRX = self . Translations
+    LOM = mm   . addMenu        (              TRX [ "UI::Display"         ] )
+    ##########################################################################
+    mm  . addActionFromMenu     ( LOM , 1004 , TRX [ "UI::ZoomIn"          ] )
+    mm  . addActionFromMenu     ( LOM , 1005 , TRX [ "UI::ZoomOut"         ] )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunDisplayMenu               ( self , at                             ) :
+    ##########################################################################
     if                             ( at == 1004                            ) :
       self . ZoomIn                (                                         )
       return True
     ##########################################################################
     if                             ( at == 1005                            ) :
       self . ZoomOut               (                                         )
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def ParametersMenu                  ( self , mm                          ) :
+    ##########################################################################
+    if                                ( self . Recognizer == None          ) :
+      return mm
+    ##########################################################################
+    FNT  = self . font                (                                      )
+    FNT  . setPointSize               ( 10                                   )
+    ##########################################################################
+    VTM  = self . getMenuItem         ( "MaxVoice"                           )
+    VTS  = self . getMenuItem         ( "Silence"                            )
+    VTT  = self . getMenuItem         ( "Thresh"                             )
+    LOM  = mm   . addMenu             ( self . getMenuItem ( "Parameters" )  )
+    ##########################################################################
+    SS   = int                        ( self . Recognizer . Phrase / 1000    )
+    self . SpinPhrase  = SpinBox      ( None , self . PlanFunc               )
+    self . SpinPhrase  . setFont      ( FNT                                  )
+    self . SpinPhrase  . setPrefix    ( VTM                                  )
+    self . SpinPhrase  . setSuffix    ( " s"                                 )
+    self . SpinPhrase  . setRange     ( 1 , 60                               )
+    self . SpinPhrase  . setValue     ( SS                                   )
+    self . SpinPhrase  . setAlignment ( Qt . AlignRight                      )
+    mm   . addWidgetWithMenu          ( LOM , 9199991 , self . SpinPhrase    )
+    ##########################################################################
+    self . SpinSilence = SpinBox      ( None , self . PlanFunc               )
+    self . SpinSilence . setFont      ( FNT                                  )
+    self . SpinSilence . setPrefix    ( VTS                                  )
+    self . SpinSilence . setSuffix    ( " ms"                                )
+    self . SpinSilence . setRange     ( 100 , 10000                          )
+    self . SpinSilence . setValue     ( self . Recognizer . Silence          )
+    self . SpinSilence . setAlignment ( Qt . AlignRight                      )
+    mm   . addWidgetWithMenu          ( LOM , 9199992 , self . SpinSilence   )
+    ##########################################################################
+    self . SpinThresh  = SpinBox      ( None , self . PlanFunc               )
+    self . SpinThresh  . setFont      ( FNT                                  )
+    self . SpinThresh  . setPrefix    ( VTT                                  )
+    self . SpinThresh  . setSuffix    ( " dB"                                )
+    self . SpinThresh  . setRange     ( -100 , 100                           )
+    self . SpinThresh  . setValue     ( self . Recognizer . Thresh           )
+    self . SpinThresh  . setAlignment ( Qt . AlignRight                      )
+    mm   . addWidgetWithMenu          ( LOM , 9199993 , self . SpinThresh    )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunParametersMenu               ( self , at                          ) :
+    ##########################################################################
+    if                                ( self . Recognizer == None          ) :
+      return False
+    ##########################################################################
+    self . Recognizer . Phrase  = int ( self . SpinPhrase . value ( ) * 1000 )
+    self . Recognizer . Silence = self . SpinSilence . value (               )
+    self . Recognizer . Thresh  = self . SpinThresh  . value (               )
+    ##########################################################################
+    return False
+  ############################################################################
+  def Menu                         ( self , pos                            ) :
+    ##########################################################################
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
+    mm     = MenuManager           ( self                                    )
+    ##########################################################################
+    TRX    = self . Translations
+    ##########################################################################
+    mm     = self . ParametersMenu ( mm                                      )
+    mm     = self . TextingMenu    ( mm                                      )
+    mm     = self . DisplayMenu    ( mm                                      )
+    mm     . addSeparator          (                                         )
+    MSG    = self . getMenuItem    ( "ReloadCommands"                        )
+    mm     . addAction             ( 1101 , MSG                              )
+    MSG    = self . getMenuItem    ( "ReportCommands"                        )
+    mm     . addAction             ( 1102 , MSG                              )
+    mm     . addSeparator          (                                         )
+    ##########################################################################
+    mm     . addAction             ( 2001                                  , \
+                                     TRX [ "UI::Execution" ]               , \
+                                     True                                  , \
+                                     self . DoExecution                      )
+    if                             ( self . Recognizer != None             ) :
+      MSG  = self . getMenuItem    ( "VAD"                                   )
+      mm   . addAction             ( 2002 , MSG , True , self . DoSplit      )
+    mm     . addSeparator          (                                         )
+    ##########################################################################
+    mm     = self . LocalityMenu   ( mm                                      )
+    self   . DockingMenu           ( mm                                      )
+    ##########################################################################
+    self   . Notify                ( 0                                       )
+    mm     . setFont               ( self    . font ( )                      )
+    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    at     = mm . at               ( aa                                      )
+    ##########################################################################
+    self . RunParametersMenu       ( at                                      )
+    ##########################################################################
+    if                             ( self . RunTextingMenu ( at      )     ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunDisplayMenu ( at      )     ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunDocking     ( mm , aa )     ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunLocality    ( at      )     ) :
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
