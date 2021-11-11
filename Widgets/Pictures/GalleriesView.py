@@ -119,7 +119,7 @@ class GalleriesView                ( IconDock                              ) :
     RELTAB = self . Tables       [ "Relation"                                ]
     REL    = Relation            (                                           )
     REL    . set                 ( "first" , Uuid                            )
-    REL    . setT1               ( "People"                                  )
+    REL    . setT1               ( "Gallery"                                 )
     REL    . setT2               ( "Picture"                                 )
     REL    . setRelation         ( "Using"                                   )
     ##########################################################################
@@ -163,9 +163,12 @@ class GalleriesView                ( IconDock                              ) :
     SID    = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getGroupOrder (                                          )
-    QQ     = f"select `uuid` from {TABLE} where ( `used` = 1 ) order by `id` {ORDER} limit {SID} , {AMOUNT} ;"
+    QQ     = f"""select `uuid` from {TABLE}
+                 where ( `used` = 1 )
+                 order by `id` {ORDER}
+                 limit {SID} , {AMOUNT} ;"""
     ##########################################################################
-    return QQ
+    return " " . join             ( QQ . split ( )                           )
   ############################################################################
   def ObtainSubgroupUuids      ( self , DB                                 ) :
     ##########################################################################
@@ -424,25 +427,9 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    T      = self . Total
-    MSG    = f"總圖庫量:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
+    mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    SIDB   . valueChanged . connect ( self . GotoId                          )
-    ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    SIDP   . valueChanged . connect ( self . AssignAmount                    )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
     if                             ( uuid > 0                              ) :
       mm   . addSeparator          (                                         )
@@ -460,6 +447,13 @@ class GalleriesView                ( IconDock                              ) :
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunAmountIndexMenu ( )         ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
