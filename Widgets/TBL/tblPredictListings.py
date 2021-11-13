@@ -61,10 +61,9 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     super ( ) . __init__            (        parent        , plan            )
     ##########################################################################
-    self . Total     = 0
-    self . StartId   = 0
-    self . Amount    = 28
-    self . SortOrder = "desc"
+    self . Serial             = ""
+    self . Prediction         = ""
+    self . Bettings           = [                                            ]
     ##########################################################################
     self . dockingOrientation = Qt . Horizontal
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -73,7 +72,7 @@ class tblPredictListings            ( TreeDock                             ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount           ( 10                                     )
+    self . setColumnCount           ( 9                                      )
     self . setRootIsDecorated       ( False                                  )
     self . setAlternatingRowColors  ( True                                   )
     ##########################################################################
@@ -94,7 +93,7 @@ class tblPredictListings            ( TreeDock                             ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 640                              )
+    return QSize                   ( 560 , 800                               )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -103,15 +102,9 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
     self . LinkAction              ( "Refresh"    , self . startup           )
-    ##########################################################################
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
-    ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction              ( "SelectAll"  , self . PickAll           )
+    self . LinkAction              ( "SelectNone" , self . PickNone          )
     ##########################################################################
     return True
   ############################################################################
@@ -133,47 +126,36 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , RECORD                           ) :
+  def PrepareItem                ( self , Id , RECORD , Checked            ) :
     ##########################################################################
-    SERIAL  = RECORD             [  0                                        ]
-    YEAR    = RECORD             [  1                                        ]
-    MONTH   = RECORD             [  2                                        ]
-    DAY     = RECORD             [  3                                        ]
-    N1      = RECORD             [  4                                        ]
-    N2      = RECORD             [  5                                        ]
-    N3      = RECORD             [  6                                        ]
-    N4      = RECORD             [  7                                        ]
-    N5      = RECORD             [  8                                        ]
-    N6      = RECORD             [  9                                        ]
-    SPECIAL = RECORD             [ 10                                        ]
+    if                           ( Checked                                 ) :
+      PICK  = Qt . Checked
+    else                                                                     :
+      PICK  = Qt . Unchecked
     ##########################################################################
-    MM      = str                ( MONTH                                     )
-    DD      = str                ( DAY                                       )
-    if                           ( len ( MM ) == 1                         ) :
-      MM    = f"0{MM}"
-    if                           ( len ( DD ) == 1                         ) :
-      DD    = f"0{DD}"
-    ##########################################################################
-    DATE    = f"{YEAR}/{MM}/{DD}"
+    N1      = RECORD             [  0                                        ]
+    N2      = RECORD             [  1                                        ]
+    N3      = RECORD             [  2                                        ]
+    N4      = RECORD             [  3                                        ]
+    N5      = RECORD             [  4                                        ]
+    N6      = RECORD             [  5                                        ]
     ##########################################################################
     IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , DATE                                  )
-    IT   . setText               ( 1 , str ( SERIAL  )                       )
+    IT   . setCheckState         ( 0 , PICK                                  )
+    IT   . setText               ( 1 , str ( Id )                            )
     IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
-    IT   . setText               ( 2 , str ( N1      )                       )
+    IT   . setText               ( 2 , str ( N1 )                            )
     IT   . setTextAlignment      ( 2 , Qt.AlignRight                         )
-    IT   . setText               ( 3 , str ( N2      )                       )
+    IT   . setText               ( 3 , str ( N2 )                            )
     IT   . setTextAlignment      ( 3 , Qt.AlignRight                         )
-    IT   . setText               ( 4 , str ( N3      )                       )
+    IT   . setText               ( 4 , str ( N3 )                            )
     IT   . setTextAlignment      ( 4 , Qt.AlignRight                         )
-    IT   . setText               ( 5 , str ( N4      )                       )
+    IT   . setText               ( 5 , str ( N4 )                            )
     IT   . setTextAlignment      ( 5 , Qt.AlignRight                         )
-    IT   . setText               ( 6 , str ( N5      )                       )
+    IT   . setText               ( 6 , str ( N5 )                            )
     IT   . setTextAlignment      ( 6 , Qt.AlignRight                         )
-    IT   . setText               ( 7 , str ( N6      )                       )
+    IT   . setText               ( 7 , str ( N6 )                            )
     IT   . setTextAlignment      ( 7 , Qt.AlignRight                         )
-    IT   . setText               ( 8 , str ( SPECIAL )                       )
-    IT   . setTextAlignment      ( 8 , Qt.AlignRight                         )
     ##########################################################################
     return IT
   ############################################################################
@@ -182,10 +164,12 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     self   . clear              (                                            )
     ##########################################################################
-    for R in RECORDs                                                         :
+    for i , R in enumerate      ( RECORDs                                  ) :
       ########################################################################
-      IT   = self . PrepareItem ( R                                          )
+      IT   = self . PrepareItem ( i + 1 , R , True                           )
       self . addTopLevelItem    ( IT                                         )
+    ##########################################################################
+    self . Bettings = RECORDs
     ##########################################################################
     return
   ############################################################################
@@ -195,34 +179,56 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     TBLTAB  = self . Tables           [ "Main"                               ]
     ##########################################################################
-    QQ      = f"select count(*) from {TBLTAB} ;"
+    QQ      = f"""select `serial` from {TBLTAB}
+                  order by `id` desc
+                  limit 0 , 1 ;"""
+    QQ      = " " . join              ( QQ . split ( )                       )
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
     if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    self    . Serial     = str        ( RR [ 0 ]                             )
+    ##########################################################################
+    NOW     = StarDate                (                                      )
+    NOW     . Now                     (                                      )
+    YY      = NOW . toDateString      ( "Asia/Taipei" , "%Y"                 )
+    YY      = int                     ( YY                                   )
+    ##########################################################################
+    SERIAL  = int                     ( self . Serial                        )
+    NO      = int                     ( SERIAL                               )
+    YEAR    = int                     ( NO / 1000000                         )
+    YAD     = int                     ( YEAR + 1911                          )
+    NO      = int                     ( NO % 1000                            )
+    ##########################################################################
+    if                                ( YAD == YY                          ) :
+      NO    = NO + 1
+    else                                                                     :
+      YEAR  = int                     ( YY - 1911                            )
+      NO    = 1
+    ##########################################################################
+    PREDICT = int                     ( int ( YEAR * 1000000 ) + NO          )
+    self    . Prediction = str        ( PREDICT                              )
     ##########################################################################
     return
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TBLTAB  = self . Tables   [ "Main"                                       ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
+    TBLTAB  = self . Tables   [ "Bettings"                                   ]
+    SERIAL  = self . Prediction
     ##########################################################################
-    QQ      = f"""select `serial`,
-                         `year`,`month`,`day`,
-                         `n1`,`n2`,`n3`,`n4`,`n5`,`n6`,`special`
-                  from {TBLTAB}
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ      = f"""select `n1`,`n2`,`n3`,`n4`,`n5`,`n6` from {TBLTAB}
+                  where ( `serial` = '{SERIAL}' )
+                  order by `id` asc ;"""
     ##########################################################################
     return " " . join         ( QQ . split ( )                               )
   ############################################################################
-  def ObtainsHistory                  ( self , DB                          ) :
+  def ObtainsPrediction               ( self , DB                          ) :
+    ##########################################################################
+    SERIAL  = self . Prediction
+    if                                ( len ( SERIAL ) <= 0                ) :
+      return                          [                                      ]
     ##########################################################################
     QQ      = self . ObtainUuidsQuery (                                      )
     DB      . Query                   ( QQ                                   )
@@ -233,25 +239,25 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return RECORDs
   ############################################################################
-  def loading                         ( self                               ) :
+  def loading                          ( self                              ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
+    DB      = self . ConnectDB         (                                     )
+    if                                 ( DB == None                        ) :
       return
     ##########################################################################
-    self    . ObtainsInformation      ( DB                                   )
-    RECORDs = self . ObtainsHistory   ( DB                                   )
+    self    . ObtainsInformation       ( DB                                  )
+    RECORDs = self . ObtainsPrediction ( DB                                  )
     ##########################################################################
-    DB      . Close                   (                                      )
+    DB      . Close                    (                                     )
     ##########################################################################
-    if                                ( len ( RECORDs ) <= 0               ) :
+    if                                 ( len ( RECORDs ) <= 0              ) :
       return
     ##########################################################################
-    self    . emitAllHistory . emit   ( RECORDs                              )
+    self    . emitAllHistory . emit    ( RECORDs                             )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
+  @pyqtSlot                      (                                           )
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -263,9 +269,9 @@ class tblPredictListings            ( TreeDock                             ) :
   ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
+    IDPMSG = self . Translations [ "Docking" ] [ "None"                      ]
+    DCKMSG = self . Translations [ "Docking" ] [ "Dock"                      ]
+    MDIMSG = self . Translations [ "Docking" ] [ "MDI"                       ]
     ##########################################################################
     self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
     self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
@@ -280,56 +286,17 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def Prepare                     ( self                                   ) :
+  def Prepare                 ( self                                       ) :
     ##########################################################################
-    self . setColumnWidth         ( 9 , 3                                    )
+    self   . setColumnWidth   ( 0 ,  3                                       )
+    self   . setColumnWidth   ( 8 ,  3                                       )
+    for i in range            ( 1 ,  8                                     ) :
+      self . setColumnWidth   ( i , 60                                       )
     ##########################################################################
     TRX  = self . Translations
-    self . setCentralLabels       ( TRX [ "TBL" ] [ "History" ] [ "Labels" ] )
+    self . setCentralLabels   ( TRX [ "TBL" ] [ "Predictions" ] [ "Labels" ] )
     ##########################################################################
-    self . setPrepared            ( True                                     )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    self . setPrepared        ( True                                         )
     ##########################################################################
     return
   ############################################################################
@@ -341,6 +308,52 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     ##########################################################################
     return
+  ############################################################################
+  def PredictBettings            ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateBettings             ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def PickAll                    ( self                                    ) :
+    ##########################################################################
+    for i in range               ( 0 , self . topLevelItemCount ( )        ) :
+      IT  = self . topLevelItem  ( i                                         )
+      IT  . setCheckState        ( 0 , Qt . Checked                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def PickNone                     ( self                                  ) :
+    ##########################################################################
+    for i in range               ( 0 , self . topLevelItemCount ( )        ) :
+      IT  = self . topLevelItem  ( i                                         )
+      IT  . setCheckState        ( 0 , Qt . Unchecked                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def PredictionMenu               ( self , mm                             ) :
+    ##########################################################################
+    TRX    = self  . Translations
+    LOM    = mm    . addMenu       ( "預測參數" )
+    ##########################################################################
+    hid    =                       ( self . SortOrder == "asc"               )
+    msg    = TRX                   [ "UI::SortAsc"                           ]
+    mm     . addActionFromMenu     ( LOM , 20000001 , msg , True , hid       )
+    ##########################################################################
+    hid    =                       ( self . SortOrder == "desc"              )
+    msg    = TRX                   [ "UI::SortDesc"                          ]
+    mm     . addActionFromMenu     ( LOM , 20000002 , msg , True , hid       )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunPredictionMenu            ( self , atId                           ) :
+    ##########################################################################
+    ##########################################################################
+    return   False
   ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
@@ -357,39 +370,67 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    mm     . addAction              ( 1001 ,  TRX [ "UI::Refresh"          ] )
+    SERL   = LineEdit               ( None , self . PlanFunc                 )
+    SERL   . setText                ( self . Prediction                      )
+    mm     . addWidget              ( 9999991 , SERL                         )
     ##########################################################################
     mm     . addSeparator           (                                        )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    mm     . addAction              ( 1002 , "預測投注" )
+    mm     . addAction              ( 1003 , "更新投注" )
+    mm     . addAction              ( 1004 , "全部選取" )
+    mm     . addAction              ( 1005 , "全部不選" )
     ##########################################################################
-    mm     = self . SortingMenu     ( mm                                     )
+    mm     = self . PredictionMenu  ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
     mm     . setFont                ( self    . font ( )                     )
     aa     = mm . exec_             ( QCursor . pos  ( )                     )
     at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                              ( self . RunAmountIndexMenu (        ) ) :
+    RR     = SERL . text            (                                        )
+    if                              ( RR != self . Prediction              ) :
       ########################################################################
+      self . Prediction = RR
       self . clear                  (                                        )
       self . startup                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( self . RunSortingMenu ( at         ) ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
+    if                              ( self . RunPredictionMenu ( at      ) ) :
       return True
     ##########################################################################
-    if                              ( self . RunDocking     ( mm , aa    ) ) :
+    if                              ( self . RunDocking        ( mm , aa ) ) :
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :
       ########################################################################
       self . clear                  (                                        )
       self . startup                (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 1002                           ) :
+      ########################################################################
+      self . PredictBettings        (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 1003                           ) :
+      ########################################################################
+      self . UpdateBettings         (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 1004                           ) :
+      ########################################################################
+      self . PickAll                (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 1005                           ) :
+      ########################################################################
+      self . PickNone               (                                        )
       ########################################################################
       return True
     ##########################################################################
