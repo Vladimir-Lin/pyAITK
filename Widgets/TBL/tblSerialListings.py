@@ -26,6 +26,8 @@ from   PyQt5 . QtCore                 import QSize
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QBrush
+from   PyQt5 . QtGui                  import QColor
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -55,7 +57,7 @@ class tblSerialListings             ( TreeDock                             ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  emitAllHistory = pyqtSignal       ( list                                   )
+  emitBettings = pyqtSignal         ( list                                   )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
@@ -65,15 +67,18 @@ class tblSerialListings             ( TreeDock                             ) :
     self . StartId   = 0
     self . Amount    = 28
     self . SortOrder = "desc"
+    self . Serial    = ""
+    self . Six       =              [                                        ]
+    self . Special   =              [                                        ]
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
-    self . dockingPlace       = Qt . RightDockWidgetArea
+    self . dockingOrientation = Qt . Horizontal
+    self . dockingPlace       = Qt . BottomDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount           ( 10                                     )
+    self . setColumnCount           ( 11                                     )
     self . setRootIsDecorated       ( False                                  )
     self . setAlternatingRowColors  ( True                                   )
     ##########################################################################
@@ -82,7 +87,7 @@ class tblSerialListings             ( TreeDock                             ) :
     ##########################################################################
     self . assignSelectionMode      ( "ContiguousSelection"                  )
     ##########################################################################
-    self . emitAllHistory . connect ( self . refresh                         )
+    self . emitBettings . connect   ( self . refresh                         )
     ##########################################################################
     self . setFunction              ( self . FunctionDocking , True          )
     self . setFunction              ( self . HavingMenu      , True          )
@@ -94,7 +99,7 @@ class tblSerialListings             ( TreeDock                             ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 640                              )
+    return QSize                   ( 840 , 640                               )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -105,10 +110,6 @@ class tblSerialListings             ( TreeDock                             ) :
     self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
     ##########################################################################
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
@@ -133,125 +134,139 @@ class tblSerialListings             ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , RECORD                           ) :
+  def MatchBall                    ( self , item , column , ball           ) :
     ##########################################################################
-    SERIAL  = RECORD             [  0                                        ]
-    YEAR    = RECORD             [  1                                        ]
-    MONTH   = RECORD             [  2                                        ]
-    DAY     = RECORD             [  3                                        ]
-    N1      = RECORD             [  4                                        ]
-    N2      = RECORD             [  5                                        ]
-    N3      = RECORD             [  6                                        ]
-    N4      = RECORD             [  7                                        ]
-    N5      = RECORD             [  8                                        ]
-    N6      = RECORD             [  9                                        ]
-    SPECIAL = RECORD             [ 10                                        ]
+    if                             ( ball in self . Special                ) :
+      C     = QColor               (   0 ,   0 , 255                         )
+      item  . setForeground        ( column , QBrush ( C )                   )
     ##########################################################################
-    MM      = str                ( MONTH                                     )
-    DD      = str                ( DAY                                       )
-    if                           ( len ( MM ) == 1                         ) :
-      MM    = f"0{MM}"
-    if                           ( len ( DD ) == 1                         ) :
-      DD    = f"0{DD}"
+    if                             ( ball in self . Six                    ) :
+      C     = QColor               ( 255 ,   0 ,   0                         )
+      item  . setForeground        ( column , QBrush ( C )                   )
     ##########################################################################
-    DATE    = f"{YEAR}/{MM}/{DD}"
+    return
+  ############################################################################
+  def PrepareItem                  ( self , Id , BETTING                   ) :
     ##########################################################################
-    IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , DATE                                  )
-    IT   . setText               ( 1 , str ( SERIAL  )                       )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
-    IT   . setText               ( 2 , str ( N1      )                       )
-    IT   . setTextAlignment      ( 2 , Qt.AlignRight                         )
-    IT   . setText               ( 3 , str ( N2      )                       )
-    IT   . setTextAlignment      ( 3 , Qt.AlignRight                         )
-    IT   . setText               ( 4 , str ( N3      )                       )
-    IT   . setTextAlignment      ( 4 , Qt.AlignRight                         )
-    IT   . setText               ( 5 , str ( N4      )                       )
-    IT   . setTextAlignment      ( 5 , Qt.AlignRight                         )
-    IT   . setText               ( 6 , str ( N5      )                       )
-    IT   . setTextAlignment      ( 6 , Qt.AlignRight                         )
-    IT   . setText               ( 7 , str ( N6      )                       )
-    IT   . setTextAlignment      ( 7 , Qt.AlignRight                         )
-    IT   . setText               ( 8 , str ( SPECIAL )                       )
-    IT   . setTextAlignment      ( 8 , Qt.AlignRight                         )
+    POSITION = BETTING             [ 0                                       ]
+    N1       = BETTING             [ 1                                       ]
+    N2       = BETTING             [ 2                                       ]
+    N3       = BETTING             [ 3                                       ]
+    N4       = BETTING             [ 4                                       ]
+    N5       = BETTING             [ 5                                       ]
+    N6       = BETTING             [ 6                                       ]
+    TWD      = BETTING             [ 7                                       ]
+    RESULTS  = BETTING             [ 8                                       ]
+    EARNINGS = BETTING             [ 9                                       ]
+    ##########################################################################
+    POSITION = int                 ( POSITION                                )
+    RESULTS  = str                 ( RESULTS                                 )
+    REWARDS  = self . Translations [ "TBL" ] [ "Rewards" ] [ RESULTS         ]
+    ##########################################################################
+    IT       = QTreeWidgetItem     (                                         )
+    IT       . setText             ( 0 , str ( Id       )                    )
+    IT       . setTextAlignment    ( 0 , Qt.AlignRight                       )
+    IT       . setData             ( 0 , Qt . UserRole , POSITION            )
+    IT       . setText             ( 1 , str ( N1       )                    )
+    IT       . setTextAlignment    ( 1 , Qt.AlignRight                       )
+    self     . MatchBall           ( IT , 1 , int ( N1 )                     )
+    IT       . setText             ( 2 , str ( N2       )                    )
+    IT       . setTextAlignment    ( 2 , Qt.AlignRight                       )
+    self     . MatchBall           ( IT , 2 , int ( N2 )                     )
+    IT       . setText             ( 3 , str ( N3       )                    )
+    IT       . setTextAlignment    ( 3 , Qt.AlignRight                       )
+    self     . MatchBall           ( IT , 3 , int ( N3 )                     )
+    IT       . setText             ( 4 , str ( N4       )                    )
+    IT       . setTextAlignment    ( 4 , Qt.AlignRight                       )
+    self     . MatchBall           ( IT , 4 , int ( N4 )                     )
+    IT       . setText             ( 5 , str ( N5       )                    )
+    IT       . setTextAlignment    ( 5 , Qt.AlignRight                       )
+    self     . MatchBall           ( IT , 5 , int ( N5 )                     )
+    IT       . setText             ( 6 , str ( N6       )                    )
+    IT       . setTextAlignment    ( 6 , Qt.AlignRight                       )
+    self     . MatchBall           ( IT , 6 , int ( N6 )                     )
+    IT       . setText             ( 7 , str ( TWD      )                    )
+    IT       . setTextAlignment    ( 7 , Qt.AlignRight                       )
+    IT       . setText             ( 8 , str ( REWARDS  )                    )
+    IT       . setTextAlignment    ( 8 , Qt.AlignRight                       )
+    IT       . setText             ( 9 , str ( EARNINGS )                    )
+    IT       . setTextAlignment    ( 9 , Qt.AlignRight                       )
     ##########################################################################
     return IT
   ############################################################################
   @pyqtSlot                     (        list                                )
-  def refresh                   ( self , RECORDs                           ) :
+  def refresh                   ( self , BETTINGs                          ) :
     ##########################################################################
     self   . clear              (                                            )
     ##########################################################################
-    for R in RECORDs                                                         :
+    for i , B in enumerate      ( BETTINGs                                 ) :
       ########################################################################
-      IT   = self . PrepareItem ( R                                          )
+      IT   = self . PrepareItem ( i + 1 , B                                  )
       self . addTopLevelItem    ( IT                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
-    ##########################################################################
-    self    . Total = 0
-    ##########################################################################
-    TBLTAB  = self . Tables           [ "Main"                               ]
-    ##########################################################################
-    QQ      = f"select count(*) from {TBLTAB} ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
-    ##########################################################################
-    if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
-      return
-    ##########################################################################
-    self    . Total = RR              [ 0                                    ]
     ##########################################################################
     return
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TBLTAB  = self . Tables   [ "Main"                                       ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
+    TBLTAB  = self . Tables   [ "Bettings"                                   ]
+    SERIAL  = self . Serial
     ##########################################################################
-    QQ      = f"""select `serial`,
-                         `year`,`month`,`day`,
-                         `n1`,`n2`,`n3`,`n4`,`n5`,`n6`,`special`
+    QQ      = f"""select `id`,
+                         `n1`,`n2`,`n3`,`n4`,`n5`,`n6`,
+                         `twd`,`results`,`earnings`
                   from {TBLTAB}
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+                  where ( `serial` = '{SERIAL}' )
+                  order by `id` asc ;"""
     ##########################################################################
     return " " . join         ( QQ . split ( )                               )
   ############################################################################
-  def ObtainsHistory                  ( self , DB                          ) :
+  def ObtainsBettings                  ( self , DB                         ) :
     ##########################################################################
-    QQ      = self . ObtainUuidsQuery (                                      )
-    DB      . Query                   ( QQ                                   )
-    RECORDs = DB . FetchAll           (                                      )
+    QQ       = self . ObtainUuidsQuery (                                     )
+    DB       . Query                   ( QQ                                  )
+    BETTINGs = DB . FetchAll           (                                     )
     ##########################################################################
-    if ( RECORDs in [ False , None ] ) or ( len ( RECORDs ) <= 0 )           :
-      return                          [                                      ]
+    if ( BETTINGs in [ False , None ] ) or ( len ( BETTINGs ) <= 0 )         :
+      return                           [                                     ]
     ##########################################################################
-    return RECORDs
+    TBLTAB   = self . Tables           [ "Main"                              ]
+    SERIAL   = self . Serial
+    ##########################################################################
+    QQ       = f"""select `n1`,`n2`,`n3`,`n4`,`n5`,`n6`,`special`
+                   from {TBLTAB}
+                   where ( `serial` = '{SERIAL}' ) ;"""
+    ##########################################################################
+    DB       . Query                   ( QQ                                  )
+    RESULTS  = DB . FetchOne           (                                     )
+    ##########################################################################
+    if ( RESULTS in [ False , None ] ) or ( len ( RESULTS ) <= 0 )           :
+      return                           [                                     ]
+    ##########################################################################
+    for i in range                     ( 0 , 6                             ) :
+      self   . Six . append            ( int ( RESULTS [ i ] )               )
+    ##########################################################################
+    self     . Special . append        ( int ( RESULTS [ 6 ] )               )
+    ##########################################################################
+    return BETTINGs
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
+    DB       = self . ConnectDB       (                                      )
     if                                ( DB == None                         ) :
       return
     ##########################################################################
-    self    . ObtainsInformation      ( DB                                   )
-    RECORDs = self . ObtainsHistory   ( DB                                   )
+    BETTINGs = self . ObtainsBettings ( DB                                   )
     ##########################################################################
-    DB      . Close                   (                                      )
+    DB       . Close                  (                                      )
     ##########################################################################
-    if                                ( len ( RECORDs ) <= 0               ) :
+    if                                ( len ( BETTINGs ) <= 0              ) :
       return
     ##########################################################################
-    self    . emitAllHistory . emit   ( RECORDs                              )
+    self     . emitBettings . emit    ( BETTINGs                             )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
+  @pyqtSlot                      (                                           )
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -282,54 +297,18 @@ class tblSerialListings             ( TreeDock                             ) :
   ############################################################################
   def Prepare                     ( self                                   ) :
     ##########################################################################
-    self . setColumnWidth         ( 9 , 3                                    )
+    for i in range                (  0 ,   7                               ) :
+      self . setColumnWidth       (  i ,  60                                 )
     ##########################################################################
-    TRX  = self . Translations
-    self . setCentralLabels       ( TRX [ "TBL" ] [ "History" ] [ "Labels" ] )
+    self   . setColumnWidth       (  7 , 140                                 )
+    self   . setColumnWidth       (  8 , 100                                 )
+    self   . setColumnWidth       (  9 , 120                                 )
+    self   . setColumnWidth       ( 10 ,   3                                 )
     ##########################################################################
-    self . setPrepared            ( True                                     )
+    TRX    = self . Translations
+    self   . setCentralLabels     ( TRX [ "TBL" ] [ "Serial" ] [ "Labels" ]  )
     ##########################################################################
-    return
-  ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    self   . setPrepared          ( True                                     )
     ##########################################################################
     return
   ############################################################################
@@ -342,52 +321,38 @@ class tblSerialListings             ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def Menu                          ( self , pos                           ) :
+  def Menu                              ( self , pos                       ) :
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                      )
-    if                              ( not doMenu                           ) :
+    doMenu = self . isFunction          ( self . HavingMenu                  )
+    if                                  ( not doMenu                       ) :
       return False
     ##########################################################################
-    items  = self . selectedItems   (                                        )
-    atItem = self . currentItem     (                                        )
+    self   . Notify                     ( 0                                  )
     ##########################################################################
-    mm     = MenuManager            ( self                                   )
+    items  = self . selectedItems       (                                    )
+    atItem = self . currentItem         (                                    )
+    ##########################################################################
+    mm     = MenuManager                ( self                               )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    mm     . addAction              ( 1001 ,  TRX [ "UI::Refresh"          ] )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
     ##########################################################################
-    mm     . addSeparator           (                                        )
+    mm     . addSeparator               (                                    )
     ##########################################################################
-    mm     = self . SortingMenu     ( mm                                     )
-    self   . DockingMenu            ( mm                                     )
+    self   . DockingMenu                ( mm                                 )
     ##########################################################################
-    mm     . setFont                ( self    . font ( )                     )
-    aa     = mm . exec_             ( QCursor . pos  ( )                     )
-    at     = mm . at                ( aa                                     )
+    mm     . setFont                    ( self    . font ( )                 )
+    aa     = mm . exec_                 ( QCursor . pos  ( )                 )
+    at     = mm . at                    ( aa                                 )
     ##########################################################################
-    if                              ( self . RunAmountIndexMenu (        ) ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
+    if                                  ( self . RunDocking ( mm , aa    ) ) :
       return True
     ##########################################################################
-    if                              ( self . RunSortingMenu ( at         ) ) :
+    if                                  ( at == 1001                       ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( self . RunDocking     ( mm , aa    ) ) :
-      return True
-    ##########################################################################
-    if                              ( at == 1001                           ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . clear                      (                                    )
+      self . startup                    (                                    )
       ########################################################################
       return True
     ##########################################################################

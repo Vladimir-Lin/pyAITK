@@ -67,8 +67,8 @@ class tblRecordListings             ( TreeDock                             ) :
     self . Amount    = 28
     self . SortOrder = "desc"
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
-    self . dockingPlace       = Qt . RightDockWidgetArea
+    self . dockingOrientation = Qt . Horizontal
+    self . dockingPlace       = Qt . BottomDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
@@ -353,6 +353,8 @@ class tblRecordListings             ( TreeDock                             ) :
     if                              ( not doMenu                           ) :
       return False
     ##########################################################################
+    self   . Notify                 ( 0                                      )
+    ##########################################################################
     items  = self . selectedItems   (                                        )
     atItem = self . currentItem     (                                        )
     ##########################################################################
@@ -361,7 +363,7 @@ class tblRecordListings             ( TreeDock                             ) :
     TRX    = self . Translations
     ##########################################################################
     mm     = self . AmountIndexMenu ( mm                                     )
-    mm     . addAction              ( 1001 ,  TRX [ "UI::Refresh"          ] )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
     ##########################################################################
     if                              ( atItem not in [ False , None ]       ) :
       ########################################################################
