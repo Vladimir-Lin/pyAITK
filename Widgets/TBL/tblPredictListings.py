@@ -66,8 +66,8 @@ class tblPredictListings            ( TreeDock                             ) :
     self . Amount    = 28
     self . SortOrder = "desc"
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
-    self . dockingPlace       = Qt . RightDockWidgetArea
+    self . dockingOrientation = Qt . Horizontal
+    self . dockingPlace       = Qt . BottomDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
@@ -347,6 +347,8 @@ class tblPredictListings            ( TreeDock                             ) :
     doMenu = self . isFunction      ( self . HavingMenu                      )
     if                              ( not doMenu                           ) :
       return False
+    ##########################################################################
+    self   . Notify                 ( 0                                      )
     ##########################################################################
     items  = self . selectedItems   (                                        )
     atItem = self . currentItem     (                                        )
