@@ -55,7 +55,7 @@ class tblBetListings                ( TreeDock                             ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  emitAllHistory = pyqtSignal       ( list                                   )
+  emitAllHistory = pyqtSignal       ( list , dict                            )
   emitTblSerial  = pyqtSignal       ( str                                    )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
@@ -74,7 +74,7 @@ class tblBetListings                ( TreeDock                             ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount           ( 10                                     )
+    self . setColumnCount           ( 7                                      )
     self . setRootIsDecorated       ( False                                  )
     self . setAlternatingRowColors  ( True                                   )
     ##########################################################################
@@ -95,7 +95,7 @@ class tblBetListings                ( TreeDock                             ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 640                              )
+    return QSize                   ( 880 , 640                               )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -134,19 +134,16 @@ class tblBetListings                ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , RECORD                           ) :
+  def PrepareItem                ( self , RECORD , RESULT                  ) :
     ##########################################################################
     SERIAL  = RECORD             [  0                                        ]
     YEAR    = RECORD             [  1                                        ]
     MONTH   = RECORD             [  2                                        ]
     DAY     = RECORD             [  3                                        ]
-    N1      = RECORD             [  4                                        ]
-    N2      = RECORD             [  5                                        ]
-    N3      = RECORD             [  6                                        ]
-    N4      = RECORD             [  7                                        ]
-    N5      = RECORD             [  8                                        ]
-    N6      = RECORD             [  9                                        ]
-    SPECIAL = RECORD             [ 10                                        ]
+    BETS    = RESULT             [ "Bets"                                    ]
+    TWD     = RESULT             [ "TWD"                                     ]
+    EARNING = RESULT             [ "Earnings"                                ]
+    REWARDS = RESULT             [ "Rewards"                                 ]
     ##########################################################################
     MM      = str                ( MONTH                                     )
     DD      = str                ( DAY                                       )
@@ -161,31 +158,26 @@ class tblBetListings                ( TreeDock                             ) :
     IT   . setText               ( 0 , DATE                                  )
     IT   . setText               ( 1 , str ( SERIAL  )                       )
     IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
-    IT   . setText               ( 2 , str ( N1      )                       )
+    IT   . setText               ( 2 , str ( BETS    )                       )
     IT   . setTextAlignment      ( 2 , Qt.AlignRight                         )
-    IT   . setText               ( 3 , str ( N2      )                       )
+    IT   . setText               ( 3 , str ( TWD     )                       )
     IT   . setTextAlignment      ( 3 , Qt.AlignRight                         )
-    IT   . setText               ( 4 , str ( N3      )                       )
+    IT   . setText               ( 4 , str ( EARNING )                       )
     IT   . setTextAlignment      ( 4 , Qt.AlignRight                         )
-    IT   . setText               ( 5 , str ( N4      )                       )
+    IT   . setText               ( 5 , str ( REWARDS )                       )
     IT   . setTextAlignment      ( 5 , Qt.AlignRight                         )
-    IT   . setText               ( 6 , str ( N5      )                       )
-    IT   . setTextAlignment      ( 6 , Qt.AlignRight                         )
-    IT   . setText               ( 7 , str ( N6      )                       )
-    IT   . setTextAlignment      ( 7 , Qt.AlignRight                         )
-    IT   . setText               ( 8 , str ( SPECIAL )                       )
-    IT   . setTextAlignment      ( 8 , Qt.AlignRight                         )
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                     (        list                                )
-  def refresh                   ( self , RECORDs                           ) :
+  @pyqtSlot                     (        list    , dict                      )
+  def refresh                   ( self , RECORDs , RESULTs                 ) :
     ##########################################################################
     self   . clear              (                                            )
     ##########################################################################
     for R in RECORDs                                                         :
       ########################################################################
-      IT   = self . PrepareItem ( R                                          )
+      S    = R                  [ 0                                          ]
+      IT   = self . PrepareItem ( R , RESULTs [ S ]                          )
       self . addTopLevelItem    ( IT                                         )
     ##########################################################################
     return
@@ -214,10 +206,7 @@ class tblBetListings                ( TreeDock                             ) :
     AMOUNT  = self . Amount
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `serial`,
-                         `year`,`month`,`day`,
-                         `n1`,`n2`,`n3`,`n4`,`n5`,`n6`,`special`
-                  from {TBLTAB}
+    QQ      = f"""select `serial`,`year`,`month`,`day` from {TBLTAB}
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
@@ -234,6 +223,46 @@ class tblBetListings                ( TreeDock                             ) :
     ##########################################################################
     return RECORDs
   ############################################################################
+  def ObtainsResults                  ( self , DB , RECORDs                ) :
+    ##########################################################################
+    TBLTAB      = self . Tables       [ "Bettings"                           ]
+    RESULTs     =                     {                                      }
+    ##########################################################################
+    for R in RECORDs                                                         :
+      ########################################################################
+      SERIAL    = R                   [ 0                                    ]
+      SERIAL    = str                 ( SERIAL                               )
+      RESULTs [ SERIAL ] =            {                                      }
+      ########################################################################
+      QQ        = f"""select sum(`bets`),sum(`twd`),sum(`earnings`)
+                      from {TBLTAB}
+                      where ( `serial` = '{SERIAL}' ) ;"""
+      QQ        = " " . join          ( QQ . split ( )                       )
+      DB        . Query               ( QQ                                   )
+      RR        = DB . FetchOne       (                                      )
+      if ( RR not in [ False , None ] ) and ( len ( RR ) > 0 )               :
+        RESULTs [ SERIAL ] [ "Bets"     ] = int ( RR [ 0 ] )
+        RESULTs [ SERIAL ] [ "TWD"      ] = int ( RR [ 1 ] )
+        RESULTs [ SERIAL ] [ "Earnings" ] = int ( RR [ 2 ] )
+      else                                                                   :
+        RESULTs [ SERIAL ] [ "Bets"     ] = 0
+        RESULTs [ SERIAL ] [ "TWD"      ] = 0
+        RESULTs [ SERIAL ] [ "Earnings" ] = 0
+      ########################################################################
+      QQ        = f"""select count(*) from {TBLTAB}
+                      where ( `serial` = '{SERIAL}' )
+                      and ( `results` in ( 1 , 2 , 3 , 4 ) ) ;"""
+      QQ        = " " . join          ( QQ . split ( )                       )
+      DB        . Query               ( QQ                                   )
+      RR        = DB . FetchOne       (                                      )
+      ########################################################################
+      if ( RR not in [ False , None ] ) and ( len ( RR ) > 0 )               :
+        RESULTs [ SERIAL ] [ "Rewards" ] = RR [ 0 ]
+      else                                                                   :
+        RESULTs [ SERIAL ] [ "Rewards" ] = 0
+    ##########################################################################
+    return RESULTs
+  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -242,17 +271,18 @@ class tblBetListings                ( TreeDock                             ) :
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     RECORDs = self . ObtainsHistory   ( DB                                   )
+    RESULTs = self . ObtainsResults   ( DB , RECORDs                         )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( RECORDs ) <= 0               ) :
       return
     ##########################################################################
-    self    . emitAllHistory . emit   ( RECORDs                              )
+    self    . emitAllHistory . emit   ( RECORDs , RESULTs                    )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
+  @pyqtSlot                      (                                           )
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -281,14 +311,15 @@ class tblBetListings                ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def Prepare                     ( self                                   ) :
+  def Prepare                    ( self                                    ) :
     ##########################################################################
-    self . setColumnWidth         ( 9 , 3                                    )
+    self . setColumnWidth        ( 3 , 180                                   )
+    self . setColumnWidth        ( 6 ,   3                                   )
     ##########################################################################
     TRX  = self . Translations
-    self . setCentralLabels       ( TRX [ "TBL" ] [ "History" ] [ "Labels" ] )
+    self . setCentralLabels      ( TRX [ "TBL" ] [ "Bettings" ] [ "Labels" ] )
     ##########################################################################
-    self . setPrepared            ( True                                     )
+    self . setPrepared           ( True                                      )
     ##########################################################################
     return
   ############################################################################
@@ -357,7 +388,7 @@ class tblBetListings                ( TreeDock                             ) :
     TRX    = self . Translations
     ##########################################################################
     mm     = self . AmountIndexMenu ( mm                                     )
-    mm     . addAction              ( 1001 ,  TRX [ "UI::Refresh"          ] )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
     ##########################################################################
     if                              ( atItem not in [ False , None ]       ) :
       ########################################################################

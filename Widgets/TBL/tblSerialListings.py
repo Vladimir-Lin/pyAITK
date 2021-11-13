@@ -300,7 +300,7 @@ class tblSerialListings             ( TreeDock                             ) :
     for i in range                (  0 ,   7                               ) :
       self . setColumnWidth       (  i ,  60                                 )
     ##########################################################################
-    self   . setColumnWidth       (  7 , 140                                 )
+    self   . setColumnWidth       (  7 , 180                                 )
     self   . setColumnWidth       (  8 , 100                                 )
     self   . setColumnWidth       (  9 , 120                                 )
     self   . setColumnWidth       ( 10 ,   3                                 )
