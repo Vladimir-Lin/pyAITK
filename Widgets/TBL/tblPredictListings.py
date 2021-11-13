@@ -46,24 +46,29 @@ from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
 from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
+from   AITK  . Documents  . JSON      import Load        as LoadJson
 from   AITK  . Essentials . Relation  import Relation
-##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
+from   AITK  . Calendars  . StarDate  import StarDate
+from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class tblPredictListings            ( TreeDock                             ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
   emitAllHistory = pyqtSignal       ( list                                   )
+  addText        = pyqtSignal       ( str                                    )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
     super ( ) . __init__            (        parent        , plan            )
     ##########################################################################
+    self . ConfPath           = ""
     self . Serial             = ""
     self . Prediction         = ""
     self . Bettings           = [                                            ]
+    self . tblSettings        = {                                            }
+    self . tblParameters      = {                                            }
+    self . tblAppears         = {                                            }
     ##########################################################################
     self . dockingOrientation = Qt . Horizontal
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -239,7 +244,22 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return RECORDs
   ############################################################################
+  def appendText                       ( self , message                    ) :
+    ##########################################################################
+    self . addText . emit              ( message                             )
+    ##########################################################################
+    return
+  ############################################################################
   def loading                          ( self                              ) :
+    ##########################################################################
+    CONF    = self . ConfPath
+    tblSt   = f"{CONF}/tbl.json"
+    tblPa   = f"{CONF}/tbl-parameters.json"
+    tblAp   = f"{CONF}/tblAppears.json"
+    ##########################################################################
+    self . tblSettings   = LoadJson    ( tblSt                               )
+    self . tblParameters = LoadJson    ( tblPa                               )
+    self . tblAppears    = LoadJson    ( tblAp                               )
     ##########################################################################
     DB      = self . ConnectDB         (                                     )
     if                                 ( DB == None                        ) :
