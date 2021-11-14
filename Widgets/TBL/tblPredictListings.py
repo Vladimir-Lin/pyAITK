@@ -10,6 +10,7 @@ import requests
 import threading
 import gettext
 import json
+import random
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -120,16 +121,22 @@ class tblPredictListings            ( TreeDock                             ) :
   HavingMenu = 1371434312
   ############################################################################
   emitAllHistory = pyqtSignal       ( list                                   )
+  emitBettings   = pyqtSignal       ( list                                   )
   addText        = pyqtSignal       ( str                                    )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
     super ( ) . __init__            (        parent        , plan            )
     ##########################################################################
+    random . seed                   ( time . time ( )                        )
+    ##########################################################################
     self . ConfPath           = ""
     self . Serial             = ""
     self . Prediction         = ""
-    self . ShowMessage        = True
+    self . ShowMessage        = False
+    self . MinBalls           = -1
+    self . MaxBalls           = -1
+    self . Periods            = 100
     self . Bettings           = [                                            ]
     self . tblSettings        = {                                            }
     self . tblParameters      = {                                            }
@@ -152,6 +159,7 @@ class tblPredictListings            ( TreeDock                             ) :
     self . assignSelectionMode      ( "ContiguousSelection"                  )
     ##########################################################################
     self . emitAllHistory . connect ( self . refresh                         )
+    self . emitBettings   . connect ( self . AppendBettings                  )
     ##########################################################################
     self . setFunction              ( self . FunctionDocking , True          )
     self . setFunction              ( self . HavingMenu      , True          )
@@ -325,6 +333,21 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return RR
   ############################################################################
+  @pyqtSlot                           (        list                          )
+  def AppendBettings                  ( self , BETTINGs                    ) :
+    ##########################################################################
+    BASE   = self . topLevelItemCount (                                      )
+    BASE   = BASE + 1
+    ##########################################################################
+    for i , R in enumerate            ( BETTINGs                           ) :
+      ########################################################################
+      IT   = self . PrepareItem       ( i + BASE , R , False                 )
+      self . addTopLevelItem          ( IT                                   )
+    ##########################################################################
+    self . Notify                     ( 5                                    )
+    ##########################################################################
+    return
+  ############################################################################
   @pyqtSlot                     (        list                                )
   def refresh                   ( self , RECORDs                           ) :
     ##########################################################################
@@ -414,16 +437,25 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def LoadSettings                   ( self                                ) :
+  def LoadSettings                    ( self                               ) :
     ##########################################################################
-    CONF  = self . ConfPath
-    tblSt = f"{CONF}/tbl.json"
-    tblPa = f"{CONF}/tbl-parameters.json"
-    tblAp = f"{CONF}/tblAppears.json"
+    CONF   = self . ConfPath
+    tblSt  = f"{CONF}/tbl.json"
+    tblPa  = f"{CONF}/tbl-parameters.json"
+    tblAp  = f"{CONF}/tblAppears.json"
     ##########################################################################
-    self  . tblSettings   = LoadJson ( tblSt                                 )
-    self  . tblParameters = LoadJson ( tblPa                                 )
-    self  . tblAppears    = LoadJson ( tblAp                                 )
+    self   . tblSettings   = LoadJson ( tblSt                                )
+    self   . tblParameters = LoadJson ( tblPa                                )
+    self   . tblAppears    = LoadJson ( tblAp                                )
+    ##########################################################################
+    MIN    = self . tblSettings       [ "Bettings" ] [ "Range" ] [ "Min"     ]
+    MAX    = self . tblSettings       [ "Bettings" ] [ "Range" ] [ "Max"     ]
+    ##########################################################################
+    if                                ( self . MinBalls < 0                ) :
+      self . MinBalls = MIN
+    ##########################################################################
+    if                                ( self . MaxBalls < 0                ) :
+      self . MaxBalls = MAX
     ##########################################################################
     return
   ############################################################################
@@ -478,6 +510,181 @@ class tblPredictListings            ( TreeDock                             ) :
     DB     . Query         ( QQ                                              )
     return DB . FetchAll   (                                                 )
   ############################################################################
+  def CombineRotate10x6x5IntoLists ( self , Balls                          ) :
+    ##########################################################################
+    global Rotate10x6x5
+    ##########################################################################
+    if                             ( len ( Balls ) != 10                   ) :
+      return                       [                                         ]
+    ##########################################################################
+    LISTS   =                      [                                         ]
+    ##########################################################################
+    for R in Rotate10x6x5                                                    :
+      P1    = R                    [ 0                                       ]
+      P2    = R                    [ 1                                       ]
+      P3    = R                    [ 2                                       ]
+      P4    = R                    [ 3                                       ]
+      P5    = R                    [ 4                                       ]
+      P6    = R                    [ 5                                       ]
+      N1    = Balls                [ P1                                      ]
+      N2    = Balls                [ P2                                      ]
+      N3    = Balls                [ P3                                      ]
+      N4    = Balls                [ P4                                      ]
+      N5    = Balls                [ P5                                      ]
+      N6    = Balls                [ P6                                      ]
+      LISTS . append               ( [ N1 , N2 , N3 , N4 , N5 , N6 ]         )
+    ##########################################################################
+    return LISTS
+  ############################################################################
+  def CombinePosition12x6x5IntoLists ( self , Balls                        ) :
+    ##########################################################################
+    global Position12x6x5
+    ##########################################################################
+    if                               ( len ( Balls ) != 12                 ) :
+      return                         [                                       ]
+    ##########################################################################
+    LISTS   =                        [                                       ]
+    ##########################################################################
+    for R in Position12x6x5                                                  :
+      P1    = R                      [ 0                                     ]
+      P2    = R                      [ 1                                     ]
+      P3    = R                      [ 2                                     ]
+      P4    = R                      [ 3                                     ]
+      P5    = R                      [ 4                                     ]
+      P6    = R                      [ 5                                     ]
+      N1    = Balls                  [ P1                                    ]
+      N2    = Balls                  [ P2                                    ]
+      N3    = Balls                  [ P3                                    ]
+      N4    = Balls                  [ P4                                    ]
+      N5    = Balls                  [ P5                                    ]
+      N6    = Balls                  [ P6                                    ]
+      LISTS . append                 ( [ N1 , N2 , N3 , N4 , N5 , N6 ]       )
+    ##########################################################################
+    return LISTS
+  ############################################################################
+  def GenerateBettings                    ( self , TBLs , BALLS , AP       ) :
+    ##########################################################################
+    PC            = TBLs . RandomBalls    ( 10 , BALLS , AP , [ ]            )
+    random        . shuffle               ( PC                               )
+    LZ            = self . CombineRotate10x6x5IntoLists   ( PC               )
+    ##########################################################################
+    PC            = TBLs . RandomBalls    ( 12 , BALLS , AP , [ ]            )
+    random        . shuffle               ( PC                               )
+    LL            = self . CombinePosition12x6x5IntoLists ( PC               )
+    ##########################################################################
+    LW            = LZ
+    ##########################################################################
+    for L in LL                                                              :
+      ########################################################################
+      MATCHED     = False
+      ########################################################################
+      for Z in LZ                                                            :
+        RX        = TBLs . CompareTwoSets ( L , Z                            )
+        if                                ( RX == 6                        ) :
+          MATCHED = True
+      ########################################################################
+      if                                  ( not MATCHED                    ) :
+        LW        . append                ( L                                )
+    ##########################################################################
+    return LW
+  ############################################################################
+  def FilterRules                ( self , TBLs , R                         ) :
+    ##########################################################################
+    JSOZ    = self . tblSettings [ "Bettings"                                ]
+    ##########################################################################
+    if                           ( R [ 0 ] not in JSOZ [ "First"  ]        ) :
+      return False
+    ##########################################################################
+    if                           ( R [ 5 ] not in JSOZ [ "Ending" ]        ) :
+      return False
+    ##########################################################################
+    X       =                    [                                           ]
+    for i in range               ( 0 , 6                                   ) :
+      X     . append             ( R [ i ]                                   )
+    X       . append             ( 0                                         )
+    ##########################################################################
+    T       = TaiwanBL           (                                           )
+    T       . assign             ( self . Prediction , 1 , X                 )
+    ##########################################################################
+    SUM     = T . IntValue       ( "Sums::Total"                             )
+    if                           ( SUM     not in JSOZ [ "Sums"   ]        ) :
+      return False
+    ##########################################################################
+    AC6     = T . IntValue       ( "AC"                                      )
+    if                           ( AC6     not in JSOZ [ "AC"     ]        ) :
+      return False
+    ##########################################################################
+    ODDS    = T . IntValue       ( "Odds"                                    )
+    if                           ( ODDS    not in JSOZ [ "Odds"   ]        ) :
+      return False
+    ##########################################################################
+    GAPS    = T . IntValue       ( "Gaps"                                    )
+    if                           ( GAPS    not in JSOZ [ "Gaps"   ]        ) :
+      return False
+    ##########################################################################
+    FSUM    = T . IntValue       ( "Sums::Head"                              )
+    if                           ( FSUM    not in JSOZ [ "FirstSums" ]     ) :
+      return False
+    ##########################################################################
+    ESUM    = T . IntValue       ( "Sums::Tail"                              )
+    if                           ( ESUM    not in JSOZ [ "EndSums"   ]     ) :
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def FilterAllRules                   ( self , TBLs , Bets                ) :
+    ##########################################################################
+    LX     =                           [                                     ]
+    for L in Bets                                                            :
+      ########################################################################
+      X    = L
+      X    . sort                      (                                     )
+      ########################################################################
+      if                               ( self . FilterRules ( TBLs , X )   ) :
+        LX . append                    ( X                                   )
+    ##########################################################################
+    return LX
+  ############################################################################
+  def HistoryDuplicate        ( self , TBLs , Bets                         ) :
+    ##########################################################################
+    LASTEST  = TBLs . Serials (                                              )
+    LW       =                [                                              ]
+    ##########################################################################
+    for B in Bets                                                            :
+      ########################################################################
+      ## 與歷史紀錄沒有五球或六球相同
+      ########################################################################
+      if                      ( not TBLs . isHistoryDuplicate ( B )        ) :
+        T    = TBLs . at      ( LASTEST                                      )
+        AT   = T    . numbers ( 6                                            )
+        ######################################################################
+        ## 首號不連莊
+        ######################################################################
+        if                    ( AT [ 0 ] != B [ 0 ]                        ) :
+          ####################################################################
+          ## 尾號不連莊
+          ####################################################################
+          if                  ( AT [ 5 ] != B [ 5 ]                        ) :
+            LW . append       ( B                                            )
+    ##########################################################################
+    return LW
+  ############################################################################
+  ## 移除跟上次開獎三球相同的投注
+  ############################################################################
+  def TripleDuplicate         ( self , TBLs , Bets                         ) :
+    ##########################################################################
+    LASTEST  = TBLs . Serials (                                              )
+    T        = TBLs . at      ( LASTEST                                      )
+    LW       =                [                                              ]
+    ##########################################################################
+    for B in Bets                                                            :
+      ########################################################################
+      CNT    = T    . Matches ( 6 , B                                        )
+      if                      ( CNT < 3                                    ) :
+        LW   . append         ( B                                            )
+    ##########################################################################
+    return LW
+  ############################################################################
   def Predicting                       ( self                              ) :
     ##########################################################################
     TRX     = self . Translations
@@ -491,11 +698,67 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     HISTORY = self . ObtainAllHistory  ( DB                                  )
     TBLs    = TaiwanBLs                (                                     )
+    TBLs    . setAppearanceWeight      ( self . tblAppears                   )
     TBLs    . ImportHistory            ( HISTORY                             )
     LASTEST = TBLs . Serials           (                                     )
-    self . appendText ( TBLs . at ( LASTEST ) . toString ( ) )
+    MSG     = TBLs . at ( LASTEST ) . toString (                             )
+    NUMS    = TBLs . at ( LASTEST ) . numbers  ( 6                           )
+    self    . appendText               ( MSG                                 )
+    ##########################################################################
+    MIN     = self . tblSettings [ "Bettings" ] [ "Range" ] [ "Min" ]
+    MAX     = self . tblSettings [ "Bettings" ] [ "Range" ] [ "Max" ]
+    ABALLS  = self . tblSettings [ "Bettings" ] [ "Balls" ]
+    WORK    = False
+    LX      =                          [                                     ]
+    ##########################################################################
+    APPEARS = TBLs . CreateAppears     ( 32 , 7                              )
+    CDISAPP = TBLs . CountDisappears   ( LASTEST , 6                         )
+    DISAPPW = TBLs . ConvertDisappearWeight ( CDISAPP                        )
+    WETMT49 = TBLs . MultiplyTwo49     ( APPEARS , DISAPPW                   )
+    ##########################################################################
+    BALLX   =                          {                                     }
+    BALLS   =                          [                                     ]
+    BALLX   = TBLs . PickAppears       ( LASTEST                           , \
+                                         self . Periods                    , \
+                                         1                                 , \
+                                         20                                , \
+                                         BALLX                               )
+    for i in range                     ( 0 , 20                            ) :
+      BALLS . append                   ( BALLX [ i ]                         )
+    ##########################################################################
+    ## MSG     = f"{MIN} , {MAX} : {ABALLS}"
+    ## self    . appendText               ( MSG                                 )
+    ## self    . appendText               ( json . dumps ( APPEARS )            )
+    ## self    . appendText               ( json . dumps ( CDISAPP )            )
+    ## self    . appendText               ( json . dumps ( DISAPPW )            )
+    ## self    . appendText               ( json . dumps ( WETMT49 )            )
+    self    . appendText               ( json . dumps ( BALLS   )            )
+    ##########################################################################
+    while                              ( not WORK                          ) :
+      ########################################################################
+      LW    = self . GenerateBettings  ( TBLs , BALLS , WETMT49              )
+      LW    = self . FilterAllRules    ( TBLs , LW                           )
+      LW    = self . HistoryDuplicate  ( TBLs , LW                           )
+      LW    = self . TripleDuplicate   ( TBLs , LW                           )
+      self  . appendText               ( json . dumps ( LW )                 )
+      ########################################################################
+      LZ    = len                      ( LW                                  )
+      ########################################################################
+      if                               ( LZ < self . MinBalls              ) :
+        continue
+      ########################################################################
+      if                               ( LZ > self . MaxBalls              ) :
+        continue
+      ########################################################################
+      WORK     = True
     ##########################################################################
     DB      . Close                    (                                     )
+    ##########################################################################
+    if                                 ( len ( LW ) <= 0                   ) :
+      self  . Notify                   ( 1                                   )
+      return
+    ##########################################################################
+    self . emitBettings . emit         ( LW                                  )
     ##########################################################################
     return
   ############################################################################
@@ -615,25 +878,47 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def PredictionMenu               ( self , mm                             ) :
+  def PredictionMenu                ( self , mm                            ) :
     ##########################################################################
     TRX    = self  . Translations
-    MSG    = self  . getMenuItem   ( "Parameters"                            )
-    LOM    = mm    . addMenu       ( MSG                                     )
+    MSG    = self  . getMenuItem    ( "Parameters"                           )
+    LOM    = mm    . addMenu        ( MSG                                    )
     ##########################################################################
-    MSG    = self  . getMenuItem   ( "ReloadSettings"                        )
-    mm     . addActionFromMenu     ( LOM , 3001 , MSG                        )
+    MSG    = self  . getMenuItem    ( "ReloadSettings"                       )
+    mm     . addActionFromMenu      ( LOM , 3001 , MSG                       )
     ##########################################################################
     hid    = self . ShowMessage
-    msg    = self  . getMenuItem   ( "DisplayMessage"                        )
-    mm     . addActionFromMenu     ( LOM , 3002 , msg , True , hid           )
+    msg    = self  . getMenuItem    ( "DisplayMessage"                       )
+    mm     . addActionFromMenu      ( LOM , 3002 , msg , True , hid          )
+    ##########################################################################
+    msg    = self . getMenuItem     ( "MinBets"                              )
+    self   . spinMin    = SpinBox   ( None , self . PlanFunc                 )
+    self   . spinMin    . setPrefix ( msg                                    )
+    self   . spinMin    . setRange  ( 1 , 1000                               )
+    self   . spinMin    . setValue  ( self . MinBalls                        )
+    mm     . addWidgetWithMenu      ( LOM , 312236326001 , self . spinMin    )
+    ##########################################################################
+    msg    = self . getMenuItem     ( "MaxBets"                              )
+    self   . spinMax    = SpinBox   ( None , self . PlanFunc                 )
+    self   . spinMax    . setPrefix ( msg                                    )
+    self   . spinMax    . setRange  ( 1 , 1000                               )
+    self   . spinMax    . setValue  ( self . MaxBalls                        )
+    mm     . addWidgetWithMenu      ( LOM , 312236326002 , self . spinMax    )
+    ##########################################################################
+    msg    = self . getMenuItem     ( "AppearPeriods"                        )
+    self   . spinPeriod = SpinBox   ( None , self . PlanFunc                 )
+    self   . spinPeriod . setPrefix ( msg                                    )
+    self   . spinPeriod . setRange  ( 5 , 5000                               )
+    self   . spinPeriod . setValue  ( self . Periods                         )
+    mm     . addWidgetWithMenu      ( LOM , 312236326003 , self . spinPeriod )
     ##########################################################################
     return mm
   ############################################################################
   def RunPredictionMenu            ( self , atId                           ) :
     ##########################################################################
-    ##########################################################################
-    ##########################################################################
+    self . MinBalls = self . spinMin    . value (                            )
+    self . MaxBalls = self . spinMax    . value (                            )
+    self . Periods  = self . spinPeriod . value (                            )
     ##########################################################################
     ##########################################################################
     if                             ( atId == 3001                          ) :
@@ -646,8 +931,6 @@ class tblPredictListings            ( TreeDock                             ) :
       else                                                                   :
         self . ShowMessage = True
       return True
-    ##########################################################################
-    ##########################################################################
     ##########################################################################
     ##########################################################################
     return   False
