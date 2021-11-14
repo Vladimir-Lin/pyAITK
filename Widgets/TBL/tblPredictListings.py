@@ -51,6 +51,70 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
+from   AITK  . TBL . TblMaps          import tblStatisticsAC6        as tblStatisticsAC6
+from   AITK  . TBL . TblMaps          import tblStatisticsAC7        as tblStatisticsAC7
+from   AITK  . TBL . TblMaps          import tblStatisticsOdds6      as tblStatisticsOdds6
+from   AITK  . TBL . TblMaps          import tblStatisticsOdds7      as tblStatisticsOdds7
+from   AITK  . TBL . TblMaps          import tblStatisticsEvens6     as tblStatisticsEvens6
+from   AITK  . TBL . TblMaps          import tblStatisticsEvens7     as tblStatisticsEvens7
+from   AITK  . TBL . TblMaps          import tblStatisticsHead6      as tblStatisticsHead6
+from   AITK  . TBL . TblMaps          import tblStatisticsHead7      as tblStatisticsHead7
+from   AITK  . TBL . TblMaps          import tblStatisticsTail6      as tblStatisticsTail6
+from   AITK  . TBL . TblMaps          import tblStatisticsTail7      as tblStatisticsTail7
+from   AITK  . TBL . TblMaps          import tblStatisticsFirst6     as tblStatisticsFirst6
+from   AITK  . TBL . TblMaps          import tblStatisticsFirst7     as tblStatisticsFirst7
+from   AITK  . TBL . TblMaps          import tblStatisticsEnding6    as tblStatisticsEnding6
+from   AITK  . TBL . TblMaps          import tblStatisticsEnding7    as tblStatisticsEnding7
+from   AITK  . TBL . TblMaps          import tblStatisticsGaps6      as tblStatisticsGaps6
+from   AITK  . TBL . TblMaps          import tblStatisticsGaps7      as tblStatisticsGaps7
+from   AITK  . TBL . TblMaps          import tblStatisticsTotalSums6 as tblStatisticsTotalSums6
+from   AITK  . TBL . TblMaps          import tblStatisticsTotalSums7 as tblStatisticsTotalSums7
+from   AITK  . TBL . TblMaps          import tblStatisticsHeadSums6  as tblStatisticsHeadSums6
+from   AITK  . TBL . TblMaps          import tblStatisticsHeadSums7  as tblStatisticsHeadSums7
+from   AITK  . TBL . TblMaps          import tblStatisticsTailSums6  as tblStatisticsTailSums6
+from   AITK  . TBL . TblMaps          import tblStatisticsTailSums7  as tblStatisticsTailSums7
+from   AITK  . TBL . TblSquare        import tblStatisticsSquare6    as tblStatisticsSquare6
+##############################################################################
+from   AITK  . TBL . TblDistribution  import TblDistribution         as TblDistribution
+from   AITK  . TBL . TaiwanBL         import TaiwanBL                as TaiwanBL
+from   AITK  . TBL . TaiwanBLs        import TaiwanBLs               as TaiwanBLs
+##############################################################################
+Rotate10x6x5 = [ [ 0 , 1 , 2 , 3 , 4 , 5 ]                                 , \
+                 [ 0 , 1 , 2 , 3 , 6 , 7 ]                                 , \
+                 [ 0 , 1 , 2 , 3 , 8 , 9 ]                                 , \
+                 [ 0 , 1 , 2 , 4 , 6 , 8 ]                                 , \
+                 [ 0 , 1 , 2 , 4 , 7 , 9 ]                                 , \
+                 [ 0 , 1 , 2 , 5 , 6 , 9 ]                                 , \
+                 [ 0 , 1 , 2 , 5 , 7 , 8 ]                                 , \
+                 [ 0 , 1 , 3 , 4 , 6 , 9 ]                                 , \
+                 [ 0 , 1 , 3 , 4 , 7 , 8 ]                                 , \
+                 [ 0 , 1 , 3 , 5 , 6 , 8 ]                                 , \
+                 [ 0 , 1 , 3 , 5 , 7 , 9 ]                                 , \
+                 [ 0 , 1 , 4 , 5 , 6 , 7 ]                                 , \
+                 [ 0 , 1 , 4 , 5 , 8 , 9 ]                                 , \
+                 [ 0 , 1 , 6 , 7 , 8 , 9 ]                                 , \
+                 [ 2 , 3 , 4 , 5 , 6 , 7 ]                                 , \
+                 [ 2 , 3 , 4 , 5 , 8 , 9 ]                                 , \
+                 [ 2 , 3 , 6 , 7 , 8 , 9 ]                                 , \
+                 [ 4 , 5 , 6 , 7 , 8 , 9 ]                                 ] ;
+##############################################################################
+Position12x6x5 = [ [  0 ,  2 ,  4 ,  6 ,  8 , 10 ]                         , \
+                   [  0 ,  2 ,  4 ,  6 ,  9 , 11 ]                         , \
+                   [  0 ,  2 ,  5 ,  7 ,  8 , 11 ]                         , \
+                   [  0 ,  2 ,  5 ,  7 ,  9 , 10 ]                         , \
+                   [  0 ,  3 ,  4 ,  7 ,  8 , 10 ]                         , \
+                   [  0 ,  3 ,  4 ,  7 ,  9 , 11 ]                         , \
+                   [  0 ,  3 ,  5 ,  6 ,  8 , 11 ]                         , \
+                   [  0 ,  3 ,  5 ,  6 ,  9 , 10 ]                         , \
+                   [  1 ,  2 ,  4 ,  7 ,  8 , 11 ]                         , \
+                   [  1 ,  2 ,  4 ,  7 ,  9 , 10 ]                         , \
+                   [  1 ,  2 ,  5 ,  6 ,  8 , 10 ]                         , \
+                   [  1 ,  2 ,  5 ,  6 ,  9 , 11 ]                         , \
+                   [  1 ,  3 ,  4 ,  6 ,  8 , 11 ]                         , \
+                   [  1 ,  3 ,  4 ,  6 ,  9 , 10 ]                         , \
+                   [  1 ,  3 ,  5 ,  7 ,  8 , 10 ]                         , \
+                   [  1 ,  3 ,  5 ,  7 ,  9 , 11 ]                         ] ;
+##############################################################################
 class tblPredictListings            ( TreeDock                             ) :
   ############################################################################
   HavingMenu = 1371434312
@@ -65,6 +129,7 @@ class tblPredictListings            ( TreeDock                             ) :
     self . ConfPath           = ""
     self . Serial             = ""
     self . Prediction         = ""
+    self . ShowMessage        = True
     self . Bettings           = [                                            ]
     self . tblSettings        = {                                            }
     self . tblParameters      = {                                            }
@@ -107,6 +172,7 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
     self . LinkAction              ( "Refresh"    , self . startup           )
+    self . LinkAction              ( "Insert"     , self . InsertItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     self . LinkAction              ( "SelectAll"  , self . PickAll           )
     self . LinkAction              ( "SelectNone" , self . PickNone          )
@@ -126,10 +192,68 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def doubleClicked        ( self , item , column                          ) :
     ##########################################################################
+    if                     ( column not in range ( 2 , 8 )                 ) :
+      return
+    ##########################################################################
+    sb = self . setSpinBox ( item                                            ,
+                             column                                          ,
+                             1                                               ,
+                             49                                              ,
+                             "editingFinished"                               ,
+                             self . spinChanged                              )
+    sb . setAlignment      ( Qt . AlignRight                                 )
+    sb . setFocus          ( Qt . TabFocusReason                             )
     ##########################################################################
     return
+  ############################################################################
+  def spinChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    sb     = self . CurrentItem [ "Widget"                                   ]
+    v      = self . CurrentItem [ "Value"                                    ]
+    v      = int                ( v                                          )
+    nv     = sb   . value       (                                            )
+    ##########################################################################
+    if                          ( v != nv                                  ) :
+      ########################################################################
+      item . setText            ( column , str ( nv )                        )
+    ##########################################################################
+    self . removeParked         (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareEmptyItem           ( self , Id                               ) :
+    ##########################################################################
+    IT   = QTreeWidgetItem       (                                           )
+    IT   . setCheckState         ( 0 , Qt . Unchecked                        )
+    IT   . setText               ( 1 , str ( Id )                            )
+    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    IT   . setText               ( 2 , "1"                                   )
+    IT   . setTextAlignment      ( 2 , Qt.AlignRight                         )
+    IT   . setData               ( 2 , Qt . UserRole , 1                     )
+    IT   . setText               ( 3 , "2"                                   )
+    IT   . setTextAlignment      ( 3 , Qt.AlignRight                         )
+    IT   . setData               ( 3 , Qt . UserRole , 2                     )
+    IT   . setText               ( 4 , "3"                                   )
+    IT   . setTextAlignment      ( 4 , Qt.AlignRight                         )
+    IT   . setData               ( 4 , Qt . UserRole , 3                     )
+    IT   . setText               ( 5 , "4"                                   )
+    IT   . setTextAlignment      ( 5 , Qt.AlignRight                         )
+    IT   . setData               ( 5 , Qt . UserRole , 4                     )
+    IT   . setText               ( 6 , "5"                                   )
+    IT   . setTextAlignment      ( 6 , Qt.AlignRight                         )
+    IT   . setData               ( 6 , Qt . UserRole , 5                     )
+    IT   . setText               ( 7 , "6"                                   )
+    IT   . setTextAlignment      ( 7 , Qt.AlignRight                         )
+    IT   . setData               ( 7 , Qt . UserRole , 6                     )
+    ##########################################################################
+    return IT
   ############################################################################
   def PrepareItem                ( self , Id , RECORD , Checked            ) :
     ##########################################################################
@@ -151,18 +275,55 @@ class tblPredictListings            ( TreeDock                             ) :
     IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
     IT   . setText               ( 2 , str ( N1 )                            )
     IT   . setTextAlignment      ( 2 , Qt.AlignRight                         )
+    IT   . setData               ( 2 , Qt . UserRole , int ( N1 )            )
     IT   . setText               ( 3 , str ( N2 )                            )
     IT   . setTextAlignment      ( 3 , Qt.AlignRight                         )
+    IT   . setData               ( 3 , Qt . UserRole , int ( N2 )            )
     IT   . setText               ( 4 , str ( N3 )                            )
     IT   . setTextAlignment      ( 4 , Qt.AlignRight                         )
+    IT   . setData               ( 4 , Qt . UserRole , int ( N3 )            )
     IT   . setText               ( 5 , str ( N4 )                            )
     IT   . setTextAlignment      ( 5 , Qt.AlignRight                         )
+    IT   . setData               ( 5 , Qt . UserRole , int ( N4 )            )
     IT   . setText               ( 6 , str ( N5 )                            )
     IT   . setTextAlignment      ( 6 , Qt.AlignRight                         )
+    IT   . setData               ( 6 , Qt . UserRole , int ( N5 )            )
     IT   . setText               ( 7 , str ( N6 )                            )
     IT   . setTextAlignment      ( 7 , Qt.AlignRight                         )
+    IT   . setData               ( 7 , Qt . UserRole , int ( N6 )            )
     ##########################################################################
     return IT
+  ############################################################################
+  def GetCurrentBettings          ( self                                   ) :
+    ##########################################################################
+    RR      =                     [                                          ]
+    ##########################################################################
+    for i in range                ( 0 , self . topLevelItemCount ( )       ) :
+      ########################################################################
+      IT    = self . topLevelItem ( i                                        )
+      CHK   = IT   . checkState   ( 0                                        )
+      FOUND =                     ( CHK == Qt . Checked                      )
+      ########################################################################
+      if                          ( not FOUND                              ) :
+        continue
+      ########################################################################
+      L     =                     [                                          ]
+      for c in range              ( 2 , 8                                  ) :
+        V   = IT   . text         ( c                                        )
+        V   = int                 ( V                                        )
+        L   . append              ( V                                        )
+      ########################################################################
+      L     . append              ( 0                                        )
+      ########################################################################
+      T     = TaiwanBL            (                                          )
+      T     . assign              ( i , self . Prediction , L                )
+      ########################################################################
+      if                          ( not T . isValid ( )                    ) :
+        continue
+      ########################################################################
+      RR    . append              ( L                                        )
+    ##########################################################################
+    return RR
   ############################################################################
   @pyqtSlot                     (        list                                )
   def refresh                   ( self , RECORDs                           ) :
@@ -246,20 +407,105 @@ class tblPredictListings            ( TreeDock                             ) :
   ############################################################################
   def appendText                       ( self , message                    ) :
     ##########################################################################
+    if                                 ( not self . ShowMessage            ) :
+      return
+    ##########################################################################
     self . addText . emit              ( message                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def LoadSettings                   ( self                                ) :
+    ##########################################################################
+    CONF  = self . ConfPath
+    tblSt = f"{CONF}/tbl.json"
+    tblPa = f"{CONF}/tbl-parameters.json"
+    tblAp = f"{CONF}/tblAppears.json"
+    ##########################################################################
+    self  . tblSettings   = LoadJson ( tblSt                                 )
+    self  . tblParameters = LoadJson ( tblPa                                 )
+    self  . tblAppears    = LoadJson ( tblAp                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def updating                   ( self , RECORDs                          ) :
+    ##########################################################################
+    TRX    = self . Translations
+    msg    = TRX                 [ "TBL" ] [ "Predictions" ] [ "Updating"    ]
+    self   . ShowStatus          ( msg                                       )
+    ##########################################################################
+    DB     = self . ConnectDB    (                                           )
+    if                           ( DB == None                              ) :
+      return
+    ##########################################################################
+    SERIAL = self . Prediction
+    BETTAB = self . Tables       [ "Bettings"                                ]
+    ##########################################################################
+    DB     . LockWrites          ( [ BETTAB ]                                )
+    ##########################################################################
+    QQ     = f"delete from {BETTAB} where ( `serial` = '{SERIAL}' ) ;"
+    QQ     = " " . join          ( QQ . split ( )                            )
+    DB     . Query               ( QQ                                        )
+    ##########################################################################
+    for R in RECORDs                                                         :
+      ########################################################################
+      N1   = R                   [ 0                                         ]
+      N2   = R                   [ 1                                         ]
+      N3   = R                   [ 2                                         ]
+      N4   = R                   [ 3                                         ]
+      N5   = R                   [ 4                                         ]
+      N6   = R                   [ 5                                         ]
+      ########################################################################
+      QQ   = f"""insert into {BETTAB}
+                  ( `serial`,`n1`,`n2`,`n3`,`n4`,`n5`,`n6` )
+                  values
+                  ( '{SERIAL}',{N1},{N2},{N3},{N4},{N5},{N6} ) ;"""
+      QQ   = " " . join          ( QQ . split ( )                            )
+      DB   . Query               ( QQ                                        )
+    ##########################################################################
+    DB     . UnlockTables        (                                           )
+    DB     . Close               (                                           )
+    self   . loading             (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainAllHistory     ( self , DB                                     ) :
+    ##########################################################################
+    TBLTAB = self . Tables [ "Main"                                          ]
+    QQ     = f"""select `serial`,`n1`,`n2`,`n3`,`n4`,`n5`,`n6`,`special`
+                 from {TBLTAB}
+                 order by `id` asc ;"""
+    QQ     = " " . join    ( QQ . split ( )                                  )
+    DB     . Query         ( QQ                                              )
+    return DB . FetchAll   (                                                 )
+  ############################################################################
+  def Predicting                       ( self                              ) :
+    ##########################################################################
+    TRX     = self . Translations
+    msg     = self . getMenuItem       ( "Prediction"                        )
+    self    . ShowStatus               ( msg                                 )
+    self    . TtsTalk                  ( msg , self . getLocality ( )        )
+    ##########################################################################
+    DB      = self . ConnectDB         (                                     )
+    if                                 ( DB == None                        ) :
+      return
+    ##########################################################################
+    HISTORY = self . ObtainAllHistory  ( DB                                  )
+    TBLs    = TaiwanBLs                (                                     )
+    TBLs    . ImportHistory            ( HISTORY                             )
+    LASTEST = TBLs . Serials           (                                     )
+    self . appendText ( TBLs . at ( LASTEST ) . toString ( ) )
+    ##########################################################################
+    DB      . Close                    (                                     )
     ##########################################################################
     return
   ############################################################################
   def loading                          ( self                              ) :
     ##########################################################################
-    CONF    = self . ConfPath
-    tblSt   = f"{CONF}/tbl.json"
-    tblPa   = f"{CONF}/tbl-parameters.json"
-    tblAp   = f"{CONF}/tblAppears.json"
+    TRX     = self . Translations
+    msg     = TRX [ "TBL" ] [ "Predictions" ] [ "Loading" ]
+    self    . ShowStatus               ( msg                                 )
     ##########################################################################
-    self . tblSettings   = LoadJson    ( tblSt                               )
-    self . tblParameters = LoadJson    ( tblPa                               )
-    self . tblAppears    = LoadJson    ( tblAp                               )
+    self    . LoadSettings             (                                     )
     ##########################################################################
     DB      = self . ConnectDB         (                                     )
     if                                 ( DB == None                        ) :
@@ -274,6 +520,7 @@ class tblPredictListings            ( TreeDock                             ) :
       return
     ##########################################################################
     self    . emitAllHistory . emit    ( RECORDs                             )
+    self    . ShowStatus               ( ""                                  )
     ##########################################################################
     return
   ############################################################################
@@ -329,13 +576,26 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def PredictBettings            ( self                                    ) :
+  def InsertItem                    ( self                                 ) :
     ##########################################################################
+    Id   = self . topLevelItemCount (                                        )
+    Id   = int                      ( int ( Id ) + 1                         )
+    IT   = self . PrepareEmptyItem  ( Id                                     )
+    self . addTopLevelItem          ( IT                                     )
+    self . setCurrentItem           ( IT                                     )
     ##########################################################################
     return
   ############################################################################
-  def UpdateBettings             ( self                                    ) :
+  def PredictBettings ( self                                               ) :
     ##########################################################################
+    self . Go         ( self . Predicting                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateBettings                    ( self                             ) :
+    ##########################################################################
+    RECORDs = self . GetCurrentBettings (                                    )
+    self    . Go                        ( self . updating , ( RECORDs , )    )
     ##########################################################################
     return
   ############################################################################
@@ -358,19 +618,36 @@ class tblPredictListings            ( TreeDock                             ) :
   def PredictionMenu               ( self , mm                             ) :
     ##########################################################################
     TRX    = self  . Translations
-    LOM    = mm    . addMenu       ( "預測參數" )
+    MSG    = self  . getMenuItem   ( "Parameters"                            )
+    LOM    = mm    . addMenu       ( MSG                                     )
     ##########################################################################
-    hid    =                       ( self . SortOrder == "asc"               )
-    msg    = TRX                   [ "UI::SortAsc"                           ]
-    mm     . addActionFromMenu     ( LOM , 20000001 , msg , True , hid       )
+    MSG    = self  . getMenuItem   ( "ReloadSettings"                        )
+    mm     . addActionFromMenu     ( LOM , 3001 , MSG                        )
     ##########################################################################
-    hid    =                       ( self . SortOrder == "desc"              )
-    msg    = TRX                   [ "UI::SortDesc"                          ]
-    mm     . addActionFromMenu     ( LOM , 20000002 , msg , True , hid       )
+    hid    = self . ShowMessage
+    msg    = self  . getMenuItem   ( "DisplayMessage"                        )
+    mm     . addActionFromMenu     ( LOM , 3002 , msg , True , hid           )
     ##########################################################################
     return mm
   ############################################################################
   def RunPredictionMenu            ( self , atId                           ) :
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    if                             ( atId == 3001                          ) :
+      self . LoadSettings          (                                         )
+      return True
+    ##########################################################################
+    if                             ( atId == 3002                          ) :
+      if                           ( self . ShowMessage                    ) :
+        self . ShowMessage = False
+      else                                                                   :
+        self . ShowMessage = True
+      return True
+    ##########################################################################
+    ##########################################################################
     ##########################################################################
     ##########################################################################
     return   False
@@ -396,11 +673,19 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     mm     . addSeparator           (                                        )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     . addAction              ( 1002 , "預測投注" )
-    mm     . addAction              ( 1003 , "更新投注" )
-    mm     . addAction              ( 1004 , "全部選取" )
-    mm     . addAction              ( 1005 , "全部不選" )
+    mm     = self . AppendInsertAction  ( mm , 1002                          )
+    mm     . addSeparator           (                                        )
+    msg    = self . getMenuItem     ( "Prediction"                           )
+    mm     . addAction              ( 1101 , msg                             )
+    msg    = self . getMenuItem     ( "UpdateBets"                           )
+    mm     . addAction              ( 1102 , msg                             )
+    mm     . addSeparator           (                                        )
+    msg    = self . getMenuItem     ( "SelectAll"                            )
+    mm     . addAction              ( 1103 , msg                             )
+    msg    = self . getMenuItem     ( "SelectNone"                           )
+    mm     . addAction              ( 1104 , msg                             )
     ##########################################################################
+    mm     . addSeparator           (                                        )
     mm     = self . PredictionMenu  ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
@@ -432,23 +717,29 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     if                              ( at == 1002                           ) :
       ########################################################################
+      self . InsertItem             (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 1101                           ) :
+      ########################################################################
       self . PredictBettings        (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1003                           ) :
+    if                              ( at == 1102                           ) :
       ########################################################################
       self . UpdateBettings         (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1004                           ) :
+    if                              ( at == 1103                           ) :
       ########################################################################
       self . PickAll                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1005                           ) :
+    if                              ( at == 1104                           ) :
       ########################################################################
       self . PickNone               (                                        )
       ########################################################################
