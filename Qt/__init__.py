@@ -23,6 +23,7 @@ from . ListDock        import ListDock        as ListDock
 from . IconDock        import IconDock        as IconDock
 from . TableWidget     import TableWidget     as TableWidget
 from . GraphicsView    import GraphicsView    as GraphicsView
+from . OpenGLWidget    import OpenGLWidget    as OpenGLWidget
 from . TextEdit        import TextEdit        as TextEdit
 from . PlainTextEdit   import PlainTextEdit   as PlainTextEdit
 from . MajorListings   import MajorListings   as MajorListings
@@ -52,6 +53,7 @@ __all__ = [ "AbstractGui"                                                    ,
             "IconDock"                                                       ,
             "TableWidget"                                                    ,
             "GraphicsView"                                                   ,
+            "OpenGLWidget"                                                   ,
             "TextEdit"                                                       ,
             "PlainTextEdit"                                                  ,
             "MajorListings"                                                  ,

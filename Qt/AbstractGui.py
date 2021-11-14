@@ -84,6 +84,7 @@ class AbstractGui        (                                                 ) :
     self . PlanFunc        = None
     self . LocalIcons      = { }
     self . LocalMsgs       = { }
+    self . LimitValues     = { }
     self . AllowDrops      = { }
     self . Functionalities = { }
     self . GuiMutex        = threading . Lock ( )
@@ -1274,7 +1275,40 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def LimitValue              ( self , index                               ) :
+    ##########################################################################
+    if                        ( index not in self . LimitValues            ) :
+      return 0
+    ##########################################################################
+    return self . LimitValues [ index                                        ]
   ############################################################################
+  def setLimitValue           ( self , index , value                       ) :
+    ##########################################################################
+    self . LimitValues [ index ] = value
+    ##########################################################################
+    return
+  ############################################################################
+  def setSuggestion ( self , size )                                          :
+    ##########################################################################
+    self . LimitValues [ 1911010001 ] = size . width  (                      )
+    self . LimitValues [ 1911010002 ] = size . height (                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def SizeSuggestion ( size                                                ) :
+    ##########################################################################
+    s   = size
+    ##########################################################################
+    if               ( 1911010001 in self . LimitValues                    ) :
+      s . setWidth   ( self . LimitValues [ 1911010001 ]                     )
+    ##########################################################################
+    if               ( 1911010002 in self . LimitValues                    ) :
+      s . setHeight  ( self . LimitValues [ 1911010002 ]                     )
+    ##########################################################################
+    return s
+  ############################################################################
+  def setSizeSuggestion          ( self  , width , height                  ) :
+    return self . SizeSuggestion ( QSize ( width , height )                  )
   ############################################################################
   ############################################################################
   ############################################################################
@@ -1832,40 +1866,6 @@ bool N::AbstractGui::FixUuids(UUIDs & Uuids)
     return true                                    ;
   }                                                ;
   return false                                     ;
-}
-
-int N::AbstractGui::LimitValue(int index)
-{
-  if (!LimitValues.contains(index)) return 0 ;
-  return LimitValues [ index ]               ;
-}
-
-void N::AbstractGui::setLimitValue(int index,int value)
-{
-  LimitValues [ index ] = value ;
-}
-
-void N::AbstractGui::setSuggestion(QSize s)
-{
-  LimitValues [ 11010001 ] = s . width  ( ) ;
-  LimitValues [ 11010002 ] = s . height ( ) ;
-}
-
-QSize N::AbstractGui::SizeSuggestion (QSize size) const
-{
-  QSize s = size                               ;
-  if ( LimitValues . contains ( 11010001 ) )   {
-    s . setWidth  ( LimitValues [ 11010001 ] ) ;
-  }                                            ;
-  if ( LimitValues . contains ( 11010002 ) )   {
-    s . setHeight ( LimitValues [ 11010002 ] ) ;
-  }                                            ;
-  return s                                     ;
-}
-
-QSize N::AbstractGui::SizeSuggestion(int w,int h) const
-{
-  return SizeSuggestion ( QSize ( w , h ) ) ;
 }
 
 bool N::AbstractGui::ArgsToGroup(int start,VarArgs & args,Group & group)

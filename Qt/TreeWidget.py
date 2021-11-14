@@ -54,6 +54,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   SubmitStatusMessage     = pyqtSignal ( str , int                           )
   SubmitTtsTalk           = pyqtSignal ( str , int                           )
   SubmitUpdate            = pyqtSignal (                                     )
+  emitAdjustWidths        = pyqtSignal (                                     )
+  emitAutoFit             = pyqtSignal (                                     )
   Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
@@ -70,6 +72,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . SubmitStatusMessage    .connect  ( self.AssignStatusMessage       )
     self . SubmitTtsTalk          .connect  ( self.DoTtsTalk                 )
     self . SubmitUpdate           .connect  ( self.update                    )
+    self . emitAdjustWidths       .connect  ( self.setWidths                 )
+    self . emitAutoFit            .connect  ( self.AutoResize                )
     ##########################################################################
     self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
     self . setAcceptDrops                   ( True                           )
@@ -78,7 +82,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . setVerticalScrollBarPolicy       ( Qt . ScrollBarAsNeeded         )
     ##########################################################################
     self . droppingAction = False
-    self . VoiceJSON      = { }
+    self . VoiceJSON      =                 {                                }
+    self . WIDTHs         =                 [                                ]
     ##########################################################################
     return
   ############################################################################
@@ -102,6 +107,16 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
       event . accept          (                                              )
       return
     super ( QTreeWidget , self ) . contextMenuEvent ( event                  )
+    return
+  ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    if                     ( self . Shutdown ( )                           ) :
+      event . accept       (                                                 )
+      return
+    ##########################################################################
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
     return
   ############################################################################
   def dragEnterEvent    ( self , event                                     ) :
@@ -594,6 +609,54 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot                    (                                             )
+  def setWidths                ( self                                      ) :
+    ##########################################################################
+    for i , w in enumerate     ( self . WIDTHs                             ) :
+      if                       ( i < ( self . columnCount ( ) - 1 )        ) :
+        self . setColumnWidth  ( i , self . WIDTHs [ i ]                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def AdjustWidths                 ( self                                  ) :
+    ##########################################################################
+    self . emitAdjustWidths . emit (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainWidths                ( self                                   ) :
+    ##########################################################################
+    self   . WIDTHs             = [                                          ]
+    for i in range                ( 0 , self . columnCount ( )             ) :
+      w    = self . columnWidth   ( i                                        )
+      self . WIDTHs . append      ( w                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def SuitableColumns               ( self , startId , columns             ) :
+    ##########################################################################
+    for i in range                  (        startId , columns             ) :
+      self . resizeColumnToContents ( i                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def AutoResize              ( self                                       ) :
+    ##########################################################################
+    CC   = self . columnCount (                                              )
+    if                        ( CC <= 0                                    ) :
+      return
+    ##########################################################################
+    self . SuitableColumns    ( 0 , CC                                       )
+    self . repaint            (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def AutoFit                 ( self                                       ) :
+    ##########################################################################
+    self . emitAutoFit . emit (                                              )
+    ##########################################################################
+    return
+  ############################################################################
   def singleClicked           ( self , item , column                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
@@ -602,6 +665,13 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   def stateChanged            ( self , item , column                       ) :
     raise NotImplementedError (                                              )
+  ############################################################################
+  def Shutdown                ( self                                       ) :
+    self . Leave . emit       ( self                                         )
+    return True
+  ############################################################################
+  def Relocation              ( self                                       ) :
+    return False
   ############################################################################
   def InsertItem              ( self                                       ) :
     raise NotImplementedError (                                              )
