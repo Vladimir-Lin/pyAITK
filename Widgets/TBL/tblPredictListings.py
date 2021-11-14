@@ -134,6 +134,7 @@ class tblPredictListings            ( TreeDock                             ) :
     self . Serial             = ""
     self . Prediction         = ""
     self . ShowMessage        = False
+    self . Optimizing         = False
     self . MinBalls           = -1
     self . MaxBalls           = -1
     self . Periods            = 100
@@ -779,9 +780,6 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     DB      . Close                    (                                     )
     ##########################################################################
-    if                                 ( len ( RECORDs ) <= 0              ) :
-      return
-    ##########################################################################
     self    . emitAllHistory . emit    ( RECORDs                             )
     self    . ShowStatus               ( ""                                  )
     ##########################################################################
@@ -794,6 +792,24 @@ class tblPredictListings            ( TreeDock                             ) :
       self . Prepare             (                                           )
     ##########################################################################
     self   . Go                  ( self . loading                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def OptimizeParameters               ( self                              ) :
+    ##########################################################################
+    TRX     = self . Translations
+    msg     = self . getMenuItem       ( "Optimize"                          )
+    self    . ShowStatus               ( msg                                 )
+    self    . TtsTalk                  ( msg , self . getLocality ( )        )
+    ##########################################################################
+    DB      = self . ConnectDB         (                                     )
+    if                                 ( DB == None                        ) :
+      return
+    ##########################################################################
+    ##########################################################################
+    DB      . Close                    (                                     )
+    ##########################################################################
+    self    . Optimizing = False
     ##########################################################################
     return
   ############################################################################
@@ -887,9 +903,15 @@ class tblPredictListings            ( TreeDock                             ) :
     MSG    = self  . getMenuItem    ( "ReloadSettings"                       )
     mm     . addActionFromMenu      ( LOM , 3001 , MSG                       )
     ##########################################################################
-    hid    = self . ShowMessage
-    msg    = self  . getMenuItem    ( "DisplayMessage"                       )
+    hid    = self  . Optimizing
+    msg    = self  . getMenuItem    ( "Optimize"                             )
     mm     . addActionFromMenu      ( LOM , 3002 , msg , True , hid          )
+    ##########################################################################
+    hid    = self  . ShowMessage
+    msg    = self  . getMenuItem    ( "DisplayMessage"                       )
+    mm     . addActionFromMenu      ( LOM , 3003 , msg , True , hid          )
+    ##########################################################################
+    mm     . addSeparatorFromMenu   ( LOM                                    )
     ##########################################################################
     msg    = self . getMenuItem     ( "MinBets"                              )
     self   . spinMin    = SpinBox   ( None , self . PlanFunc                 )
@@ -926,6 +948,14 @@ class tblPredictListings            ( TreeDock                             ) :
       return True
     ##########################################################################
     if                             ( atId == 3002                          ) :
+      if                           ( self . Optimizing                     ) :
+        self . Optimizing = False
+      else                                                                   :
+        self . Optimizing = True
+        self . Go                  ( self . OptimizeParameters               )
+      return True
+    ##########################################################################
+    if                             ( atId == 3003                          ) :
       if                           ( self . ShowMessage                    ) :
         self . ShowMessage = False
       else                                                                   :
