@@ -76,20 +76,21 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     self . emitWindowIcon . connect ( self . assignWindowIcon                )
     ##########################################################################
     self . setReadOnly     ( True                                            )
-    self . TZ          = "Asia/Taipei"
-    self . VoiceJSON   = { }
-    self . Recognizer  = None
-    self . Execution   = None
-    self . DoExecution = True
-    self . ShowParser  = True
-    self . ShowError   = False
-    self . ShowReading = False
-    self . DoSplit     = True
+    self . TZ           = "Asia/Taipei"
+    self . VoiceJSON    = { }
+    self . Recognizer   = None
+    self . Execution    = None
+    self . DoExecution  = True
+    self . ShowParser   = True
+    self . ShowError    = False
+    self . ShowReading  = False
+    self . DoSplit      = True
+    self . SaveSettings = None
     ##########################################################################
-    self . LangOn      = { "zh-TW" : False , "en-US" : False , "ja" : False  }
-    self . onOff       = False
-    self . onIcon      = None
-    self . offIcon     = None
+    self . LangOn       = { "zh-TW" : False , "en-US" : False , "ja" : False }
+    self . onOff        = False
+    self . onIcon       = None
+    self . offIcon      = None
     ##########################################################################
     self     . setPrepared         ( True                                    )
     ##########################################################################
