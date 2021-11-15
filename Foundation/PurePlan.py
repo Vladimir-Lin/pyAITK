@@ -2,8 +2,12 @@
 ##############################################################################
 import os
 import sys
+import time
 ##############################################################################
-from AITK . Essentials . VirtualProgress import VirtualProgress as VirtualProgress
+from   PyQt5 . QtCore                       import QDateTime
+from   PyQt5 . QtWidgets                    import qApp
+##############################################################################
+from   AITK  . Essentials . VirtualProgress import VirtualProgress as VirtualProgress
 ##############################################################################
 class PurePlan           ( VirtualProgress                                 ) :
   ############################################################################
@@ -91,6 +95,16 @@ class PurePlan           ( VirtualProgress                                 ) :
       return
     ##########################################################################
     self . Notification       ( Id                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def skip ( self , msecs                                                  ) :
+    ##########################################################################
+    N = QDateTime . currentDateTime (                                        )
+    ##########################################################################
+    while  ( N . msecsTo( QDateTime . currentDateTime ( ) ) < msecs        ) :
+      qApp . processEvents          (                                        )
+      time . sleep                  ( 0.001                                  )
     ##########################################################################
     return
 ##############################################################################
@@ -314,9 +328,6 @@ class Q_FOUNDATION_EXPORT PurePlan : public VirtualProgress
   private:
 
 } ;
-
-
-
 
 #include <qtfoundation.h>
 

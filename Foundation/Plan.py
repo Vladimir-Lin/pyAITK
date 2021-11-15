@@ -24,6 +24,7 @@ from   PyQt5 . QtCore                 import QSize
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QColor
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -43,13 +44,17 @@ class Plan                 ( PurePlan                                      ) :
     ##########################################################################
     super ( ) . __init__   (                                                 )
     ##########################################################################
-    self . Actions       = {                                                 }
-    self . Shortcuts     = {                                                 }
-    self . Stacked       = None
-    self . Mdi           = None
-    self . statusMessage = None
-    self . Ratio         = None
-    self . VoiceWidget   = None
+    self . Actions         = {                                                 }
+    self . Shortcuts       = {                                                 }
+    self . Stacked         = None
+    self . Mdi             = None
+    self . statusMessage   = None
+    self . statusBar       = None
+    self . Ratio           = None
+    self . VoiceWidget     = None
+    self . progressManager = None
+    self . Indicator       = None
+    self . MyFunc          = None
     ##########################################################################
     return
   ############################################################################
@@ -191,7 +196,6 @@ class Plan                 ( PurePlan                                      ) :
     ##########################################################################
     return
   ############################################################################
-  ############################################################################
   def PrepareActions   ( self , parent = None                              ) :
     ##########################################################################
     ## s    = QShortcut   ( QKeySequence ( "Ins"                 ) , parent     )
@@ -199,6 +203,160 @@ class Plan                 ( PurePlan                                      ) :
     ##########################################################################
     ## s    = QShortcut   ( QKeySequence ( QKeySequence . Delete ) , parent     )
     ## self . addShortcut ( "Delete" , s                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ## Progress Manager
+  ############################################################################
+  def Progress              ( self , Name , Format                         ) :
+    ##########################################################################
+    if                      ( self . progressManager in [ False , None ]   ) :
+      return -1
+    ##########################################################################
+    r    = self . progressManager . Request ( Name , Format                  )
+    self . skip                             ( 300                            )
+    ##########################################################################
+    return r
+  ############################################################################
+  def ProgressName          ( self , Id , Name                             ) :
+    ##########################################################################
+    if                      ( Id < 0                                       ) :
+      return
+    ##########################################################################
+    if                      ( self . progressManager in [ False , None ]   ) :
+      return
+    ##########################################################################
+    self . progressManager . setName ( Id , Name                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def ProgressText          ( self , Id , message                          ) :
+    ##########################################################################
+    if                      ( Id < 0                                       ) :
+      return
+    ##########################################################################
+    if                      ( self . progressManager in [ False , None ]   ) :
+      return
+    ##########################################################################
+    self . progressManager . setMessage ( Id , message                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def setProgress           ( self , Id , Format                           ) :
+    ##########################################################################
+    if                      ( Id < 0                                       ) :
+      return
+    ##########################################################################
+    if                      ( self . progressManager in [ False , None ]   ) :
+      return
+    ##########################################################################
+    self . progressManager . setFormat ( Id , Format                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def setRange              ( self , Id , Min , Max                        ) :
+    ##########################################################################
+    if                      ( Id < 0                                       ) :
+      return
+    ##########################################################################
+    if                      ( self . progressManager in [ False , None ]   ) :
+      return
+    ##########################################################################
+    self . progressManager . setRange ( Id , Min , Max                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def setFrequency          ( self , Id , cFmt , rFmt                      ) :
+    ##########################################################################
+    if                      ( Id < 0                                       ) :
+      return
+    ##########################################################################
+    if                      ( self . progressManager in [ False , None ]   ) :
+      return
+    ##########################################################################
+    self . progressManager . setFrequency ( Id , cFmt , rFmt                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def Start                 ( self , Id , Value , Running                  ) :
+    ##########################################################################
+    if                      ( Id < 0                                       ) :
+      return
+    ##########################################################################
+    if                      ( self . progressManager in [ False , None ]   ) :
+      return
+    ##########################################################################
+    self . progressManager . Start ( Id , Value , Running                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def Finish                ( self , Id                                    ) :
+    ##########################################################################
+    if                      ( Id < 0                                       ) :
+      return
+    ##########################################################################
+    if                      ( self . progressManager in [ False , None ]   ) :
+      return
+    ##########################################################################
+    self . progressManager . Finish ( Id                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def ProgressReady         ( self , Id , msecs = 1000                     ) :
+    ##########################################################################
+    if                      ( Id < 0                                       ) :
+      return True
+    ##########################################################################
+    if                      ( self . progressManager in [ False , None ]   ) :
+      return True
+    ##########################################################################
+    return self . progressManager . WaitForReady ( Id , msecs                )
+  ############################################################################
+  ## Progress indicator
+  ############################################################################
+  def StartBusy             ( self                                         ) :
+    ##########################################################################
+    self . RealStart        (                                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def StopBusy              ( self                                         ) :
+    ##########################################################################
+    self . RealStop         (                                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def RealStart             ( self                                         ) :
+    ##########################################################################
+    if                      ( self . statusBar in [ False , None ]         ) :
+      return
+    ##########################################################################
+    if                      ( self . Indicator in [ False , None ]         ) :
+      ########################################################################
+      blue = QColor         ( 0 , 0 , 255                                    )
+      ########################################################################
+      self . Indicator = ProgressIndicator  ( self . statusBar , self.MyFunc )
+      self . Indicator . setColor           ( blue                           )
+      self . Indicator . setAnimationDelay  ( 100                            )
+      self . statusBar . addPermanentWidget ( self . Indicator               )
+      self . Indicator . show               (                                )
+    ##########################################################################
+    self . Indicator . startAnimation ( )
+    ##########################################################################
+    return
+  ############################################################################
+  def RealStop              ( self                                         ) :
+    ##########################################################################
+    if                      ( self . Indicator in [ False , None ]         ) :
+      return
+    ##########################################################################
+    cnt = self . Indicator . stopAnimation (                                 )
+    if                                     ( cnt > 0                       ) :
+      return
+    ##########################################################################
+    self . Indicator . deleteLater         (                                 )
+    self . Indicator = None
     ##########################################################################
     return
 ##############################################################################
@@ -226,8 +384,6 @@ class Q_COMPONENTS_EXPORT Plan : public PurePlan
     MENUs                    menus           ;
     QStatusBar             * status          ;
     DebugView              * debugWidget     ;
-    ProgressManager        * progressManager ;
-    ProgressIndicator      * indicator       ;
     ControlPad             * pad             ;
     XmlRpcLogHandler       * xmllog          ;
     XmlRpcErrorHandler     * xmlerr          ;
@@ -308,23 +464,6 @@ class Q_COMPONENTS_EXPORT Plan : public PurePlan
     virtual void   setValue    (void * bar,int value) ;
     virtual void   Finish      (void * bar) ;
 
-    // Progress Manager
-    virtual int  Progress      (QString name,QString format) ;
-    virtual void ProgressName  (int Id,QString name) ;
-    virtual void ProgressText  (int Id,QString message) ;
-    virtual void setProgress   (int Id,QString format) ;
-    virtual void setRange      (int Id,qint64 Min,qint64 Max) ;
-    virtual void setFrequency  (int Id,QString cFmt,QString rFmt) ;
-    virtual void Start         (int Id,qint64 * Value,bool * Running) ;
-    virtual void Finish        (int Id) ;
-    virtual bool ProgressReady (int Id,int msecs = 1000) ;
-
-    // Progress indicator
-    virtual void StartBusy     (void) ;
-    virtual void StopBusy      (void) ;
-    virtual void RealStart     (void) ;
-    virtual void RealStop      (void) ;
-
     // Icon Manager
     void  addIcon              (int ObjectType,int ObjectId,int State,QIcon icon) ;
     QIcon Icon                 (int ObjectType,int ObjectId,int State,QIcon defaultIcon = QIcon()) ;
@@ -338,23 +477,6 @@ class Q_COMPONENTS_EXPORT Plan : public PurePlan
     bool Profiling             (void) ;
 
 } ;
-
-
-
-#include <qtcomponents.h>
-
-//#define CIOSDEBUG
-//#define DISABLE_IOS_SOUND
-
-#ifdef CIOSDEBUG
-#define XDEBUG(msg) if (Verbose>=90) Debug (msg)
-#else
-#define XDEBUG(msg)
-#endif
-
-typedef struct     {
-  N::Plan * pp     ;
-} SystemPlanPacket ;
 
 N::Plan:: Plan     (void)
         : PurePlan (    )
@@ -931,104 +1053,6 @@ void N::Plan::Notify(QString sound,QString message)
     Debug       ( message )                    ;
     showMessage ( message )                    ;
   }                                            ;
-}
-
-int N::Plan::Progress(QString name,QString format)
-{
-  nKickOut ( IsNull(progressManager) , -1 )     ;
-  int r = progressManager->Request(name,format) ;
-  Time :: skip ( 300 )                          ;
-  return r                                      ;
-}
-
-void N::Plan::setRange(int Id,qint64 Min,qint64 Max)
-{
-  nDropOut ( IsNull(progressManager)  ) ;
-  nDropOut ( Id < 0                   ) ;
-  progressManager->setRange(Id,Min,Max) ;
-}
-
-void N::Plan::ProgressName(int Id,QString name)
-{
-  nDropOut ( IsNull(progressManager) ) ;
-  nDropOut ( Id < 0                  ) ;
-  progressManager->setName( Id ,name ) ;
-}
-
-void N::Plan::ProgressText(int Id,QString message)
-{
-  nDropOut ( IsNull(progressManager)    ) ;
-  nDropOut ( Id < 0                     ) ;
-  progressManager->setMessage(Id,message) ;
-}
-
-void N::Plan::setProgress(int Id,QString format)
-{
-  nDropOut ( IsNull(progressManager)  ) ;
-  nDropOut ( Id < 0                   ) ;
-  progressManager->setFormat(Id,format) ;
-}
-
-void N::Plan::setFrequency(int Id,QString cFmt,QString rFmt)
-{
-  nDropOut ( IsNull(progressManager)  )       ;
-  nDropOut ( Id < 0                   )       ;
-  progressManager->setFrequency(Id,cFmt,rFmt) ;
-}
-
-void N::Plan::Start(int Id,qint64 * Value,bool * Running)
-{
-  nDropOut ( IsNull(progressManager)     ) ;
-  nDropOut ( Id < 0                      ) ;
-  progressManager->Start(Id,Value,Running) ;
-}
-
-void N::Plan::Finish(int Id)
-{
-  nDropOut ( IsNull(progressManager) ) ;
-  nDropOut ( Id < 0                  ) ;
-  progressManager->Finish(Id)          ;
-}
-
-bool N::Plan::ProgressReady (int Id,int msecs)
-{
-  nKickOut ( IsNull(progressManager) , true )           ;
-  nKickOut ( Id < 0                  , true  )          ;
-  return progressManager -> waitForReady ( Id , msecs ) ;
-}
-
-void N::Plan::StartBusy(void)
-{
-  RealStart ( ) ;
-}
-
-void N::Plan::StopBusy(void)
-{
-  RealStop ( ) ;
-}
-
-void N::Plan::RealStart(void)
-{
-  if ( IsNull ( status    ) ) return                     ;
-  if ( IsNull ( indicator ) )                            {
-    QColor blue ( 0 , 0 , 255 )                          ;
-    indicator  = new ProgressIndicator ( status , this ) ;
-    indicator -> setColor              ( blue          ) ;
-    indicator -> setAnimationDelay     ( 100           ) ;
-    status    -> addPermanentWidget    ( indicator     ) ;
-    indicator -> show                  (               ) ;
-  }                                                      ;
-  indicator->startAnimation()                            ;
-}
-
-void N::Plan::RealStop(void)
-{
-  if ( IsNull ( indicator ) ) return       ;
-  int cnt = indicator -> stopAnimation ( ) ;
-  if ( cnt <= 0 )                          {
-    indicator -> deleteLater ( )           ;
-    indicator  = NULL                      ;
-  }                                        ;
 }
 
 void N::Plan::addIcon(int ObjectType,int ObjectId,int State,QIcon icon)

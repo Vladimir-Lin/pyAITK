@@ -67,6 +67,7 @@ class ProgressManager           ( TreeDock                                 ) :
   Requesting       = pyqtSignal (                                            )
   LocalRequest     = pyqtSignal (                                            )
   EmitTimer        = pyqtSignal (                                            )
+  Hidden           = pyqtSignal ( QWidget                                    )
   ############################################################################
   def __init__                  ( self , parent = None , plan = None       ) :
     ##########################################################################
@@ -103,9 +104,9 @@ class ProgressManager           ( TreeDock                                 ) :
     self . EmitTimer    . connect       ( self . EnsureTimer                 )
     ##########################################################################
     self . setLimitValue                ( self . AutoCleanId   ,   1         )
-    self . setLimitValue                ( self . RunningId ,   0                    )
-    self . setLimitValue                ( 212001162 ,   0                    )
-    self . setLimitValue                ( 212001163 ,   0                    )
+    self . setLimitValue                ( self . RunningId     ,   0         )
+    self . setLimitValue                ( 1212001162           ,   0         )
+    self . setLimitValue                ( 1212001163           ,   0         )
     self . setLimitValue                ( self . FittingId     ,   0         )
     self . setLimitValue                ( self . TimerPeriodId , 125         )
     ##########################################################################
@@ -136,7 +137,7 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     self . PassDragDrop  = False
     self . Id            = 0
-    self . Fitting       = True
+    self . Fitting       = False
     self . Timer         = None
     self . SaveSettings  = None
     ##########################################################################
@@ -490,8 +491,8 @@ class ProgressManager           ( TreeDock                                 ) :
       }                                       ;
       """
       if u                                :
-        self . Report     ( K )
-        time . sleep ( 0.002 )
+        self . Report ( K )
+        self . skip   ( 2 )
     ##########################################################################
     self . Minimum [ -1 ] = self . Minimum [ -1 ] + 1
     self . UnlockGui ( )
@@ -819,18 +820,35 @@ void N::ProgressManager::LocalAccept(void)
   def Menu                          ( self , pos                           ) :
     ##########################################################################
     doMenu = self . isFunction      ( self . HavingMenu                      )
+    doTOut = self . isFunction      ( self . TimeoutId                       )
     if                              ( not doMenu                           ) :
       return False
     ##########################################################################
+    ##########################################################################
     self   . Notify                 ( 0                                      )
     ##########################################################################
+    AC     = self . LimitValue      ( self . AutoCleanId                     )
+    AC     =                        ( AC > 0                                 )
     items  = self . selectedItems   (                                        )
     atItem = self . currentItem     (                                        )
     ##########################################################################
     mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    ##########################################################################
+    if                              ( not doTOut                           ) :
+      msg  = TRX                    [ "UI::Hide"                             ]
+      mm   . addAction              ( 201 , msg                              )
+      mm   . addSeparator           (                                        )
+    ##########################################################################
+    msg    = TRX                    [ "UI::Clean"                            ]
+    mm     . addAction              ( 101 , msg                              )
+    ##########################################################################
+    msg    = TRX                    [ "UI::AutoResizeColumns"                ]
+    mm     . addAction              ( 102 , msg , True , self . Fitting      )
+    ##########################################################################
+    msg    = TRX                    [ "UI::AutoClean"                        ]
+    mm     . addAction              ( 103 , msg , True , AC                  )
     ##########################################################################
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
@@ -841,46 +859,32 @@ void N::ProgressManager::LocalAccept(void)
     if                              ( self . RunDocking        ( mm , aa ) ) :
       return True
     ##########################################################################
-    if                              ( at == 1001                           ) :
+    if                              ( at == 101                            ) :
       ########################################################################
+      self . setLimitValue          ( 1212001163 , 1                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 102                            ) :
+      ########################################################################
+      self . Fitting = aa . isChecked (                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 103                            ) :
+      ########################################################################
+      if                            ( aa . isChecked ( )                   ) :
+        self . setLimitValue        ( self . AutoCleanId , 1                 )
+      else                                                                   :
+        self . setLimitValue        ( self . AutoCleanId , 0                 )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 201                            ) :
+      ########################################################################
+      self . Hidden . emit          ( self                                   )
       ########################################################################
       return True
     ##########################################################################
     return True
-    """
-bool N::ProgressManager::Menu(QPoint)
-{
-  nScopedMenu       ( mm  , this                                       ) ;
-  QAction * aa                                                           ;
-  bool      ac = ( LimitValues [ self . AutoCleanId ] > 0 )                       ;
-  ////////////////////////////////////////////////////////////////////////
-  if ( isFunction ( 212001301 ) )                                        {
-    mm . add          ( 201 , tr("Hide") )                               ;
-    mm . addSeparator (                  )                               ;
-  }                                                                      ;
-  ////////////////////////////////////////////////////////////////////////
-  mm . add          ( 101 , tr("Clean")                                ) ;
-  mm . add          ( 102 , tr("Auto resize columns") , true , Fitting ) ;
-  mm . add          ( 103 , tr("Auto clean"         ) , true , ac      ) ;
-  mm      . setFont ( plan                                             ) ;
-  aa = mm . exec    (                                                  ) ;
-  nKickOut          ( IsNull ( aa ) ,true                              ) ;
-  ////////////////////////////////////////////////////////////////////////
-  switch ( mm [ aa ] )                                                   {
-    case 101                                                             :
-      LimitValues [ 212001163 ] = 1                                      ;
-    break                                                                ;
-    case 102                                                             :
-      Fitting                   = aa -> isChecked ( )                    ;
-    break                                                                ;
-    case 103                                                             :
-      LimitValues [ self . AutoCleanId ] = aa -> isChecked ( ) ? 1 : 0            ;
-    break                                                                ;
-    case 201                                                             :
-      emit Hidden ( this )                                               ;
-    break                                                                ;
-  }                                                                      ;
-  return true                                                            ;
-}
-    """
 ##############################################################################
