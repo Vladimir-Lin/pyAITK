@@ -184,11 +184,14 @@ class ImAppsWidget                 ( TreeDock                              ) :
     IT     = QTreeWidgetItem     (                                           )
     IT     . setCheckState       ( 0 , PICK                                  )
     IT     . setData             ( 0 , Qt . UserRole , Uuid                  )
+    IT     . setToolTip          ( 0 , str ( Uuid )                          )
     ##########################################################################
     IT     . setText             ( 1 , str ( Id )                            )
     IT     . setTextAlignment    ( 1 , Qt.AlignRight                         )
+    IT     . setToolTip          ( 1 , str ( Uuid )                          )
     ##########################################################################
     IT     . setText             ( 2 , Name                                  )
+    IT     . setToolTip          ( 2 , str ( Uuid )                          )
     ##########################################################################
     return IT
   ############################################################################
