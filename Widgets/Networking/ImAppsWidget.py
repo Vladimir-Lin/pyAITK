@@ -43,17 +43,13 @@ from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QFileDialog
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
 from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
-from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
-from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
-from   AITK  . Essentials . Relation  import Relation
-##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
+from   AITK  . Documents . JSON       import Save        as SaveJson
 ##############################################################################
 class ImAppsWidget                 ( TreeDock                              ) :
   ############################################################################
@@ -109,6 +105,7 @@ class ImAppsWidget                 ( TreeDock                              ) :
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     self . LinkAction              ( "Insert"     , self . InsertItem        )
     self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self . LinkAction              ( "Export"     , self . ExportJson        )
     ##########################################################################
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
@@ -257,6 +254,49 @@ class ImAppsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def toJson                         ( self                                ) :
+    ##########################################################################
+    JSOX       =                     [                                       ]
+    ##########################################################################
+    for i in range                   ( 0 , self . topLevelItemCount ( )    ) :
+      ########################################################################
+      item     = self . topLevelItem ( i                                     )
+      J        =                     {                                       }
+      ########################################################################
+      Uuid     = self . itemUuid     ( item , 0                              )
+      Id       = item . text         ( 1                                     )
+      Name     = item . text         ( 2                                     )
+      CHK      = item . checkState   ( 0                                     )
+      FOUND    =                     ( CHK == Qt . Checked                   )
+      USED     = 1
+      if                             ( not FOUND                           ) :
+        USED   = 0
+      ########################################################################
+      J [ "Id"   ] = int             ( Id                                    )
+      J [ "Uuid" ] = int             ( Uuid                                  )
+      J [ "Used" ] = int             ( USED                                  )
+      J [ "Name" ] = str             ( Name                                  )
+      ########################################################################
+      JSOX     . append              ( J                                     )
+    ##########################################################################
+    return JSOX
+  ############################################################################
+  def ExportJson                    ( self                                 ) :
+    ##########################################################################
+    filename , ft = QFileDialog . getSaveFileName                          ( \
+                      self                                                 , \
+                      self . windowTitle ( )                               , \
+                      ""                                                   , \
+                      "JSON (*.json)"                                        )
+    if                              ( len ( filename ) <= 0                ) :
+      return
+    ##########################################################################
+    JSOX     = self . toJson        (                                        )
+    SaveJson                        ( filename , JSOX                        )
+    self     . Notify               ( 5                                      )
+    ##########################################################################
+    return
+  ############################################################################
   @pyqtSlot                         (                                        )
   def InsertItem                    ( self                                 ) :
     ##########################################################################
@@ -373,6 +413,14 @@ class ImAppsWidget                 ( TreeDock                              ) :
       MSG  = TRX                   [ "UI::Rename"                            ]
       mm   . addAction             ( 1003 ,  MSG                             )
     ##########################################################################
+    MSG    = self . getMenuItem    ( "Export"                                )
+    mm     . addAction             ( 1004 ,  MSG                             )
+    ##########################################################################
+    if                             ( len ( items ) == 1                    ) :
+      if                           ( self . EditAllNames != None           ) :
+        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
+        mm . addSeparator          (                                         )
+    ##########################################################################
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
@@ -392,6 +440,15 @@ class ImAppsWidget                 ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1003                            ) :
       self . RenameItem            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1004                            ) :
+      self . ExportJson            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1601                            ) :
+      NAM  = self . Tables         [ "Names"                                 ]
+      self . EditAllNames          ( self , "ImApps" , uuid , NAM            )
       return True
     ##########################################################################
     return True
