@@ -96,7 +96,7 @@ class ImAppsWidget                 ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 320 , 640                               )
+    return QSize                   ( 280 , 400                               )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -160,7 +160,7 @@ class ImAppsWidget                 ( TreeDock                              ) :
     IMATAB = self . Tables          [ "Main"                                 ]
     QQ     = f"""update {IMATAB}
                  set `used` = {USED}
-                 where ( `uuid` = {UUID} ) ;"""
+                 where ( `uuid` = {Uuid} ) ;"""
     QQ     = " " . join             ( QQ . split ( )                         )
     DB     . Query                  ( QQ                                     )
     ##########################################################################
@@ -247,7 +247,8 @@ class ImAppsWidget                 ( TreeDock                              ) :
   ############################################################################
   def Prepare                    ( self                                    ) :
     ##########################################################################
-    self   . setColumnWidth      ( 0 , 3                                     )
+    self   . setColumnWidth      ( 0 ,  3                                    )
+    self   . setColumnWidth      ( 1 , 60                                    )
     ##########################################################################
     LABELs = self . Translations [ "ImAppsWidget" ] [ "Labels"               ]
     self   . setCentralLabels    ( LABELs                                    )
@@ -264,12 +265,12 @@ class ImAppsWidget                 ( TreeDock                              ) :
       return
     ##########################################################################
     IMATAB = self . Tables          [ "Main"                                 ]
-    UUID   = DB   . LastUuid        ( IMATAB , "uuid" , 2300000000000000000  )
-    Id     = int                    ( int ( UUID ) % 1000000                 )
+    Uuid   = DB   . LastUuid        ( IMATAB , "uuid" , 2300000000000000000  )
+    Id     = int                    ( int ( Uuid ) % 1000000                 )
     QQ     = f"""insert into {IMATAB}
                  ( `id` , `uuid` , `used` )
                  values
-                 ( {Id} , {UUID} , 0 ) ;"""
+                 ( {Id} , {Uuid} , 0 ) ;"""
     QQ     = " " . join             ( QQ . split ( )                         )
     DB     . Query                  ( QQ                                     )
     ##########################################################################
@@ -311,20 +312,20 @@ class ImAppsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem              ( self , item , uuid , name              ) :
+  def AssureUuidItem              ( self , item , Uuid , name              ) :
     ##########################################################################
     DB     = self . ConnectDB     (                                          )
     if                            ( DB == None                             ) :
       return
     ##########################################################################
     IMATAB = self . Tables        [ "Main"                                   ]
-    uuid   = int                  ( uuid                                     )
+    Uuid   = int                  ( Uuid                                     )
     ##########################################################################
     DB     . LockWrites           ( [ IMATAB                               ] )
     ##########################################################################
     QQ     = f"""update {IMATAB}
-                 set `english` = ?
-                 where ( `uuid` = {uuid} ) ;"""
+                 set `english` = %s
+                 where ( `uuid` = {Uuid} ) ;"""
     QQ     = " " . join           ( QQ . split ( )                           )
     DB     . QueryValues          ( QQ , ( name , )                          )
     ##########################################################################
