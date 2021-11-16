@@ -38,6 +38,7 @@ from   PyQt5 . QtWidgets              import QActionGroup
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QMdiArea
+from   PyQt5 . QtWidgets              import QAbstractItemView
 ##############################################################################
 from         . VirtualGui             import VirtualGui   as VirtualGui
 from         . MenuManager            import MenuManager  as MenuManager
@@ -51,9 +52,9 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
   Files                = pyqtSignal ( list                                   )
   childChanged         = pyqtSignal (                                        )
   ############################################################################
-  def __init__        ( self , parent = None , plan = None                 ) :
+  def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
-    super ( QMdiArea  , self ) . __init__ ( parent                           )
+    super ( ) . __init__            ( parent                                 )
     super ( VirtualGui, self ) . __init__ (                                  )
     self . Initialize                     ( self                             )
     self . setPlanFunction                ( plan                             )
@@ -69,6 +70,7 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     self . setFunction                    ( self . HavingMenu , True         )
     ##########################################################################
     self . droppingAction = False
+    self . ddMode         = QAbstractItemView . DropOnly
     ##########################################################################
     self . menu           = None
     self . group          = None
@@ -153,8 +155,8 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
   ############################################################################
   def dragEnterEvent    ( self , event                                     ) :
     ##########################################################################
-    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
-      if                ( self . dragEnter ( event )                       ) :
+    if                  ( self . allowDrop ( self . ddMode               ) ) :
+      if                ( self . dragEnter ( event                       ) ) :
         event . acceptProposedAction (                                       )
         return
     ##########################################################################
@@ -182,8 +184,8 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
   ############################################################################
   def dragMoveEvent     ( self , event                                     ) :
     ##########################################################################
-    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
-      if                ( self . dragMove  ( event )                       ) :
+    if                  ( self . allowDrop ( self . ddMode               ) ) :
+      if                ( self . dragMove  ( event                       ) ) :
         event . acceptProposedAction (                                       )
         return
     ##########################################################################
@@ -197,8 +199,8 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
   ############################################################################
   def dropEvent         ( self , event                                     ) :
     ##########################################################################
-    if                  ( self . allowDrop ( self . dragDropMode ( ) )     ) :
-      if                ( self . dropIn    ( event )                       ) :
+    if                  ( self . allowDrop ( self . ddMode               ) ) :
+      if                ( self . dropIn    ( event                       ) ) :
         event . acceptProposedAction (                                       )
         return
     ##########################################################################
