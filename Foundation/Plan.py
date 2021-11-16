@@ -38,23 +38,24 @@ from   AITK . Calendars . Periode     import Periode
 ##############################################################################
 from   . PurePlan import PurePlan as PurePlan
 ##############################################################################
-class Plan                 ( PurePlan                                      ) :
+class Plan                    ( PurePlan                                   ) :
   ############################################################################
-  def __init__             ( self                                          ) :
+  def __init__                ( self                                       ) :
     ##########################################################################
-    super ( ) . __init__   (                                                 )
+    super ( ) . __init__      (                                              )
     ##########################################################################
-    self . Actions         = {                                                 }
-    self . Shortcuts       = {                                                 }
-    self . Stacked         = None
-    self . Mdi             = None
-    self . statusMessage   = None
-    self . statusBar       = None
-    self . Ratio           = None
-    self . VoiceWidget     = None
-    self . progressManager = None
-    self . Indicator       = None
-    self . MyFunc          = None
+    self . Actions          = {                                              }
+    self . Shortcuts        = {                                              }
+    self . Stacked          = None
+    self . Mdi              = None
+    self . statusMessage    = None
+    self . statusBar        = None
+    self . Ratio            = None
+    self . VoiceWidget      = None
+    self . progressManager  = None
+    self . Indicator        = None
+    self . IndicatorCreator = None
+    self . MyFunc           = None
     ##########################################################################
     return
   ############################################################################
