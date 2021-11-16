@@ -62,7 +62,7 @@ class SmartNote                ( TextEdit                                  ) :
     super ( ) . __init__       ( parent , plan                               )
     ##########################################################################
     self . dockingOrientation = Qt . Horizontal
-    self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingPlace       = Qt . LeftDockWidgetArea
     self . dockingPlaces      = Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea                   | \
                                 Qt . TopDockWidgetArea                     | \
