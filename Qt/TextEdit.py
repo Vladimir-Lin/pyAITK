@@ -60,6 +60,35 @@ class TextEdit            ( QTextEdit , VirtualGui , AttachDock            ) :
     ##########################################################################
     return
   ############################################################################
+  def focusInEvent               ( self , event                            ) :
+    if                           ( self . focusIn ( event )                ) :
+      return
+    super ( ) . focusInEvent     ( event                                     )
+    return
+  ############################################################################
+  def focusOutEvent              ( self , event                            ) :
+    if                           ( self . focusOut ( event )               ) :
+      return
+    super ( ) . focusOutEvent    ( event                                     )
+    return
+  ############################################################################
+  def contextMenuEvent           ( self , event                            ) :
+    if                           ( self . Menu ( event . pos ( ) )         ) :
+      event . accept             (                                           )
+      return
+    super ( ) . contextMenuEvent ( event                                     )
+    return
+  ############################################################################
+  def closeEvent                 ( self , event                            ) :
+    ##########################################################################
+    if                           ( self . Shutdown ( )                     ) :
+      event . accept             (                                           )
+      return
+    ##########################################################################
+    super ( ) . closeEvent       ( event                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
     IDPMSG = self . Translations [ "Docking" ] [ "None" ]
@@ -150,4 +179,7 @@ class TextEdit            ( QTextEdit , VirtualGui , AttachDock            ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def Shutdown                ( self                                       ) :
+    return True
 ##############################################################################
