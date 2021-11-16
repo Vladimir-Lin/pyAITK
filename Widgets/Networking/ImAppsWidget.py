@@ -170,7 +170,12 @@ class ImAppsWidget                 ( TreeDock                              ) :
     Id     = int                 ( JSON [ 0 ]                                )
     Uuid   = str                 ( JSON [ 1 ]                                )
     Used   = int                 ( JSON [ 2 ]                                )
-    Name   = str                 ( JSON [ 3 ]                                )
+    ##########################################################################
+    Name   = JSON                [ 3                                         ]
+    try                                                                      :
+      Name = Name . decode       ( "utf-8"                                   )
+    except                                                                   :
+      pass
     ##########################################################################
     PICK   = Qt . Checked
     if                           ( Used == 0                               ) :
