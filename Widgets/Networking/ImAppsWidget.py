@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## WebPageListings
+## ImAppsWidget
 ##############################################################################
 import os
 import sys
@@ -54,7 +54,7 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
 ##############################################################################
-class TldsWidget                ( TreeDock                                 ) :
+class ImAppsWidget              ( TreeDock                                 ) :
   ############################################################################
   def __init__                  ( self , parent = None                     ) :
     ##########################################################################
