@@ -128,6 +128,7 @@ class ImWidget                     ( TreeDock                              ) :
     self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
     self . LinkAction              ( "Insert"     , self . InsertItem        )
+    self . LinkAction              ( "Delete"     , self . DeleteItems       )
     self . LinkAction              ( "Rename"     , self . RenameItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     self . LinkAction              ( "Home"       , self . PageHome          )
@@ -169,6 +170,9 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def getItemJson                ( self , item                             ) :
+    return item . data           ( 3 , Qt . UserRole                         )
+  ############################################################################
   def PrepareItem                ( self , JSON                             ) :
     ##########################################################################
     UUID   = int                 ( JSON [ "Uuid" ]                           )
@@ -186,6 +190,7 @@ class ImWidget                     ( TreeDock                              ) :
     IT     . setData             ( 0 , Qt . UserRole , UXID                  )
     ##########################################################################
     IT     . setText             ( 1 , Name                                  )
+    IT     . setToolTip          ( 1 , UXID                                  )
     ##########################################################################
     IT     . setText             ( 2 , ""                                    )
     ##########################################################################
@@ -204,6 +209,12 @@ class ImWidget                     ( TreeDock                              ) :
                                    "editingFinished"                       , \
                                    self . nameChanged                        )
     line . setFocus              ( Qt . TabFocusReason                       )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      (                                           )
+  def DeleteItems                ( self                                    ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -673,12 +684,26 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    mm     = self . AppendInsertAction  ( mm , 1101                          )
+    mm     . addAction             ( 1102 ,  TRX [ "UI::Delete" ]            )
+    mm     . addSeparator          (                                         )
+    mm     = self . SortingMenu    ( mm                                      )
+    self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunSortingMenu     ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
     ##########################################################################
     if                             ( at == 1001                            ) :
       self . startup               (                                         )
@@ -686,6 +711,10 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . InsertItem            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1102                            ) :
+      self . DeleteItems           (                                         )
       return True
     ##########################################################################
     return True

@@ -129,6 +129,7 @@ class TaskListings                 ( TreeDock                              ) :
     self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
     self . LinkAction              ( "Insert"     , self . InsertItem        )
+    self . LinkAction              ( "Delete"     , self . DeleteItems       )
     self . LinkAction              ( "Rename"     , self . RenameItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     self . LinkAction              ( "Home"       , self . PageHome          )
@@ -203,6 +204,12 @@ class TaskListings                 ( TreeDock                              ) :
                                    "editingFinished"                       , \
                                    self . nameChanged                        )
     line . setFocus              ( Qt . TabFocusReason                       )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      (                                           )
+  def DeleteItems                ( self                                    ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -681,21 +688,38 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    mm     = self . AppendInsertAction  ( mm , 1101                          )
+    mm     . addAction             ( 1102 ,  TRX [ "UI::Delete" ]            )
     mm     . addSeparator          (                                         )
     if                             ( len ( items ) == 1                    ) :
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
     ##########################################################################
+    mm     = self . SortingMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
+    self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
     ##########################################################################
+    if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunSortingMenu     ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
@@ -704,6 +728,10 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . InsertItem            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1102                            ) :
+      self . DeleteItems           (                                         )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
