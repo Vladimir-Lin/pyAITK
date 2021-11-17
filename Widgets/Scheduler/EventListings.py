@@ -49,10 +49,11 @@ from   AITK . Calendars  . Periode    import Periode
 ##############################################################################
 class EventListings                ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( list                                    )
+  EventPeriods  = pyqtSignal       ( str , int , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -684,6 +685,7 @@ class EventListings                ( TreeDock                              ) :
   def Menu                         ( self , pos                            ) :
     ##########################################################################
     items  = self . selectedItems  (                                         )
+    item   = self . currentItem    (                                         )
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
@@ -692,7 +694,12 @@ class EventListings                ( TreeDock                              ) :
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     . addAction             ( 1102 ,  TRX [ "UI::Delete" ]            )
     mm     . addSeparator          (                                         )
-    if                             ( len ( items ) == 1                    ) :
+    ##########################################################################
+    if                             ( item not in [ False , None ]          ) :
+      ########################################################################
+      msg  = self . getMenuItem    ( "Periods"                               )
+      mm   . addAction             ( 1501 , msg                              )
+      ########################################################################
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
@@ -734,8 +741,14 @@ class EventListings                ( TreeDock                              ) :
       self . DeleteItems           (                                         )
       return True
     ##########################################################################
+    if                             ( at == 1501                            ) :
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . EventPeriods . emit   ( name , 15 , str ( uuid )                )
+      return True
+    ##########################################################################
     if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
+      uuid = self . itemUuid       ( item , 0                                )
       NAM  = self . Tables         [ "Names"                                 ]
       self . EditAllNames          ( self , "Events" , uuid , NAM            )
       return True
