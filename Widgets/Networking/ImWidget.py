@@ -177,8 +177,13 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     UUID   = int                 ( JSON [ "Uuid" ]                           )
     TID    = int                 ( JSON [ "Type" ]                           )
-    Name   = JSON                [ "Name"                                    ]
     UXID   = str                 ( UUID                                      )
+    ##########################################################################
+    Name   = JSON                [ "Name"                                    ]
+    try                                                                      :
+      Name = Name . decode       ( "utf-8"                                   )
+    except                                                                   :
+      pass
     ##########################################################################
     TNAM   = ""
     if                           ( str ( TID ) in self . ImsTypes          ) :
