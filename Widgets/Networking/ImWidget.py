@@ -684,6 +684,7 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
+    mm     = self . AmountIndexMenu     ( mm                                 )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     . addAction             ( 1102 ,  TRX [ "UI::Delete" ]            )
@@ -694,6 +695,13 @@ class ImWidget                     ( TreeDock                              ) :
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunAmountIndexMenu ( )         ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
