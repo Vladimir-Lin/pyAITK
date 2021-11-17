@@ -325,7 +325,9 @@ class ClipboardView            ( TextEdit                                  ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     . addAction             ( 1001 , TRX [ "UI::Refresh"            ] )
+    msg    = TRX                   [ "UI::Refresh"                           ]
+    icon   = QIcon                 ( ":/images/reload.png"                   )
+    mm     . addActionWithIcon     ( 1001 , icon , msg                       )
     mm     . addAction             ( 1002 , TRX [ "UI::ClearClipboard"     ] )
     ##########################################################################
     mm     = self . TextingMenu    ( mm                                      )
