@@ -61,7 +61,7 @@ class OrganizationListings ( TreeDock                                      ) :
   emitAssignAmounts = pyqtSignal   ( str , int                               )
   PeopleGroup       = pyqtSignal   ( str , int , str                         )
   ############################################################################
-  def __init__             ( self , parent = None , plan = None            ) :
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
@@ -113,18 +113,18 @@ class OrganizationListings ( TreeDock                                      ) :
   def sizeHint                     ( self                                  ) :
     return QSize                   ( 320 , 640                               )
   ############################################################################
-  def setGrouping             ( self , group                               ) :
+  def setGrouping                  ( self , group                          ) :
     self . Grouping = group
     return self . Grouping
   ############################################################################
-  def getGrouping             ( self                                       ) :
+  def getGrouping                  ( self                                  ) :
     return self . Grouping
   ############################################################################
-  def setGroupOrder           ( self , order                               ) :
+  def setGroupOrder                ( self , order                          ) :
     self . Order = order
     return self . Order
   ############################################################################
-  def getGroupOrder           ( self                                       ) :
+  def getGroupOrder                ( self                                  ) :
     return self . Order
   ############################################################################
   def FocusIn                      ( self                                  ) :
