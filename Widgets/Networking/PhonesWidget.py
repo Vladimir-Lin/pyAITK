@@ -86,8 +86,8 @@ class PhonesWidget                 ( TreeDock                              ) :
     self . Relation . setT2        ( "InstantMessage"                        )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
-    self . setColumnHidden         ( 3 , True                                )
+    self . setColumnCount          ( 6                                       )
+    self . setColumnHidden         ( 5 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -109,7 +109,7 @@ class PhonesWidget                 ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 480 , 640                               )
+    return QSize                   ( 640 , 640                               )
   ############################################################################
   def setGrouping                  ( self , group                          ) :
     self . Grouping = group
@@ -164,10 +164,10 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 1 ]                      ) :
+    if                          ( column not in [ 0 , 1 , 2 , 3 ]          ) :
       return
     ##########################################################################
-    if                          ( column in [ 1 ]                          ) :
+    if                          ( column in [ 0 , 1 , 2 , 3 ]              ) :
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
                                   "editingFinished"                        , \
@@ -177,35 +177,34 @@ class PhonesWidget                 ( TreeDock                              ) :
     return
   ############################################################################
   def getItemJson                ( self , item                             ) :
-    return item . data           ( 3 , Qt . UserRole                         )
+    return item . data           ( 5 , Qt . UserRole                         )
   ############################################################################
-  def PrepareItem                ( self , JSON                             ) :
+  def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
-    UUID   = int                 ( JSON [ "Uuid" ]                           )
-    TID    = int                 ( JSON [ "Type" ]                           )
-    UXID   = str                 ( UUID                                      )
+    UUID    = int                 ( JSON [ "Uuid" ]                          )
+    UXID    = str                 ( UUID                                     )
     ##########################################################################
-    Name   = JSON                [ "Name"                                    ]
-    try                                                                      :
-      Name = Name . decode       ( "utf-8"                                   )
-    except                                                                   :
-      pass
+    COUNTRY = self . assureString ( JSON [ "Country" ]                       )
+    AREA    = self . assureString ( JSON [ "Area"    ]                       )
+    NUMBER  = self . assureString ( JSON [ "Number"  ]                       )
     ##########################################################################
-    TNAM   = ""
-    if                           ( str ( TID ) in self . ImsTypes          ) :
-      TNAM =self . ImsTypes      [ str ( TID )                               ]
+    IT      = QTreeWidgetItem     (                                          )
+    IT      . setText             ( 0 , ""                                   )
+    IT      . setToolTip          ( 0 , UXID                                 )
+    IT      . setData             ( 0 , Qt . UserRole , UXID                 )
     ##########################################################################
-    IT     = QTreeWidgetItem     (                                           )
-    IT     . setText             ( 0 , TNAM                                  )
-    IT     . setToolTip          ( 0 , UXID                                  )
-    IT     . setData             ( 0 , Qt . UserRole , UXID                  )
+    IT      . setText             ( 1 , COUNTRY                              )
+    IT      . setToolTip          ( 1 , UXID                                 )
     ##########################################################################
-    IT     . setText             ( 1 , Name                                  )
-    IT     . setToolTip          ( 1 , UXID                                  )
+    IT      . setText             ( 2 , AREA                                 )
+    IT      . setToolTip          ( 2 , UXID                                 )
     ##########################################################################
-    IT     . setText             ( 2 , ""                                    )
+    IT      . setText             ( 3 , NUMBER                               )
+    IT      . setToolTip          ( 3 , UXID                                 )
     ##########################################################################
-    IT     . setData             ( 3 , Qt . UserRole , JSON                  )
+    IT      . setText             ( 4 , ""                                   )
+    ##########################################################################
+    IT      . setData             ( 5 , Qt . UserRole , JSON                 )
     ##########################################################################
     return IT
   ############################################################################
@@ -216,7 +215,7 @@ class PhonesWidget                 ( TreeDock                              ) :
     item . setData               ( 0 , Qt . UserRole , 0                     )
     self . addTopLevelItem       ( item                                      )
     line = self . setLineEdit    ( item                                    , \
-                                   1                                       , \
+                                   0                                       , \
                                    "editingFinished"                       , \
                                    self . nameChanged                        )
     line . setFocus              ( Qt . TabFocusReason                       )
@@ -315,23 +314,25 @@ class PhonesWidget                 ( TreeDock                              ) :
     NAMEs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
-    IMSTAB  = self . Tables           [ "InstantMessage"                     ]
+    PHSTAB  = self . Tables           [ "Phones"                             ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
-      J     =                         { "Uuid" : U                         , \
-                                        "Type" : 0                         , \
-                                        "Name" : ""                          }
+      J     =                         { "Uuid"    : U                      , \
+                                        "Country" : ""                     , \
+                                        "Area"    : ""                     , \
+                                        "Number"  : ""                       }
       ########################################################################
-      QQ    = f"""select `imapp`,`account` from {IMSTAB}
+      QQ    = f"""select `country`,`area`,`number` from {PHSTAB}
                   where ( `uuid` = {U} ) ;"""
       QQ    = " " . join              ( QQ . split ( )                       )
       DB    . Query                   ( QQ                                   )
       RR    = DB . FetchOne           (                                      )
-      if ( RR not in [ False , None ] ) and ( len ( RR ) == 2 )              :
+      if ( RR not in [ False , None ] ) and ( len ( RR ) == 3 )              :
         ######################################################################
-        J [ "Type" ] = RR             [ 0                                    ]
-        J [ "Name" ] = RR             [ 1                                    ]
+        J [ "Country" ] = RR          [ 0                                    ]
+        J [ "Area"    ] = RR          [ 1                                    ]
+        J [ "Number"  ] = RR          [ 2                                    ]
       ########################################################################
       IMACT . append                  ( J                                    )
     ##########################################################################
@@ -357,12 +358,12 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    IMSTAB  = self . Tables      [ "InstantMessage"                          ]
+    PHSTAB  = self . Tables      [ "Phones"                                  ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `uuid` from {IMSTAB}
+    QQ      = f"""select `uuid` from {PHSTAB}
                   where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
@@ -382,31 +383,9 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    IMSTAB  = self . Tables           [ "InstantMessage"                     ]
-    IMXTAB  = self . Tables           [ "ImApps"                             ]
+    PHSTAB  = self . Tables           [ "Phones"                             ]
     ##########################################################################
-    self    . ImsTypes =              {                                      }
-    QQ      = f"select `id`,`english` from {IMXTAB} order by `id` asc ;"
-    DB      . Query                   ( QQ                                   )
-    IMT     = DB . FetchAll           (                                      )
-    ##########################################################################
-    if ( IMT not in [ False , None ] ) and ( len ( IMT ) > 0 )               :
-      ########################################################################
-      for M in IMT                                                           :
-        ######################################################################
-        ID  = M                       [ 0                                    ]
-        NN  = M                       [ 1                                    ]
-        ######################################################################
-        ID  = int                     ( ID                                   )
-        N   = NN
-        try                                                                  :
-          N = N . decode              ( "utf-8"                              )
-        except                                                               :
-          pass
-        ######################################################################
-        self . ImsTypes [ str ( ID ) ] = N
-    ##########################################################################
-    QQ      = f"select count(*) from {IMSTAB} where ( `used` > 0 ) ;"
+    QQ      = f"select count(*) from {PHSTAB} where ( `used` > 0 ) ;"
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
@@ -419,8 +398,8 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
-    IMSTAB = self . Tables     [ "InstantMessage"                            ]
-    QQ     = f"select count(*) from {IMSTAB} where ( `used` > 0 ) ;"
+    PHSTAB = self . Tables     [ "Phones"                                    ]
+    QQ     = f"select count(*) from {PHSTAB} where ( `used` > 0 ) ;"
     DB     . Query             ( QQ                                          )
     ONE    = DB . FetchOne     (                                             )
     ##########################################################################
@@ -446,12 +425,12 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    IMSTAB  = self . Tables   [ "InstantMessage"                             ]
+    PHSTAB  = self . Tables   [ "Phones"                                     ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `uuid` from {IMSTAB}
+    QQ      = f"""select `uuid` from {PHSTAB}
                   where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
@@ -559,10 +538,13 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def Prepare                    ( self                                    ) :
     ##########################################################################
-    self   . setColumnWidth      ( 0 , 100                                   )
-    self   . setColumnWidth      ( 1 , 240                                   )
-    self   . setColumnWidth      ( 3 ,   3                                   )
-    LABELs = self . Translations [ "ImWidget" ] [ "Labels"                   ]
+    self   . setColumnWidth      ( 0 , 200                                   )
+    self   . setColumnWidth      ( 1 ,  80                                   )
+    self   . setColumnWidth      ( 2 ,  80                                   )
+    self   . setColumnWidth      ( 3 , 160                                   )
+    self   . setColumnWidth      ( 4 , 100                                   )
+    self   . setColumnWidth      ( 5 ,   3                                   )
+    LABELs = self . Translations [ "PhonesWidget" ] [ "Labels"               ]
     self   . setCentralLabels    ( LABELs                                    )
     self   . setPrepared         ( True                                      )
     ##########################################################################

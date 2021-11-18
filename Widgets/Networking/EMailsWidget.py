@@ -83,11 +83,11 @@ class EMailsWidget                 ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "InstantMessage"                        )
+    self . Relation . setT2        ( "EMail"                                 )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
-    self . setColumnHidden         ( 3 , True                                )
+    self . setColumnCount          ( 5                                       )
+    self . setColumnHidden         ( 4 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -109,7 +109,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 480 , 640                               )
+    return QSize                   ( 800 , 640                               )
   ############################################################################
   def setGrouping                  ( self , group                          ) :
     self . Grouping = group
@@ -164,10 +164,10 @@ class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 1 ]                      ) :
+    if                          ( column not in [ 0 ]                      ) :
       return
     ##########################################################################
-    if                          ( column in [ 1 ]                          ) :
+    if                          ( column in [ 0 ]                          ) :
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
                                   "editingFinished"                        , \
@@ -179,33 +179,30 @@ class EMailsWidget                 ( TreeDock                              ) :
   def getItemJson                ( self , item                             ) :
     return item . data           ( 3 , Qt . UserRole                         )
   ############################################################################
-  def PrepareItem                ( self , JSON                             ) :
+  def PrepareItem                    ( self , JSON                         ) :
     ##########################################################################
-    UUID   = int                 ( JSON [ "Uuid" ]                           )
-    TID    = int                 ( JSON [ "Type" ]                           )
-    UXID   = str                 ( UUID                                      )
+    UUID       = int                 ( JSON [ "Uuid" ]                       )
+    UXID       = str                 ( UUID                                  )
     ##########################################################################
-    Name   = JSON                [ "Name"                                    ]
-    try                                                                      :
-      Name = Name . decode       ( "utf-8"                                   )
-    except                                                                   :
-      pass
+    ACCOUNT    = self . assureString ( JSON [ "Account"  ]                   )
+    HOSTNAME   = self . assureString ( JSON [ "Hostname" ]                   )
+    EMAIL      = self . assureString ( JSON [ "EMail"    ]                   )
     ##########################################################################
-    TNAM   = ""
-    if                           ( str ( TID ) in self . ImsTypes          ) :
-      TNAM =self . ImsTypes      [ str ( TID )                               ]
+    IT         = QTreeWidgetItem     (                                       )
+    IT         . setText             ( 0 , EMAIL                             )
+    IT         . setTextAlignment    ( 0 , Qt . AlignRight                   )
+    IT         . setToolTip          ( 0 , UXID                              )
+    IT         . setData             ( 0 , Qt . UserRole , UXID              )
     ##########################################################################
-    IT     = QTreeWidgetItem     (                                           )
-    IT     . setText             ( 0 , TNAM                                  )
-    IT     . setToolTip          ( 0 , UXID                                  )
-    IT     . setData             ( 0 , Qt . UserRole , UXID                  )
+    IT         . setText             ( 1 , ACCOUNT                           )
+    IT         . setToolTip          ( 1 , UXID                              )
     ##########################################################################
-    IT     . setText             ( 1 , Name                                  )
-    IT     . setToolTip          ( 1 , UXID                                  )
+    IT         . setText             ( 2 , HOSTNAME                          )
+    IT         . setToolTip          ( 3 , UXID                              )
     ##########################################################################
-    IT     . setText             ( 2 , ""                                    )
+    IT         . setText             ( 3 , ""                                )
     ##########################################################################
-    IT     . setData             ( 3 , Qt . UserRole , JSON                  )
+    IT         . setData             ( 4 , Qt . UserRole , JSON              )
     ##########################################################################
     return IT
   ############################################################################
@@ -216,7 +213,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     item . setData               ( 0 , Qt . UserRole , 0                     )
     self . addTopLevelItem       ( item                                      )
     line = self . setLineEdit    ( item                                    , \
-                                   1                                       , \
+                                   0                                       , \
                                    "editingFinished"                       , \
                                    self . nameChanged                        )
     line . setFocus              ( Qt . TabFocusReason                       )
@@ -236,7 +233,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     if                           ( IT is None                              ) :
       return
     ##########################################################################
-    self . doubleClicked         ( IT , 1                                    )
+    self . doubleClicked         ( IT , 0                                    )
     ##########################################################################
     return
   ############################################################################
@@ -315,23 +312,25 @@ class EMailsWidget                 ( TreeDock                              ) :
     NAMEs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
-    IMSTAB  = self . Tables           [ "InstantMessage"                     ]
+    EMSTAB  = self . Tables           [ "EMails"                             ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
-      J     =                         { "Uuid" : U                         , \
-                                        "Type" : 0                         , \
-                                        "Name" : ""                          }
+      J     =                         { "Uuid"     : U                     , \
+                                        "Account"  : ""                    , \
+                                        "Hostname" : ""                    , \
+                                        "EMail"    : ""                      }
       ########################################################################
-      QQ    = f"""select `imapp`,`account` from {IMSTAB}
+      QQ    = f"""select `account`,`hostname`,`email` from {EMSTAB}
                   where ( `uuid` = {U} ) ;"""
       QQ    = " " . join              ( QQ . split ( )                       )
       DB    . Query                   ( QQ                                   )
       RR    = DB . FetchOne           (                                      )
-      if ( RR not in [ False , None ] ) and ( len ( RR ) == 2 )              :
+      if ( RR not in [ False , None ] ) and ( len ( RR ) == 3 )              :
         ######################################################################
-        J [ "Type" ] = RR             [ 0                                    ]
-        J [ "Name" ] = RR             [ 1                                    ]
+        J [ "Account"  ] = RR         [ 0                                    ]
+        J [ "Hostname" ] = RR         [ 1                                    ]
+        J [ "EMail"    ] = RR         [ 2                                    ]
       ########################################################################
       IMACT . append                  ( J                                    )
     ##########################################################################
@@ -357,13 +356,12 @@ class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    IMSTAB  = self . Tables      [ "InstantMessage"                          ]
+    EMSTAB  = self . Tables      [ "EMails"                                  ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `uuid` from {IMSTAB}
-                  where ( `used` > 0 )
+    QQ      = f"""select `uuid` from {EMSTAB}
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
@@ -382,31 +380,9 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    IMSTAB  = self . Tables           [ "InstantMessage"                     ]
-    IMXTAB  = self . Tables           [ "ImApps"                             ]
+    EMSTAB  = self . Tables           [ "EMails"                             ]
     ##########################################################################
-    self    . ImsTypes =              {                                      }
-    QQ      = f"select `id`,`english` from {IMXTAB} order by `id` asc ;"
-    DB      . Query                   ( QQ                                   )
-    IMT     = DB . FetchAll           (                                      )
-    ##########################################################################
-    if ( IMT not in [ False , None ] ) and ( len ( IMT ) > 0 )               :
-      ########################################################################
-      for M in IMT                                                           :
-        ######################################################################
-        ID  = M                       [ 0                                    ]
-        NN  = M                       [ 1                                    ]
-        ######################################################################
-        ID  = int                     ( ID                                   )
-        N   = NN
-        try                                                                  :
-          N = N . decode              ( "utf-8"                              )
-        except                                                               :
-          pass
-        ######################################################################
-        self . ImsTypes [ str ( ID ) ] = N
-    ##########################################################################
-    QQ      = f"select count(*) from {IMSTAB} where ( `used` > 0 ) ;"
+    QQ      = f"select count(*) from {EMSTAB} ;"
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
@@ -419,8 +395,8 @@ class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
-    IMSTAB = self . Tables     [ "InstantMessage"                            ]
-    QQ     = f"select count(*) from {IMSTAB} where ( `used` > 0 ) ;"
+    EMSTAB = self . Tables     [ "EMails"                                    ]
+    QQ     = f"select count(*) from {EMSTAB} ;"
     DB     . Query             ( QQ                                          )
     ONE    = DB . FetchOne     (                                             )
     ##########################################################################
@@ -446,13 +422,12 @@ class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    IMSTAB  = self . Tables   [ "InstantMessage"                             ]
+    EMSTAB  = self . Tables   [ "EMails"                                     ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `uuid` from {IMSTAB}
-                  where ( `used` > 0 )
+    QQ      = f"""select `uuid` from {EMSTAB}
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
@@ -559,10 +534,10 @@ class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
   def Prepare                    ( self                                    ) :
     ##########################################################################
-    self   . setColumnWidth      ( 0 , 100                                   )
-    self   . setColumnWidth      ( 1 , 240                                   )
-    self   . setColumnWidth      ( 3 ,   3                                   )
-    LABELs = self . Translations [ "ImWidget" ] [ "Labels"                   ]
+    self   . setColumnWidth      ( 0 , 280                                   )
+    self   . setColumnWidth      ( 1 , 200                                   )
+    self   . setColumnWidth      ( 4 ,   3                                   )
+    LABELs = self . Translations [ "EMailsWidget" ] [ "Labels"               ]
     self   . setCentralLabels    ( LABELs                                    )
     self   . setPrepared         ( True                                      )
     ##########################################################################
