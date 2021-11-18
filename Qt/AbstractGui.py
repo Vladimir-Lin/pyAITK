@@ -82,6 +82,7 @@ class AbstractGui        (                                                 ) :
     self . CreatedDateTime = NOW . Stardate
     self . Speaker         = None
     self . PlanFunc        = None
+    self . SaveSettings    = None
     self . LocalIcons      = { }
     self . LocalMsgs       = { }
     self . LimitValues     = { }
@@ -1309,6 +1310,15 @@ class AbstractGui        (                                                 ) :
   ############################################################################
   def setSizeSuggestion          ( self  , width , height                  ) :
     return self . SizeSuggestion ( QSize ( width , height )                  )
+  ############################################################################
+  def SaveOptions                ( self                                    ) :
+    ##########################################################################
+    if                           ( self . SaveSettings in [ False , None ] ) :
+      return False
+    ##########################################################################
+    self . SaveSettings          ( self . Settings                           )
+    ##########################################################################
+    return True
   ############################################################################
   def skip ( self , msecs                                                  ) :
     ##########################################################################

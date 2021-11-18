@@ -85,7 +85,6 @@ class VoiceTracker         ( PlainTextEdit                                 ) :
     self . ShowError    = False
     self . ShowReading  = False
     self . DoSplit      = True
-    self . SaveSettings = None
     ##########################################################################
     self . LangOn       = { "zh-TW" : False , "en-US" : False , "ja" : False }
     self . onOff        = False

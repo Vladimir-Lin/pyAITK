@@ -139,7 +139,6 @@ class ProgressManager           ( TreeDock                                 ) :
     self . Id            = 0
     self . Fitting       = False
     self . Timer         = None
-    self . SaveSettings  = None
     ##########################################################################
     return
   ############################################################################
@@ -307,7 +306,7 @@ class ProgressManager           ( TreeDock                                 ) :
     self . Settings [ scope ] [ "Height"  ] = self . height ( )
     self . Settings [ scope ] [ "Widths"  ] = self . WIDTHs
     ##########################################################################
-    self . SaveSettings           ( self . Settings                          )
+    self . SaveOptions            (                                          )
     ##########################################################################
     return
   ############################################################################
