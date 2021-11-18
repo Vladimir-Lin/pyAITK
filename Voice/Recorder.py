@@ -23,7 +23,9 @@ class Recorder              (                                             ) :
     self . Channels    = 1
     self . Rate        = 44100
     self . Chunk       = 1024
-    self . Periods     = 10 * 60 ## 十分鐘
+    self . Periods     = 10 * 60
+    ## 十分鐘
+    ## self . Periods     = 30
     self . Interval    = 5
     self . Running     = False
     self . Path        = ""
