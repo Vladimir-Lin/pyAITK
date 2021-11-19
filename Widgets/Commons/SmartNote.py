@@ -44,22 +44,27 @@ from   PyQt5 . QtWidgets                 import QLineEdit
 from   PyQt5 . QtWidgets                 import QComboBox
 from   PyQt5 . QtWidgets                 import QSpinBox
 ##############################################################################
-from   AITK  . Calendars . StarDate      import StarDate      as StarDate
-##############################################################################
 from   AITK  . Qt        . MenuManager   import MenuManager   as MenuManager
+from   AITK  . Qt        . LineEdit      import LineEdit      as LineEdit
+from   AITK  . Qt        . ComboBox      import ComboBox      as ComboBox
 from   AITK  . Qt        . SpinBox       import SpinBox       as SpinBox
 from   AITK  . Qt        . TextEdit      import TextEdit      as TextEdit
 ##############################################################################
-class SmartNote                ( TextEdit                                  ) :
+from   AITK  . Essentials . Relation     import Relation
+from   AITK  . Calendars  . StarDate     import StarDate
+from   AITK  . Calendars  . Periode      import Periode
+##############################################################################
+class SmartNote                    ( TextEdit                              ) :
   ############################################################################
   HavingMenu  = 1371434312
   ############################################################################
-  emitAddText     = pyqtSignal ( str                                         )
-  emitWindowIcon  = pyqtSignal ( bool                                        )
+  emitAddText     = pyqtSignal      ( str                                    )
+  emitWindowIcon  = pyqtSignal      ( bool                                   )
+  emitInsertText  = pyqtSignal      ( str                                    )
   ############################################################################
-  def __init__                 ( self , parent = None , plan = None        ) :
+  def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
-    super ( ) . __init__       ( parent , plan                               )
+    super ( ) . __init__            ( parent , plan                          )
     ##########################################################################
     self . dockingOrientation = Qt . Horizontal
     self . dockingPlace       = Qt . LeftDockWidgetArea
@@ -68,18 +73,39 @@ class SmartNote                ( TextEdit                                  ) :
                                 Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                                
     ##########################################################################
-    self . setFunction         ( self . FunctionDocking , True               )
-    self . setFunction         ( self . HavingMenu      , True               )
+    self . setFunction              ( self . FunctionDocking , True          )
+    self . setFunction              ( self . HavingMenu      , True          )
     ##########################################################################
     self . TZ           = "Asia/Taipei"
-    self . VoiceJSON    =      {                                             }
+    self . VoiceJSON    =           {                                        }
     ##########################################################################
-    self     . setPrepared     ( True                                        )
+    self . Method       = "None"
+    self . Uuid         = 0
+    self . Filename     = ""
+    self . Relation     = Relation  (                                        )
+    self . defaultLocality  = 1002
+    ##########################################################################
+    self . emitInsertText . connect ( self . insertPlainText                 )
+    ##########################################################################
+    self . setPrepared              ( True                                   )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                 ( self                                      ) :
     return QSize               ( 800 , 600                                   )
+  ############################################################################
+  def WithinCommand     ( self , language , key , message                  ) :
+    ##########################################################################
+    if                  ( language not in self . VoiceJSON                 ) :
+      return False
+    ##########################################################################
+    if                  ( key      not in self . VoiceJSON [ language ]    ) :
+      return False
+    ##########################################################################
+    if                  ( message in self . VoiceJSON [ language ] [ key ] ) :
+      return True
+    ##########################################################################
+    return   False
   ############################################################################
   def FocusIn                    ( self                                    ) :
     ##########################################################################
@@ -88,12 +114,17 @@ class SmartNote                ( TextEdit                                  ) :
     ##########################################################################
     self . setActionLabel        ( "Label"   , self . windowTitle ( )        )
     ##########################################################################
-    ## self . LinkAction            ( "Delete"    , self . clear                )
+    self . LinkAction            ( "Load"      , self . Load                 )
+    self . LinkAction            ( "Save"      , self . Save                 )
+    self . LinkAction            ( "SaveAs"    , self . SaveAs               )
+    self . LinkAction            ( "Undo"      , self . undo                 )
+    self . LinkAction            ( "Redo"      , self . redo                 )
+    self . LinkAction            ( "Cut"       , self . cut                  )
     self . LinkAction            ( "Copy"      , self . copy                 )
+    self . LinkAction            ( "Paste"     , self . paste                )
     self . LinkAction            ( "SelectAll" , self . selectAll            )
     self . LinkAction            ( "ZoomIn"    , self . ZoomIn               )
     self . LinkAction            ( "ZoomOut"   , self . ZoomOut              )
-    ## undo redo paste cut clear delete
     ##########################################################################
     self . LinkVoice             ( self . CommandParser                      )
     ##########################################################################
@@ -114,45 +145,217 @@ class SmartNote                ( TextEdit                                  ) :
     self . zoomOut                 ( 1                                       )
     return
   ############################################################################
-  def CommandParser ( self , language , message , timestamp                ) :
+  def loading                    ( self                                    ) :
+    ##########################################################################
+    DB     = self . ConnectDB    (                                           )
+    if                           ( DB == None                              ) :
+      return
+    ##########################################################################
+    ##########################################################################
+    DB     . Close               (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      (                                           )
+  def startup                    ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isPrepared ( )               ) :
+      self . Prepare             (                                           )
+    ##########################################################################
+    if                           ( self . Method not in [ "None" ]         ) :
+      self . Go                  ( self . loading                            )
+    ##########################################################################
+    self   . setFocus            (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def Load                       ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def Save                       ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveAs                     ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def ReplaceSelection           ( self , text                             ) :
+    ##########################################################################
+    cursor   = self . textCursor (                                           )
+    if                           ( cursor . hasSelection ( )               ) :
+      cursor . insertText        ( text                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def CommandParser           ( self , language , message , timestamp      ) :
     ##########################################################################
     TRX = self . Translations
     ##########################################################################
     if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      self . selectAll        (                                              )
       return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
     ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    if                        ( len ( message ) > 0                        ) :
+      self . emitInsertText . emit ( message                                 )
     ##########################################################################
-    if ( self . WithinCommand ( language , "UI::OpenSubgroup" , message )  ) :
-      if            ( self . OpenCurrentSubgroup ( )                       ) :
-        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
-      else                                                                   :
-        return      { "Match" : True                                         }
+    return          { "Match" : True                                         }
+  ############################################################################
+  def TranslationsMenu             ( self , mm                             ) :
     ##########################################################################
-    if ( self . WithinCommand ( language , "UI::OpenAlbums"   , message )  ) :
-      if            ( self . OpenCurrentAlbum ( )                          ) :
-        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
-      else                                                                   :
-        return      { "Match" : True                                         }
+    TRX    = self . Translations   [ "Translations"                          ]
+    msg    = self . Translations   [ "UI::Translations"                      ]
+    KEYs   = TRX  . keys           (                                         )
     ##########################################################################
-    return          { "Match" : False                                        }
+    LOT    = mm . addMenu          ( msg                                     )
+    ##########################################################################
+    for K in KEYs                                                            :
+       msg = TRX                   [ K                                       ]
+       V   = int                   ( K                                       )
+       mm  . addActionFromMenu     ( LOT , V , msg                           )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def LocalityMenu                 ( self , mm                             ) :
+    ##########################################################################
+    TRX    = self . Translations
+    LOC    = TRX                   [ "SmartNote" ] [ "Languages"             ]
+    ##########################################################################
+    msg    = TRX                   [ "SmartNote" ] [ "Menus" ] [ "Language"  ]
+    LOM    = mm . addMenu          ( msg                                     )
+    ##########################################################################
+    KEYs   = LOC . keys            (                                         )
+    ##########################################################################
+    for K in KEYs                                                            :
+       msg = LOC                   [ K                                       ]
+       V   = int                   ( K                                       )
+       hid =                       ( V == self . defaultLocality             )
+       mm  . addActionFromMenu     ( LOM , 10000000 + V , msg , True , hid   )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunLocalityMenu           ( self , at                                ) :
+    ##########################################################################
+    if                          ( ( at >= 10000000 ) and ( at < 11000000 ) ) :
+      ########################################################################
+      self . defaultLocality  = at - 10000000
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def TranslateMenu                ( self , mm                             ) :
+    ##########################################################################
+    TRX    = self . Translations
+    LOC    = self . Translations   [ "SmartNote" ] [ "Languages"             ]
+    ##########################################################################
+    msg    = TRX                   [ "UI::Translate"                         ]
+    LOM    = mm . addMenu          ( msg                                     )
+    ##########################################################################
+    KEYs   = LOC . keys            (                                         )
+    ##########################################################################
+    for K in KEYs                                                            :
+      ########################################################################
+      V    = int                   ( K                                       )
+      if                           ( V in [ 0 , 1004 , 1005 ]              ) :
+        continue
+      msg  = LOC                   [ K                                       ]
+      mm   . addActionFromMenu     ( LOM , 11000000 + V , msg                )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunTranslate                     ( self , menu , action              ) :
+    ##########################################################################
+    stext  = self . textCursor ( ) . selectedText (                          )
+    ##########################################################################
+    if                                 ( len ( stext ) <= 0                ) :
+      return False
+    ##########################################################################
+    at     = menu . at                 (               action                )
+    ##########################################################################
+    if                                 ( at < 11000000                     ) :
+      return False
+    ##########################################################################
+    if                                 ( at > 11100000                     ) :
+      return False
+    ##########################################################################
+    LID    = at   - 11000000
+    DID    = self . defaultLocality
+    SRC    = self . LocalityToGoogleLC ( DID                                 )
+    DEST   = self . LocalityToGoogleLC ( LID                                 )
+    ##########################################################################
+    if                                 ( len ( SRC ) <= 0                  ) :
+      return True
+    ##########################################################################
+    if                                 ( len ( DEST ) <= 0                 ) :
+      return True
+    ##########################################################################
+    gt     = Translator     ( service_urls = [ "translate.googleapis.com" ]  )
+    ##########################################################################
+    try                                                                      :
+      target = gt . translate ( stext , src = SRC , dest = DEST ) . text
+    except                                                                   :
+      return True
+    ##########################################################################
+    self   . ReplaceSelection          ( target                              )
+    ##########################################################################
+    return False
+  ############################################################################
+  def HandleTranslations      ( self , stext , ID                          ) :
+    ##########################################################################
+    if                        ( ( ID < 7001 ) or ( ID > 7008 )             ) :
+      return False
+    ##########################################################################
+    CODE   = ""
+    if                        ( ID == 7001                                 ) :
+      CODE = "t2s"
+    elif                      ( ID == 7002                                 ) :
+      CODE = "s2t"
+    elif                      ( ID == 7003                                 ) :
+      CODE = "tw2s"
+    elif                      ( ID == 7004                                 ) :
+      CODE = "s2tw"
+    elif                      ( ID == 7005                                 ) :
+      CODE = "tw2sp"
+    elif                      ( ID == 7006                                 ) :
+      CODE = "s2twp"
+    elif                      ( ID == 7007                                 ) :
+      CODE = "hk2s"
+    elif                      ( ID == 7008                                 ) :
+      CODE = "s2hk"
+    ##########################################################################
+    cc     = OpenCC           ( CODE                                         )
+    target = cc . convert     ( stext                                        )
+    ##########################################################################
+    self   . ReplaceSelection ( target                                       )
+    ##########################################################################
+    return True
   ############################################################################
   def TextingMenu               ( self , mm                                ) :
     ##########################################################################
     TRX = self . Translations
     LOM = mm   . addMenu        (              TRX [ "UI::Texting"         ] )
     ##########################################################################
-    mm  . addActionFromMenu     ( LOM , 1001 , TRX [ "UI::ClearAll"        ] )
+    mm  . addActionFromMenu     ( LOM , 1001 , TRX [ "UI::Cut"             ] )
     mm  . addActionFromMenu     ( LOM , 1002 , TRX [ "UI::CopyToClipboard" ] )
-    mm  . addActionFromMenu     ( LOM , 1003 , TRX [ "UI::SelectAll"       ] )
+    mm  . addActionFromMenu     ( LOM , 1003 , TRX [ "UI::Paste"           ] )
+    mm  . addSeparatorFromMenu  ( LOM                                        )
+    mm  . addActionFromMenu     ( LOM , 1011 , TRX [ "UI::Undo"            ] )
+    mm  . addActionFromMenu     ( LOM , 1012 , TRX [ "UI::Redo"            ] )
+    mm  . addSeparatorFromMenu  ( LOM                                        )
+    mm  . addActionFromMenu     ( LOM , 1021 , TRX [ "UI::ClearAll"        ] )
+    mm  . addActionFromMenu     ( LOM , 1022 , TRX [ "UI::SelectAll"       ] )
     ##########################################################################
     return mm
   ############################################################################
   def RunTextingMenu               ( self , at                             ) :
     ##########################################################################
     if                             ( at == 1001                            ) :
-      self . clear                 (                                         )
+      self . cut                   (                                         )
       return True
     ##########################################################################
     if                             ( at == 1002                            ) :
@@ -160,6 +363,22 @@ class SmartNote                ( TextEdit                                  ) :
       return True
     ##########################################################################
     if                             ( at == 1003                            ) :
+      self . paste                 (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1011                            ) :
+      self . undo                  (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1012                            ) :
+      self . redo                  (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1021                            ) :
+      self . clear                 (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1022                            ) :
       self . selectAll             (                                         )
       return True
     ##########################################################################
@@ -170,18 +389,18 @@ class SmartNote                ( TextEdit                                  ) :
     TRX = self . Translations
     LOM = mm   . addMenu        (              TRX [ "UI::Display"         ] )
     ##########################################################################
-    mm  . addActionFromMenu     ( LOM , 1004 , TRX [ "UI::ZoomIn"          ] )
-    mm  . addActionFromMenu     ( LOM , 1005 , TRX [ "UI::ZoomOut"         ] )
+    mm  . addActionFromMenu     ( LOM , 1104 , TRX [ "UI::ZoomIn"          ] )
+    mm  . addActionFromMenu     ( LOM , 1105 , TRX [ "UI::ZoomOut"         ] )
     ##########################################################################
     return mm
   ############################################################################
   def RunDisplayMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at == 1004                            ) :
+    if                             ( at == 1104                            ) :
       self . ZoomIn                (                                         )
       return True
     ##########################################################################
-    if                             ( at == 1005                            ) :
+    if                             ( at == 1105                            ) :
       self . ZoomOut               (                                         )
       return True
     ##########################################################################
@@ -193,13 +412,26 @@ class SmartNote                ( TextEdit                                  ) :
     if                             ( not doMenu                            ) :
       return False
     ##########################################################################
+    stext  = self . textCursor ( ) . selectedText (                          )
+    ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
     mm     = self . TextingMenu    ( mm                                      )
     mm     = self . DisplayMenu    ( mm                                      )
+    mm     . addSeparator          (                                         )
     ##########################################################################
+    if                             ( len ( stext ) > 0                     ) :
+      ########################################################################
+      if                           ( self . canSpeak ( )                   ) :
+        mm . addAction             ( 1501 ,  TRX [ "UI::Talk"  ]             )
+        mm . addSeparator          (                                         )
+      ########################################################################
+      mm   = self . TranslateMenu    ( mm                                    )
+      mm   = self . TranslationsMenu ( mm                                    )
+    ##########################################################################
+    mm     = self . LocalityMenu   ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     self   . Notify                ( 0                                       )
@@ -207,13 +439,29 @@ class SmartNote                ( TextEdit                                  ) :
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
     ##########################################################################
-    if                             ( self . RunTextingMenu ( at      )     ) :
+    if                             ( self . RunDocking      ( mm , aa )    ) :
       return True
     ##########################################################################
-    if                             ( self . RunDisplayMenu ( at      )     ) :
+    if                             ( self . RunLocalityMenu ( at      )    ) :
       return True
     ##########################################################################
-    if                             ( self . RunDocking     ( mm , aa )     ) :
+    if                             ( self . RunTextingMenu  ( at      )    ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunDisplayMenu  ( at      )    ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunTranslate ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if                             ( len ( stext ) > 0                     ) :
+      if ( self . HandleTranslations ( stext , at )                        ) :
+        return True
+    ##########################################################################
+    if                             ( at == 1501                            ) :
+      ########################################################################
+      self . Talk                  ( stext , self . defaultLocality          )
+      ########################################################################
       return True
     ##########################################################################
     return True
