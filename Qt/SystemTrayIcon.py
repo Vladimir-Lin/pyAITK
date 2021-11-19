@@ -39,7 +39,7 @@ class SystemTrayIcon ( QSystemTrayIcon , VirtualGui                        ) :
   ############################################################################
   def __init__       ( self , icon , parent = None , plan = None           ) :
     ##########################################################################
-    QSystemTrayIcon             . __init__ ( self , icon , parent            )
+    super (                   ) . __init__ ( icon , parent                   )
     super ( VirtualGui , self ) . __init__ (                                 )
     self . Initialize                      ( self                            )
     self . setPlanFunction                 ( plan                            )
