@@ -64,7 +64,7 @@ class CountryCodeWidget            ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . SortOrder          = "desc"
+    self . SortOrder          = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . LeftDockWidgetArea
@@ -97,7 +97,7 @@ class CountryCodeWidget            ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 800 , 640                               )
+    return QSize                   ( 1024 , 640                              )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -149,26 +149,29 @@ class CountryCodeWidget            ( TreeDock                              ) :
   ############################################################################
   def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
-    UUID    = int                 ( JSON [ "Uuid" ]                          )
+    UUID    = int                 ( JSON [ "Uuid"     ]                      )
     UXID    = str                 ( UUID                                     )
+    USED    = int                 ( JSON [ "Used"     ]                      )
+    NATION  = int                 ( JSON [ "Nation"   ]                      )
+    ITU     = int                 ( JSON [ "ITU"      ]                      )
+    PLACE   = int                 ( JSON [ "Place"    ]                      )
     ##########################################################################
-    COUNTRY = self . assureString ( JSON [ "Country" ]                       )
-    AREA    = self . assureString ( JSON [ "Area"    ]                       )
-    NUMBER  = self . assureString ( JSON [ "Number"  ]                       )
+    CODE    = self . assureString ( JSON [ "Code"     ]                      )
+    NAME    = self . assureString ( JSON [ "Name"     ]                      )
+    COMMENT = self . assureString ( JSON [ "Comment"  ]                      )
     ##########################################################################
     IT      = QTreeWidgetItem     (                                          )
-    IT      . setText             ( 0 , ""                                   )
+    IT      . setText             ( 0 , NAME                                 )
     IT      . setToolTip          ( 0 , UXID                                 )
     IT      . setData             ( 0 , Qt . UserRole , UXID                 )
     ##########################################################################
-    IT      . setText             ( 1 , COUNTRY                              )
-    IT      . setToolTip          ( 1 , UXID                                 )
+    IT      . setText             ( 1 , CODE                                 )
     ##########################################################################
-    IT      . setText             ( 2 , AREA                                 )
-    IT      . setToolTip          ( 2 , UXID                                 )
+    ## IT      . setText             ( 2 , AREA                                 )
+    ## IT      . setToolTip          ( 2 , UXID                                 )
     ##########################################################################
-    IT      . setText             ( 3 , NUMBER                               )
-    IT      . setToolTip          ( 3 , UXID                                 )
+    ## IT      . setText             ( 3 , NUMBER                               )
+    ## IT      . setToolTip          ( 3 , UXID                                 )
     ##########################################################################
     IT      . setText             ( 4 , ""                                   )
     ##########################################################################
@@ -242,25 +245,35 @@ class CountryCodeWidget            ( TreeDock                              ) :
     NAMEs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
-    PHSTAB  = self . Tables           [ "Phones"                             ]
+    PCCTAB  = self . Tables           [ "CountryCode"                        ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
       J     =                         { "Uuid"    : U                      , \
-                                        "Country" : ""                     , \
-                                        "Area"    : ""                     , \
-                                        "Number"  : ""                       }
+                                        "Used"    : 0                      , \
+                                        "Code"    : ""                     , \
+                                        "Nation"  : 0                      , \
+                                        "ITU"     : 0                      , \
+                                        "Place"   : 0                      , \
+                                        "Name"    : ""                     , \
+                                        "Comment" : ""                       }
       ########################################################################
-      QQ    = f"""select `country`,`area`,`number` from {PHSTAB}
+      QQ    = f"""select
+                  `used`,`code`,`nation`,`itu`,`place`,`name`,`comment`
+                  from {PCCTAB}
                   where ( `uuid` = {U} ) ;"""
       QQ    = " " . join              ( QQ . split ( )                       )
       DB    . Query                   ( QQ                                   )
       RR    = DB . FetchOne           (                                      )
-      if ( RR not in [ False , None ] ) and ( len ( RR ) == 3 )              :
+      if ( RR not in [ False , None ] ) and ( len ( RR ) == 7 )              :
         ######################################################################
-        J [ "Country" ] = RR          [ 0                                    ]
-        J [ "Area"    ] = RR          [ 1                                    ]
-        J [ "Number"  ] = RR          [ 2                                    ]
+        J [ "Used"    ] = int         ( RR [ 0 ]                             )
+        J [ "Code"    ] = RR          [ 1                                    ]
+        J [ "Nation"  ] = int         ( RR [ 2 ]                             )
+        J [ "ITU"     ] = int         ( RR [ 3 ]                             )
+        J [ "Place"   ] = int         ( RR [ 4 ]                             )
+        J [ "Name"    ] = RR          [ 5                                    ]
+        J [ "Comment" ] = RR          [ 6                                    ]
       ########################################################################
       IMACT . append                  ( J                                    )
     ##########################################################################
@@ -286,13 +299,10 @@ class CountryCodeWidget            ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    PHSTAB  = self . Tables      [ "Phones"                                  ]
+    PCCTAB  = self . Tables      [ "CountryCode"                             ]
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `uuid` from {PHSTAB}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ      = f"select `uuid` from {PCCTAB} order by `id` {ORDER} ;"
     ##########################################################################
     QQ    = " " . join           ( QQ . split ( )                            )
     ##########################################################################
@@ -309,9 +319,9 @@ class CountryCodeWidget            ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    PHSTAB  = self . Tables           [ "Phones"                             ]
+    PCCTAB  = self . Tables           [ "CountryCode"                        ]
     ##########################################################################
-    QQ      = f"select count(*) from {PHSTAB} where ( `used` > 0 ) ;"
+    QQ      = f"select count(*) from {PCCTAB} ;"
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
@@ -324,8 +334,8 @@ class CountryCodeWidget            ( TreeDock                              ) :
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
-    PHSTAB = self . Tables     [ "Phones"                                    ]
-    QQ     = f"select count(*) from {PHSTAB} where ( `used` > 0 ) ;"
+    PCCTAB = self . Tables     [ "CountryCode"                               ]
+    QQ     = f"select count(*) from {PCCTAB} ;"
     DB     . Query             ( QQ                                          )
     ONE    = DB . FetchOne     (                                             )
     ##########################################################################
@@ -339,13 +349,10 @@ class CountryCodeWidget            ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    PHSTAB  = self . Tables   [ "Phones"                                     ]
+    PCCTAB  = self . Tables   [ "CountryCode"                                ]
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `uuid` from {PHSTAB}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ      = f"select `uuid` from {PCCTAB} order by `id` {ORDER} ;"
     ##########################################################################
     return " " . join         ( QQ . split ( )                               )
   ############################################################################
@@ -357,64 +364,15 @@ class CountryCodeWidget            ( TreeDock                              ) :
   ############################################################################
   def Prepare                    ( self                                    ) :
     ##########################################################################
-    self   . setColumnWidth      ( 0 , 200                                   )
-    self   . setColumnWidth      ( 1 ,  80                                   )
-    self   . setColumnWidth      ( 2 ,  80                                   )
-    self   . setColumnWidth      ( 3 , 160                                   )
-    self   . setColumnWidth      ( 4 , 100                                   )
+    ## self   . setColumnWidth      ( 0 , 200                                   )
+    ## self   . setColumnWidth      ( 1 ,  80                                   )
+    ## self   . setColumnWidth      ( 2 ,  80                                   )
+    ## self   . setColumnWidth      ( 3 , 160                                   )
+    ## self   . setColumnWidth      ( 4 , 100                                   )
     self   . setColumnWidth      ( 5 ,   3                                   )
-    LABELs = self . Translations [ "PhonesWidget" ] [ "Labels"               ]
+    LABELs = self . Translations [ "CountryCodeWidget" ] [ "Labels"          ]
     self   . setCentralLabels    ( LABELs                                    )
     self   . setPrepared         ( True                                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
-    ##########################################################################
-    """
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
-      return
-    ##########################################################################
-    TSKTAB  = self . Tables        [ "Tasks"                                 ]
-    PRDTAB  = self . Tables        [ "Periods"                               ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
-    HEAD    = 5702000000000000000
-    ##########################################################################
-    DB      . LockWrites           ( [ PRJTAB , PRDTAB , NAMTAB ]            )
-    ##########################################################################
-    if                             ( uuid <= 0                             ) :
-      ########################################################################
-      uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
-      DB    . AddUuid              ( PRJTAB , uuid   , 1                     )
-      ########################################################################
-      NOW   = StarDate             (                                         )
-      NOW   . Now                  (                                         )
-      CDT   = NOW . Stardate
-      ########################################################################
-      PRD   = Periode              (                                         )
-      PRID  = PRD  . GetUuid       ( DB , PRDTAB                             )
-      ########################################################################
-      PRD   . Realm    = uuid
-      PRD   . Role     = 71
-      PRD   . Item     = 1
-      PRD   . States   = 0
-      PRD   . Creation = CDT
-      PRD   . Modified = CDT
-      Items =                      [ "realm"                               , \
-                                     "role"                                , \
-                                     "item"                                , \
-                                     "states"                              , \
-                                     "creation"                            , \
-                                     "modified"                              ]
-      PRD   . UpdateItems          ( DB , PRDTAB , Items                     )
-    ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
-    ##########################################################################
-    DB      . Close                (                                         )
-    ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
-    """
     ##########################################################################
     return
   ############################################################################
