@@ -139,6 +139,7 @@ class ProgressManager           ( TreeDock                                 ) :
     self . Id            = 0
     self . Fitting       = False
     self . Timer         = None
+    self . ConfScope     = "ProgressManager"
     ##########################################################################
     return
   ############################################################################
@@ -147,6 +148,31 @@ class ProgressManager           ( TreeDock                                 ) :
   ############################################################################
   def sizeHint           ( self                                            ) :
     return QSize         ( 1024 , 240                                        )
+  ############################################################################
+  def DockLocationChanged      ( self , area                               ) :
+    ##########################################################################
+    s      = self . ConfScope
+    ##########################################################################
+    if                         ( s      not in self . Settings             ) :
+      self . Settings [ s ] =  {                                             }
+    ##########################################################################
+    if                         ( "Dock" not in self . Settings [ s ]       ) :
+      self . Settings [ s ] [ "Dock" ] =  {                                  }
+    ##########################################################################
+    self   . dockingPlace = area
+    self   . Store             ( area                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def Relocation               ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isPrepared ( )                 ) :
+      return False
+    ##########################################################################
+    self . StoreSettings       ( self . ConfScope                            )
+    self . Store               ( self . dockingPlace                         )
+    ##########################################################################
+    return False
   ############################################################################
   @pyqtSlot                    (                                             )
   def Accepting                ( self                                      ) :
@@ -194,6 +220,13 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     icon   = QIcon               ( ":/images/StopPlay.png"                   )
     self   . setLocalIcon        ( "Stop" , icon                             )
+    ##########################################################################
+    s      = self . ConfScope
+    ##########################################################################
+    if                           ( s      in self . Settings               ) :
+      if                         ( "Dock" in self . Settings [ s ]         ) :
+        if                       ( "Area" in self . Settings [ s ]["Dock"] ) :
+          self . dockingPlace = self . Settings [ s ] [ "Dock" ] [ "Area"    ]
     ##########################################################################
     return
   ############################################################################
@@ -245,15 +278,11 @@ class ProgressManager           ( TreeDock                                 ) :
       self . Prepare             (                                           )
     ##########################################################################
     self   . GetSettings         ( "ProgressManager"                         )
-    """
-    startLoading (                   ) ;
-    GetSettings  ( data -> Arguments ) ;
-    stopLoading  (                   ) ;
-    """
+    self   . show                (                                           )
     ##########################################################################
     return
   ############################################################################
-  def GetSettings ( self , scope ) :
+  def GetSettings                 ( self , scope                           ) :
     ##########################################################################
     if                            ( scope not in self . Settings           ) :
       self   . ObtainWidths       (                                          )
@@ -289,10 +318,7 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def Store                       ( self , scope                           ) :
-    ##########################################################################
-    if                            ( self . SaveSettings is None            ) :
-      return
+  def StoreSettings               ( self , scope                           ) :
     ##########################################################################
     if                            ( scope not in self . Settings           ) :
       self . Settings [ scope ] = {                                          }
@@ -302,11 +328,32 @@ class ProgressManager           ( TreeDock                                 ) :
     ac        = ( self . LimitValue ( self . AutoCleanId ) > 0               )
     self . Settings [ scope ] [ "Fitting" ] = self . Fitting
     self . Settings [ scope ] [ "Clean"   ] = ac
-    self . Settings [ scope ] [ "Width"   ] = self . width  ( )
-    self . Settings [ scope ] [ "Height"  ] = self . height ( )
+    self . Settings [ scope ] [ "Width"   ] = self . width  (                )
+    self . Settings [ scope ] [ "Height"  ] = self . height (                )
     self . Settings [ scope ] [ "Widths"  ] = self . WIDTHs
     ##########################################################################
-    self . SaveOptions            (                                          )
+    return
+  ############################################################################
+  def LoadDockingSettings  ( self                                          ) :
+    ##########################################################################
+    s = self . ConfScope
+    ##########################################################################
+    if                     ( s      not in self . Settings                 ) :
+      return               {                                                 }
+    ##########################################################################
+    if                     ( "Dock" not in self . Settings [ s ]           ) :
+      return               {                                                 }
+    ##########################################################################
+    return self . Settings [ s ] [ "Dock"                                    ]
+  ############################################################################
+  def SaveDockingSettings      ( self , JSON                               ) :
+    ##########################################################################
+    s      = self . ConfScope
+    ##########################################################################
+    if                         ( s      not in self . Settings             ) :
+      self . Settings [ s ] =  {                                             }
+    ##########################################################################
+    self . Settings [ s ] [ "Dock" ] = JSON
     ##########################################################################
     return
   ############################################################################
@@ -865,7 +912,8 @@ void N::ProgressManager::LocalAccept(void)
     ##########################################################################
     if                              ( at == 102                            ) :
       ########################################################################
-      self . Fitting = aa . isChecked (                                      )
+      self   . Fitting = aa . isChecked (                                    )
+      self   . StoreSettings        ( self . ConfScope                       )
       ########################################################################
       return True
     ##########################################################################
@@ -875,6 +923,8 @@ void N::ProgressManager::LocalAccept(void)
         self . setLimitValue        ( self . AutoCleanId , 1                 )
       else                                                                   :
         self . setLimitValue        ( self . AutoCleanId , 0                 )
+      ########################################################################
+      self   . StoreSettings        ( self . ConfScope                       )
       ########################################################################
       return True
     ##########################################################################

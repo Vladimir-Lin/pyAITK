@@ -82,17 +82,13 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     self . setAlternatingRowColors ( True                                    )
     self . MountClicked            ( 2                                       )
     ##########################################################################
-    ## setFunction             ( N::AttachDock::FunctionDocking , true ) ;
-    ## LocalMsgs [ AttachToMdi  ] = tr("Move to window area")            ;
-    ## LocalMsgs [ AttachToDock ] = tr("Move to dock area"  )            ;
-    ##########################################################################
     return
   ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
+    IDPMSG = self . Translations [ "Docking" ] [ "None"                      ]
+    DCKMSG = self . Translations [ "Docking" ] [ "Dock"                      ]
+    MDIMSG = self . Translations [ "Docking" ] [ "MDI"                       ]
     ##########################################################################
     self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
     self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )

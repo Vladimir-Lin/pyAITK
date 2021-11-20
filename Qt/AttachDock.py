@@ -18,6 +18,8 @@ from   PyQt5                          import QtWidgets
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QByteArray
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
@@ -39,14 +41,14 @@ class AttachDock         (                                                 ) :
   def __del__            ( self                                            ) :
     return
   ############################################################################
-  def InitializeDock     ( self , plan = None                              ) :
+  def InitializeDock                     ( self , plan = None              ) :
     ##########################################################################
     self . Trigger    = None
     self . Dock       = None
     self . dockPlan   = plan
     self . Scope      = ""
-    self . Mutex      = threading . Lock ( )
-    self . DockLimits = { }
+    self . Mutex      = threading . Lock (                                   )
+    self . DockLimits =                  {                                   }
     ##########################################################################
     return
   ############################################################################
@@ -126,31 +128,74 @@ class AttachDock         (                                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def Store                   ( self , Main                                ) :
+  def LoadDockingSettings     ( self                                       ) :
+    return                    {                                              }
+  ############################################################################
+  def SaveDockingSettings     ( self , JSON                                ) :
+    return
+  ############################################################################
+  def ByteArrayToString  ( self , qbyte                                    ) :
     ##########################################################################
-    self . LockDock           (                                              )
+    if                   ( qbyte == None                                   ) :
+      return ""
     ##########################################################################
-    """
-      QRect     DR = Dock -> geometry                 (            ) ;
-      QWidget * wx = Dock -> widget                   (            ) ;
-      DockInformation DI                                             ;
-      DI    . geometry = Dock -> saveGeometry         (            ) ;
-      DI    . floating = Dock -> isFloating           (            ) ;
-      DI    . show     = Dock -> isVisible            (            ) ;
-      DI    . area     = (int) Main -> dockWidgetArea ( Dock       ) ;
-      DI    . width    = DR    . width                (            ) ;
-      DI    . height   = DR    . height               (            ) ;
-      plan -> site . SaveDock                         ( Scope , DI ) ;
-      if ( NotNull ( wx ) )                                          {
-        QSize hs = wx -> size     (                                ) ;
-        plan -> site . beginGroup ( Scope                          ) ;
-        plan -> site . setValue   ( "HintWidth"  , hs . width  ( ) ) ;
-        plan -> site . setValue   ( "HintHeight" , hs . height ( ) ) ;
-        plan -> site . endGroup   (                                ) ;
-      }                                                              ;
-    """
+    try                                                                      :
+      BB = qbyte . data  (                                                   )
+    except                                                                   :
+      return ""
     ##########################################################################
-    self . UnlockDock         (                                              )
+    if                   ( BB == None                                      ) :
+      return ""
+    ##########################################################################
+    if                   ( len ( BB ) <= 0                                 ) :
+      return ""
+    ##########################################################################
+    try                                                                      :
+      SS = BB . decode   ( "utf-8"                                           )
+    except                                                                   :
+      return ""
+    ##########################################################################
+    return SS
+  ############################################################################
+  def HexToByteArray            ( self , HEX                               ) :
+    ##########################################################################
+    try                                                                      :
+      HH = HEX . encode         ( "utf-8"                                    )
+      BX = QByteArray           ( HH                                         )
+    except                                                                   :
+      return QByteArray         (                                            )
+    ##########################################################################
+    return QByteArray . fromHex ( BX )
+  ############################################################################
+  def Store                       ( self , area                            ) :
+    ##########################################################################
+    self . LockDock               (                                          )
+    ##########################################################################
+    DR   = self . Dock . geometry (                                          )
+    WX   = self . Dock . widget   (                                          )
+    DI   =                        {                                          }
+    SG   = self . Dock . saveGeometry (                                      )
+    SGS  = self . ByteArrayToString   ( SG . toHex ( )                       )
+    ##########################################################################
+    DI [ "Geometry"   ] = SGS
+    DI [ "Floating"   ] = self . Dock . isFloating   (                       )
+    DI [ "Show"       ] = self . Dock . isVisible    (                       )
+    DI [ "Area"       ] = area
+    DI [ "Width"      ] = DR   . width               (                       )
+    DI [ "Height"     ] = DR   . height              (                       )
+    ##########################################################################
+    DI [ "HintWidth"  ] = 0
+    DI [ "HintHeight" ] = 0
+    ##########################################################################
+    if                            ( WX not in [ False , None ]             ) :
+      ########################################################################
+      hs = WX . size              (                                          )
+      DI [ "HintWidth"  ] = hs . width  (                                    )
+      DI [ "HintHeight" ] = hs . height (                                    )
+    ##########################################################################
+    self . SaveDockingSettings    ( DI                                       )
+    ##########################################################################
+    self . UnlockDock             (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -166,13 +211,9 @@ class AttachDock         (                                                 ) :
     ##########################################################################
     plan     = self . GetDockPlan    (                                       )
     ##########################################################################
-    """
-    int             w       = plan -> screen . widthPixels ( 40 ) 4公分             ;
-    bool            restore = false                                            ;
-    QSize           WS                                                         ;
-    DockInformation DI                                                         ;
-    """
     w        = 80
+    WS       = QSize  ( )
+    DI       = { }
     Restore  = False
     DIW      = 0
     DIH      = 0
@@ -186,57 +227,59 @@ class AttachDock         (                                                 ) :
       DIW    = Main . width          (                                       )
       DIH    = w
     ##########################################################################
-    ## plan -> site . LoadDock ( Scope , DI )
+    DI       = self . LoadDockingSettings (                                  )
     ##########################################################################
     self     . Dock = DockWidget     ( Main , self . dockPlan                )
     self     . Dock . blockSignals   ( True                                  )
     ##########################################################################
-    ## Dock -> setFont ( plan->fonts[N::Fonts::Default] )
     self     . Dock . setWindowTitle ( title                                 )
     self     . Dock . setWidget      ( widget                                )
-    ## self     . Dock . setToolTip     ( title                                 )
+    self     . Dock . setToolTip     ( title                                 )
     Main     . addDockWidget         ( area , self . Dock                    )
     widget   . setWindowTitle        ( title                                 )
-    ## DockLimits [ 2 ] = widget -> minimumSize ( )
-    ## DockLimits [ 3 ] = widget -> maximumSize ( )
+    self     . DockLimits [ 2 ] = widget . minimumSize (                     )
+    self     . DockLimits [ 3 ] = widget . maximumSize (                     )
     self     . assignAllowAreas      ( areas                                 )
-    ## if ( DI . geometry . size ( ) > 0 )                                        {
-    ##   Dock -> restoreGeometry          ( DI . geometry                       ) ;
-    ## }                                                                          ;
     self     . Dock . setFloating    ( Floating                              )
-    """
-    WS               . setWidth        ( DI . width                          ) ;
-    WS               . setHeight       ( DI . height                         ) ;
-    if ( ( WS . width ( ) > 0 ) && ( WS . height ( ) > 0 ) ) restore = true    ;
-    if ( restore )                                                             {
-      QSize DS = Dock -> maximumSize   (       )                               ;
-      widget          -> resize        ( WS    )                               ;
-      plan      -> site . beginGroup   ( Scope )                               ;
-      if ( plan -> site . contains ( "HintWidth" ) )                           {
-        if ( plan -> site . contains ( "HintHeight" ) )                        {
-          QSize         hs                                                     ;
-          AbstractGui * ag = dynamic_cast<AbstractGui *>(widget)               ;
-          hs . setWidth  ( plan -> site . value ( "HintWidth"  ) . toInt() )   ;
-          hs . setHeight ( plan -> site . value ( "HintHeight" ) . toInt() )   ;
-          if ( NotNull ( ag ) ) ag -> setSuggestion ( hs )                     ;
-        }                                                                      ;
-      }                                                                        ;
-      plan            -> site . endGroup                 (    )                ;
-      Dock            -> DockGeometry = Dock -> geometry (    )                ;
-      Dock            -> DockGeometry . setSize          ( WS )                ;
-      DockLimits [ 0 ] = WS                                                    ;
-      DockLimits [ 1 ] = DS                                                    ;
-    }                                                                          ;
-    """
+    ##########################################################################
+    if                               ( "Geometry" in DI                    ) :
+      HBA    = self . HexToByteArray ( DI [ "Geometry" ]                     )
+      self   . Dock . restoreGeometry ( HBA                                  )
+    ##########################################################################
+    if                               ( "Width"  in DI                      ) :
+      WS     . setWidth              ( DI [ "Width"  ]                       )
+    ##########################################################################
+    if                               ( "Height" in DI                      ) :
+      WS     . setHeight             ( DI [ "Height" ]                       )
+    ##########################################################################
+    if ( ( WS . width ( ) > 0 ) and ( WS . height ( ) > 0 ) )                :
+      Restore  = True
+    ##########################################################################
+    if                               ( Restore                             ) :
+      ########################################################################
+      DS     = self . Dock . maximumSize (                                   )
+      widget . resize                ( WS                                    )
+      HW     = DI                    [ "HintWidth"                           ]
+      HH     = DI                    [ "HintHeight"                          ]
+      hs     = QSize                 (                                       )
+      hs     . setWidth              ( HW                                    )
+      hs     . setHeight             ( HH                                    )
+      widget . setSuggestion         ( hs                                    )
+      self   . Dock . DockGeometry = self . Dock . geometry (                )
+      self   . Dock . DockGeometry . setSize ( WS                            )
     ##########################################################################
     self     . Dock . setVisible     ( True                                  )
     self     . Dock . blockSignals   ( False                                 )
-    ## plan -> setFont        ( Dock      )
     ##########################################################################
     Located  = getattr               ( widget , "DockLocationChanged" , None )
     if                               ( Located is not None                 ) :
       if                             ( callable ( Located )                ) :
         self . Dock . dockLocationChanged . connect ( Located                )
+    ##########################################################################
+    VISIBLE  = getattr               ( widget , "DockVisibleChanged"  , None )
+    if                               ( VISIBLE is not None                 ) :
+      if                             ( callable ( VISIBLE )                ) :
+        self . Dock . visibilityChanged   . connect ( VISIBLE                )
     ##########################################################################
     qApp     . processEvents         (                                       )
     ##########################################################################

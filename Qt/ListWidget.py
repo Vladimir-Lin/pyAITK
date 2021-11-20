@@ -141,20 +141,20 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     ##########################################################################
     return
   ############################################################################
-  def resizeEvent       ( self , event                                     ) :
+  def resizeEvent           ( self , event                                 ) :
     ##########################################################################
-    if                  ( self . Relocation ( )                            ) :
-      event . accept    (                                                    )
+    if                      ( self . Relocation ( )                        ) :
+      event . accept        (                                                )
       return
     ##########################################################################
-    super ( QListWidget , self ) . resizeEvent ( event                       )
+    super ( ) . resizeEvent ( event                                          )
     ##########################################################################
     return
   ############################################################################
-  def showEvent         ( self , event                                     ) :
+  def showEvent           ( self , event                                   ) :
     ##########################################################################
-    super ( QListWidget , self ) . showEvent ( event                         )
-    self . Relocation   (                                                    )
+    super ( ) . showEvent ( event                                            )
+    self . Relocation     (                                                  )
     ##########################################################################
     return
   ############################################################################
