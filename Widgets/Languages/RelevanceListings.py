@@ -47,29 +47,21 @@ from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
 from   AITK  . Essentials . Relation  import Relation
-##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
+from   AITK  . Calendars  . StarDate  import StarDate
+from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class RelevanceListings            ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
-  PeopleGroup       = pyqtSignal   ( str , int , str                         )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( list                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . EditAllNames       = None
-    ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 28
-    self . Order    = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -78,9 +70,8 @@ class RelevanceListings            ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnCount          ( 4                                       )
+    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -89,20 +80,20 @@ class RelevanceListings            ( TreeDock                              ) :
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
-    self . emitNamesShow     . connect ( self . show                         )
-    self . emitAllNames      . connect ( self . refresh                      )
-    self . emitAssignAmounts . connect ( self . AssignAmounts                )
+    self . emitNamesShow . connect ( self . show                             )
+    self . emitAllNames  . connect ( self . refresh                          )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
+    self . setAcceptDrops          ( False                                   )
     self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 320 , 640                               )
+    return QSize                   ( 480 , 640                               )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -114,10 +105,6 @@ class RelevanceListings            ( TreeDock                              ) :
     ##########################################################################
     self . LinkAction              ( "Insert"     , self . InsertItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
     ##########################################################################
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
@@ -147,21 +134,34 @@ class RelevanceListings            ( TreeDock                              ) :
       return
     ##########################################################################
     line = self . setLineEdit ( item                                       , \
-                                0                                          , \
+                                1                                          , \
                                 "editingFinished"                          , \
                                 self . nameChanged                           )
     line . setFocus           ( Qt . TabFocusReason                          )
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
+  def PrepareItem                ( self , JSON                             ) :
     ##########################################################################
-    UXID = str                   ( UUID                                      )
-    IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , NAME                                  )
-    IT   . setToolTip            ( 0 , UXID                                  )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    UXID    = str                 ( JSON [ "Uuid" ]                          )
+    UUID    = int                 ( UXID                                     )
+    Id      = int                 ( JSON [ "Id"   ]                          )
+    Used    = int                 ( JSON [ "Used" ]                          )
+    ENGLISH = JSON                [ "English"                                ]
+    NAME    = JSON                [ "Name"                                   ]
+    COMMENT = JSON                [ "Comment"                                ]
+    ##########################################################################
+    IT      = QTreeWidgetItem     (                                          )
+    ##########################################################################
+    IT      . setText             ( 0 , str ( Id )                           )
+    IT      . setToolTip          ( 0 , UXID                                 )
+    IT      . setData             ( 0 , Qt . UserRole , UUID                 )
+    IT      . setTextAlignment    ( 0 , Qt.AlignRight                        )
+    ##########################################################################
+    IT      . setText             ( 1 , ENGLISH                              )
+    IT      . setText             ( 2 , NAME                                 )
+    ##########################################################################
+    IT      . setData             ( 3 , Qt . UserRole , JSON                 )
     ##########################################################################
     return IT
   ############################################################################
@@ -215,20 +215,17 @@ class RelevanceListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
-  def refresh                         ( self , JSON                        ) :
+  @pyqtSlot                       (        list                              )
+  def refresh                     ( self , LISTS                           ) :
     ##########################################################################
-    self    . clear                   (                                      )
+    self   . clear                (                                          )
     ##########################################################################
-    UUIDs   = JSON                    [ "UUIDs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
-    ##########################################################################
-    for U in UUIDs                                                           :
+    for R in LISTS                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
-      self  . addTopLevelItem         ( IT                                   )
+      IT   = self . PrepareItem   ( R                                        )
+      self . addTopLevelItem      ( IT                                       )
     ##########################################################################
-    self    . emitNamesShow . emit    (                                      )
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -241,50 +238,6 @@ class RelevanceListings            ( TreeDock                              ) :
     ##########################################################################
     return UUIDs
   ############################################################################
-  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
-    ##########################################################################
-    NAMEs   =                         {                                      }
-    ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
-    ##########################################################################
-    return NAMEs
-  ############################################################################
-  @pyqtSlot                           (        str  , int                    )
-  def AssignAmounts                   ( self , UUID , Amounts              ) :
-    ##########################################################################
-    IT    = self . uuidAtItem         ( UUID , 0                             )
-    if                                ( IT is None                         ) :
-      return
-    ##########################################################################
-    IT . setText                      ( 1 , str ( Amounts )                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportBelongings                 ( self , UUIDs                      ) :
-    ##########################################################################
-    time    . sleep                    ( 1.0                                 )
-    ##########################################################################
-    RELTAB  = self . Tables            [ "Relation"                          ]
-    REL     = Relation                 (                                     )
-    REL     . setT1                    ( "Occupation"                        )
-    REL     . setT2                    ( "People"                            )
-    REL     . setRelation              ( "Subordination"                     )
-    ##########################################################################
-    DB      = self . ConnectDB         (                                     )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      REL   . set                      ( "first" , UUID                      )
-      CNT   = REL . CountSecond        ( DB , RELTAB                         )
-      ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
-    ##########################################################################
-    DB      . Close                    (                                     )
-    ##########################################################################
-    return
-  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -295,24 +248,48 @@ class RelevanceListings            ( TreeDock                              ) :
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+    REVTAB  = self . Tables           [ "Relevance"                          ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
+    ##########################################################################
+    LISTS   =                         [                                      ]
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      J     =                         { "Uuid"    : UUID                     ,
+                                        "Id"      : -1                       ,
+                                        "Used"    : 0                        ,
+                                        "English" : ""                       ,
+                                        "Name"    : ""                       ,
+                                        "Comment" : ""                       }
+      QQ    = f"""select `id`,`used`,`name`,`comment` from {REVTAB}
+                  where ( `uuid` = {UUID} ) ;"""
+      QQ    = " " . join              ( QQ . split ( )                       )
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      ########################################################################
+      if                              ( RR in [ False , None ]             ) :
+        continue
+      ########################################################################
+      if                              ( len ( RR ) != 4                    ) :
+        continue
+      ########################################################################
+      Name  = self . GetName          ( DB , NAMTAB , UUID                   )
+      ########################################################################
+      J  [ "Id"      ] = int          ( RR [ 0 ]                             )
+      J  [ "Used"    ] = int          ( RR [ 1 ]                             )
+      J  [ "English" ] = self . assureString ( RR [ 2 ]                      )
+      J  [ "Name"    ] = Name
+      J  [ "Comment" ] = self . assureString ( RR [ 3 ]                      )
+      ########################################################################
+      LISTS . append                  ( J                                    )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
-      self . emitNamesShow . emit     (                                      )
+    if                                ( len ( LISTS ) <= 0                 ) :
+      self  . emitNamesShow . emit    (                                      )
       return
     ##########################################################################
-    JSON             =                {                                      }
-    JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
-    ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
-    ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
+    self    . emitAllNames  . emit    ( LISTS                                )
     ##########################################################################
     return
   ############################################################################
@@ -328,13 +305,14 @@ class RelevanceListings            ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    TABLE = self . Tables        [ "Places"                                  ]
+    REVTAB = self . Tables       [ "Relevance"                               ]
+    ORDER  = self . SortOrder
     ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
-                  order by `id` asc ;"""
+    QQ     = f"""select `uuid` from {REVTAB}
+                  where ( `used` > 0 )
+                  order by `id` {ORDER} ;"""
     ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
+    QQ     = " " . join          ( QQ . split ( )                            )
     ##########################################################################
     return DB . ObtainUuids      ( QQ , 0                                    )
   ############################################################################
@@ -375,9 +353,9 @@ class RelevanceListings            ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "Places"                             ]
+    REVTAB  = self . Tables           [ "Relevance"                          ]
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    QQ      = f"select count(*) from {REVTAB} where ( `used` > 0 ) ;"
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
@@ -390,205 +368,32 @@ class RelevanceListings            ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Places"                                     ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . Order
+    REVTAB  = self . Tables   [ "Relevance"                                  ]
+    ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ      = f"""select `uuid` from {REVTAB}
+                  where ( `used` > 0 )
+                  order by `id` {ORDER} ;"""
     ##########################################################################
     return " " . join         ( QQ . split ( )                               )
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
-  ############################################################################
-  def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
-    return self . dropHandler ( sourceWidget , self , mimeData               )
-  ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
-    ##########################################################################
-    if                              ( self == sourceWidget                 ) :
-      return False
-    ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
-      return False
-    ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
-    ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
-      ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
-    ##########################################################################
-    return RDN
-  ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    ##########################################################################
-    return True
-  ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem is None                            ) :
-      return True
-    ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
-    ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
-    ##########################################################################
-    """
-    self . Go                  ( self . PeopleJoinOccupation               , \
-                                 ( UUID , UUIDs , )                          )
-    """
-    ##########################################################################
-    return True
-  ############################################################################
-  def PeopleJoinOccupation          ( self , UUID , UUIDs                  ) :
-    ##########################################################################
-    """
-    if                              ( UUID <= 0                            ) :
-      return
-    ##########################################################################
-    COUNT   = len                   ( UUIDs                                  )
-    if                              ( COUNT <= 0                           ) :
-      return
-    ##########################################################################
-    Hide    = self . isColumnHidden ( 1                                      )
-    ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return
-    ##########################################################################
-    MSG     = "加入{0}個人物" . format ( COUNT )
-    self    . ShowStatus            ( MSG                                    )
-    self    . TtsTalk               ( MSG , 1002                             )
-    ##########################################################################
-    RELTAB  = self . Tables         [ "Relation"                             ]
-    REL     = Relation              (                                        )
-    REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Occupation"                           )
-    REL     . setT2                 ( "People"                               )
-    REL     . setRelation           ( "Subordination"                        )
-    DB      . LockWrites            ( [ RELTAB ]                             )
-    REL     . Joins                 ( DB , RELTAB , UUIDs                    )
-    DB      . UnlockTables          (                                        )
-    ##########################################################################
-    if                              ( not Hide                             ) :
-      TOTAL = REL . CountSecond     ( DB , RELTAB                            )
-    ##########################################################################
-    DB      . Close                 (                                        )
-    ##########################################################################
-    self    . ShowStatus            ( ""                                     )
-    ##########################################################################
-    if                              ( Hide                                 ) :
-      return
-    ##########################################################################
-    IT      = self . uuidAtItem     ( UUID , 0                               )
-    if                              ( IT is None                           ) :
-      return
-    ##########################################################################
-    IT      . setText               ( 1 , str ( TOTAL )                      )
-    self    . DoUpdate              (                                        )
-    ##########################################################################
-    """
-    return
-  ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
-    self   . setColumnWidth   ( 2 , 3                                        )
+    self   . setColumnWidth   ( 0 ,  80                                      )
+    self   . setColumnWidth   ( 1 , 240                                      )
+    self   . setColumnWidth   ( 3 ,   3                                      )
     ##########################################################################
     TRX    = self . Translations
-    LABELs = [ "地點名稱" , TRX [ "UI::PeopleAmount" ] , ""         ]
+    LABELs = TRX              [ "RelevanceListings" ] [ "Labels"             ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )
     ##########################################################################
     return
   ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
   def AssureUuidItem               ( self , item , uuid , name             ) :
     ##########################################################################
+    """
     DB      = self . ConnectDB     (                                         )
     if                             ( DB == None                            ) :
       return
@@ -610,6 +415,7 @@ class RelevanceListings            ( TreeDock                              ) :
     ##########################################################################
     item    . setData              ( 0 , Qt . UserRole , uuid                )
     ##########################################################################
+    """
     return
   ############################################################################
   def CopyToClipboard             ( self                                   ) :
@@ -631,33 +437,11 @@ class RelevanceListings            ( TreeDock                              ) :
     TRX    = self . Translations
     COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
-    ##########################################################################
     msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    hid    = self . isColumnHidden ( 3                                       )
+    mm     . addActionFromMenu     ( COL , 9003 , msg , True , not hid       )
     ##########################################################################
     return mm
-  ############################################################################
-  @pyqtSlot(int)
-  def GotoId                       ( self , Id                             ) :
-    ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
@@ -676,37 +460,6 @@ class RelevanceListings            ( TreeDock                              ) :
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
-    ##########################################################################
-    T      = self . Total
-    MSG    = f"總數量:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
-    ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    SIDB   . setPrefix             ( "本頁開始:" )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    SIDB   . valueChanged . connect ( self . GotoId                          )
-    ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    SIDP   . setPrefix             ( "每頁數量:" )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    SIDP   . valueChanged . connect ( self . AssignAmount                    )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      FMT  = TRX                   [ "UI::AttachCrowds"                      ]
-      MSG  = FMT . format          ( atItem . text ( 0 )                     )
-      mm   . addSeparator          (                                         )
-      mm   . addAction             ( 1201 ,  MSG                             )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
     ##########################################################################
     if                             ( len ( items ) == 1                    ) :
       if                           ( self . EditAllNames != None           ) :
@@ -729,7 +482,7 @@ class RelevanceListings            ( TreeDock                              ) :
     if                             ( self . HandleLocalityMenu ( at )      ) :
       return True
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9001 ) and ( at <= 9003 )         :
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
@@ -743,11 +496,6 @@ class RelevanceListings            ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . InsertItem            (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1201                            ) :
-      head = atItem . text         ( 0                                       )
-      self . PeopleGroup   . emit  ( head , 184 , str ( uuid )               )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
