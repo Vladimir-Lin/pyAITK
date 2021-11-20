@@ -41,6 +41,7 @@ class PurePlan           ( VirtualProgress                                 ) :
     self . Dirs         = { }
     self . Variables    = { }
     self . Notification = None
+    self . IMS          = None
     ##########################################################################
     return
   ############################################################################
