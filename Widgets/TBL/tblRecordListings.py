@@ -57,6 +57,7 @@ class tblRecordListings             ( TreeDock                             ) :
   ############################################################################
   emitAllHistory = pyqtSignal       ( list                                   )
   emitTblSerial  = pyqtSignal       ( str                                    )
+  addText        = pyqtSignal       ( str                                    )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
@@ -67,8 +68,8 @@ class tblRecordListings             ( TreeDock                             ) :
     self . Amount    = 28
     self . SortOrder = "desc"
     ##########################################################################
-    self . dockingOrientation = Qt . Horizontal
-    self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingOrientation = Qt . Vertical
+    self . dockingPlace       = Qt . LeftDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
@@ -188,6 +189,10 @@ class tblRecordListings             ( TreeDock                             ) :
       IT   = self . PrepareItem ( R                                          )
       self . addTopLevelItem    ( IT                                         )
     ##########################################################################
+    TRX    = self . Translations
+    msg    = TRX                [ "UI::Ready"                                ]
+    self   . TtsTalk            ( msg , self . getLocality ( )               )
+    ##########################################################################
     return
   ############################################################################
   def ObtainsInformation              ( self , DB                          ) :
@@ -235,6 +240,11 @@ class tblRecordListings             ( TreeDock                             ) :
     return RECORDs
   ############################################################################
   def loading                         ( self                               ) :
+    ##########################################################################
+    TRX     = self . Translations
+    ##########################################################################
+    msg     = TRX                      [ "UI::Loading"                       ]
+    self    . TtsTalk                  ( msg , self . getLocality ( )        )
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
     if                                ( DB == None                         ) :

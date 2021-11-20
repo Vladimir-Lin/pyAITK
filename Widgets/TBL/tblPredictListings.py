@@ -143,8 +143,8 @@ class tblPredictListings            ( TreeDock                             ) :
     self . tblParameters      = {                                            }
     self . tblAppears         = {                                            }
     ##########################################################################
-    self . dockingOrientation = Qt . Horizontal
-    self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingOrientation = Qt . Vertical
+    self . dockingPlace       = Qt . LeftDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
@@ -360,6 +360,10 @@ class tblPredictListings            ( TreeDock                             ) :
       self . addTopLevelItem    ( IT                                         )
     ##########################################################################
     self . Bettings = RECORDs
+    ##########################################################################
+    TRX    = self . Translations
+    msg    = TRX                [ "UI::Ready"                                ]
+    self   . TtsTalk            ( msg , self . getLocality ( )               )
     ##########################################################################
     return
   ############################################################################
@@ -766,7 +770,11 @@ class tblPredictListings            ( TreeDock                             ) :
   def loading                          ( self                              ) :
     ##########################################################################
     TRX     = self . Translations
-    msg     = TRX [ "TBL" ] [ "Predictions" ] [ "Loading" ]
+    ##########################################################################
+    msg     = TRX                      [ "UI::Loading"                       ]
+    self    . TtsTalk                  ( msg , self . getLocality ( )        )
+    ##########################################################################
+    msg     = TRX [ "TBL" ] [ "Predictions" ] [ "Loading"                    ]
     self    . ShowStatus               ( msg                                 )
     ##########################################################################
     self    . LoadSettings             (                                     )

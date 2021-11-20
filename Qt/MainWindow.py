@@ -54,7 +54,7 @@ class MainWindow             ( QMainWindow , VirtualGui                    ) :
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )
     ##########################################################################
-    self . SubmitTtsTalk          .connect  ( self.DoTtsTalk                 )
+    self . SubmitTtsTalk         . connect  ( self . DoTtsTalk               )
     ##########################################################################
     return
   ############################################################################
@@ -148,12 +148,19 @@ class MainWindow             ( QMainWindow , VirtualGui                    ) :
     ##########################################################################
     return
   ############################################################################
-  def addMdi                  ( self , widget , showOptions = 1            ) :
+  def addMdi                     ( self , widget , showOptions = 1         ) :
     ##########################################################################
-    subw = MdiSubWindow       (                                              )
-    subw . setWidget          ( widget                                       )
-    self . mdi . addSubWindow ( subw                                         )
-    subw . setAttribute       ( Qt . WA_DeleteOnClose                        )
+    orient  = getattr            ( widget , "dockingOrientation" , None      )
+    if                           ( orient not in [ False , None ]          ) :
+      ########################################################################
+      subw  = self . mdi . Attach ( widget , widget . dockingOrientation     )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      subw  = MdiSubWindow        (                                          )
+      subw  . setWidget           ( widget                                   )
+      self  . mdi . addSubWindow  ( subw                                     )
+      subw  . setAttribute        ( Qt . WA_DeleteOnClose                    )
     ##########################################################################
     return subw
   ############################################################################

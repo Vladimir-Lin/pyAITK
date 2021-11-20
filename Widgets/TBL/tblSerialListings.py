@@ -55,9 +55,10 @@ from   AITK . Calendars . Periode     import Periode
 ##############################################################################
 class tblSerialListings             ( TreeDock                             ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu     = 1371434312
   ############################################################################
-  emitBettings = pyqtSignal         ( list                                   )
+  emitBettings   = pyqtSignal       ( list                                   )
+  addText        = pyqtSignal       ( str                                    )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
@@ -71,8 +72,8 @@ class tblSerialListings             ( TreeDock                             ) :
     self . Six       =              [                                        ]
     self . Special   =              [                                        ]
     ##########################################################################
-    self . dockingOrientation = Qt . Horizontal
-    self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingOrientation = Qt . Vertical
+    self . dockingPlace       = Qt . LeftDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
@@ -204,6 +205,10 @@ class tblSerialListings             ( TreeDock                             ) :
       IT   = self . PrepareItem ( i + 1 , B                                  )
       self . addTopLevelItem    ( IT                                         )
     ##########################################################################
+    TRX    = self . Translations
+    msg    = TRX                [ "UI::Ready"                                ]
+    self   . TtsTalk            ( msg , self . getLocality ( )               )
+    ##########################################################################
     return
   ############################################################################
   def ObtainUuidsQuery        ( self                                       ) :
@@ -250,6 +255,11 @@ class tblSerialListings             ( TreeDock                             ) :
     return BETTINGs
   ############################################################################
   def loading                         ( self                               ) :
+    ##########################################################################
+    TRX     = self . Translations
+    ##########################################################################
+    msg     = TRX                      [ "UI::Loading"                       ]
+    self    . TtsTalk                  ( msg , self . getLocality ( )        )
     ##########################################################################
     DB       = self . ConnectDB       (                                      )
     if                                ( DB == None                         ) :
