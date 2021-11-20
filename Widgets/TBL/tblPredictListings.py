@@ -122,6 +122,10 @@ class tblPredictListings            ( TreeDock                             ) :
   ############################################################################
   emitAllHistory = pyqtSignal       ( list                                   )
   emitBettings   = pyqtSignal       ( list                                   )
+  emitPredict    = pyqtSignal       (                                        )
+  emitUpdate     = pyqtSignal       (                                        )
+  emitPickAll    = pyqtSignal       (                                        )
+  emitPickNone   = pyqtSignal       (                                        )
   addText        = pyqtSignal       ( str                                    )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
@@ -161,6 +165,10 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     self . emitAllHistory . connect ( self . refresh                         )
     self . emitBettings   . connect ( self . AppendBettings                  )
+    self . emitPickAll    . connect ( self . PickAll                         )
+    self . emitPickNone   . connect ( self . PickNone                        )
+    self . emitPredict    . connect ( self . PredictBettings                 )
+    self . emitUpdate     . connect ( self . UpdateBettings                  )
     ##########################################################################
     self . setFunction              ( self . FunctionDocking , True          )
     self . setFunction              ( self . HavingMenu      , True          )
@@ -181,10 +189,14 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
     self . LinkAction              ( "Refresh"    , self . startup           )
+    self . LinkAction              ( "Start"      , self . UpdateBettings    )
     self . LinkAction              ( "Insert"     , self . InsertItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     self . LinkAction              ( "SelectAll"  , self . PickAll           )
     self . LinkAction              ( "SelectNone" , self . PickNone          )
+    ##########################################################################
+    self . LinkVoice               ( self . CommandParser                    )
+    self . Notify                  ( 0                                       )
     ##########################################################################
     return True
   ############################################################################
@@ -364,6 +376,8 @@ class tblPredictListings            ( TreeDock                             ) :
     TRX    = self . Translations
     msg    = TRX                [ "UI::Ready"                                ]
     self   . TtsTalk            ( msg , self . getLocality ( )               )
+    self   . setFocus           (                                            )
+    self   . FocusIn            (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -835,10 +849,42 @@ class tblPredictListings            ( TreeDock                             ) :
   ############################################################################
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Start"      , self . UpdateBettings  , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . PickAll         , False   )
+    self . LinkAction      ( "SelectNone" , self . PickNone        , False   )
+    self . LinkVoice       ( None                                            )
+    ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
     ##########################################################################
     return
+  ############################################################################
+  def CommandParser           ( self , language , message , timestamp      ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      self . DoPickAll        (                                              )
+      return                  { "Match"   : True                           , \
+                                "Message" : TRX [ "UI::SelectAll" ]          }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      self . DoPickNone       (                                              )
+      return                  { "Match"   : True                           , \
+                                "Message" : TRX [ "UI::SelectNone" ]         }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "TBL::DoPredict"   , message )  ) :
+      self . emitPredict . emit (                                            )
+      return                  { "Match"   : True                             }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "TBL::DoUpdate"    , message )  ) :
+      self . emitUpdate . emit (                                             )
+      return                  { "Match"   : True                             }
+    ##########################################################################
+    return                    { "Match" : False                              }
   ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
@@ -854,12 +900,18 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def CopyToClipboard              ( self                                  ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
+    IT   = self . currentItem      (                                         )
+    if                             ( IT is None                            ) :
       return
     ##########################################################################
+    V    =                         [                                         ]
+    for i in range                 ( 2 , 8                                 ) :
+      V  . append                  ( IT . text ( i )                         )
+    ##########################################################################
+    S    = " " . join              ( V                                       )
+    qApp . clipboard ( ) . setText ( S                                       )
     ##########################################################################
     return
   ############################################################################
@@ -894,11 +946,23 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def PickNone                     ( self                                  ) :
+  def DoPickAll                  ( self                                    ) :
+    ##########################################################################
+    self . emitPickAll . emit    (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def PickNone                   ( self                                    ) :
     ##########################################################################
     for i in range               ( 0 , self . topLevelItemCount ( )        ) :
       IT  = self . topLevelItem  ( i                                         )
       IT  . setCheckState        ( 0 , Qt . Unchecked                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoPickNone                 ( self                                    ) :
+    ##########################################################################
+    self . emitPickNone . emit   (                                           )
     ##########################################################################
     return
   ############################################################################

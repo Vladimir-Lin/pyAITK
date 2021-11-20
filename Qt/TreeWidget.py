@@ -56,6 +56,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   SubmitUpdate            = pyqtSignal (                                     )
   emitAdjustWidths        = pyqtSignal (                                     )
   emitAutoFit             = pyqtSignal (                                     )
+  emitSelectAll           = pyqtSignal (                                     )
   Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
@@ -74,6 +75,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . SubmitUpdate           .connect  ( self.update                    )
     self . emitAdjustWidths       .connect  ( self.setWidths                 )
     self . emitAutoFit            .connect  ( self.AutoResize                )
+    self . emitSelectAll          .connect  ( self.SelectAll                 )
     ##########################################################################
     self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
     self . setAcceptDrops                   ( True                           )
@@ -606,6 +608,12 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     for i in range               ( 0 , self . topLevelItemCount ( )        ) :
       IT  = self . topLevelItem  ( i                                         )
       IT  . setSelected          ( True                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoSelectAll                ( self                                    ) :
+    ##########################################################################
+    self . emitSelectAll . emit  (                                           )
     ##########################################################################
     return
   ############################################################################
