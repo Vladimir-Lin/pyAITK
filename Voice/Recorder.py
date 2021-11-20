@@ -30,6 +30,7 @@ class Recorder              (                                             ) :
     self . FileBase    = ""
     self . File        = None
     self . Filename    = ""
+    self . Name        = ""
     self . Converter   = None
     #########################################################################
     return
