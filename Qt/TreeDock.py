@@ -265,22 +265,36 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     TRX    = self  . Translations
     LOM    = mm    . addMenu       ( TRX [ "UI::Sorting" ]                   )
     ##########################################################################
+    hid    = self . isSortingEnabled (                                       )
+    msg    = TRX                   [ "UI::SortColumns"                       ]
+    mm     . addActionFromMenu     ( LOM , 20000001 , msg , True , hid       )
+    ##########################################################################
     hid    =                       ( self . SortOrder == "asc"               )
     msg    = TRX                   [ "UI::SortAsc"                           ]
-    mm     . addActionFromMenu     ( LOM , 20000001 , msg , True , hid       )
+    mm     . addActionFromMenu     ( LOM , 20000002 , msg , True , hid       )
     ##########################################################################
     hid    =                       ( self . SortOrder == "desc"              )
     msg    = TRX                   [ "UI::SortDesc"                          ]
-    mm     . addActionFromMenu     ( LOM , 20000002 , msg , True , hid       )
+    mm     . addActionFromMenu     ( LOM , 20000003 , msg , True , hid       )
     ##########################################################################
     return mm
   ############################################################################
   def RunSortingMenu               ( self , atId                           ) :
     ##########################################################################
     if                             ( atId == 20000001                      ) :
+      ########################################################################
+      if                           ( self . isSortingEnabled ( )           ) :
+        self . setSortingEnabled   ( False                                   )
+      else                                                                   :
+        self . setSortingEnabled   ( True                                    )
+      ########################################################################
+      return False
+    ##########################################################################
+    if                             ( atId == 20000002                      ) :
       self . SortOrder = "asc"
       return True
-    if                             ( atId == 20000002                      ) :
+    ##########################################################################
+    if                             ( atId == 20000003                      ) :
       self . SortOrder = "desc"
       return True
     ##########################################################################
