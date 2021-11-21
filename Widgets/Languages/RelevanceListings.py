@@ -497,7 +497,8 @@ class RelevanceListings            ( TreeDock                              ) :
     ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
-    mm     . addAction             ( 1102 , TRX [ "UI::Rename" ]             )
+    self   . AppendRenameAction    ( mm , 1102                               )
+    mm     . addSeparator          (                                         )
     ##########################################################################
     if                             ( len ( items ) == 1                    ) :
       if                           ( self . EditAllNames != None           ) :
