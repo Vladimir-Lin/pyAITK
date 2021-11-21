@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from . Download   import Download       as Download
+## from . Download   import Download       as Download
 from . HttpRPC    import HttpRPC        as HttpRPC
 from . SkypeRobot import SkypeRobot     as SkypeRobot
 from . SkypeRobot import SkypeWatcher   as SkypeWatcher
@@ -14,8 +14,7 @@ from . WSS        import WSS            as WSS
 from . WSS        import wssAccepter    as wssAccepter
 from . WSS        import WssHttpRequest as WssHttpRequest
 
-__all__ = [ "Download"       ,
-            "HttpRPC"        ,
+__all__ = [ "HttpRPC"        ,
             "SkypeRobot"     ,
             "SkypeWatcher"   ,
             "TLD"            ,
