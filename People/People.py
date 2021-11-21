@@ -10,26 +10,27 @@ import threading
 import json
 import codecs
 ##############################################################################
-from   AITK  . Database   . Connection     import Connection        as Connection
+from   AITK  . Database   . Connection     import Connection     as Connection
 ##############################################################################
-from   AITK  . Documents  . Name           import Name              as NameItem
-from   AITK  . Documents  . Name           import Naming            as Naming
-from   AITK  . Documents  . Notes          import Notes             as NoteItem
-from   AITK  . Documents  . Variables      import Variables         as VariableItem
-from   AITK  . Documents  . ParameterQuery import ParameterQuery    as ParameterQuery
+from   AITK  . Documents  . Name           import Name           as NameItem
+from   AITK  . Documents  . Name           import Naming         as Naming
+from   AITK  . Documents  . Notes          import Notes          as NoteItem
+from   AITK  . Documents  . Variables      import Variables      as VariableItem
+from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 ##############################################################################
-from   AITK  . Calendars  . StarDate       import StarDate          as StarDate
-from   AITK  . Calendars  . Periode        import Periode           as Periode
+from   AITK  . Calendars  . StarDate       import StarDate       as StarDate
+from   AITK  . Calendars  . Periode        import Periode        as Periode
 ##############################################################################
-from   AITK  . Essentials . Relation       import Relation          as Relation
+from   AITK  . Essentials . Relation       import Relation       as Relation
 ##############################################################################
-from   AITK  . Networking . WebPage        import WebPage           as WebPage
-from   AITK  . Pictures   . Picture        import Picture           as Picture
+from   AITK  . Networking . WebPage        import WebPage        as WebPage
+from   AITK  . Pictures   . Picture        import Picture        as Picture
 ##############################################################################
 class People          (                                                    ) :
   ############################################################################
   def __init__        ( self                                               ) :
     ##########################################################################
+    self . Uuid     = 0
     self . Settings = {                                                      }
     self . Tables   = {                                                      }
     ##########################################################################
@@ -88,7 +89,26 @@ class People          (                                                    ) :
     ##########################################################################
     return R
   ############################################################################
+  def ConnectToPeople ( DB , TABLE , UUID , T1 , UUIDs                     ) :
+    ##########################################################################
+    REL = Relation    (                                                      )
+    REL . set         ( "first" , UUID                                       )
+    REL . setT1       ( T1                                                   )
+    REL . setT2       ( "People"                                             )
+    REL . setRelation ( "Subordination"                                      )
+    REL . Joins       ( DB , TABLE , UUIDs                                   )
+    ##########################################################################
+    return
   ############################################################################
+  def CountBelongs           ( DB , TABLE , UUID , T1                      ) :
+    ##########################################################################
+    REL = Relation           (                                               )
+    REL . set                ( "first" , UUID                                )
+    REL . setT1              ( T1                                            )
+    REL . setT2              ( "People"                                      )
+    REL . setRelation        ( "Subordination"                               )
+    ##########################################################################
+    return REL . CountSecond ( DB , TABLE                                    )
   ############################################################################
   ############################################################################
   ############################################################################

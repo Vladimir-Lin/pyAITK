@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 ## RaceListings
+## 種族列表
 ##############################################################################
 import os
 import sys
@@ -47,13 +48,13 @@ from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
 from   AITK  . Essentials . Relation  import Relation
-##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
+from   AITK  . Calendars  . StarDate  import StarDate
+from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . People     . People    import People
 ##############################################################################
 class RaceListings                 ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu        = 1371434312
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
@@ -66,13 +67,13 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 28
-    self . Order    = "asc"
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 28
+    self . SortOrder          = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
-    self . dockingPlace       = Qt . RightDockWidgetArea
+    self . dockingPlace       = Qt . LeftDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
@@ -113,7 +114,10 @@ class RaceListings                 ( TreeDock                              ) :
     self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
     self . LinkAction              ( "Insert"     , self . InsertItem        )
+    self . LinkAction              ( "Rename"     , self . RenameItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
+    self . LinkAction              ( "Paste"      , self . Paste             )
+    self . LinkAction              ( "Import"     , self . Import            )
     self . LinkAction              ( "Home"       , self . PageHome          )
     self . LinkAction              ( "End"        , self . PageEnd           )
     self . LinkAction              ( "PageUp"     , self . PageUp            )
@@ -121,8 +125,6 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
-    ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
     ##########################################################################
     return True
   ############################################################################
@@ -139,6 +141,7 @@ class RaceListings                 ( TreeDock                              ) :
       if                      ( column != self . CurrentItem [ "Column" ]  ) :
         self . removeParked   (                                              )
     ##########################################################################
+    self     . Notify         ( 0                                            )
     return
   ############################################################################
   def doubleClicked           ( self , item , column                       ) :
@@ -147,7 +150,7 @@ class RaceListings                 ( TreeDock                              ) :
       return
     ##########################################################################
     line = self . setLineEdit ( item                                       , \
-                                0                                          , \
+                                column                                     , \
                                 "editingFinished"                          , \
                                 self . nameChanged                           )
     line . setFocus           ( Qt . TabFocusReason                          )
@@ -215,7 +218,7 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
+  @pyqtSlot                           (        dict                          )
   def refresh                         ( self , JSON                        ) :
     ##########################################################################
     self    . clear                   (                                      )
@@ -316,91 +319,78 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def startup                    ( self                                    ) :
+  @pyqtSlot          (                                                       )
+  def startup        ( self                                                ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
     ##########################################################################
-    self   . Go                  ( self . loading                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
-    ##########################################################################
-    TABLE = self . Tables        [ "Races"                                   ]
-    ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
-                  order by `id` asc ;"""
-    ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
-    ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
-  ############################################################################
-  def TranslateAll              ( self                                     ) :
-    ##########################################################################
-    DB    = self . ConnectDB    (                                            )
-    if                          ( DB == None                               ) :
-      return
-    ##########################################################################
-    TABLE = self . Tables       [ "Names"                                    ]
-    FMT   = self . Translations [ "UI::Translating"                          ]
-    self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
-    ##########################################################################
-    DB    . Close               (                                            )
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
   ############################################################################
-  def PrepareMessages            ( self                                    ) :
+  def ObtainAllUuids        ( self , DB                                    ) :
     ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
+    RACTAB = self . Tables  [ "Races"                                        ]
     ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
+    QQ     = f"""select `uuid` from {RACTAB}
+                 where ( `used` = 1 )
+                 order by `id` asc ;"""
     ##########################################################################
-    return
+    QQ     = " " . join     ( QQ . split ( )                                 )
+    ##########################################################################
+    return DB . ObtainUuids ( QQ , 0                                         )
   ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Paste"      , self . Paste           , False   )
+    self . LinkAction      ( "Import"     , self . Import          , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
     ##########################################################################
     return
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def ObtainsInformation   ( self , DB                                     ) :
     ##########################################################################
-    self    . Total = 0
+    self   . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "Races"                              ]
+    RACTAB = self . Tables [ "Races"                                         ]
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
+    QQ     = f"select count(*) from {RACTAB} where ( `used` = 1 ) ;"
+    DB     . Query         ( QQ                                              )
+    RR     = DB . FetchOne (                                                 )
     ##########################################################################
-    if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
+    if ( RR in [ False , None ] ) or ( len ( RR ) <= 0 )                     :
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    self   . Total = RR    [ 0                                               ]
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery      ( self                                         ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Races"                                      ]
+    RACTAB  = self . Tables [ "Races"                                        ]
     STID    = self . StartId
     AMOUNT  = self . Amount
-    ORDER   = self . Order
+    ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
+    QQ      = f"""select `uuid` from {RACTAB}
                   where ( `used` = 1 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join       ( QQ . split ( )                                 )
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     formats = "people/uuids"
@@ -430,9 +420,10 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     if                              ( mtype in [ "people/uuids" ]          ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
+      title = sourceWidget . windowTitle (                                   )
       CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
+      FMT   = self . getMenuItem    ( "CopyFrom"                             )
+      MSG   = FMT . format          ( title , CNT                            )
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
     return RDN
@@ -496,22 +487,19 @@ class RaceListings                 ( TreeDock                              ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
-    MSG     = "加入{0}個人物" . format ( COUNT )
+    FMT     = self . getMenuItem    ( "JoinPeople"                           )
+    MSG     = FMT  . format         ( COUNT                                  )
     self    . ShowStatus            ( MSG                                    )
     self    . TtsTalk               ( MSG , 1002                             )
     ##########################################################################
+    PER     = People                (                                        )
     RELTAB  = self . Tables         [ "Relation"                             ]
-    REL     = Relation              (                                        )
-    REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Race"                                 )
-    REL     . setT2                 ( "People"                               )
-    REL     . setRelation           ( "Subordination"                        )
     DB      . LockWrites            ( [ RELTAB ]                             )
-    REL     . Joins                 ( DB , RELTAB , UUIDs                    )
+    PER     . ConnectToPeople       ( DB , RELTAB , UUID , "Race" , UUIDs    )
     DB      . UnlockTables          (                                        )
     ##########################################################################
     if                              ( not Hide                             ) :
-      TOTAL = REL . CountSecond     ( DB , RELTAB                            )
+      TOTAL = PER . CountBelongs    ( DB , RELTAB , UUID , "Race"            )
     ##########################################################################
     DB      . Close                 (                                        )
     ##########################################################################
@@ -534,7 +522,7 @@ class RaceListings                 ( TreeDock                              ) :
     self   . setColumnWidth   ( 2 , 3                                        )
     ##########################################################################
     TRX    = self . Translations
-    LABELs = [ "種族" , TRX [ "UI::PeopleAmount" ] , "" ]
+    LABELs = TRX              [ "RaceListings" ] [ "Labels"                  ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )
@@ -589,16 +577,16 @@ class RaceListings                 ( TreeDock                              ) :
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    OCPTAB  = self . Tables        [ "Races"                                 ]
+    RACTAB  = self . Tables        [ "Races"                                 ]
     NAMTAB  = self . Tables        [ "Names"                                 ]
     ##########################################################################
-    DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
+    DB      . LockWrites           ( [ RACTAB , NAMTAB                     ] )
     ##########################################################################
     uuid    = int                  ( uuid                                    )
     if                             ( uuid <= 0                             ) :
       ########################################################################
-      uuid  = DB . UnusedUuid      ( OCPTAB                                  )
-      DB    . UseUuid              ( OCPTAB , uuid                           )
+      uuid  = DB . UnusedUuid      ( RACTAB                                  )
+      DB    . UseUuid              ( RACTAB , uuid                           )
     ##########################################################################
     self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
     ##########################################################################
@@ -622,6 +610,16 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def Paste                       ( self                                   ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def Import                      ( self                                   ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
   def ColumnsMenu                  ( self , mm                             ) :
     ##########################################################################
     TRX    = self . Translations
@@ -637,165 +635,113 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return mm
   ############################################################################
-  @pyqtSlot(int)
-  def GotoId                       ( self , Id                             ) :
-    ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  """
-  def ImportRaces               ( self                                     ) :
-    ##########################################################################
-    DB    = self . ConnectDB    (                                            )
-    if                          ( DB == None                               ) :
-      return
-    ##########################################################################
-    TABLE = self . Tables       [ "Names"                                    ]
-    ##########################################################################
-    with open                   ( "races.txt" , encoding = "utf-8" ) as F    :
-      LINES  = F . readlines    (                                            )
-    ##########################################################################
-    ID = 1
-    for L in LINES                                                           :
-      L      = L . strip        (                                            )
-      L      = L . rstrip       (                                            )
-      B      = L
-      B      = B . encode       ( "utf-8"                                    )
-      UTF8   = len              ( L                                          )
-      LENU   = len              ( B                                          )
-      UUID   = 5433124000000000000 + ID
-      QQ     = f"insert into {TABLE}
-                   ( `uuid`,`locality`,`priority`,`relevance`,`utf8`,`length`,`name` )
-                   values
-                   ( {UUID} , 1002 , 0 , 0 , {UTF8} , {LENU} , %s ) ;"
-      DB     . QueryValues      ( QQ , ( B , )                               )
-      print(QQ)
-      ID     = ID + 1
-    ##########################################################################
-    DB    . Close               (                                            )
-    ##########################################################################
-    return
-  """
-  ############################################################################
-  def Menu                         ( self , pos                            ) :
-    ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
-      return False
-    ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . currentItem    (                                         )
-    uuid   = 0
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-    ##########################################################################
-    mm     = MenuManager           ( self                                    )
-    ##########################################################################
-    TRX    = self . Translations
-    ##########################################################################
-    T      = self . Total
-    MSG    = f"總數量:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
-    ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    SIDB   . setPrefix             ( "本頁開始:" )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    SIDB   . valueChanged . connect ( self . GotoId                          )
-    ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    SIDP   . setPrefix             ( "每頁數量:" )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    SIDP   . valueChanged . connect ( self . AssignAmount                    )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    ## mm     . addAction             ( 5001 , "匯入種族" )
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      FMT  = TRX                   [ "UI::AttachCrowds"                      ]
-      MSG  = FMT . format          ( atItem . text ( 0 )                     )
-      mm   . addSeparator          (                                         )
-      mm   . addAction             ( 1201 ,  MSG                             )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    if                             ( len ( items ) == 1                    ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
-    ##########################################################################
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    mm     . addSeparator          (                                         )
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
-    self   . DockingMenu           ( mm                                      )
-    ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
-    at     = mm . at               ( aa                                      )
-    ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
-      return True
-    ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
-      return True
+  def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
     if                             ( at >= 9001 ) and ( at <= 9002 )         :
+      ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
+      ########################################################################
       if                           ( ( at == 9001 ) and ( hid )            ) :
         self . startup             (                                         )
+      ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+    return False
+  ############################################################################
+  def Menu                          ( self , pos                           ) :
+    ##########################################################################
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
+      return False
+    ##########################################################################
+    items  = self . selectedItems   (                                        )
+    atItem = self . currentItem     (                                        )
+    uuid   = 0
+    ##########################################################################
+    if                              ( atItem != None                       ) :
+      uuid = atItem . data          ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+    ##########################################################################
+    mm     = MenuManager            ( self                                   )
+    ##########################################################################
+    TRX    = self . Translations
+    ##########################################################################
+    mm     = self . AmountIndexMenu ( mm                                     )
+    ##########################################################################
+    mm     . addSeparator           (                                        )
+    ##########################################################################
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    mm     = self . AppendInsertAction  ( mm , 1101                          )
+    ##########################################################################
+    if                              ( atItem not in [ False , None ]       ) :
+      ########################################################################
+      FMT  = TRX                    [ "UI::AttachCrowds"                     ]
+      MSG  = FMT . format           ( atItem . text ( 0 )                    )
+      mm   . addSeparator           (                                        )
+      mm   . addAction              ( 1201 ,  MSG                            )
+    ##########################################################################
+    mm     . addSeparator           (                                        )
+    ##########################################################################
+    if                              ( atItem not in [ False , None ]       ) :
+      ########################################################################
+      if                            ( self . EditAllNames != None          ) :
+        ######################################################################
+        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
+        mm . addSeparator           (                                        )
+    ##########################################################################
+    mm     = self . ColumnsMenu     ( mm                                     )
+    mm     = self . SortingMenu     ( mm                                     )
+    mm     = self . LocalityMenu    ( mm                                     )
+    mm     . addSeparator           (                                        )
+    mm     . addAction              ( 3001 ,  TRX [ "UI::TranslateAll"     ] )
+    self   . DockingMenu            ( mm                                     )
+    ##########################################################################
+    mm     . setFont                ( self    . font ( )                     )
+    aa     = mm . exec_             ( QCursor . pos  ( )                     )
+    at     = mm . at                ( aa                                     )
+    ##########################################################################
+    self   . RunAmountIndexMenu     (                                        )
+    ##########################################################################
+    if                              ( self . RunDocking   ( mm , aa )      ) :
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
+    if                              ( self . HandleLocalityMenu ( at )     ) :
       return True
     ##########################################################################
-    if                             ( at == 1201                            ) :
-      head = atItem . text         ( 0                                       )
-      self . PeopleGroup   . emit  ( head , 40 , str ( uuid )                )
+    if                              ( self . RunColumnsMenu     ( at )     ) :
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Races" , uuid , NAM             )
+    if                              ( self . RunSortingMenu     ( at )     ) :
       return True
     ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
+    if                              ( at == 1001                           ) :
+      self . startup                (                                        )
       return True
     ##########################################################################
-    """
-    if                             ( at == 5001                            ) :
-      self . Go                    ( self . ImportRaces                      )
+    if                              ( at == 1101                           ) :
+      self . InsertItem             (                                        )
       return True
-    """
+    ##########################################################################
+    if                              ( at == 1201                           ) :
+      ########################################################################
+      head = atItem . text          ( 0                                      )
+      self . PeopleGroup   . emit   ( head , 40 , str ( uuid )               )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 1601                           ) :
+      ########################################################################
+      uuid = self . itemUuid        ( atItem , 0                             )
+      NAM  = self . Tables          [ "Names"                                ]
+      self . EditAllNames           ( self , "Races" , uuid , NAM            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 3001                           ) :
+      self . Go                     ( self . TranslateAll                    )
+      return True
     ##########################################################################
     return True
 ##############################################################################
