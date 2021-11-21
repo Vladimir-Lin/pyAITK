@@ -98,7 +98,7 @@ class PeopleView                   ( IconDock                              ) :
     return
   ############################################################################
   def sizeHint                ( self                                       ) :
-    return QSize              ( 880 , 800                                    )
+    return QSize              ( 840 , 800                                    )
   ############################################################################
   def setGrouping             ( self , group                               ) :
     self . Grouping = group
@@ -388,7 +388,7 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(int)
+  @pyqtSlot                        (        int                              )
   def GotoId                       ( self , Id                             ) :
     ##########################################################################
     self . StartId    = Id
@@ -397,7 +397,7 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(int)
+  @pyqtSlot                        (        int                              )
   def AssignAmount                 ( self , Amount                         ) :
     ##########################################################################
     self . Amount    = Amount
@@ -424,26 +424,12 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    T      = self . Total
-    MSG    = f"總人數:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
-    ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    SIDB   . valueChanged . connect ( self . GotoId                          )
-    ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    SIDP   . valueChanged . connect ( self . AssignAmount                    )
+    mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    mm     = self . AppendInsertAction  ( mm , 1101                          )
     if                             ( uuid > 0                              ) :
       mm   . addSeparator          (                                         )
       mm   . addAction             ( 1201 ,  TRX [ "UI::PersonalGallery"   ] )
@@ -461,6 +447,13 @@ class PeopleView                   ( IconDock                              ) :
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunAmountIndexMenu ( )         ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True

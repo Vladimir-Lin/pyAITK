@@ -396,6 +396,13 @@ class RaceListings                 ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . Notify                  ( 3                                    )
+    ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
+    self    . setBustle               (                                      )
+    ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     if                                ( self . Method in [ "Original" ]    ) :
@@ -407,6 +414,8 @@ class RaceListings                 ( TreeDock                              ) :
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
@@ -620,8 +629,7 @@ class RaceListings                 ( TreeDock                              ) :
     if                              ( IT is None                           ) :
       return
     ##########################################################################
-    IT      . setText               ( 1 , str ( TOTAL )                      )
-    self    . DoUpdate              (                                        )
+    self    . emitAssignAmounts . emit ( str ( UUID ) , int ( TOTAL )        )
     ##########################################################################
     return
   ############################################################################

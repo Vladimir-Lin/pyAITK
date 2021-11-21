@@ -57,6 +57,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   emitAdjustWidths        = pyqtSignal (                                     )
   emitAutoFit             = pyqtSignal (                                     )
   emitSelectAll           = pyqtSignal (                                     )
+  emitBustle              = pyqtSignal (                                     )
+  emitVacancy             = pyqtSignal (                                     )
   Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
@@ -76,6 +78,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . emitAdjustWidths       .connect  ( self.setWidths                 )
     self . emitAutoFit            .connect  ( self.AutoResize                )
     self . emitSelectAll          .connect  ( self.SelectAll                 )
+    self . emitBustle             .connect  ( self.DoBustle                  )
+    self . emitVacancy            .connect  ( self.DoVacancy                 )
     ##########################################################################
     self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
     self . setAcceptDrops                   ( True                           )
@@ -306,6 +310,24 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     QToolTip  . showText             ( QCursor . pos ( ) , tooltip           )
     ##########################################################################
     return mime
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DoBustle                ( self                                       ) :
+    self . Bustle             (                                              )
+    return
+  ############################################################################
+  def setBustle               ( self                                       ) :
+    self . emitBustle  . emit (                                              )
+    return
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DoVacancy               ( self                                       ) :
+    self . Vacancy            (                                              )
+    return
+  ############################################################################
+  def setVacancy              ( self                                       ) :
+    self . emitVacancy . emit (                                              )
+    return
   ############################################################################
   def setCentralLabels        ( self , labels                              ) :
     ##########################################################################
