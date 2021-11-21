@@ -146,8 +146,8 @@ class ProgressManager           ( TreeDock                                 ) :
   def __del__            ( self                                            ) :
     return
   ############################################################################
-  def sizeHint           ( self                                            ) :
-    return QSize         ( 1024 , 240                                        )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 1024 , 240 )                      )
   ############################################################################
   def DockLocationChanged      ( self , area                               ) :
     ##########################################################################
