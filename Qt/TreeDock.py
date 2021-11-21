@@ -32,7 +32,6 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QTreeWidget
 from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
