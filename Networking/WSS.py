@@ -900,18 +900,23 @@ class WSS                   (                                              ) :
       self . RemoveClient   ( sockno                                         )
     return True
   ############################################################################
-  def RemoveClient              ( self , sockno                            ) :
+  def RemoveClient                ( self , sockno                          ) :
     ##########################################################################
     if sockno not in self . Connections                                      :
       return False
     ##########################################################################
-    self . Lock                 (                                            )
-    client = self . Connections [ sockno                                     ]
-    client . doClose            (                                            )
-    del self . Connections      [ sockno                                     ]
-    if                          ( sockno in self . Listeners               ) :
-      self . Listeners . remove ( sockno                                     )
-    self . Unlock               (                                            )
+    self . Lock                   (                                          )
+    ##########################################################################
+    try                                                                      :
+      client = self . Connections [ sockno                                   ]
+      client . doClose            (                                          )
+      del self . Connections      [ sockno                                   ]
+      if                          ( sockno in self . Listeners             ) :
+        self . Listeners . remove ( sockno                                   )
+    except                                                                   :
+      pass
+    ##########################################################################
+    self . Unlock                 (                                          )
     ##########################################################################
     return True
   ############################################################################
