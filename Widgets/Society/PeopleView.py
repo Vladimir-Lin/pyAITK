@@ -98,7 +98,7 @@ class PeopleView                   ( IconDock                              ) :
     return
   ############################################################################
   def sizeHint                ( self                                       ) :
-    return QSize              ( 800 , 800                                    )
+    return QSize              ( 880 , 800                                    )
   ############################################################################
   def setGrouping             ( self , group                               ) :
     self . Grouping = group

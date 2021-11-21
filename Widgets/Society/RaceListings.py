@@ -72,6 +72,10 @@ class RaceListings                 ( TreeDock                              ) :
     self . StartId            = 0
     self . Amount             = 28
     self . SortOrder          = "asc"
+    self . Method             = "Original"
+    self . SearchLine         = None
+    self . SearchKey          = ""
+    self . UUIDs              = [                                            ]
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . LeftDockWidgetArea
@@ -116,6 +120,7 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     self . LinkAction              ( "Insert"     , self . InsertItem        )
     self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self . LinkAction              ( "Search"     , self . Search            )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     self . LinkAction              ( "Paste"      , self . Paste             )
     self . LinkAction              ( "Import"     , self . Import            )
@@ -168,6 +173,52 @@ class RaceListings                 ( TreeDock                              ) :
     IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
     ##########################################################################
     return IT
+  ############################################################################
+  @pyqtSlot            (                                                     )
+  def Finding          ( self                                              ) :
+    ##########################################################################
+    L    = self . SearchLine
+    ##########################################################################
+    if                 ( L in [ False , None ]                             ) :
+      return
+    ##########################################################################
+    self . SearchLine = None
+    T    = L . text    (                                                     )
+    L    . deleteLater (                                                     )
+    ##########################################################################
+    if                 ( len ( T ) <= 0                                    ) :
+      return
+    ##########################################################################
+    self . Go          ( self . looking , ( T , )                            )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                            (                                     )
+  def Search                           ( self                              ) :
+    ##########################################################################
+    L      = LineEdit                  ( None , self . PlanFunc              )
+    OK     = self . attacheStatusBar   ( L , 1                               )
+    ##########################################################################
+    if                                 ( not OK                            ) :
+      ########################################################################
+      L    . deleteLater               (                                     )
+      self . Notify                    ( 1                                   )
+      ########################################################################
+      return
+    ##########################################################################
+    L      . blockSignals              ( True                                )
+    L      . editingFinished . connect ( self . Finding                      )
+    L      . blockSignals              ( False                               )
+    ##########################################################################
+    self   . Notify                    ( 0                                   )
+    ##########################################################################
+    MSG    = self . getMenuItem        ( "Search"                            )
+    L      . setPlaceholderText        ( MSG                                 )
+    L      . setFocus                  ( Qt . TabFocusReason                 )
+    ##########################################################################
+    self   . SearchLine = L
+    ##########################################################################
+    return
   ############################################################################
   @pyqtSlot                      (                                           )
   def InsertItem                 ( self                                    ) :
@@ -289,6 +340,55 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def looking                         ( self , name                        ) :
+    ##########################################################################
+    if                                ( len ( name ) <= 0                  ) :
+      return
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    RACTAB  = self . Tables           [ "Races"                              ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
+    LIC     = self . getLocality      (                                      )
+    LIKE    = f"%{name}%"
+    UUIDs   =                         [                                      ]
+    ##########################################################################
+    RQ      = f"select `uuid` from {RACTAB} where ( `used` > 0 )"
+    QQ      = f"""select `uuid` from {NAMTAB}
+                  where ( `locality` = {LIC} )
+                  and ( `uuid` in ( {RQ} ) )
+                  and ( `name` like %s )
+                  group by `uuid` asc ;"""
+    DB      . QueryValues             ( QQ , ( LIKE , )                      )
+    ALL     = DB . FetchAll           (                                      )
+    ##########################################################################
+    DB      . Close                   (                                      )
+    ##########################################################################
+    if ( ( ALL in [ False , None ] ) or ( len ( ALL ) <= 0 ) )               :
+      ########################################################################
+      self  . Notify                  ( 1                                    )
+      ########################################################################
+      return
+    ##########################################################################
+    for U in ALL                                                             :
+      UUIDs . append                  ( U [ 0 ]                              )
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      ########################################################################
+      self  . Notify                  ( 1                                    )
+      ########################################################################
+      return
+    ##########################################################################
+    self . SearchKey = name
+    self . UUIDs     = UUIDs
+    self . Method    = "Searching"
+    ##########################################################################
+    self . loading                    (                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -298,7 +398,12 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    if                                ( self . Method in [ "Original" ]    ) :
+      self  . UUIDs =                 [                                      ]
+      UUIDs = self . ObtainsItemUuids ( DB                                   )
+    else                                                                     :
+      UUIDs = self . UUIDs
+    ##########################################################################
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
@@ -347,6 +452,7 @@ class RaceListings                 ( TreeDock                              ) :
     self . LinkAction      ( "Refresh"    , self . startup         , False   )
     self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
     self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Search"     , self . Search          , False   )
     self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
     self . LinkAction      ( "Paste"      , self . Paste           , False   )
     self . LinkAction      ( "Import"     , self . Import          , False   )
@@ -657,31 +763,36 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Import                        ( self                                 ) :
+  def Import                             ( self                            ) :
     ##########################################################################
-    Filename = QFileDialog . getOpenFileName                               ( \
-                 self                                                      , \
-                 self . windowTitle ( )                                    , \
-                 ""                                                        , \
-                 "Plain text file (*.txt)"                                   )
+    FILTERS       = self . Translations  [ "UI::PlainTextFiles"              ]
+    Filename , Ok = QFileDialog . getOpenFileName                          ( \
+                      self                                                 , \
+                      self . windowTitle (                               ) , \
+                      ""                                                   , \
+                      FILTERS                                                )
     ##########################################################################
-    BODY     = ""
-    with open                       ( Filename , "rb" ) as f                 :
-      BODY   = f . read             (                                        )
-    ##########################################################################
-    if                              ( len ( BODY ) <= 0                    ) :
+    if                                   ( len ( Filename ) <= 0           ) :
       return
     ##########################################################################
-    text     = ""
+    BODY          = ""
+    with open                            ( Filename , "rb" ) as f            :
+      BODY        = f . read             (                                   )
+    ##########################################################################
+    if                                   ( len ( BODY ) <= 0               ) :
+      return
+    ##########################################################################
+    text          = ""
     try                                                                      :
-      text   = BODY . decode        ( "utf-8"                                )
+      text        = BODY . decode        ( "utf-8"                           )
     except                                                                   :
       return
     ##########################################################################
-    if                              ( len ( text ) <= 0                    ) :
+    if                                   ( len ( text ) <= 0               ) :
       return
     ##########################################################################
-    self . Go                       ( self . ImportFromText , ( text , )     )
+    self          . Go                   ( self . ImportFromText           , \
+                                           ( text , )                        )
     ##########################################################################
     return
   ############################################################################
@@ -715,10 +826,13 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def GroupsMenu                   ( self , mm                             ) :
+  def GroupsMenu                   ( self , mm , item                      ) :
     ##########################################################################
     TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Belongs" ]                   )
+    NAME   = item . text           ( 0                                       )
+    FMT    = TRX                   [ "UI::Belongs"                           ]
+    MSG    = FMT . format          ( NAME                                    )
+    COL    = mm . addMenu          ( MSG                                     )
     ##########################################################################
     msg    = self . getMenuItem    ( "Crowds"                                )
     mm     . addActionFromMenu     ( COL , 1201 , msg                        )
@@ -729,6 +843,8 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1201                            ) :
       ########################################################################
+      uuid = item . data           ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
       head = item . text           ( 0                                       )
       self . PeopleGroup   . emit  ( head , 34 , str ( uuid )                )
       ########################################################################
@@ -761,33 +877,31 @@ class RaceListings                 ( TreeDock                              ) :
     mm     . addSeparator           (                                        )
     ##########################################################################
     self   . AppendRefreshAction    ( mm , 1001                              )
+    ##########################################################################
+    if                              ( self . Method not in [ "Original" ]  ) :
+      ########################################################################
+      msg  = self . getMenuItem     ( "Original"                             )
+      mm   . addAction              ( 1002 , msg                             )
+    ##########################################################################
     self   . AppendInsertAction     ( mm , 1101                              )
     self   . AppendRenameAction     ( mm , 1102                              )
-    ##########################################################################
-    if                              ( atItem not in [ False , None ]       ) :
-      ########################################################################
-      mm   = self . GroupsMenu      ( mm                                     )
-      FMT  = TRX                    [ "UI::AttachCrowds"                     ]
-      MSG  = FMT . format           ( atItem . text ( 0 )                    )
-      mm   . addSeparator           (                                        )
-      mm   . addAction              ( 1201 ,  MSG                            )
-    ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
     if                              ( atItem not in [ False , None ]       ) :
       ########################################################################
-      mm   = self . GroupsMenu      ( mm                                     )
+      mm   = self . GroupsMenu      ( mm , atItem                            )
+      mm   . addSeparator           (                                        )
       ########################################################################
       if                            ( self . EditAllNames != None          ) :
         ######################################################################
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
-        mm . addSeparator           (                                        )
+    ##########################################################################
+    mm     . addAction              ( 3001 ,  TRX [ "UI::TranslateAll"     ] )
+    mm     . addSeparator           (                                        )
     ##########################################################################
     mm     = self . ColumnsMenu     ( mm                                     )
     mm     = self . SortingMenu     ( mm                                     )
     mm     = self . LocalityMenu    ( mm                                     )
-    mm     . addSeparator           (                                        )
-    mm     . addAction              ( 3001 ,  TRX [ "UI::TranslateAll"     ] )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
     mm     . setFont                ( self    . font ( )                     )
@@ -812,6 +926,11 @@ class RaceListings                 ( TreeDock                              ) :
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :
+      self . startup                (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1002                           ) :
+      self . Method = "Original"
       self . startup                (                                        )
       return True
     ##########################################################################
