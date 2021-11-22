@@ -292,41 +292,42 @@ class IconDock           ( ListDock                                        ) :
   def getSortingOrder              ( self                                  ) :
     return self . SortOrder
   ############################################################################
-  def SortingMenu                  ( self , mm                             ) :
+  def SortingMenu                 ( self , mm                              ) :
     ##########################################################################
-    TRX    = self  . Translations
-    LOM    = mm    . addMenu       ( TRX [ "UI::Sorting" ]                   )
+    TRX = self . Translations
+    LOM = mm   . addMenu          ( TRX [ "UI::Sorting" ]                    )
     ##########################################################################
-    hid    = self . isSortingEnabled (                                       )
-    msg    = TRX                   [ "UI::SortColumns"                       ]
-    mm     . addActionFromMenu     ( LOM , 20000001 , msg , True , hid       )
+    msg = TRX                     [ "UI::NamesAsc"                           ]
+    mm  . addActionFromMenu       ( LOM , 20000001 , msg                     )
     ##########################################################################
-    hid    =                       ( self . SortOrder == "asc"               )
-    msg    = TRX                   [ "UI::SortAsc"                           ]
-    mm     . addActionFromMenu     ( LOM , 20000002 , msg , True , hid       )
+    msg = TRX                     [ "UI::NamesDesc"                          ]
+    mm  . addActionFromMenu       ( LOM , 20000002 , msg                     )
     ##########################################################################
-    hid    =                       ( self . SortOrder == "desc"              )
-    msg    = TRX                   [ "UI::SortDesc"                          ]
-    mm     . addActionFromMenu     ( LOM , 20000003 , msg , True , hid       )
+    hid =                         ( self . SortOrder == "asc"                )
+    msg = TRX                     [ "UI::SortAsc"                            ]
+    mm  . addActionFromMenu       ( LOM , 20000003 , msg , True , hid        )
+    ##########################################################################
+    hid =                         ( self . SortOrder == "desc"               )
+    msg = TRX                     [ "UI::SortDesc"                           ]
+    mm  . addActionFromMenu       ( LOM , 20000004 , msg , True , hid        )
     ##########################################################################
     return mm
   ############################################################################
   def RunSortingMenu               ( self , atId                           ) :
     ##########################################################################
     if                             ( atId == 20000001                      ) :
-      ########################################################################
-      if                           ( self . isSortingEnabled ( )           ) :
-        self . setSortingEnabled   ( False                                   )
-      else                                                                   :
-        self . setSortingEnabled   ( True                                    )
-      ########################################################################
-      return False
+      self . sortItems             ( Qt . AscendingOrder                     )
+      return True
     ##########################################################################
     if                             ( atId == 20000002                      ) :
-      self . SortOrder = "asc"
+      self . sortItems             ( Qt . DescendingOrder                    )
       return True
     ##########################################################################
     if                             ( atId == 20000003                      ) :
+      self . SortOrder = "asc"
+      return True
+    ##########################################################################
+    if                             ( atId == 20000004                      ) :
       self . SortOrder = "desc"
       return True
     ##########################################################################

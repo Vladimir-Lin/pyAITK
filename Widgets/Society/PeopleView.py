@@ -66,8 +66,9 @@ class PeopleView                   ( IconDock                              ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
-  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
-  ShowGalleries       = pyqtSignal ( str , int , str , QIcon                 )
+  ShowPersonalGallery = pyqtSignal ( str , int , str ,       QIcon           )
+  ShowGalleries       = pyqtSignal ( str , int , str ,       QIcon           )
+  ShowWebPages        = pyqtSignal ( str , int , str , str , QIcon           )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -478,21 +479,37 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def GroupsMenu             ( self , mm , uuid , item                     ) :
+  def GroupsMenu               ( self , mm , uuid , item                   ) :
     ##########################################################################
     TRX = self . Translations
-    FMT = self . getMenuItem ( "Belongs"                                     )
-    MSG = FMT  . format      ( item . text ( )                               )
-    LOM = mm   . addMenu     ( MSG                                           )
+    FMT = self . getMenuItem   ( "Belongs"                                   )
+    MSG = FMT  . format        ( item . text ( )                             )
+    LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
-    mm  . addActionFromMenu  ( LOM , 1201 , TRX [ "UI::PersonalGallery"    ] )
-    mm  . addActionFromMenu  ( LOM , 1202 , TRX [ "UI::Galleries"          ] )
+    MSG = self . getMenuItem   ( "Occupations"                               )
+    mm  . addActionFromMenu    ( LOM , 1201 , MSG                            )
+    ##########################################################################
+    mm  . addSeparatorFromMenu ( LOM                                         )
+    ##########################################################################
+    MSG = self . getMenuItem   ( "PersonalGallery"                           )
+    mm  . addActionFromMenu    ( LOM , 1211 , MSG                            )
+    ##########################################################################
+    MSG = self . getMenuItem   ( "Galleries"                                 )
+    mm  . addActionFromMenu    ( LOM , 1212 , MSG                            )
+    ##########################################################################
+    mm  . addSeparatorFromMenu ( LOM                                         )
+    ##########################################################################
+    MSG = self . getMenuItem   ( "WebPages"                                  )
+    mm  . addActionFromMenu    ( LOM , 1221 , MSG                            )
+    ##########################################################################
+    MSG = self . getMenuItem   ( "IdentWebPage"                              )
+    mm  . addActionFromMenu    ( LOM , 1222 , MSG                            )
     ##########################################################################
     return mm
   ############################################################################
   def RunGroupsMenu                     ( self , at , uuid , item          ) :
     ##########################################################################
-    if                                  ( at == 1201                       ) :
+    if                                  ( at == 1211                       ) :
       ########################################################################
       text = item . text                (                                    )
       icon = item . icon                (                                    )
@@ -502,13 +519,35 @@ class PeopleView                   ( IconDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                                  ( at == 1202                       ) :
+    if                                  ( at == 1212                       ) :
       ########################################################################
       text = item . text                (                                    )
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       ########################################################################
       self . ShowGalleries       . emit ( text , 7 , xsid , icon             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 1221                       ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      rela = "Subordination"
+      ########################################################################
+      self . ShowWebPages        . emit ( text , 7 , xsid , rela , icon      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 1222                       ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      rela = "Equivalent"
+      ########################################################################
+      self . ShowWebPages        . emit ( text , 7 , xsid , rela , icon      )
       ########################################################################
       return True
     ##########################################################################
@@ -541,8 +580,6 @@ class PeopleView                   ( IconDock                              ) :
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     = self . AppendRenameAction  ( mm , 1102                          )
-    if                             ( uuid > 0                              ) :
-      mm   = self . GroupsMenu     ( mm , uuid , atItem                      )
     ##########################################################################
     mm     . addSeparator          (                                         )
     if                             ( atItem != None                        ) :
@@ -550,6 +587,8 @@ class PeopleView                   ( IconDock                              ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
     ##########################################################################
+    if                             ( uuid > 0                              ) :
+      mm   = self . GroupsMenu     ( mm , uuid , atItem                      )
     mm     = self . SortingMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
     self   . DockingMenu           ( mm                                      )

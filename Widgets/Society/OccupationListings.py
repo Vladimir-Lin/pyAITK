@@ -58,7 +58,7 @@ class OccupationListings           ( TreeDock                              ) :
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
   emitAssignAmounts = pyqtSignal   ( str , int                               )
-  PeopleGroup       = pyqtSignal   ( int , str                               )
+  PeopleGroup       = pyqtSignal   ( str , int , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -742,7 +742,8 @@ class OccupationListings           ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1201                            ) :
-      self . PeopleGroup   . emit  ( 40 , str ( uuid )                       )
+      head = atItem . text         (                                         )
+      self . PeopleGroup   . emit  ( head , 40 , str ( uuid )                )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
