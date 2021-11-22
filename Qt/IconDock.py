@@ -317,11 +317,11 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     if                             ( atId == 20000001                      ) :
       self . sortItems             ( Qt . AscendingOrder                     )
-      return True
+      return False
     ##########################################################################
     if                             ( atId == 20000002                      ) :
       self . sortItems             ( Qt . DescendingOrder                    )
-      return True
+      return False
     ##########################################################################
     if                             ( atId == 20000003                      ) :
       self . SortOrder = "asc"

@@ -749,7 +749,7 @@ class OccupationListings           ( TreeDock                              ) :
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Tasks" , uuid , NAM             )
+      self . EditAllNames          ( self , "Occupation" , uuid , NAM        )
       return True
     ##########################################################################
     if                             ( at == 3001                            ) :
