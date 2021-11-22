@@ -58,13 +58,13 @@ from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
 from   AITK  . Essentials . Relation  import Relation
-##############################################################################
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . People     . People    import People
 ##############################################################################
 class PeopleView                   ( IconDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
   ShowGalleries       = pyqtSignal ( str , int , str , QIcon                 )
@@ -81,8 +81,6 @@ class PeopleView                   ( IconDock                              ) :
     ## self . Grouping = "Subordination"
     ## self . Grouping = "Reverse"
     ##########################################################################
-    self . GroupOrder = "asc"
-    ##########################################################################
     self . dockingPlace       = Qt . BottomDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
@@ -97,22 +95,17 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                ( self                                       ) :
-    return QSize              ( 840 , 800                                    )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def setGrouping             ( self , group                               ) :
+  def setGrouping                ( self , group                            ) :
+    ##########################################################################
     self . Grouping = group
+    ##########################################################################
     return self . Grouping
   ############################################################################
-  def getGrouping             ( self                                       ) :
+  def getGrouping                ( self                                    ) :
     return self . Grouping
-  ############################################################################
-  def setGroupOrder           ( self , order                               ) :
-    self . GroupOrder = order
-    return self . GroupOrder
-  ############################################################################
-  def getGroupOrder           ( self                                       ) :
-    return self . GroupOrder
   ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
@@ -157,23 +150,26 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery         ( self                                      ) :
+  def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    TABLE  = self . Tables      [ "People"                                    ]
+    TABLE  = self . Tables          [ "People"                               ]
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder ( )
-    QQ     = f"select `uuid` from {TABLE} where ( `used` = 1 ) order by `id` {ORDER} limit {SID} , {AMOUNT} ;"
+    ORDER  = self . getSortingOrder (                                        )
+    QQ     = f"""select `uuid` from {TABLE}
+                 where ( `used` = 1 )
+                 order by `id` {ORDER}
+                 limit {SID} , {AMOUNT} ;"""
     ##########################################################################
-    return QQ
+    return " " . join               ( QQ . split ( )                         )
   ############################################################################
   def ObtainSubgroupUuids      ( self , DB                                 ) :
     ##########################################################################
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder ( )
+    ORDER  = self . getSortingOrder (                                        )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables     [ "Relation"                                  ]
     ##########################################################################
     if                         ( self . Grouping == "Subordination"        ) :
       OPTS = f"order by `position` {ORDER}"
@@ -192,6 +188,8 @@ class PeopleView                   ( IconDock                              ) :
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
   def FetchSessionInformation         ( self , DB                          ) :
+    ##########################################################################
+    self . ReloadLocality             ( DB                                   )
     ##########################################################################
     if                                ( self . Grouping == "Original"      ) :
       ########################################################################
@@ -222,7 +220,12 @@ class PeopleView                   ( IconDock                              ) :
     self . LinkAction            ( "Refresh"    , self . startup             )
     ##########################################################################
     self . LinkAction            ( "Insert"     , self . InsertItem          )
+    self . LinkAction            ( "Rename"     , self . RenamePeople        )
     self . LinkAction            ( "Delete"     , self . DeleteItems         )
+    self . LinkAction            ( "Cut"        , self . DeleteItems         )
+    self . LinkAction            ( "Copy"       , self . CopyItems           )
+    self . LinkAction            ( "Paste"      , self . PasteItems          )
+    self . LinkAction            ( "Search"     , self . Search              )
     self . LinkAction            ( "Home"       , self . PageHome            )
     self . LinkAction            ( "End"        , self . PageEnd             )
     self . LinkAction            ( "PageUp"     , self . PageUp              )
@@ -231,14 +234,37 @@ class PeopleView                   ( IconDock                              ) :
     self . LinkAction            ( "SelectAll"  , self . SelectAll           )
     self . LinkAction            ( "SelectNone" , self . SelectNone          )
     ##########################################################################
-    self . LinkAction            ( "Rename"     , self . RenamePeople        )
+    self . LinkVoice             ( self . CommandParser                      )
     ##########################################################################
     return True
+  ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup      , False      )
+    self . LinkAction      ( "Insert"     , self . InsertItem   , False      )
+    self . LinkAction      ( "Rename"     , self . RenamePeople , False      )
+    self . LinkAction      ( "Delete"     , self . DeleteItems  , False      )
+    self . LinkAction      ( "Cut"        , self . DeleteItems  , False      )
+    self . LinkAction      ( "Copy"       , self . CopyItems    , False      )
+    self . LinkAction      ( "Paste"      , self . PasteItems   , False      )
+    self . LinkAction      ( "Search"     , self . Search       , False      )
+    self . LinkAction      ( "Home"       , self . PageHome     , False      )
+    self . LinkAction      ( "End"        , self . PageEnd      , False      )
+    self . LinkAction      ( "PageUp"     , self . PageUp       , False      )
+    self . LinkAction      ( "PageDown"   , self . PageDown     , False      )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll    , False      )
+    self . LinkAction      ( "SelectNone" , self . SelectNone   , False      )
+    self . LinkVoice       ( None                                            )
+    ##########################################################################
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
     mtype   = "people/uuids"
-    message = "選擇了{0}個人物"
+    message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , mtype , message                    )
   ############################################################################
@@ -249,7 +275,9 @@ class PeopleView                   ( IconDock                              ) :
     return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
+    ##########################################################################
     formats = "people/uuids;picture/uuids"
+    ##########################################################################
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
@@ -272,9 +300,11 @@ class PeopleView                   ( IconDock                              ) :
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                   ( UUIDs                                  )
       if                            ( self == sourceWidget                 ) :
-        MSG = f"移動{CNT}個人物"
+        FMT = self . getMenuItem    ( "Moving"                               )
+        MSG = FMT  . format         ( CNT                                    )
       else                                                                   :
-        MSG = f"從「{title}」複製{CNT}個人物"
+        FMT = self . getMenuItem    ( "Copying"                              )
+        MSG = FMT  . format         ( title , CNT                            )
       ########################################################################
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
@@ -283,9 +313,10 @@ class PeopleView                   ( IconDock                              ) :
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                   ( UUIDs                                  )
       if                            ( self == sourceWidget                 ) :
-        MSG = f"移動{CNT}張圖片"
-      else                                                                   :
-        MSG = f"從「{title}」複製{CNT}張圖片"
+        return False
+      ########################################################################
+      FMT   = self . getMenuItem    ( "GetPictures"                          )
+      MSG   = FMT  . format         ( title , CNT                            )
       ########################################################################
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
@@ -311,26 +342,42 @@ class PeopleView                   ( IconDock                              ) :
   def acceptPeopleDrop         ( self                                      ) :
     return True
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
+  def dropPeople                     ( self , source , pos , JSOX          ) :
     ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("PeopleView::dropPeople")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
+    ATID , TEXT = self . itemAtPos   ( pos                                   )
+    ##########################################################################
+    if                               ( sourceWidget != self                ) :
+      return self . appendPeopleInto ( source , pos , ATID , TEXT , JSOX     )
+    ##########################################################################
+    self . movePeopleTo              (          pos , ATID , TEXT , JSOX     )
     ##########################################################################
     return True
   ############################################################################
   def acceptPictureDrop        ( self                                      ) :
     return True
   ############################################################################
-  def dropPictures             ( self , source , pos , JSOX                ) :
+  def dropPictures                 ( self , source , pos , JSOX            ) :
     ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("PeopleView::dropPictures")
+    PUID , NAME = self . itemAtPos ( pos                                     )
+    if                             ( PUID <= 0                             ) :
+      return True
+    ##########################################################################
+    print("PeopleView::dropPictures", PUID , " - " , NAME , " at " , pos )
     print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
+    ##########################################################################
+    return True
+  ############################################################################
+  def movePeopleTo             ( self , pos , PUID , NAME , JSOX           ) :
+    ##########################################################################
+    print ( "Move after : " , PUID , " - " , NAME , " at " , pos )
+    print ( JSOX )
+    ##########################################################################
+    return True
+  ############################################################################
+  def appendPeopleInto         ( self , source , pos , PUID , NAME , JSOX  ) :
+    ##########################################################################
+    print ( "Append after : " , PUID , " - " , NAME , " at " , pos )
+    print ( JSOX )
     ##########################################################################
     return True
   ############################################################################
@@ -341,45 +388,13 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PageHome                     ( self                                  ) :
+  def CopyItems                    ( self                                  ) :
     ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
     ##########################################################################
     return
   ############################################################################
-  def PageEnd                      ( self                                  ) :
+  def PasteItems                   ( self                                  ) :
     ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -388,29 +403,124 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                        (        int                              )
-  def GotoId                       ( self , Id                             ) :
+  def Search                       ( self                                  ) :
     ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                        (        int                              )
-  def AssignAmount                 ( self , Amount                         ) :
+  def UpdateLocalityUsage           ( self                                 ) :
     ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    SCOPE   = self . Grouping
+    ALLOWED =                       [ "Subordination" , "Reverse"            ]
+    ##########################################################################
+    if                              ( SCOPE not in ALLOWED                 ) :
+      return False
+    ##########################################################################
+    DB      = self . ConnectDB      (                                        )
+    if                              ( DB == None                           ) :
+      return False
+    ##########################################################################
+    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    DB      . LockWrites            ( [ PAMTAB ]                             )
+    ##########################################################################
+    if                              ( SCOPE == "Subordination"             ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t1"                                   )
+      UUID  = self . Relation . get ( "first"                                )
+      ########################################################################
+    elif                            ( SCOPE == "Reverse"                   ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t2"                                   )
+      UUID  = self . Relation . get ( "second"                               )
+    ##########################################################################
+    SCOPE   = f"PeopleView-{SCOPE}"
+    self    . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    ##########################################################################
+    DB      . UnlockTables          (                                        )
+    DB      . Close                 (                                        )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ReloadLocality                ( self , DB                            ) :
+    ##########################################################################
+    SCOPE   = self . Grouping
+    ALLOWED =                       [ "Subordination" , "Reverse"            ]
+    ##########################################################################
+    if                              ( SCOPE not in ALLOWED                 ) :
+      return
+    ##########################################################################
+    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    ##########################################################################
+    if                              ( SCOPE == "Subordination"             ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t1"                                   )
+      UUID  = self . Relation . get ( "first"                                )
+      ########################################################################
+    elif                            ( SCOPE == "Reverse"                   ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t2"                                   )
+      UUID  = self . Relation . get ( "second"                               )
+    ##########################################################################
+    SCOPE   = f"PeopleView-{SCOPE}"
+    self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
     ##########################################################################
     return
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
+  ############################################################################
+  def GroupsMenu             ( self , mm , uuid , item                     ) :
+    ##########################################################################
+    TRX = self . Translations
+    FMT = self . getMenuItem ( "Belongs"                                     )
+    MSG = FMT  . format      ( item . text ( )                               )
+    LOM = mm   . addMenu     ( MSG                                           )
+    ##########################################################################
+    mm  . addActionFromMenu  ( LOM , 1201 , TRX [ "UI::PersonalGallery"    ] )
+    mm  . addActionFromMenu  ( LOM , 1202 , TRX [ "UI::Galleries"          ] )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunGroupsMenu                     ( self , at , uuid , item          ) :
+    ##########################################################################
+    if                                  ( at == 1201                       ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      ########################################################################
+      self . ShowPersonalGallery . emit ( text , 7 , xsid , icon             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 1202                       ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      ########################################################################
+      self . ShowGalleries       . emit ( text , 7 , xsid , icon             )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
     if                             ( not doMenu                            ) :
       return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
     ##########################################################################
     items  = self . selectedItems  (                                         )
     atItem = self . itemAt         ( pos                                     )
@@ -430,10 +540,9 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
+    mm     = self . AppendRenameAction  ( mm , 1102                          )
     if                             ( uuid > 0                              ) :
-      mm   . addSeparator          (                                         )
-      mm   . addAction             ( 1201 ,  TRX [ "UI::PersonalGallery"   ] )
-      mm   . addAction             ( 1202 ,  TRX [ "UI::Galleries"         ] )
+      mm   = self . GroupsMenu     ( mm , uuid , atItem                      )
     ##########################################################################
     mm     . addSeparator          (                                         )
     if                             ( atItem != None                        ) :
@@ -441,6 +550,7 @@ class PeopleView                   ( IconDock                              ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
     ##########################################################################
+    mm     = self . SortingMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
@@ -458,35 +568,40 @@ class PeopleView                   ( IconDock                              ) :
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
+    if                             ( self . RunSortingMenu     ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
+      ########################################################################
+      self . clear                 (                                         )
       self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
+      ########################################################################
       self . InsertItem            (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1201                            ) :
-      ########################################################################
-      text = atItem . text         (                                         )
-      icon = atItem . icon         (                                         )
-      xsid = str                   ( uuid                                    )
-      ########################################################################
-      self . ShowPersonalGallery . emit ( text , 7 , xsid , icon             )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1202                            ) :
+    if                             ( at == 1102                            ) :
       ########################################################################
-      text = atItem . text         (                                         )
-      icon = atItem . icon         (                                         )
-      xsid = str                   ( uuid                                    )
+      self . RenamePeople          (                                         )
       ########################################################################
-      self . ShowGalleries       . emit ( text , 7 , xsid , icon             )
-      ########################################################################
+      return True
+    ##########################################################################
+    if ( self . RunGroupsMenu ( at , uuid , atItem ) )                       :
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :

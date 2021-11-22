@@ -554,6 +554,18 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   def removeParked            ( self                                       ) :
     return True
   ############################################################################
+  def itemAtPos            ( self , pos                                    ) :
+    ##########################################################################
+    atItem = self . itemAt ( pos                                             )
+    ATID   = 0
+    TEXT   = ""
+    ##########################################################################
+    if                     ( atItem not in [ False , None ]                ) :
+      ATID = atItem . data ( Qt . UserRole                                   )
+      TEXT = atItem . text (                                                 )
+    ##########################################################################
+    return ATID , TEXT
+  ############################################################################
   def InsertItem              ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
