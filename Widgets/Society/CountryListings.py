@@ -51,6 +51,49 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
 ##############################################################################
+FLAGs = [ "AD.png" , "AE.png" , "AF.png" , "AG.png" , "AI.png" , "AL.png" ,
+          "AM.png" , "AO.png" , "AQ.png" , "AR.png" , "AS.png" , "AT.png" ,
+          "AU.png" , "AW.png" , "AX.png" , "AZ.png" , "BA.png" , "BB.png" ,
+          "BD.png" , "BE.png" , "BF.png" , "BG.png" , "BH.png" , "BI.png" ,
+          "BJ.png" , "BL.png" , "BM.png" , "BN.png" , "BO.png" , "BR.png" ,
+          "BS.png" , "BT.png" , "BV.png" , "BW.png" , "BY.png" , "BZ.png" ,
+          "CA.png" , "CC.png" , "CD.png" , "CF.png" , "CG.png" , "CH.png" ,
+          "CI.png" , "CK.png" , "CL.png" , "CM.png" , "CN.png" , "CO.png" ,
+          "CR.png" , "CU.png" , "CV.png" , "CW.png" , "CX.png" , "CY.png" ,
+          "CZ.png" , "DE.png" , "DJ.png" , "DK.png" , "DM.png" , "DO.png" ,
+          "DZ.png" , "EC.png" , "EE.png" , "EG.png" , "EH.png" , "ER.png" ,
+          "ES.png" , "ET.png" , "FI.png" , "FJ.png" , "FK.png" , "FM.png" ,
+          "FO.png" , "FR.png" , "GA.png" , "GB.png" , "GD.png" , "GE.png" ,
+          "GF.png" , "GG.png" , "GH.png" , "GI.png" , "GL.png" , "GM.png" ,
+          "GN.png" , "GP.png" , "GQ.png" , "GR.png" , "GS.png" , "GT.png" ,
+          "GU.png" , "GW.png" , "GY.png" , "HK.png" , "HM.png" , "HN.png" ,
+          "HR.png" , "HT.png" , "HU.png" , "ID.png" , "IE.png" , "IL.png" ,
+          "IM.png" , "IN.png" , "IO.png" , "IQ.png" , "IR.png" , "IS.png" ,
+          "IT.png" , "JE.png" , "JM.png" , "JO.png" , "JP.png" , "KE.png" ,
+          "KG.png" , "KH.png" , "KI.png" , "KM.png" , "KN.png" , "KP.png" ,
+          "KR.png" , "KW.png" , "KY.png" , "KZ.png" , "LA.png" , "LB.png" ,
+          "LC.png" , "LI.png" , "LK.png" , "LR.png" , "LS.png" , "LT.png" ,
+          "LU.png" , "LV.png" , "LY.png" , "MA.png" , "MC.png" , "MD.png" ,
+          "ME.png" , "MF.png" , "MG.png" , "MH.png" , "MK.png" , "ML.png" ,
+          "MM.png" , "MN.png" , "MO.png" , "MP.png" , "MQ.png" , "MR.png" ,
+          "MS.png" , "MT.png" , "MU.png" , "MV.png" , "MW.png" , "MX.png" ,
+          "MY.png" , "MZ.png" , "NA.png" , "NC.png" , "NE.png" , "NF.png" ,
+          "NG.png" , "NI.png" , "NL.png" , "NO.png" , "NP.png" , "NR.png" ,
+          "NU.png" , "NZ.png" , "OM.png" , "PA.png" , "PE.png" , "PF.png" ,
+          "PG.png" , "PH.png" , "PK.png" , "PL.png" , "PM.png" , "PN.png" ,
+          "PR.png" , "PS.png" , "PT.png" , "PW.png" , "PY.png" , "QA.png" ,
+          "RE.png" , "RO.png" , "RS.png" , "RU.png" , "RW.png" , "SA.png" ,
+          "SB.png" , "SC.png" , "SD.png" , "SE.png" , "SG.png" , "SH.png" ,
+          "SI.png" , "SJ.png" , "SK.png" , "SL.png" , "SM.png" , "SN.png" ,
+          "SO.png" , "SR.png" , "SS.png" , "ST.png" , "SV.png" , "SY.png" ,
+          "SZ.png" , "TC.png" , "TD.png" , "TF.png" , "TG.png" , "TH.png" ,
+          "TJ.png" , "TK.png" , "TL.png" , "TM.png" , "TN.png" , "TO.png" ,
+          "TR.png" , "TT.png" , "TV.png" , "TW.png" , "TZ.png" , "UA.png" ,
+          "UG.png" , "UM.png" , "US.png" , "UY.png" , "UZ.png" , "VA.png" ,
+          "VC.png" , "VE.png" , "VG.png" , "VI.png" , "VN.png" , "VU.png" ,
+          "WF.png" , "WS.png" , "YE.png" , "YT.png" , "ZA.png" , "ZM.png" ,
+          "ZW.png"                                                           ]
+##############################################################################
 class CountryListings              ( TreeDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
@@ -212,6 +255,8 @@ class CountryListings              ( TreeDock                              ) :
   ############################################################################
   def PrepareItem                ( self , UUID , NAME , INFO               ) :
     ##########################################################################
+    global FLAGs
+    ##########################################################################
     UUID = int                   ( UUID                                      )
     UXID = str                   ( UUID                                      )
     ##########################################################################
@@ -250,6 +295,11 @@ class CountryListings              ( TreeDock                              ) :
     IT   . setTextAlignment      ( 8 , Qt . AlignRight                       )
     ##########################################################################
     IT   . setText               ( 9 , ""                                    )
+    ##########################################################################
+    PNG  = f"{TWO}.png"
+    if                           ( PNG in FLAGs                            ) :
+      K  = QIcon                 ( f":/nations/{PNG}"                        )
+      IT . setIcon               ( 9 , K                                     )
     ##########################################################################
     return IT
   ############################################################################
