@@ -75,8 +75,8 @@ class EMailsWidget                 ( TreeDock                              ) :
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
-    self . dockingPlace       = Qt . LeftDockWidgetArea
+    self . dockingOrientation = 0
+    self . dockingPlace       = Qt . BottomDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
@@ -86,8 +86,8 @@ class EMailsWidget                 ( TreeDock                              ) :
     self . Relation . setT2        ( "EMail"                                 )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 5                                       )
-    self . setColumnHidden         ( 4 , True                                )
+    self . setColumnCount          ( 8                                       )
+    self . setColumnHidden         ( 7 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -109,7 +109,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 800 , 640                               )
+    return self . SizeSuggestion   ( QSize ( 1024 , 640 )                    )
   ############################################################################
   def setGrouping                  ( self , group                          ) :
     self . Grouping = group
@@ -117,13 +117,6 @@ class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
   def getGrouping                  ( self                                  ) :
     return self . Grouping
-  ############################################################################
-  def setGroupOrder                ( self , order                          ) :
-    self . SortOrder = order
-    return self . SortOrder
-  ############################################################################
-  def getGroupOrder                ( self                                  ) :
-    return self . SortOrder
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -176,33 +169,39 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def getItemJson                ( self , item                             ) :
-    return item . data           ( 3 , Qt . UserRole                         )
+  def getItemJson                  ( self , item                           ) :
+    return item . data             ( 7 , Qt . UserRole                       )
   ############################################################################
-  def PrepareItem                    ( self , JSON                         ) :
+  def PrepareItem                  ( self , JSON                           ) :
     ##########################################################################
-    UUID       = int                 ( JSON [ "Uuid" ]                       )
-    UXID       = str                 ( UUID                                  )
+    UUID     = int                 ( JSON [ "Uuid"                         ] )
+    UXID     = str                 ( UUID                                    )
     ##########################################################################
-    ACCOUNT    = self . assureString ( JSON [ "Account"  ]                   )
-    HOSTNAME   = self . assureString ( JSON [ "Hostname" ]                   )
-    EMAIL      = self . assureString ( JSON [ "EMail"    ]                   )
+    ACCOUNT  = self . assureString ( JSON [ "Account"                      ] )
+    HOSTNAME = self . assureString ( JSON [ "Hostname"                     ] )
+    EMAIL    = self . assureString ( JSON [ "EMail"                        ] )
     ##########################################################################
-    IT         = QTreeWidgetItem     (                                       )
-    IT         . setText             ( 0 , EMAIL                             )
-    IT         . setTextAlignment    ( 0 , Qt . AlignRight                   )
-    IT         . setToolTip          ( 0 , UXID                              )
-    IT         . setData             ( 0 , Qt . UserRole , UXID              )
+    IT       = QTreeWidgetItem     (                                         )
+    IT       . setText             ( 0 , EMAIL                               )
+    IT       . setTextAlignment    ( 0 , Qt . AlignRight                     )
+    IT       . setToolTip          ( 0 , UXID                                )
+    IT       . setData             ( 0 , Qt . UserRole , UXID                )
     ##########################################################################
-    IT         . setText             ( 1 , ACCOUNT                           )
-    IT         . setToolTip          ( 1 , UXID                              )
+    IT       . setText             ( 1 , ACCOUNT                             )
+    IT       . setToolTip          ( 1 , UXID                                )
     ##########################################################################
-    IT         . setText             ( 2 , HOSTNAME                          )
-    IT         . setToolTip          ( 3 , UXID                              )
+    IT       . setText             ( 2 , HOSTNAME                            )
+    IT       . setToolTip          ( 2 , UXID                                )
     ##########################################################################
-    IT         . setText             ( 3 , ""                                )
+    IT       . setText             ( 3 , ""                                  )
     ##########################################################################
-    IT         . setData             ( 4 , Qt . UserRole , JSON              )
+    IT       . setText             ( 4 , ""                                  )
+    ##########################################################################
+    IT       . setText             ( 5 , ""                                  )
+    ##########################################################################
+    IT       . setText             ( 6 , ""                                  )
+    ##########################################################################
+    IT       . setData             ( 7 , Qt . UserRole , JSON                )
     ##########################################################################
     return IT
   ############################################################################
@@ -280,7 +279,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder ( )
+    ORDER  = self . getSortingOrder ( )
     LMTS   = f"limit {SID} , {AMOUNT}"
     RELTAB = self . Tables [ "Relation" ]
     ##########################################################################
@@ -371,6 +370,18 @@ class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
     ##########################################################################
@@ -386,7 +397,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
-    if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
+    if ( RR in [ False , None ] ) or ( len ( RR ) <= 0 )                     :
       return
     ##########################################################################
     self    . Total = RR              [ 0                                    ]
@@ -420,18 +431,18 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    EMSTAB  = self . Tables   [ "EMails"                                     ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
+    EMSTAB = self . Tables          [ "EMails"                               ]
+    STID   = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ      = f"""select `uuid` from {EMSTAB}
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ     = f"""select `uuid` from {EMSTAB}
+                 order by `id` {ORDER}
+                 limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join               ( QQ . split ( )                         )
   ############################################################################
   def FetchSessionInformation         ( self , DB                          ) :
     ##########################################################################
@@ -536,7 +547,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     self   . setColumnWidth      ( 0 , 280                                   )
     self   . setColumnWidth      ( 1 , 200                                   )
-    self   . setColumnWidth      ( 4 ,   3                                   )
+    self   . setColumnWidth      ( 7 ,   3                                   )
     LABELs = self . Translations [ "EMailsWidget" ] [ "Labels"               ]
     self   . setCentralLabels    ( LABELs                                    )
     self   . setPrepared         ( True                                      )
@@ -673,12 +684,15 @@ class EMailsWidget                 ( TreeDock                              ) :
     mm     = self . AmountIndexMenu     ( mm                                 )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     . addAction             ( 1102 ,  TRX [ "UI::Delete" ]            )
+    mm     = self . AppendDeleteAction  ( mm , 1102                          )
+    mm     = self . AppendRenameAction  ( mm , 1103                          )
     mm     . addSeparator          (                                         )
     mm     = self . SortingMenu    ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
+    fnt    = self . font           (                                         )
+    fnt    . setPointSize          ( 10                                      )
+    mm     . setFont               ( fnt                                     )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
     ##########################################################################
@@ -709,6 +723,10 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1102                            ) :
       self . DeleteItems           (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1103                            ) :
+      self . RenameItem            (                                         )
       return True
     ##########################################################################
     return True

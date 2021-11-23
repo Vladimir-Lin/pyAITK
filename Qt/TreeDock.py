@@ -260,6 +260,15 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return   False
   ############################################################################
+  def setSortingOrder              ( self , order                          ) :
+    ##########################################################################
+    self . SortOrder = order
+    ##########################################################################
+    return
+  ############################################################################
+  def getSortingOrder              ( self                                  ) :
+    return self . SortOrder
+  ############################################################################
   def SortingMenu                  ( self , mm                             ) :
     ##########################################################################
     TRX    = self  . Translations
@@ -314,6 +323,15 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     TRX  = self . Translations
     msg  = TRX                        [ "UI::Insert"                         ]
     icon = QIcon                      ( ":/images/plus.png"                  )
+    mm   . addActionWithIcon          ( Id , icon , msg                      )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def AppendDeleteAction              ( self , mm , Id                     ) :
+    ##########################################################################
+    TRX  = self . Translations
+    msg  = TRX                        [ "UI::Delete"                         ]
+    icon = QIcon                      ( ":/images/delete.png"                )
     mm   . addActionWithIcon          ( Id , icon , msg                      )
     ##########################################################################
     return mm
