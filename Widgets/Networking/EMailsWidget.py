@@ -130,6 +130,8 @@ class EMailsWidget                 ( TreeDock                              ) :
     self . LinkAction              ( "Delete"     , self . DeleteItems       )
     self . LinkAction              ( "Rename"     , self . RenameItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
+    self . LinkAction              ( "Paste"      , self . Paste             )
+    self . LinkAction              ( "Search"     , self . Search            )
     self . LinkAction              ( "Home"       , self . PageHome          )
     self . LinkAction              ( "End"        , self . PageEnd           )
     self . LinkAction              ( "PageUp"     , self . PageUp            )
@@ -137,6 +139,8 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    ##########################################################################
+    self . LinkVoice               ( self . CommandParser                    )
     ##########################################################################
     return True
   ############################################################################
@@ -261,6 +265,17 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def Paste                      ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  def Search                     ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
   @pyqtSlot                       (        list                              )
   def refresh                     ( self , TASKS                           ) :
     ##########################################################################
@@ -375,12 +390,15 @@ class EMailsWidget                 ( TreeDock                              ) :
     self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
     self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
     self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Paste"      , self . Paste           , False   )
+    self . LinkAction      ( "Search"     , self . Search          , False   )
     self . LinkAction      ( "Home"       , self . PageHome        , False   )
     self . LinkAction      ( "End"        , self . PageEnd         , False   )
     self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
     self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
     self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
     self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkVoice       ( None                                            )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -659,6 +677,18 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
+  ############################################################################
   def ColumnsMenu                  ( self , mm                             ) :
     ##########################################################################
     TRX    = self . Translations
@@ -690,10 +720,8 @@ class EMailsWidget                 ( TreeDock                              ) :
     mm     = self . SortingMenu    ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    fnt    = self . font           (                                         )
-    fnt    . setPointSize          ( 10                                      )
-    mm     . setFont               ( fnt                                     )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunAmountIndexMenu ( )         ) :

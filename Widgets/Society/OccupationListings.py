@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 ## OccupationListings
+## 職業列表
 ##############################################################################
 import os
 import sys
@@ -47,9 +48,9 @@ from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
 from   AITK  . Essentials . Relation  import Relation
-##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
+from   AITK  . Calendars  . StarDate  import StarDate
+from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . People     . People    import People
 ##############################################################################
 class OccupationListings           ( TreeDock                              ) :
   ############################################################################
@@ -66,10 +67,18 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 28
-    self . Order    = "asc"
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 28
+    self . SortOrder          = "asc"
+    self . Method             = "Original"
+    self . SearchLine         = None
+    self . SearchKey          = ""
+    self . UUIDs              = [                                            ]
+    ##########################################################################
+    self . Grouping = "Original"
+    ## self . Grouping = "Subordination"
+    ## self . Grouping = "Reverse"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -77,6 +86,10 @@ class OccupationListings           ( TreeDock                              ) :
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
+    ##########################################################################
+    self . Relation = Relation     (                                         )
+    self . Relation . setT2        ( "Occupation"                            )
+    self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 3                                       )
     self . setColumnHidden         ( 1 , True                                )
@@ -96,6 +109,7 @@ class OccupationListings           ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
+    self . setAcceptDrops          ( True                                    )
     self . setDragEnabled          ( False                                   )
     self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
@@ -103,6 +117,42 @@ class OccupationListings           ( TreeDock                              ) :
   ############################################################################
   def sizeHint                     ( self                                  ) :
     return QSize                   ( 320 , 640                               )
+  ############################################################################
+  def setGrouping                ( self , group                            ) :
+    ##########################################################################
+    self . Grouping = group
+    ##########################################################################
+    return self . Grouping
+  ############################################################################
+  def getGrouping                ( self                                    ) :
+    return self . Grouping
+  ############################################################################
+  def FetchRegularDepotCount   ( self , DB                                 ) :
+    ##########################################################################
+    TABLE  = self . Tables     [ "Occupations"                               ]
+    QQ     = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    DB     . Query             ( QQ                                          )
+    ONE    = DB . FetchOne     (                                             )
+    ##########################################################################
+    if                         ( ONE == None                               ) :
+      return 0
+    ##########################################################################
+    if                         ( len ( ONE ) <= 0                          ) :
+      return 0
+    ##########################################################################
+    return ONE                 [ 0                                           ]
+  ############################################################################
+  def FetchGroupMembersCount             ( self , DB                       ) :
+    ##########################################################################
+    RELTAB = self . Tables               [ "Relation"                        ]
+    ##########################################################################
+    return self . Relation . CountSecond ( DB , RELTAB                       )
+  ############################################################################
+  def FetchGroupOwnersCount              ( self , DB                       ) :
+    ##########################################################################
+    RELTAB = self . Tables               [ "Relation"                        ]
+    ##########################################################################
+    return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -113,7 +163,10 @@ class OccupationListings           ( TreeDock                              ) :
     self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
     self . LinkAction              ( "Insert"     , self . InsertItem        )
+    self . LinkAction              ( "Rename"     , self . RenameItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
+    self . LinkAction              ( "Paste"      , self . Paste             )
+    self . LinkAction              ( "Search"     , self . Search            )
     self . LinkAction              ( "Home"       , self . PageHome          )
     self . LinkAction              ( "End"        , self . PageEnd           )
     self . LinkAction              ( "PageUp"     , self . PageUp            )
@@ -122,7 +175,7 @@ class OccupationListings           ( TreeDock                              ) :
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
     ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self . LinkVoice               ( self . CommandParser                    )
     ##########################################################################
     return True
   ############################################################################
@@ -215,7 +268,17 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
+  def Search                     ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def Paste                      ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                           (        dict                          )
   def refresh                         ( self , JSON                        ) :
     ##########################################################################
     self    . clear                   (                                      )
@@ -234,12 +297,10 @@ class OccupationListings           ( TreeDock                              ) :
   ############################################################################
   def ObtainsItemUuids                ( self , DB                          ) :
     ##########################################################################
-    QQ      = self . ObtainUuidsQuery (                                      )
-    UUIDs   =                         [                                      ]
-    if                                ( len ( QQ ) > 0                     ) :
-      UUIDs = DB   . ObtainUuids      ( QQ                                   )
+    if                                ( self . Grouping == "Original"      ) :
+      return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
-    return UUIDs
+    return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
   def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
     ##########################################################################
@@ -316,7 +377,7 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
+  @pyqtSlot                      (                                           )
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -352,19 +413,21 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Paste"      , self . Paste           , False   )
+    self . LinkAction      ( "Search"     , self . Search          , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkVoice       ( None                                            )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -373,34 +436,60 @@ class OccupationListings           ( TreeDock                              ) :
   ############################################################################
   def ObtainsInformation              ( self , DB                          ) :
     ##########################################################################
-    self    . Total = 0
+    self   . ReloadLocality           ( DB                                   )
     ##########################################################################
-    TABLE   = self . Tables           [ "Occupations"                        ]
+    self   . Total = 0
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
-    ##########################################################################
-    if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
+    if                                ( self . Grouping == "Original"      ) :
+      ########################################################################
+      self . Total = self . FetchRegularDepotCount ( DB                      )
+      ########################################################################
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    if                                ( self . Grouping == "Subordination" ) :
+      ########################################################################
+      self . Total = self . FetchGroupMembersCount ( DB                      )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                ( self . Grouping == "Reverse"       ) :
+      ########################################################################
+      self . Total = self . FetchGroupOwnersCount  ( DB                      )
+      ########################################################################
+      return
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery               ( self                                ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Occupations"                                ]
+    TABLE   = self . Tables          [ "Occupations"                         ]
     STID    = self . StartId
     AMOUNT  = self . Amount
-    ORDER   = self . Order
+    ORDER   = self . getSortingOrder (                                       )
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
                   where ( `used` = 1 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join                ( QQ . split ( )                        )
+  ############################################################################
+  def ObtainSubgroupUuids      ( self , DB                                 ) :
+    ##########################################################################
+    SID    = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                        )
+    LMTS   = f"limit {SID} , {AMOUNT}"
+    RELTAB = self . Tables     [ "Relation"                                  ]
+    ##########################################################################
+    if                         ( self . Grouping == "Subordination"        ) :
+      OPTS = f"order by `position` {ORDER}"
+      return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
+    if                         ( self . Grouping == "Reverse"              ) :
+      OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
+      return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
+    ##########################################################################
+    return                     [                                             ]
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     formats = "people/uuids"
@@ -430,9 +519,10 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     if                              ( mtype in [ "people/uuids" ]          ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
+      title = sourceWidget . windowTitle (                                   )
       CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
+      FMT   = self . getMenuItem    ( "CopyFrom"                             )
+      MSG   = FMT . format          ( title , CNT                            )
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
     return RDN
@@ -496,26 +586,25 @@ class OccupationListings           ( TreeDock                              ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
-    MSG     = "加入{0}個人物" . format ( COUNT )
+    FMT     = self . getMenuItem    ( "JoinPeople"                           )
+    MSG     = FMT  . format         ( COUNT                                  )
     self    . ShowStatus            ( MSG                                    )
     self    . TtsTalk               ( MSG , 1002                             )
     ##########################################################################
+    TYPE    = "Occupation"
+    PER     = People                (                                        )
     RELTAB  = self . Tables         [ "Relation"                             ]
-    REL     = Relation              (                                        )
-    REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Occupation"                           )
-    REL     . setT2                 ( "People"                               )
-    REL     . setRelation           ( "Subordination"                        )
     DB      . LockWrites            ( [ RELTAB ]                             )
-    REL     . Joins                 ( DB , RELTAB , UUIDs                    )
+    PER     . ConnectToPeople       ( DB , RELTAB , UUID , TYPE , UUIDs      )
     DB      . UnlockTables          (                                        )
     ##########################################################################
     if                              ( not Hide                             ) :
-      TOTAL = REL . CountSecond     ( DB , RELTAB                            )
+      TOTAL = PER . CountBelongs    ( DB , RELTAB , UUID , TYPE              )
     ##########################################################################
     DB      . Close                 (                                        )
     ##########################################################################
     self    . ShowStatus            ( ""                                     )
+    self    . Notify                ( 5                                      )
     ##########################################################################
     if                              ( Hide                                 ) :
       return
@@ -524,20 +613,18 @@ class OccupationListings           ( TreeDock                              ) :
     if                              ( IT is None                           ) :
       return
     ##########################################################################
-    IT      . setText               ( 1 , str ( TOTAL )                      )
-    self    . DoUpdate              (                                        )
+    self    . emitAssignAmounts . emit ( str ( UUID ) , int ( TOTAL )        )
     ##########################################################################
     return
   ############################################################################
-  def Prepare                 ( self                                       ) :
+  def Prepare                    ( self                                    ) :
     ##########################################################################
-    self   . setColumnWidth   ( 2 , 3                                        )
+    self   . setColumnWidth      ( 2 , 3                                     )
     ##########################################################################
-    TRX    = self . Translations
-    LABELs = [ TRX [ "UI::Occupations" ] , TRX [ "UI::PeopleAmount" ] , "" ]
-    self   . setCentralLabels ( LABELs                                       )
+    LABELs = self . Translations [ "OccupationListings" ] [ "Labels"         ]
+    self   . setCentralLabels    ( LABELs                                    )
     ##########################################################################
-    self   . setPrepared      ( True                                         )
+    self   . setPrepared         ( True                                      )
     ##########################################################################
     return
   ############################################################################
@@ -622,44 +709,126 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
+  def UpdateLocalityUsage           ( self                                 ) :
+    ##########################################################################
+    SCOPE   = self . Grouping
+    ALLOWED =                       [ "Subordination" , "Reverse"            ]
+    ##########################################################################
+    if                              ( SCOPE not in ALLOWED                 ) :
+      return False
+    ##########################################################################
+    DB      = self . ConnectDB      (                                        )
+    if                              ( DB == None                           ) :
+      return False
+    ##########################################################################
+    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    DB      . LockWrites            ( [ PAMTAB ]                             )
+    ##########################################################################
+    if                              ( SCOPE == "Subordination"             ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t1"                                   )
+      UUID  = self . Relation . get ( "first"                                )
+      ########################################################################
+    elif                            ( SCOPE == "Reverse"                   ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t2"                                   )
+      UUID  = self . Relation . get ( "second"                               )
+    ##########################################################################
+    SCOPE   = f"PeopleView-{SCOPE}"
+    self    . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    ##########################################################################
+    DB      . UnlockTables          (                                        )
+    DB      . Close                 (                                        )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ReloadLocality                ( self , DB                            ) :
+    ##########################################################################
+    SCOPE   = self . Grouping
+    ALLOWED =                       [ "Subordination" , "Reverse"            ]
+    ##########################################################################
+    if                              ( SCOPE not in ALLOWED                 ) :
+      return
+    ##########################################################################
+    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    ##########################################################################
+    if                              ( SCOPE == "Subordination"             ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t1"                                   )
+      UUID  = self . Relation . get ( "first"                                )
+      ########################################################################
+    elif                            ( SCOPE == "Reverse"                   ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t2"                                   )
+      UUID  = self . Relation . get ( "second"                               )
+    ##########################################################################
+    SCOPE   = f"Occupation-{SCOPE}"
+    self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    ##########################################################################
+    return
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
+  ############################################################################
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 1                         )
+  ############################################################################
+  def RunColumnsMenu               ( self , at                             ) :
+    ##########################################################################
+    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      if                           ( ( at == 9001 ) and ( hid )            ) :
+        ######################################################################
+        self . startup             (                                         )
+        ######################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def GroupsMenu                   ( self , mm , item                      ) :
     ##########################################################################
     TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    NAME   = item . text           ( 0                                       )
+    FMT    = TRX                   [ "UI::Belongs"                           ]
+    MSG    = FMT . format          ( NAME                                    )
+    COL    = mm . addMenu          ( MSG                                     )
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
-    ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    msg    = self . getMenuItem    ( "Crowds"                                )
+    mm     . addActionFromMenu     ( COL , 1201 , msg                        )
     ##########################################################################
     return mm
   ############################################################################
-  @pyqtSlot(int)
-  def GotoId                       ( self , Id                             ) :
+  def RunGroupsMenu                ( self , at , item                      ) :
     ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    if                             ( at == 1201                            ) :
+      ########################################################################
+      uuid = item . data           ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
+      head = item . text           ( 0                                       )
+      self . PeopleGroup   . emit  ( head , 40 , str ( uuid )                )
+      ########################################################################
+      return True
     ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
     if                             ( not doMenu                            ) :
       return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
     ##########################################################################
     items  = self . selectedItems  (                                         )
     atItem = self . currentItem    (                                         )
@@ -673,81 +842,96 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    T      = self . Total
-    MSG    = f"總數量:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
-    ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    SIDB   . setPrefix             ( "本頁開始:" )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    SIDB   . valueChanged . connect ( self . GotoId                          )
-    ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    SIDP   . setPrefix             ( "每頁數量:" )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    SIDP   . valueChanged . connect ( self . AssignAmount                    )
+    mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
+    self   . AppendRefreshAction   ( mm , 1001                               )
     ##########################################################################
-    if                             ( atItem != None                        ) :
-      FMT  = TRX                   [ "UI::AttachCrowds"                      ]
-      MSG  = FMT . format          ( atItem . text ( 0 )                     )
+    if                             ( self . Method not in [ "Original" ]   ) :
+      ########################################################################
+      msg  = self . getMenuItem    ( "Original"                              )
+      mm   . addAction             ( 1002 , msg                              )
+    ##########################################################################
+    self   . AppendInsertAction    ( mm , 1101                               )
+    self   . AppendRenameAction    ( mm , 1102                               )
+    mm     . addSeparator          (                                         )
+    ##########################################################################
+    if                             ( atItem not in [ False , None ]        ) :
+      ########################################################################
+      mm   = self . GroupsMenu     ( mm , atItem                             )
       mm   . addSeparator          (                                         )
-      mm   . addAction             ( 1201 ,  MSG                             )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    if                             ( len ( items ) == 1                    ) :
+      ########################################################################
       if                           ( self . EditAllNames != None           ) :
+        ######################################################################
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
+    ##########################################################################
+    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
+    mm     . addSeparator          (                                         )
     ##########################################################################
     mm     = self . ColumnsMenu    ( mm                                      )
+    mm     = self . SortingMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
-    mm     . addSeparator          (                                         )
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self   . RunAmountIndexMenu ( )       ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
-        self . startup             (                                         )
+    if                             ( self . RunColumnsMenu     ( at )      ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunSortingMenu     ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( self . RunGroupsMenu ( at , atItem )  ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
+      ########################################################################
+      self . clear                 (                                         )
       self . startup               (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1002                            ) :
+      ########################################################################
+      self . Method = "Original"
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . InsertItem            (                                         )
       return True
     ##########################################################################
-    if                             ( at == 1201                            ) :
-      head = atItem . text         (                                         )
-      self . PeopleGroup   . emit  ( head , 40 , str ( uuid )                )
+    if                             ( at == 1102                            ) :
+      self . RenameItem            (                                         )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
+      uuid = self . itemUuid       ( atItem , 0                              )
       NAM  = self . Tables         [ "Names"                                 ]
       self . EditAllNames          ( self , "Occupation" , uuid , NAM        )
       return True

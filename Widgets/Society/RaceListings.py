@@ -608,14 +608,15 @@ class RaceListings                 ( TreeDock                              ) :
     self    . ShowStatus            ( MSG                                    )
     self    . TtsTalk               ( MSG , 1002                             )
     ##########################################################################
+    TYPE    = "Race"
     PER     = People                (                                        )
     RELTAB  = self . Tables         [ "Relation"                             ]
     DB      . LockWrites            ( [ RELTAB ]                             )
-    PER     . ConnectToPeople       ( DB , RELTAB , UUID , "Race" , UUIDs    )
+    PER     . ConnectToPeople       ( DB , RELTAB , UUID , TYPE , UUIDs      )
     DB      . UnlockTables          (                                        )
     ##########################################################################
     if                              ( not Hide                             ) :
-      TOTAL = PER . CountBelongs    ( DB , RELTAB , UUID , "Race"            )
+      TOTAL = PER . CountBelongs    ( DB , RELTAB , UUID , TYPE              )
     ##########################################################################
     DB      . Close                 (                                        )
     ##########################################################################
@@ -912,8 +913,8 @@ class RaceListings                 ( TreeDock                              ) :
     mm     = self . LocalityMenu    ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    mm     . setFont                ( self    . font ( )                     )
-    aa     = mm . exec_             ( QCursor . pos  ( )                     )
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
     if                              ( self   . RunAmountIndexMenu ( )      ) :
