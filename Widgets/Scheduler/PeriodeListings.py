@@ -199,6 +199,7 @@ class PeriodeListings              ( TreeDock                              ) :
     REALM    = JSON                [ "Realm"                                 ]
     RNAME    = JSON                [ "RName"                                 ]
     ROLE     = JSON                [ "Role"                                  ]
+    TNAME    = JSON                [ "TName"                                 ]
     ITEM     = JSON                [ "Item"                                  ]
     STATES   = JSON                [ "States"                                ]
     CREATION = JSON                [ "Creation"                              ]
@@ -231,7 +232,8 @@ class PeriodeListings              ( TreeDock                              ) :
     IT       . setText             (  6 , str ( RNAME )                      )
     IT       . setToolTip          (  6 , str ( REALM )                      )
     ##########################################################################
-    IT       . setText             (  7 , str ( ROLE  )                      )
+    IT       . setText             (  7 , str ( TNAME )                      )
+    IT       . setToolTip          (  7 , str ( ROLE  )                      )
     ##########################################################################
     IT       . setText             (  8 , str ( ITEM  )                      )
     IT       . setTextAlignment    (  8 , Qt . AlignRight                    )
@@ -381,6 +383,7 @@ class PeriodeListings              ( TreeDock                              ) :
       J     =                         { "Uuid"     : U                     , \
                                         "Name"     : ""                    , \
                                         "Type"     : 0                     , \
+                                        "TName"    : ""                    , \
                                         "Used"     : 0                     , \
                                         "Start"    : 0                     , \
                                         "End"      : 0                     , \
@@ -423,6 +426,20 @@ class PeriodeListings              ( TreeDock                              ) :
         if                            ( RU > 0                             ) :
           N = self . GetName          ( DB , NAMTAB , RU                     )
           J [ "RName" ] = N
+        ######################################################################
+        TU  = J                       [ "Role"                               ]
+        TU  = 1100000000000000000 + TU
+        if                            ( TU > 0                             ) :
+          ####################################################################
+          QQ    = f"select `name` from `types` where ( `uuid` = {TU} ) ;"
+          DB    . Query               ( QQ                                   )
+          RR    = DB . FetchOne       (                                      )
+          N     = str                 ( J [ "Role" ]                         )
+          if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )      :
+            N   = self . assureString ( RR [ 0 ]                             )
+          ## N = self . GetName          ( DB , NAMTAB , TU                     )
+          ####################################################################
+          J [ "TName" ] = N
       ########################################################################
       PERIODS . append                ( J                                    )
     ##########################################################################
