@@ -11,6 +11,8 @@ import threading
 import gettext
 import json
 ##############################################################################
+import dns   . resolver
+##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
 from   PyQt5                          import QtWidgets
@@ -53,12 +55,17 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
+## import dns.resolver
+## domain = 'hotmail.com'
+## for x in dns.resolver.resolve(domain, 'MX'):
+##   print(x.to_text())
+##############################################################################
 class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( list                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
