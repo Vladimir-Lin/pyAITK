@@ -50,6 +50,13 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
+from   AITK  . Scheduler  . Project   import Project     as Project
+from   AITK  . Scheduler  . Projects  import Projects    as Projects
+from   AITK  . Scheduler  . Event     import Event       as Event
+from   AITK  . Scheduler  . Events    import Events      as Events
+from   AITK  . Scheduler  . Task      import Task        as Task
+from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
+##############################################################################
 class ProjectsView            ( IconDock                                   ) :
   ############################################################################
   HavingMenu   = 1371434312

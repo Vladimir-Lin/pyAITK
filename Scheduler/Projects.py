@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## 時間區段物件
+## 計畫
 ##############################################################################
 import os
 import sys
@@ -15,7 +15,7 @@ from   AITK . Database  . Query       import Query
 from   AITK . Database  . Connection  import Connection
 from   AITK . Database  . Columns     import Columns
 ##############################################################################
-class Tasks                   (                                            ) :
+class Projects                (                                            ) :
   ############################################################################
   def __init__                ( self                                       ) :
     return

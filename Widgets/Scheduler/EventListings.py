@@ -43,9 +43,16 @@ from   PyQt5 . QtWidgets              import QSpinBox
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
 ##############################################################################
-from   AITK . Essentials . Relation   import Relation
-from   AITK . Calendars  . StarDate   import StarDate
-from   AITK . Calendars  . Periode    import Periode
+from   AITK  . Essentials . Relation  import Relation
+from   AITK  . Calendars  . StarDate  import StarDate
+from   AITK  . Calendars  . Periode   import Periode
+##############################################################################
+from   AITK  . Scheduler  . Project   import Project     as Project
+from   AITK  . Scheduler  . Projects  import Projects    as Projects
+from   AITK  . Scheduler  . Event     import Event       as Event
+from   AITK  . Scheduler  . Events    import Events      as Events
+from   AITK  . Scheduler  . Task      import Task        as Task
+from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
 ##############################################################################
 class EventListings                ( TreeDock                              ) :
   ############################################################################
