@@ -65,6 +65,7 @@ class PeriodeListings              ( TreeDock                              ) :
     self . StartId            = 0
     self . Amount             = 28
     self . SortOrder          = "desc"
+    self . Editable           = True
     ##########################################################################
     self . Grouping           = "Original"
     ## self . Grouping           = "Subordination"
@@ -109,6 +110,12 @@ class PeriodeListings              ( TreeDock                              ) :
   def sizeHint                     ( self                                  ) :
     return self . SizeSuggestion   ( QSize ( 1024 , 640 )                    )
   ############################################################################
+  def setEditable                  ( self , edit                           ) :
+    ##########################################################################
+    self . Editable = edit
+    ##########################################################################
+    return
+  ############################################################################
   def setGrouping                  ( self , group                          ) :
     self . Grouping = group
     return self . Grouping
@@ -147,13 +154,21 @@ class PeriodeListings              ( TreeDock                              ) :
   ############################################################################
   def singleClicked           ( self , item , column                       ) :
     ##########################################################################
+    if                        ( not self . Editable                        ) :
+      return
+    ##########################################################################
     if                        ( self . isItemPicked ( )                    ) :
       if                      ( column != self . CurrentItem [ "Column" ]  ) :
         self . removeParked   (                                              )
     ##########################################################################
+    self     . Notify         ( 0                                            )
+    ##########################################################################
     return
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
+    ##########################################################################
+    if                          ( not self . Editable                      ) :
+      return
     ##########################################################################
     if                          ( column not in [ 1 ]                      ) :
       return
@@ -214,6 +229,7 @@ class PeriodeListings              ( TreeDock                              ) :
     IT       . setText             (  5 , TRX [ "Used" ] [ str ( USED  ) ]   )
     ##########################################################################
     IT       . setText             (  6 , str ( RNAME )                      )
+    IT       . setToolTip          (  6 , str ( REALM )                      )
     ##########################################################################
     IT       . setText             (  7 , str ( ROLE  )                      )
     ##########################################################################
@@ -786,12 +802,12 @@ class PeriodeListings              ( TreeDock                              ) :
     self   . Notify                 ( 0                                      )
     ##########################################################################
     items  = self . selectedItems   (                                        )
-    atItem = self . currentItem    (                                         )
+    atItem = self . currentItem     (                                        )
     uuid   = 0
     ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
+    if                              ( atItem != None                       ) :
+      uuid = atItem . data          ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
     ##########################################################################
     mm     = MenuManager            ( self                                   )
     ##########################################################################
