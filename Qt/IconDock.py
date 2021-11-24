@@ -575,45 +575,6 @@ class IconDock           ( ListDock                                        ) :
 
 """
 
-class Q_COMPONENTS_EXPORT IconDock : public ListDock
-{
-  Q_OBJECT
-  public:
-
-    explicit IconDock      (StandardConstructor) ;
-    virtual ~IconDock      (void);
-
-  protected:
-
-    virtual void Configure (void);
-
-  private:
-
-  public slots:
-
-    virtual bool startup   (void);
-
-  protected slots:
-
-    virtual bool Menu      (QPoint pos) ;
-
-  private slots:
-
-  signals:
-
-};
-
-N::IconDock:: IconDock (QWidget * parent,Plan * p)
-            : ListDock (          parent,       p)
-{
-  WidgetClass   ;
-  Configure ( ) ;
-}
-
-N::IconDock::~IconDock (void)
-{
-}
-
 void N::IconDock::Configure(void)
 {
   setViewMode                  (IconMode             ) ;
@@ -627,16 +588,4 @@ void N::IconDock::Configure(void)
   setMinimumSize               (QSize(144,200)       ) ;
 }
 
-bool N::IconDock::startup(void)
-{
-  if (IsNull(plan)) return false ;
-  return true                    ;
-}
-
-bool N::IconDock::Menu(QPoint pos)
-{ Q_UNUSED ( pos ) ;
-  return false     ;
-}
-
 """
-
