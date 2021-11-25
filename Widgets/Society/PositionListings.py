@@ -51,6 +51,32 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
 ##############################################################################
+"""
+4730000000000000001
+create table `positions` (
+  `id` integer not null auto_increment primary key,
+  `uuid` bigint not null,
+  `prefer` integer default 0,
+  `states` bigint default 0,
+  `longitude` bigint default -1,
+  `latitude` bigint default -1,
+  `altitude` bigint default 0,
+  `longstr` tinyblob default '' ,
+  `altistr` tinyblob default '' ,
+  `ltime` timestamp not null default current_timestamp() ON UPDATE current_timestamp(),
+  UNIQUE KEY `position` (`uuid`,`longitude`,`latitude`,`altitude`),
+  KEY `uuid` (`uuid`),
+  KEY `prefer` (`prefer`),
+  KEY `states` (`states`),
+  KEY `longitude` (`longitude`),
+  KEY `latitude` (`latitude`),
+  KEY `altitude` (`altitude`),
+  KEY `longstr` (`longstr`(32)),
+  KEY `altistr` (`altistr`(32)),
+  KEY `ltime` (`ltime`)
+) Engine = Federated default charset = utf8mb4 connection = "FederatedForInsider/positions" ;
+"""
+##############################################################################
 class PositionListings             ( TreeDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
