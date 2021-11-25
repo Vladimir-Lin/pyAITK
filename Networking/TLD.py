@@ -1,41 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-##
-##############################################################################
-"""
-
-CREATE TABLE `tld` (
-  `id` int(11) NOT NULL,
-  `uuid` bigint(20) NOT NULL,
-  `used` int(11) DEFAULT 1,
-  `type` int(11) DEFAULT 0,
-  `owner` bigint(20) DEFAULT 0,
-  `name` varchar(64) DEFAULT NULL,
-  `reverse` varchar(64) DEFAULT NULL,
-  `iana` varchar(16) DEFAULT NULL,
-  `explain` blob DEFAULT '',
-  `sld` bigint(20) DEFAULT 0,
-  `domains` bigint(20) DEFAULT 0,
-  `hosts` bigint(20) DEFAULT 0,
-  `pages` bigint(20) DEFAULT 0,
-  `ltime` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uuid` (`uuid`),
-  KEY `used` (`used`),
-  KEY `type` (`type`),
-  KEY `owner` (`owner`),
-  KEY `name` (`name`(16)),
-  KEY `reverse` (`reverse`(16)),
-  KEY `iana` (`iana`),
-  KEY `explain` (`explain`(128)),
-  KEY `sld` (`sld`),
-  KEY `domains` (`domains`),
-  KEY `hosts` (`hosts`),
-  KEY `pages` (`pages`),
-  KEY `ltime` (`ltime`)
-) ENGINE=Aria DEFAULT CHARSET=utf8mb4 ;
-
-"""
+## 頂層網域元件
 ##############################################################################
 import os
 import sys
@@ -47,16 +12,15 @@ from   ..      Database . Query      import Query      as Query
 from   ..      Database . Connection import Connection as Connection
 from   ..      Database . Columns    import Columns    as Columns
 ##############################################################################
-
 class TLD ( Columns ) :
-
+  ############################################################################
   def __init__ ( self ) :
     super ( TLD , self ) . __init__ ( )
     self . Clear                    ( )
-
+  ############################################################################
   def __del__ ( self ) :
     pass
-
+  ############################################################################
   def Clear ( self ) :
     self . Columns  = [ ]
     self . Id       = -1
@@ -73,7 +37,7 @@ class TLD ( Columns ) :
     self . Hosts    =  0
     self . Pages    =  0
     self . Update   =  False
-
+  ############################################################################
   def assign ( self , item ) :
     self . Columns  = item . Columns
     self . Id       = item . Id
@@ -90,7 +54,7 @@ class TLD ( Columns ) :
     self . Hosts    = item . Hosts
     self . Pages    = item . Pages
     self . Update   = item . Update
-
+  ############################################################################
   def set ( self , item , value ) :
     a = item . lower ( )
     if ( "id"       == a ) :
@@ -121,7 +85,7 @@ class TLD ( Columns ) :
       self . Pages   = value
     if ( "ltime"    == a ) :
       self . Update  = value
-
+  ############################################################################
   def get ( self , item ) :
     a = item . lower ( )
     if ( "id"       == a ) :
@@ -153,7 +117,7 @@ class TLD ( Columns ) :
     if ( "ltime"    == a ) :
       return self . Update
     return ""
-
+  ############################################################################
   def tableItems ( self ) :
     return [ "id"      ,
              "uuid"    ,
@@ -169,7 +133,7 @@ class TLD ( Columns ) :
              "hosts"   ,
              "pages"   ,
              "ltime"   ]
-
+  ############################################################################
   def pair ( self , item ) :
     a = item . lower (      )
     v = self . get   ( item )
@@ -202,7 +166,7 @@ class TLD ( Columns ) :
     if ( "ltime"    == a ) :
       return f"`{item}` = '{v}'"
     return f"`{item}` = {v}"
-
+  ############################################################################
   def valueItems ( self ) :
     return [ "used"    ,
              "type"    ,
@@ -215,7 +179,7 @@ class TLD ( Columns ) :
              "domains" ,
              "hosts"   ,
              "pages"   ]
-
+  ############################################################################
   def toJson ( self ) :
     return { "id"      : self . Id      ,
              "uuid"    : self . Uuid    ,
@@ -231,7 +195,46 @@ class TLD ( Columns ) :
              "hosts"   : self . Hosts   ,
              "pages"   : self . Pages   ,
              "ltime"   : self . Update  }
-
+  ############################################################################
+  def fromJson ( self , JSON ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
   def isMatch ( self , tld ) :
     T = tld . lower ( )
     return ( self . Name == T )
+##############################################################################
+"""
+CREATE TABLE `tld` (
+  `id` int(11) NOT NULL,
+  `uuid` bigint(20) NOT NULL,
+  `used` int(11) DEFAULT 1,
+  `type` int(11) DEFAULT 0,
+  `owner` bigint(20) DEFAULT 0,
+  `name` varchar(64) DEFAULT NULL,
+  `reverse` varchar(64) DEFAULT NULL,
+  `iana` varchar(16) DEFAULT NULL,
+  `explain` blob DEFAULT '',
+  `sld` bigint(20) DEFAULT 0,
+  `domains` bigint(20) DEFAULT 0,
+  `hosts` bigint(20) DEFAULT 0,
+  `pages` bigint(20) DEFAULT 0,
+  `ltime` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uuid` (`uuid`),
+  KEY `used` (`used`),
+  KEY `type` (`type`),
+  KEY `owner` (`owner`),
+  KEY `name` (`name`(16)),
+  KEY `reverse` (`reverse`(16)),
+  KEY `iana` (`iana`),
+  KEY `explain` (`explain`(128)),
+  KEY `sld` (`sld`),
+  KEY `domains` (`domains`),
+  KEY `hosts` (`hosts`),
+  KEY `pages` (`pages`),
+  KEY `ltime` (`ltime`)
+) ENGINE=Aria DEFAULT CHARSET=utf8mb4 ;
+"""
+##############################################################################
