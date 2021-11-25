@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 ## PositionListings
+## 地理經緯度
 ##############################################################################
 import os
 import sys
@@ -82,20 +83,19 @@ class PositionListings             ( TreeDock                              ) :
   HavingMenu = 1371434312
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
-  PeopleGroup       = pyqtSignal   ( str , int , str                         )
+  emitAllNames      = pyqtSignal   ( list                                    )
+  emitAssignColumn  = pyqtSignal   ( QTreeWidgetItem , int , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . EditAllNames       = None
-    ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 28
-    self . Order    = "asc"
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 28
+    self . SortOrder          = "asc"
+    self . Uuid               = 0
+    self . Symbol             = "°"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -104,9 +104,9 @@ class PositionListings             ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 1 , True                                )
+    self . setColumnCount          ( 4                                       )
     self . setColumnHidden         ( 2 , True                                )
+    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -115,40 +115,43 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
-    self . emitNamesShow     . connect ( self . show                         )
-    self . emitAllNames      . connect ( self . refresh                      )
-    self . emitAssignAmounts . connect ( self . AssignAmounts                )
+    self . emitNamesShow    . connect ( self . show                          )
+    self . emitAllNames     . connect ( self . refresh                       )
+    self . emitAssignColumn . connect ( self . AssignColumnText              )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
+    self . setAcceptDrops          ( False                                   )
     self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 320 , 640                               )
+    return self . SizeSuggestion   ( QSize ( 640 , 640 )                     )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
     if                             ( not self . isPrepared ( )             ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self   . setActionLabel        ( "Label"      , self . windowTitle ( )   )
+    self   . LinkAction            ( "Refresh"    , self . startup           )
     ##########################################################################
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
+    if                             ( int ( self . Uuid ) > 0               ) :
+      self . LinkAction            ( "Insert"     , self . InsertItem        )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self   . LinkAction            ( "Delete"     , self . DeleteItems       )
+    self   . LinkAction            ( "Rename"     , self . RenameItem        )
+    self   . LinkAction            ( "Copy"       , self . CopyToClipboard   )
+    self   . LinkAction            ( "Home"       , self . PageHome          )
+    self   . LinkAction            ( "End"        , self . PageEnd           )
+    self   . LinkAction            ( "PageUp"     , self . PageUp            )
+    self   . LinkAction            ( "PageDown"   , self . PageDown          )
     ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self   . LinkAction            ( "SelectAll"  , self . SelectAll         )
+    self   . LinkAction            ( "SelectNone" , self . SelectNone        )
     ##########################################################################
     return True
   ############################################################################
@@ -165,43 +168,117 @@ class PositionListings             ( TreeDock                              ) :
       if                      ( column != self . CurrentItem [ "Column" ]  ) :
         self . removeParked   (                                              )
     ##########################################################################
+    self     . Notify         ( 0                                            )
+    ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                        ( column not in [ 0 ]                        ) :
+    if                          ( column not in [ 0 , 1 , 2 ]              ) :
       return
     ##########################################################################
-    line = self . setLineEdit ( item                                       , \
-                                0                                          , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
+    line   = self . setLineEdit ( item                                     , \
+                                  column                                   , \
+                                  "editingFinished"                        , \
+                                  self . nameChanged                         )
+    line   . setFocus           ( Qt . TabFocusReason                        )
+    ##########################################################################
+    text   = item . text        ( column                                     )
+    if                          ( len ( text ) > 0                         ) :
+      return
+    ##########################################################################
+    S      = self . Symbol
+    ##########################################################################
+    if                          ( column == 0                              ) :
+      msg  = f"00{S}00'00.000000\"E"
+      line . setText            ( msg                                        )
+      return
+    ##########################################################################
+    if                          ( column == 1                              ) :
+      msg  = f"00{S}00'00.000000\"N"
+      line . setText            ( msg                                        )
+      return
+    ##########################################################################
+    if                          ( column == 2                              ) :
+      msg  = "0.0"
+      line . setText            ( msg                                        )
+      return
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
+  def AssignColumnText             ( self , item , ID , text ) :
     ##########################################################################
-    UXID = str                   ( UUID                                      )
+    item . setText                 ( ID , text                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def toAltitudeString           ( self , altitude                         ) :
+    ##########################################################################
+    Z     = int                  ( altitude                                  )
+    V     = int                  ( altitude                                  )
+    K     =                      ( Z >= 0                                    )
+    P     = ""
+    if                           ( not K                                   ) :
+      P   = "-"
+      V   = -V
+    ##########################################################################
+    if                           ( V <= 0                                  ) :
+      return "0"
+    ##########################################################################
+    if                           ( V < 10000                               ) :
+      ########################################################################
+      S   = f"{V}"
+      L   = len                  ( S                                         )
+      for i in range             ( L , 4                                   ) :
+        S = f"0{S}"
+      ########################################################################
+      return f"{P}0.{S}"
+    ##########################################################################
+    S     = f"{V}"
+    L     = len                  ( S                                         )
+    T     = S                    [ -4 :                                      ]
+    H     = S                    [    : L - 4                                ]
+    ##########################################################################
+    return f"{P}{H}.{T}"
+  ############################################################################
+  def PrepareItem                ( self , JSON                             ) :
+    ##########################################################################
+    ID        = JSON             [ "Id"                                      ]
+    UUID      = JSON             [ "Uuid"                                    ]
+    PREFER    = JSON             [ "Prefer"                                  ]
+    STATES    = JSON             [ "States"                                  ]
+    LONGITUDE = JSON             [ "Longitude"                               ]
+    LATITUDE  = JSON             [ "Latitude"                                ]
+    ALTITUDE  = JSON             [ "Altitude"                                ]
+    LONGSTR   = JSON             [ "LongString"                              ]
+    LATISTR   = JSON             [ "LatiString"                              ]
+    ##########################################################################
+    UXID      = str              ( UUID                                      )
+    ALTISTR   = self . toAltitudeString ( ALTITUDE                           )
+    ##########################################################################
     IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , NAME                                  )
+    ##########################################################################
+    IT   . setText               ( 0 , LONGSTR                               )
     IT   . setToolTip            ( 0 , UXID                                  )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    IT   . setData               ( 0 , Qt . UserRole , str ( ID )            )
+    ##########################################################################
+    IT   . setText               ( 1 , LATISTR                               )
+    ## IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    ##########################################################################
+    IT   . setText               ( 2 , ALTISTR                               )
+    IT   . setTextAlignment      ( 2 , Qt.AlignRight                         )
+    ##########################################################################
+    IT   . setData               ( 3 , Qt . UserRole , JSON                  )
     ##########################################################################
     return IT
   ############################################################################
   @pyqtSlot                      (                                           )
   def InsertItem                 ( self                                    ) :
     ##########################################################################
-    item = QTreeWidgetItem       (                                           )
-    item . setData               ( 0 , Qt . UserRole , 0                     )
-    self . addTopLevelItem       ( item                                      )
-    line = self . setLineEdit    ( item                                    , \
-                                   0                                       , \
-                                   "editingFinished"                       , \
-                                   self . nameChanged                        )
-    line . setFocus              ( Qt . TabFocusReason                       )
+    if                           ( int ( self . Uuid ) <= 0                ) :
+      return
+    ##########################################################################
+    self . Go                    ( self . AppendPosition                     )
     ##########################################################################
     return
   ############################################################################
@@ -227,87 +304,31 @@ class PositionListings             ( TreeDock                              ) :
     line   = self . CurrentItem  [ "Widget"                                  ]
     text   = self . CurrentItem  [ "Text"                                    ]
     msg    = line . text         (                                           )
-    uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
-    ##########################################################################
-    item   . setText             ( column ,              msg                 )
+    ID     = self . itemUuid     ( item , 0                                  )
     ##########################################################################
     self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
+    self   . Go                  ( self . UpdateItem                       , \
+                                   ( item , column , ID , msg , )            )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
-  def refresh                         ( self , JSON                        ) :
+  @pyqtSlot                      (                                           )
+  def DeleteItems                ( self                                    ) :
     ##########################################################################
-    self    . clear                   (                                      )
-    ##########################################################################
-    UUIDs   = JSON                    [ "UUIDs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
-    ##########################################################################
-    for U in UUIDs                                                           :
-      ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
-      self  . addTopLevelItem         ( IT                                   )
-    ##########################################################################
-    self    . emitNamesShow . emit    (                                      )
     ##########################################################################
     return
   ############################################################################
-  def ObtainsItemUuids                ( self , DB                          ) :
+  @pyqtSlot                       (        list                              )
+  def refresh                     ( self , LISTS                           ) :
     ##########################################################################
-    QQ      = self . ObtainUuidsQuery (                                      )
-    UUIDs   =                         [                                      ]
-    if                                ( len ( QQ ) > 0                     ) :
-      UUIDs = DB   . ObtainUuids      ( QQ                                   )
+    self   . clear                (                                          )
     ##########################################################################
-    return UUIDs
-  ############################################################################
-  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
-    ##########################################################################
-    NAMEs   =                         {                                      }
-    ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
-    ##########################################################################
-    return NAMEs
-  ############################################################################
-  @pyqtSlot                           (        str  , int                    )
-  def AssignAmounts                   ( self , UUID , Amounts              ) :
-    ##########################################################################
-    IT    = self . uuidAtItem         ( UUID , 0                             )
-    if                                ( IT is None                         ) :
-      return
-    ##########################################################################
-    IT . setText                      ( 1 , str ( Amounts )                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportBelongings                 ( self , UUIDs                      ) :
-    ##########################################################################
-    time    . sleep                    ( 1.0                                 )
-    ##########################################################################
-    RELTAB  = self . Tables            [ "Relation"                          ]
-    REL     = Relation                 (                                     )
-    REL     . setT1                    ( "Occupation"                        )
-    REL     . setT2                    ( "People"                            )
-    REL     . setRelation              ( "Subordination"                     )
-    ##########################################################################
-    DB      = self . ConnectDB         (                                     )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
+    for JSON in LISTS                                                        :
       ########################################################################
-      REL   . set                      ( "first" , UUID                      )
-      CNT   = REL . CountSecond        ( DB , RELTAB                         )
-      ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
+      IT   = self . PrepareItem   ( JSON                                     )
+      self . addTopLevelItem      ( IT                                       )
     ##########################################################################
-    DB      . Close                    (                                     )
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -318,31 +339,77 @@ class PositionListings             ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
-    self    . ObtainsInformation      ( DB                                   )
+    POSTAB  = self . Tables           [ "Positions"                          ]
+    LISTS   =                         [                                      ]
+    UUID    = int                     ( self . Uuid                          )
     ##########################################################################
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+    if                                ( UUID > 0                           ) :
+      QQ    = f"select count(*) from {POSTAB} where ( `uuid` = {UUID} ) ;"
+    else                                                                     :
+      QQ    = f"select count(*) from {POSTAB} ;"
+    ##########################################################################
+    DB      . Query                   ( QQ                                   )
+    RR      = DB . FetchOne           (                                      )
+    if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )            :
+      self . Total = RR               [ 0                                    ]
+    ##########################################################################
+    TOTAL   = self . Total
+    STID    = self . StartId
+    AMOUNT  = self . Amount
+    ORDER   = self . getSortingOrder  (                                      )
+    ##########################################################################
+    if                                ( UUID > 0                           ) :
+      QQ    = f"""select
+                  `id`,`uuid`,
+                  `prefer`,`states`,
+                  `longitude`,`latitude`,`altitude`,
+                  `longstr`,`latistr`
+                  from {POSTAB}
+                  where ( `uuid` = {UUID} )
+                  order by `id` {ORDER}
+                  limit {STID} , {AMOUNT} ;"""
+    else                                                                     :
+      QQ    = f"""select
+                  `id`,`uuid`,
+                  `prefer`,`states`,
+                  `longitude`,`latitude`,`altitude`,
+                  `longstr`,`latistr`
+                  from {POSTAB}
+                  order by `id` {ORDER}
+                  limit {STID} , {AMOUNT} ;"""
+    ##########################################################################
+    QQ      = " " . join              ( QQ . split ( )                       )
+    DB      . Query                   ( QQ                                   )
+    ALL     = DB . FetchAll           (                                      )
+    ##########################################################################
+    if ( ( ALL not in [ False , None ] ) and ( len ( ALL ) > 0 ) )           :
+      for K in ALL                                                           :
+        ######################################################################
+        J   =                         {                                      }
+        ######################################################################
+        J [ "Id"         ] = int      ( K [ 0 ]                              )
+        J [ "Uuid"       ] = int      ( K [ 1 ]                              )
+        J [ "Prefer"     ] = int      ( K [ 2 ]                              )
+        J [ "States"     ] = int      ( K [ 3 ]                              )
+        J [ "Longitude"  ] = int      ( K [ 4 ]                              )
+        J [ "Latitude"   ] = int      ( K [ 5 ]                              )
+        J [ "Altitude"   ] = int      ( K [ 6 ]                              )
+        J [ "LongString" ] = self . assureString ( K [ 7 ]                   )
+        J [ "LatiString" ] = self . assureString ( K [ 8 ]                   )
+        ######################################################################
+        LISTS . append                ( J                                    )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
-      self . emitNamesShow . emit     (                                      )
+    if                                ( len ( LISTS ) <= 0                 ) :
+      self  . emitNamesShow . emit    (                                      )
       return
     ##########################################################################
-    JSON             =                {                                      }
-    JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
-    ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
-    ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
+    self    . emitAllNames  . emit    ( LISTS                                )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
+  @pyqtSlot                      (                                           )
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -352,39 +419,26 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
+  def AppendPosition             ( self                                    ) :
     ##########################################################################
-    TABLE = self . Tables        [ "Positions"                               ]
-    ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE} order by `id` asc ;"""
-    ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
-    ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
-  ############################################################################
-  def TranslateAll              ( self                                     ) :
-    ##########################################################################
-    DB    = self . ConnectDB    (                                            )
-    if                          ( DB == None                               ) :
+    if                           ( int ( self . Uuid ) <= 0                ) :
       return
     ##########################################################################
-    TABLE = self . Tables       [ "Names"                                    ]
-    FMT   = self . Translations [ "UI::Translating"                          ]
-    self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
+    DB      = self . ConnectDB   (                                           )
+    if                           ( DB == None                              ) :
+      return
     ##########################################################################
-    DB    . Close               (                                            )
+    POSTAB  = self . Tables      [ "Positions"                               ]
+    UUID    = self . Uuid
     ##########################################################################
-    return
-  ############################################################################
-  def PrepareMessages            ( self                                    ) :
+    DB      . LockWrites         ( [ POSTAB ]                                )
+    QQ      = f"insert into {POSTAB} ( `uuid` ) values ( {UUID} ) ;"
+    DB      . Query              ( QQ                                        )
     ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
+    DB      . UnlockTables       (                                           )
+    DB      . Close              (                                           )
     ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
+    self    . loading            (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -395,176 +449,14 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def Prepare                    ( self                                    ) :
     ##########################################################################
-    self    . Total = 0
+    self   . setColumnWidth      ( 3 , 3                                     )
     ##########################################################################
-    TABLE   = self . Tables           [ "Positions"                          ]
+    LABELs = self . Translations [ "PositionListings" ] [ "Labels"           ]
+    self   . setCentralLabels    ( LABELs                                    )
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
-    ##########################################################################
-    if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
-      return
-    ##########################################################################
-    self    . Total = RR              [ 0                                    ]
-    ##########################################################################
-    return
-  ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
-    ##########################################################################
-    TABLE   = self . Tables   [ "Positions"                                  ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . Order
-    ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
-    ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
-  ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
-  ############################################################################
-  def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
-    return self . dropHandler ( sourceWidget , self , mimeData               )
-  ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
-    ##########################################################################
-    if                              ( self == sourceWidget                 ) :
-      return False
-    ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
-      return False
-    ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
-    ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
-      ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
-    ##########################################################################
-    return RDN
-  ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    ##########################################################################
-    return True
-  ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem is None                            ) :
-      return True
-    ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
-    ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
-    ##########################################################################
-    """
-    self . Go                  ( self . PeopleJoinOccupation               , \
-                                 ( UUID , UUIDs , )                          )
-    """
-    ##########################################################################
-    return True
-  ############################################################################
-  def PeopleJoinOccupation          ( self , UUID , UUIDs                  ) :
-    ##########################################################################
-    """
-    if                              ( UUID <= 0                            ) :
-      return
-    ##########################################################################
-    COUNT   = len                   ( UUIDs                                  )
-    if                              ( COUNT <= 0                           ) :
-      return
-    ##########################################################################
-    Hide    = self . isColumnHidden ( 1                                      )
-    ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return
-    ##########################################################################
-    MSG     = "加入{0}個人物" . format ( COUNT )
-    self    . ShowStatus            ( MSG                                    )
-    self    . TtsTalk               ( MSG , 1002                             )
-    ##########################################################################
-    RELTAB  = self . Tables         [ "Relation"                             ]
-    REL     = Relation              (                                        )
-    REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Occupation"                           )
-    REL     . setT2                 ( "People"                               )
-    REL     . setRelation           ( "Subordination"                        )
-    DB      . LockWrites            ( [ RELTAB ]                             )
-    REL     . Joins                 ( DB , RELTAB , UUIDs                    )
-    DB      . UnlockTables          (                                        )
-    ##########################################################################
-    if                              ( not Hide                             ) :
-      TOTAL = REL . CountSecond     ( DB , RELTAB                            )
-    ##########################################################################
-    DB      . Close                 (                                        )
-    ##########################################################################
-    self    . ShowStatus            ( ""                                     )
-    ##########################################################################
-    if                              ( Hide                                 ) :
-      return
-    ##########################################################################
-    IT      = self . uuidAtItem     ( UUID , 0                               )
-    if                              ( IT is None                           ) :
-      return
-    ##########################################################################
-    IT      . setText               ( 1 , str ( TOTAL )                      )
-    self    . DoUpdate              (                                        )
-    ##########################################################################
-    """
-    return
-  ############################################################################
-  def Prepare                 ( self                                       ) :
-    ##########################################################################
-    self   . setColumnWidth   ( 2 , 3                                        )
-    ##########################################################################
-    TRX    = self . Translations
-    LABELs = [ "地球地理位置" , TRX [ "UI::PeopleAmount" ] , ""         ]
-    self   . setCentralLabels ( LABELs                                       )
-    ##########################################################################
-    self   . setPrepared      ( True                                         )
+    self   . setPrepared         ( True                                      )
     ##########################################################################
     return
   ############################################################################
@@ -610,28 +502,354 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def toDegreeString               ( self , Degree                         ) :
     ##########################################################################
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    S         = self . Symbol
+    ##########################################################################
+    MSECS     = int                ( Degree % 1000000                        )
+    R         = int                ( Degree / 1000000                        )
+    SECS      = int                ( R % 100                                 )
+    R         = int                ( R / 100                                 )
+    MINUTE    = int                ( R % 100                                 )
+    DEGREE    = int                ( R / 100                                 )
+    ##########################################################################
+    MM        = f"{MSECS}"
+    MM        = MM . zfill         ( 6                                       )
+    ##########################################################################
+    SS        = f"{SECS}"
+    SS        = SS . zfill         ( 2                                       )
+    ##########################################################################
+    MS        = f"{MINUTE}"
+    MS        = MS . zfill         ( 2                                       )
+    ##########################################################################
+    return f"{DEGREE}{S}{MS}'{SS}.{MM}\""
+  ############################################################################
+  def toLongitude                   ( self , text                          ) :
+    ##########################################################################
+    S        = self . Symbol
+    ##########################################################################
+    L        = text . split         ( S                                      )
+    if                              ( len ( L ) != 2                       ) :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    DEGREE   = L                    [ 0                                      ]
+    R        = L                    [ 1                                      ]
+    ##########################################################################
+    L        = R    . split         ( "'"                                    )
+    if                              ( len ( L ) != 2                       ) :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    MINUTE   = L                    [ 0                                      ]
+    R        = L                    [ 1                                      ]
+    ##########################################################################
+    L        = R    . split         ( "\""                                   )
+    if                              ( len ( L ) != 2                       ) :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    SECS     = L                    [ 0                                      ]
+    MSECS    = "0"
+    RD       = L                    [ 1                                      ]
+    RD       = RD . lower           (                                        )
+    ##########################################################################
+    if                              ( RD not in [ "e" , "w" ]              ) :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    if                              ( "." in SECS                          ) :
+      ########################################################################
+      L      = SECS . split         ( "."                                    )
+      if                            ( len ( L ) != 2                       ) :
+        return                      { "Okay" : False                         }
+      ########################################################################
+      SECS   = L                    [ 0                                      ]
+      MSECS  = L                    [ 1                                      ]
+    ##########################################################################
+    try                                                                      :
+      DEGREE = int                  ( DEGREE                                 )
+      if                            ( ( DEGREE > 180 ) or ( DEGREE < 0 ) )   :
+        return                      { "Okay" : False                         }
+    except                                                                   :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    try                                                                      :
+      MINUTE = int                  ( MINUTE                                 )
+      if                            ( ( MINUTE >= 60 ) or ( MINUTE < 0 ) )   :
+        return                      { "Okay" : False                         }
+    except                                                                   :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    try                                                                      :
+      SECS   = int                  ( SECS                                   )
+      if                            ( ( SECS >= 60 ) or ( SECS < 0 ) )       :
+        return                      { "Okay" : False                         }
+    except                                                                   :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      LEN    = len                  ( MSECS                                  )
+      RV     = int                  ( MSECS                                  )
+      ########################################################################
+      if                            ( LEN > 6                              ) :
+        for i in range              ( 6 , LEN                              ) :
+          RV = int                  ( RV / 10                                )
+      elif                          ( LEN < 6                              ) :
+        for i in range              ( LEN , 6                              ) :
+          RV = int                  ( RV * 10                                )
+    except                                                                   :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    V       = int                   ( DEGREE * 10000000000                   )
+    V       = V + int               ( MINUTE *   100000000                   )
+    V       = V + int               ( SECS   *     1000000                   )
+    V       = V + RV
+    ##########################################################################
+    K       = V
+    if                              ( RD in [ "w" ]                        ) :
+      V     = -V
+    ##########################################################################
+    RD      = RD   . upper          (                                        )
+    TDS     = self . toDegreeString ( K                                      )
+    ##########################################################################
+    return                          { "Okay"   : True                      , \
+                                      "Value"  : V                         , \
+                                      "String" : f"{TDS}{RD}"                }
+  ############################################################################
+  def toLatitude                    ( self , text                          ) :
+    ##########################################################################
+    S        = self . Symbol
+    ##########################################################################
+    L        = text . split         ( S                                      )
+    if                              ( len ( L ) != 2                       ) :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    DEGREE   = L                    [ 0                                      ]
+    R        = L                    [ 1                                      ]
+    ##########################################################################
+    L        = R    . split         ( "'"                                    )
+    if                              ( len ( L ) != 2                       ) :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    MINUTE   = L                    [ 0                                      ]
+    R        = L                    [ 1                                      ]
+    ##########################################################################
+    L        = R    . split         ( "\""                                   )
+    if                              ( len ( L ) != 2                       ) :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    SECS     = L                    [ 0                                      ]
+    MSECS    = "0"
+    RD       = L                    [ 1                                      ]
+    RD       = RD . lower           (                                        )
+    ##########################################################################
+    if                              ( RD not in [ "n" , "s" ]              ) :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    if                              ( "." in SECS                          ) :
+      ########################################################################
+      L      = SECS . split         ( "."                                    )
+      if                            ( len ( L ) != 2                       ) :
+        return                      { "Okay" : False                         }
+      ########################################################################
+      SECS   = L                    [ 0                                      ]
+      MSECS  = L                    [ 1                                      ]
+    ##########################################################################
+    try                                                                      :
+      DEGREE = int                  ( DEGREE                                 )
+      if                            ( ( DEGREE > 90 ) or ( DEGREE < 0 ) )    :
+        return                      { "Okay" : False                         }
+    except                                                                   :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    try                                                                      :
+      MINUTE = int                  ( MINUTE                                 )
+      if                            ( ( MINUTE >= 60 ) or ( MINUTE < 0 ) )   :
+        return                      { "Okay" : False                         }
+    except                                                                   :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    try                                                                      :
+      SECS   = int                  ( SECS                                   )
+      if                            ( ( SECS >= 60 ) or ( SECS < 0 ) )       :
+        return                      { "Okay" : False                         }
+    except                                                                   :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      LEN    = len                  ( MSECS                                  )
+      RV     = int                  ( MSECS                                  )
+      ########################################################################
+      if                            ( LEN > 6                              ) :
+        for i in range              ( 6 , LEN                              ) :
+          RV = int                  ( RV / 10                                )
+      elif                          ( LEN < 6                              ) :
+        for i in range              ( LEN , 6                              ) :
+          RV = int                  ( RV * 10                                )
+    except                                                                   :
+      return                        { "Okay" : False                         }
+    ##########################################################################
+    V       = int                   ( DEGREE * 10000000000                   )
+    V       = V + int               ( MINUTE *   100000000                   )
+    V       = V + int               ( SECS   *     1000000                   )
+    V       = V + RV
+    ##########################################################################
+    K       = V
+    if                              ( RD in [ "s" ]                        ) :
+      V     = -V
+    ##########################################################################
+    RD      = RD   . upper          (                                        )
+    TDS     = self . toDegreeString ( K                                      )
+    ##########################################################################
+    return                          { "Okay"   : True                      , \
+                                      "Value"  : V                         , \
+                                      "String" : f"{TDS}{RD}"                }
+  ############################################################################
+  def toAltitude                   ( self , text                           ) :
+    ##########################################################################
+    if                             ( "." in text                           ) :
+      ########################################################################
+      L     = text . split         ( "."                                     )
+      if                           ( len ( L ) != 2                        ) :
+        return                     { "Okay" : False                          }
+      ########################################################################
+      try                                                                    :
+        ######################################################################
+        V     = int                ( L [ 0 ]                                 )
+        V     = V * 10000
+        ######################################################################
+      except                                                                 :
+        return                     { "Okay" : False                          }
+      ########################################################################
+      try                                                                    :
+        ######################################################################
+        LEN   = len                ( L [ 1 ]                                 )
+        R     = int                ( L [ 1 ]                                 )
+        ######################################################################
+        if                         ( LEN > 4                               ) :
+          for i in range           ( 4 , LEN                               ) :
+            R = int                ( R / 10                                  )
+        elif                       ( LEN < 4                               ) :
+          for i in range           ( LEN , 4                               ) :
+            R = int                ( R * 10                                  )
+        ######################################################################
+        V     = int                ( V + R                                   )
+        ######################################################################
+        return                     { "Okay" : True , "Value" : V             }
+      except                                                                 :
+        return                     { "Okay" : False                          }
+      ########################################################################
       return
     ##########################################################################
-    OCPTAB  = self . Tables        [ "Roles"                                 ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
-    ##########################################################################
-    DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
-    ##########################################################################
-    uuid    = int                  ( uuid                                    )
-    if                             ( uuid <= 0                             ) :
+    try                                                                      :
       ########################################################################
-      uuid  = DB . UnusedUuid      ( OCPTAB                                  )
-      DB    . UseUuid              ( OCPTAB , uuid                           )
+      V     = int                  ( text                                    )
+      V     = V * 10000
+      ########################################################################
+      return                       { "Okay" : True , "Value" : V             }
+    except                                                                   :
+      pass
     ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    return                         { "Okay" : False                          }
+  ############################################################################
+  def UpdateItem                   ( self , item , column , ID , name      ) :
+    ##########################################################################
+    JSON   = item . data           ( 3 , Qt . UserRole                       )
+    ##########################################################################
+    if                             ( column == 0                           ) :
+      A    = self . toLongitude    ( name                                    )
+    elif                           ( column == 1                           ) :
+      A    = self . toLatitude     ( name                                    )
+    elif                           ( column == 2                           ) :
+      A    = self . toAltitude     ( name                                    )
+    else                                                                     :
+      self . Notify                ( 1                                       )
+      return
+    ##########################################################################
+    if                             ( not A [ "Okay" ]                      ) :
+      self . Notify                ( 1                                       )
+      return
+    ##########################################################################
+    if                             ( column == 0                           ) :
+      LONGITUDE = A                [ "Value"                                 ]
+      LONGSTR   = A                [ "String"                                ]
+    elif                           ( column == 1                           ) :
+      LATITUDE  = A                [ "Value"                                 ]
+      LATISTR   = A                [ "String"                                ]
+    elif                           ( column == 2                           ) :
+      ALTITUDE  = A                [ "Value"                                 ]
+    ##########################################################################
+    DON     = False
+    DB      = self . ConnectDB     (                                         )
+    if                             ( DB == None                            ) :
+      self . Notify                ( 1                                       )
+      return
+    ##########################################################################
+    POSTAB  = self . Tables      [ "Positions"                               ]
+    ##########################################################################
+    if                             ( column == 0                           ) :
+      ########################################################################
+      QQ    = f"""update {POSTAB}
+                  set `longitude` = %s , `longstr` = %s
+                  where ( `id` = {ID} ) ;"""
+      VAL   =                      ( LONGITUDE , LONGSTR                     )
+      ########################################################################
+    elif                           ( column == 1                           ) :
+      ########################################################################
+      QQ    = f"""update {POSTAB}
+                  set `latitude` = %s , `latistr` = %s
+                  where ( `id` = {ID} ) ;"""
+      VAL   =                      ( LATITUDE  , LATISTR                     )
+      ########################################################################
+    elif                           ( column == 2                           ) :
+      ########################################################################
+      QQ    = f"""update {POSTAB}
+                  set `altitude` = %s
+                  where ( `id` = {ID} ) ;"""
+      VAL   =                      ( ALTITUDE ,                              )
+    ##########################################################################
+    QQ      = " " . join           ( QQ . split ( )                          )
+    if                             ( len ( QQ ) > 0                        ) :
+      ########################################################################
+      DB    . LockWrites           ( [ POSTAB ]                              )
+      ########################################################################
+      try                                                                    :
+        ######################################################################
+        DB  . QueryValues          ( QQ , VAL                                )
+        DON = True
+        ######################################################################
+      except                                                                 :
+        pass
+      ########################################################################
+      DB    . UnlockTables         (                                         )
     ##########################################################################
     DB      . Close                (                                         )
     ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
+    if                             ( not DON                               ) :
+      self . Notify                ( 1                                       )
+      return
+    ##########################################################################
+    if                             ( column == 0                           ) :
+      ########################################################################
+      JSON [ "Longitude"  ] = LONGITUDE
+      JSON [ "LongString" ] = LONGSTR
+      item . setData                 ( 3 , Qt . UserRole , JSON              )
+      self . emitAssignColumn . emit ( item , column , LONGSTR               )
+      ########################################################################
+    elif                           ( column == 1                           ) :
+      ########################################################################
+      JSON [ "Latitude"   ] = LATITUDE
+      JSON [ "LatiString" ] = LATISTR
+      item . setData                 ( 3 , Qt . UserRole , JSON              )
+      self . emitAssignColumn . emit ( item , column , LATISTR               )
+      ########################################################################
+    elif                           ( column == 2                           ) :
+      ########################################################################
+      JSON [ "Altitude" ] = ALTITUDE
+      item . setData                 ( 3 , Qt . UserRole , JSON              )
+      MSG  = self . toAltitudeString ( ALTITUDE                              )
+      self . emitAssignColumn . emit ( item , column , MSG                   )
+    ##########################################################################
+    self   . Notify                ( 0                                       )
     ##########################################################################
     return
   ############################################################################
@@ -649,138 +867,91 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
-    ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
-    ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
-    ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
-    ##########################################################################
-    return mm
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 2                         )
   ############################################################################
-  @pyqtSlot(int)
-  def GotoId                       ( self , Id                             ) :
+  def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def Menu                         ( self , pos                            ) :
-    ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
-      return False
-    ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . currentItem    (                                         )
-    uuid   = 0
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-    ##########################################################################
-    mm     = MenuManager           ( self                                    )
-    ##########################################################################
-    TRX    = self . Translations
-    ##########################################################################
-    T      = self . Total
-    MSG    = f"總數量:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
-    ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    SIDB   . setPrefix             ( "本頁開始:" )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    SIDB   . valueChanged . connect ( self . GotoId                          )
-    ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    SIDP   . setPrefix             ( "每頁數量:" )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    SIDP   . valueChanged . connect ( self . AssignAmount                    )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      FMT  = TRX                   [ "UI::AttachCrowds"                      ]
-      MSG  = FMT . format          ( atItem . text ( 0 )                     )
-      mm   . addSeparator          (                                         )
-      mm   . addAction             ( 1201 ,  MSG                             )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    if                             ( len ( items ) == 1                    ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
-    ##########################################################################
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    mm     . addSeparator          (                                         )
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
-    self   . DockingMenu           ( mm                                      )
-    ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
-    at     = mm . at               ( aa                                      )
-    ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
-      return True
-    ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
-      return True
-    ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9002 ) and ( at <= 9003 )         :
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
-        self . startup             (                                         )
       return True
     ##########################################################################
-    if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+    return False
+  ############################################################################
+  def Menu                          ( self , pos                           ) :
+    ##########################################################################
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
+      return False
+    ##########################################################################
+    self   . Notify                 ( 0                                      )
+    ##########################################################################
+    items  = self . selectedItems   (                                        )
+    atItem = self . currentItem     (                                        )
+    ##########################################################################
+    mm     = MenuManager            ( self                                   )
+    ##########################################################################
+    TRX    = self . Translations
+    ##########################################################################
+    mm     = self . AmountIndexMenu ( mm                                     )
+    mm     . addSeparator           (                                        )
+    ##########################################################################
+    self   . AppendRefreshAction    ( mm , 1001                              )
+    ##########################################################################
+    if                              ( int ( self . Uuid ) > 0              ) :
+      self . AppendInsertAction     ( mm , 1101                              )
+    ##########################################################################
+    self   . AppendRenameAction     ( mm , 1102                              )
+    self   . AppendDeleteAction     ( mm , 1103                              )
+    ##########################################################################
+    mm     . addSeparator           (                                        )
+    mm     = self . ColumnsMenu     ( mm                                     )
+    mm     = self . SortingMenu     ( mm                                     )
+    self   . DockingMenu            ( mm                                     )
+    ##########################################################################
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
+    at     = mm . at                ( aa                                     )
+    ##########################################################################
+    if                              ( self   . RunAmountIndexMenu ( )      ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
+      return
+    ##########################################################################
+    if                              ( self . RunColumnsMenu    ( at )      ) :
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
+    if                              ( self . RunSortingMenu    ( at )      ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1201                            ) :
-      head = atItem . text         ( 0                                       )
-      self . PeopleGroup   . emit  ( head , 66 , str ( uuid )                )
+    if                              ( self . RunDocking   ( mm , aa )      ) :
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Tasks" , uuid , NAM             )
+    if                              ( at == 1001                           ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
+    if                              ( at == 1101                           ) :
+      self . InsertItem             (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1102                           ) :
+      self . RenameItem             (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1103                           ) :
+      self . DeleteItems            (                                        )
       return True
     ##########################################################################
     return True

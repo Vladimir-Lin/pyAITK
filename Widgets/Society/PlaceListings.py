@@ -55,10 +55,11 @@ class PlaceListings                ( TreeDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
-  PeopleGroup       = pyqtSignal   ( str , int , str                         )
+  emitNamesShow       = pyqtSignal (                                         )
+  emitAllNames        = pyqtSignal ( dict                                    )
+  emitAssignAmounts   = pyqtSignal ( str , int                               )
+  PeopleGroup         = pyqtSignal ( str , int , str                         )
+  BelongingEarthSpots = pyqtSignal ( str , str , QIcon                       )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -709,6 +710,7 @@ class PlaceListings                ( TreeDock                              ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     if                             ( len ( items ) == 1                    ) :
+      mm   . addAction             ( 7401 , "經緯度" )
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
@@ -758,6 +760,15 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 3001                            ) :
       self . Go                    ( self . TranslateAll                     )
+      return True
+    ##########################################################################
+    if                             ( at == 7401                            ) :
+      ########################################################################
+      head = atItem . text         ( 0                                       )
+      uuid = self   . itemUuid     ( atItem , 0                              )
+      icon = self   . windowIcon   (                                         )
+      self . BelongingEarthSpots . emit ( str ( uuid ) , head , icon         )
+      ########################################################################
       return True
     ##########################################################################
     return True
