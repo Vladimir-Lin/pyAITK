@@ -15,7 +15,7 @@ from   ..      Database . Columns    import Columns    as Columns
 from   .       TLD                   import TLD        as TLD
 ##############################################################################
 
-class TLDs ( ) :
+class SLDs ( ) :
 
   ############################################################################
   def __init__ ( self ) :

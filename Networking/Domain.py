@@ -48,7 +48,7 @@ from   ..      Database . Connection import Connection as Connection
 from   ..      Database . Columns    import Columns    as Columns
 ##############################################################################
 
-class TLD ( Columns ) :
+class Domain ( Columns ) :
 
   def __init__ ( self ) :
     super ( TLD , self ) . __init__ ( )
