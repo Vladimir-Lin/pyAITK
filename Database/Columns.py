@@ -6,118 +6,115 @@
 import os
 import sys
 ##############################################################################
-class Columns ( ) :
+class Columns        (                                                     ) :
   ############################################################################
-  def __init__ ( self )                                                      :
-    self . Columns = [ ]
+  def __init__       ( self                                                ) :
+    self . Columns = [                                                       ]
     return
   ############################################################################
-  def __del__ ( self )                                                       :
-    self . Columns = [ ]
+  def __del__        ( self                                                ) :
+    self . Columns = [                                                       ]
     return
   ############################################################################
   ## 清除欄位
   ############################################################################
-  def clear ( self )                                                         :
-    self . Columns = [ ]
+  def clear          ( self                                                ) :
+    self . Columns = [                                                       ]
     return self . Columns
   ############################################################################
   ## 新增欄位
   ############################################################################
-  def append ( self , column )                                               :
-    self . Columns . append ( column )
+  def append                ( self , column                                ) :
+    self . Columns . append (        column                                  )
     return self . Columns
   ############################################################################
   ## 擴展欄位
   ############################################################################
-  def extend ( self , columns )                                              :
-    self . Columns . extend ( columns )
+  def extend                ( self , columns                               ) :
+    self . Columns . extend (        columns                                 )
   ############################################################################
   ## 指定欄位項目
   ############################################################################
-  def assign ( self , item )                                                 :
-    raise NotImplementedError ( )
+  def assign                  ( self , item                                ) :
+    raise NotImplementedError (                                              )
   ############################################################################
   ## 指定欄位值
   ############################################################################
-  def set ( self , item , value )                                            :
-    raise NotImplementedError ( )
+  def set                     ( self , item , value                        ) :
+    raise NotImplementedError (                                              )
   ############################################################################
   ## 轉成JSON格式
   ############################################################################
-  def toJson ( self )                                                        :
-    raise NotImplementedError ( )
+  def toJson                  ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
   ## 指定讀取欄位列表
   ############################################################################
-  def tableItems ( self )                                                    :
-    raise NotImplementedError ( )
+  def tableItems              ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
   ## 欄=值
   ############################################################################
-  def pair ( self , item )                                                   :
-    raise NotImplementedError ( )
+  def pair                    ( self , item                                ) :
+    raise NotImplementedError (                                              )
   ############################################################################
   ## 欄位列表
   ############################################################################
-  def join ( self , Lists , Splitter = "," )                                 :
+  def join                 ( self , Lists , Splitter = ","                 ) :
     ##########################################################################
-    U = [ ]
-    for x in Lists :
+    U   =                  [                                                 ]
+    for x in Lists                                                           :
       v = f'`{x}`'
-      U . append ( v )
-    L = Splitter . join ( U )
+      U . append           ( v                                               )
     ##########################################################################
-    return L
+    return Splitter . join ( U                                               )
   ############################################################################
   ## 讀取欄位列表
   ############################################################################
-  def items ( self , Splitter = "," )                                        :
-    List = self . tableItems ( )
-    return self . join ( List , Splitter )
+  def items                  ( self , Splitter = ","                       ) :
+    List = self . tableItems (                                               )
+    return self . join       ( List , Splitter                               )
   ############################################################################
   ## 語句尾部
   ############################################################################
-  def tail ( self , Options , Limits )                                       :
+  def tail                   ( self , Options , Limits                     ) :
     ##########################################################################
-    Q = ""
-    if ( len ( Options ) > 0 )                                               :
-      Q += " "
-      Q += Options
-    if ( len ( Limits ) > 0 )                                                :
-      Q += " "
-      Q += Limits
+    Q   = ""
+    ##########################################################################
+    if                       ( len ( Options ) > 0                         ) :
+      Q = "{Q} {Options}"
+    ##########################################################################
+    if                       ( len ( Limits ) > 0                          ) :
+      Q = "{Q} {Limits}"
     ##########################################################################
     return Q
   ############################################################################
   ## 欄值列表
   ############################################################################
-  def pairs ( self , items )                                                 :
+  def pairs               ( self , items                                   ) :
     ##########################################################################
-    I = [ ]
+    I   =                 [                                                  ]
     for x in items                                                           :
-      I . append ( "( " + self . pair ( x ) + " )" )
-    L = " and " . join ( I )
+      I . append          ( "( " + self . pair ( x ) + " )"                  )
     ##########################################################################
-    return L
+    return " and " . join ( I                                                )
   ############################################################################
   ## 欄位值列表
   ############################################################################
-  def Values ( self , items )                                                :
+  def Values            ( self , items                                     ) :
     ##########################################################################
-    I = [ ]
+    I   =               [                                                    ]
     for x in items                                                           :
-      I . append ( self . pair ( x ) )
-    L = " , " . join ( I )
+      I . append        ( self . pair ( x )                                  )
     ##########################################################################
-    return L
+    return " , " . join ( I                                                  )
   ############################################################################
   ## 過濾欄位語法
   ############################################################################
-  def QueryItems ( self , items , Options = "" , Limits = "" )               :
+  def QueryItems         ( self , items , Options = "" , Limits = ""       ) :
     ##########################################################################
-    IS    = self . pairs ( items )
-    TAILs = self . tail  ( Options , Limits )
+    IS    = self . pairs (        items )
+    TAILs = self . tail  (                Options      , Limits              )
     ##########################################################################
     return f" where {IS} {TAILs}"
   ############################################################################
@@ -133,58 +130,59 @@ class Columns ( ) :
   ############################################################################
   ## 查詢欄位
   ############################################################################
-  def SelectColumns ( self , Table , Options = "" , Limits = "" )            :
-    return self . SelectItems ( Table , self . Columns , Options , Limits )
+  def SelectColumns           ( self , Table , Options = "" , Limits = ""  ) :
+    return self . SelectItems ( Table , self . Columns , Options , Limits    )
   ############################################################################
   ## 取得欄位
   ############################################################################
-  def obtain ( self , R )                                                    :
+  def obtain                 ( self , R                                    ) :
     ##########################################################################
-    List = self . tableItems ( )
+    List = self . tableItems (                                               )
     CNT  = 0
+    ##########################################################################
     for x in List                                                            :
-      self . set ( x , R [ CNT ] )
+      self . set             ( x , R [ CNT ]                                 )
       CNT += 1
     ##########################################################################
     return True
   ############################################################################
   ## 透過uuid取得數據
   ############################################################################
-  def ObtainsByUuid ( self , DB , Table )                                    :
+  def ObtainsByUuid         ( self , DB , Table                            ) :
     ##########################################################################
-    ITS = self . items ( )
-    WHS = DB . WhereUuid ( self . Uuid , True )
-    QQ = f"select {ITS} from {Table} {WHS}"
-    DB . Execute ( QQ )
+    ITS = self  . items     (                                                )
+    WHS = DB    . WhereUuid ( self . Uuid , True                             )
+    QQ  = f"select {ITS} from {Table} {WHS}"
+    DB  . Execute           ( QQ                                             )
     ##########################################################################
-    LL = DB . FetchOne ( )
-    if ( not LL )                                                            :
+    LL  = DB    . FetchOne  (                                                )
+    if                      ( LL in [ False , None ]                       ) :
       return False
     ##########################################################################
-    return self . obtain ( LL )
+    return self . obtain    ( LL                                             )
   ############################################################################
   ## 透過id取得數據
   ############################################################################
-  def ObtainsById ( self , DB , Table )                                      :
+  def ObtainsById          ( self , DB , Table                             ) :
     ##########################################################################
-    ITS = self . items ( )
-    WHS = DB . WhereId ( self . Id , True )
-    QQ = f"select {ITS} from {Table} {WHS}"
-    DB . Execute ( QQ )
+    ITS = self  . items    (                                                 )
+    WHS = DB    . WhereId  ( self . Id , True                                )
+    QQ  = f"select {ITS} from {Table} {WHS}"
+    DB  . Execute          ( QQ                                              )
     ##########################################################################
-    LL = DB . FetchOne ( )
-    if ( not LL )                                                            :
+    LL  = DB    . FetchOne (                                                 )
+    if                     ( LL in [ False , None ]                        ) :
       return False
     ##########################################################################
-    return self . obtain ( LL )
+    return self . obtain  ( LL                                               )
   ############################################################################
-  def UpdateItems ( self , DB , Table , Items )                              :
+  def UpdateItems         ( self , DB , Table , Items                      ) :
     ##########################################################################
-    PS = self . Values ( Items )
-    WH = DB . WhereUuid ( self . Uuid )
+    PS = self . Values    ( Items                                            )
+    WH = DB   . WhereUuid ( self . Uuid                                      )
     QQ = f"update {Table} set {PS} {WH} ;"
     ##########################################################################
-    return DB . Query ( QQ )
+    return DB . Query     ( QQ                                               )
   ############################################################################
   def UpdateColumns            ( self , DB , Table                         ) :
     ITEMS = self . valueItems  (                                             )
