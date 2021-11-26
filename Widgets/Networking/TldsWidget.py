@@ -64,6 +64,7 @@ class TldsWidget                   ( TreeDock                              ) :
     self . StartId            = 0
     self . Amount             = 28
     self . SortOrder          = "asc"
+    self . TldTypes           =    {                                         }
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -139,22 +140,33 @@ class TldsWidget                   ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 0 ]                      ) :
+    if                          ( column not in [ 0 , 1 , 2 , 3 ]          ) :
       return
     ##########################################################################
-    """
-    if                          ( column in [ 0 ]                          ) :
+    if                          ( column     in [ 0 ,     2 , 3 ]          ) :
+      ########################################################################
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
                                   "editingFinished"                        , \
                                   self . nameChanged                         )
       line . setFocus           ( Qt . TabFocusReason                        )
-    """
+    ##########################################################################
+    if                          ( column     in [     1         ]          ) :
+      ########################################################################
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . typeChanged                        )
+      cb   . addJson             ( self . TldTypes , val                     )
+      cb   . setMaxVisibleItems  ( 20                                        )
+      cb   . showPopup           (                                           )
     ##########################################################################
     return
   ############################################################################
   def getItemJson                  ( self , item                           ) :
-    return item . data             ( 7 , Qt . UserRole                       )
+    return item . data             ( 9 , Qt . UserRole                       )
   ############################################################################
   def PrepareItem                  ( self , JSON                           ) :
     ##########################################################################
@@ -175,13 +187,18 @@ class TldsWidget                   ( TreeDock                              ) :
     HOSTS    = JSON                [ "Hosts"                                 ]
     PAGES    = JSON                [ "Pages"                                 ]
     ##########################################################################
+    TNAME    = f"{TYPE}"
+    if                             ( TYPE in self . TldTypes               ) :
+      TNAME  = self . TldTypes     [ TYPE                                    ]
+    ##########################################################################
     IT       = QTreeWidgetItem     (                                         )
     IT       . setText             ( 0 , NAME                                )
     IT       . setToolTip          ( 0 , UXID                                )
     IT       . setData             ( 0 , Qt . UserRole , UXID                )
     ##########################################################################
-    IT       . setText             ( 1 , str ( TYPE    )                     )
+    IT       . setText             ( 1 , TNAME                               )
     IT       . setToolTip          ( 1 , UXID                                )
+    IT       . setData             ( 1 , Qt . UserRole , TYPE                )
     ##########################################################################
     IT       . setText             ( 2 , IANA                                )
     IT       . setToolTip          ( 2 , UXID                                )
@@ -207,14 +224,19 @@ class TldsWidget                   ( TreeDock                              ) :
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot                       (                                          )
+  def RenameItem                  ( self                                   ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
+    IT     = self . currentItem   (                                          )
+    if                            ( IT is None                             ) :
       return
     ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
+    column = self . currentColumn (                                          )
+    ##########################################################################
+    if                            ( column not in [ 0 , 1 , 2 , 3 ]        ) :
+      return
+    ##########################################################################
+    self   . doubleClicked        ( IT , column                              )
     ##########################################################################
     return
   ############################################################################
@@ -231,15 +253,37 @@ class TldsWidget                   ( TreeDock                              ) :
     msg    = line . text         (                                           )
     uuid   = self . itemUuid     ( item , 0                                  )
     ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
-    ##########################################################################
-    item   . setText             ( column ,              msg                 )
-    ##########################################################################
     self   . removeParked        (                                           )
     self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
+                                   ( item , uuid , column , msg , )          )
+    ##########################################################################
+    return
+  ############################################################################
+  def typeChanged                ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      uuid = int                 ( item . data ( 0 , Qt . UserRole )         )
+      v    = int                 ( value                                     )
+      msg  = self . TldTypes     [ v                                         ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , v                )
+      ########################################################################
+      self . Go                  ( self . UpdateTldType                    , \
+                                   ( item , uuid , column , v , )            )
+    ##########################################################################
+    self   . removeParked        (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -360,9 +404,19 @@ class TldsWidget                   ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def ObtainsInformation          ( self , DB                              ) :
     ##########################################################################
     self . Total = self . FetchRegularDepotCount ( DB                        )
+    ##########################################################################
+    ## 抓取類型名稱
+    ##########################################################################
+    NAMTAB       = self . Tables  [ "Names"                                  ]
+    BASE         = 5502000000000023000
+    for i in range                ( 0 , 12                                 ) :
+      ########################################################################
+      UUID       = BASE + i
+      NAME       = self . GetName ( DB , NAMTAB , UUID                       )
+      self       . TldTypes [ i ] = NAME
     ##########################################################################
     return
   ############################################################################
@@ -397,7 +451,7 @@ class TldsWidget                   ( TreeDock                              ) :
   def Prepare                    ( self                                    ) :
     ##########################################################################
     self   . setColumnWidth      ( 0 , 120                                   )
-    self   . setColumnWidth      ( 1 , 100                                   )
+    self   . setColumnWidth      ( 1 , 200                                   )
     self   . setColumnWidth      ( 2 , 160                                   )
     self   . setColumnWidth      ( 3 , 320                                   )
     self   . setColumnWidth      ( 9 ,   3                                   )
@@ -449,52 +503,79 @@ class TldsWidget                   ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def AssureUuidItem               ( self , item , uuid , column , name    ) :
     ##########################################################################
-    """
     DB      = self . ConnectDB     (                                         )
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    TSKTAB  = self . Tables        [ "Tasks"                                 ]
-    PRDTAB  = self . Tables        [ "Periods"                               ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
-    HEAD    = 5702000000000000000
+    TLDTAB  = self . Tables        [ "TLD"                                   ]
     ##########################################################################
-    DB      . LockWrites           ( [ PRJTAB , PRDTAB , NAMTAB ]            )
+    DB      . LockWrites           ( [ TLDTAB ]                              )
     ##########################################################################
-    if                             ( uuid <= 0                             ) :
+    if                             ( column == 0                           ) :
       ########################################################################
-      uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
-      DB    . AddUuid              ( PRJTAB , uuid   , 1                     )
+      QQ    = f"""update {TLDTAB}
+                  set `name` = %s , `reverse` = %s
+                  where ( `uuid` = {uuid} ) ;"""
+      reve  = name                 [ ::-1                                    ]
+      VAL   =                      ( name , reve ,                           )
       ########################################################################
-      NOW   = StarDate             (                                         )
-      NOW   . Now                  (                                         )
-      CDT   = NOW . Stardate
+    elif                           ( column == 2                           ) :
       ########################################################################
-      PRD   = Periode              (                                         )
-      PRID  = PRD  . GetUuid       ( DB , PRDTAB                             )
+      QQ    = f"""update {TLDTAB}
+                  set `iana` = %s
+                  where ( `uuid` = {uuid} ) ;"""
+      VAL   =                      ( name ,                                  )
       ########################################################################
-      PRD   . Realm    = uuid
-      PRD   . Role     = 71
-      PRD   . Item     = 1
-      PRD   . States   = 0
-      PRD   . Creation = CDT
-      PRD   . Modified = CDT
-      Items =                      [ "realm"                               , \
-                                     "role"                                , \
-                                     "item"                                , \
-                                     "states"                              , \
-                                     "creation"                            , \
-                                     "modified"                              ]
-      PRD   . UpdateItems          ( DB , PRDTAB , Items                     )
+    elif                           ( column == 3                           ) :
+      ########################################################################
+      QQ    = f"""update {TLDTAB}
+                  set `explain` = %s
+                  where ( `uuid` = {uuid} ) ;"""
+      VAL   =                      ( name ,                                  )
     ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    try                                                                      :
+      if                           ( len ( QQ ) > 0                        ) :
+        DB  . QueryValues          ( QQ , VAL                                )
+    except                                                                   :
+      pass
     ##########################################################################
+    DB      . UnlockTables         (                                         )
     DB      . Close                (                                         )
     ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
-    """
+    self    . emitAssignColumn . emit ( item , column , name                 )
+    self    . Notify               ( 5                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateTldType                ( self , item , uuid , column , value   ) :
+    ##########################################################################
+    DB      = self . ConnectDB     (                                         )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    TLDTAB  = self . Tables        [ "TLD"                                   ]
+    ##########################################################################
+    DB      . LockWrites           ( [ TLDTAB ]                              )
+    ##########################################################################
+    if                             ( column == 1                           ) :
+      ########################################################################
+      QQ    = f"""update {TLDTAB}
+                  set `type` = %s
+                  where ( `uuid` = {uuid} ) ;"""
+      VAL   =                      ( value ,                                 )
+    ##########################################################################
+    try                                                                      :
+      if                           ( len ( QQ ) > 0                        ) :
+        DB  . QueryValues          ( QQ , VAL                                )
+    except                                                                   :
+      pass
+    ##########################################################################
+    DB      . UnlockTables         (                                         )
+    DB      . Close                (                                         )
+    ##########################################################################
+    self    . Notify               ( 5                                       )
     ##########################################################################
     return
   ############################################################################

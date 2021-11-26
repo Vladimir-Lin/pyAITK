@@ -59,6 +59,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   emitSelectAll           = pyqtSignal (                                     )
   emitBustle              = pyqtSignal (                                     )
   emitVacancy             = pyqtSignal (                                     )
+  emitAssignColumn        = pyqtSignal ( QTreeWidgetItem , int , str         )
   Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
@@ -80,6 +81,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . emitSelectAll          .connect  ( self.SelectAll                 )
     self . emitBustle             .connect  ( self.DoBustle                  )
     self . emitVacancy            .connect  ( self.DoVacancy                 )
+    self . emitAssignColumn       .connect  ( self.AssignColumnText          )
     ##########################################################################
     self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
     self . setAcceptDrops                   ( True                           )
@@ -701,6 +703,12 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def AutoFit                 ( self                                       ) :
     ##########################################################################
     self . emitAutoFit . emit (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignColumnText        ( self , item , ID , text                    ) :
+    ##########################################################################
+    item . setText            ( ID , text                                    )
     ##########################################################################
     return
   ############################################################################

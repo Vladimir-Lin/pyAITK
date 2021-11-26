@@ -80,11 +80,10 @@ create table `positions` (
 ##############################################################################
 class PositionListings             ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
-  emitAssignColumn  = pyqtSignal   ( QTreeWidgetItem , int , str             )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( list                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -117,7 +116,6 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     self . emitNamesShow    . connect ( self . show                          )
     self . emitAllNames     . connect ( self . refresh                       )
-    self . emitAssignColumn . connect ( self . AssignColumnText              )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -203,12 +201,6 @@ class PositionListings             ( TreeDock                              ) :
       msg  = "0.0"
       line . setText            ( msg                                        )
       return
-    ##########################################################################
-    return
-  ############################################################################
-  def AssignColumnText             ( self , item , ID , text ) :
-    ##########################################################################
-    item . setText                 ( ID , text                               )
     ##########################################################################
     return
   ############################################################################
