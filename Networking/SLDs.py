@@ -13,10 +13,10 @@ from   ..      Database . Connection import Connection as Connection
 from   ..      Database . Columns    import Columns    as Columns
 ##############################################################################
 from   .       TLD                   import TLD        as TLD
+from   .       TLDs                  import TLDs       as TLDs
+from   .       SLD                   import SLD        as SLD
 ##############################################################################
-
 class SLDs ( ) :
-
   ############################################################################
   def __init__ ( self ) :
     self . Clear ( )
@@ -130,3 +130,5 @@ class SLDs ( ) :
     if         ( n not in self . Reverses                                  ) :
       return 0
     return self . ReversesToUuids [ n ]
+##############################################################################
+##############################################################################
