@@ -14,33 +14,33 @@ from   ..      Database . Columns    import Columns    as Columns
 ##############################################################################
 from   .       TLD                   import TLD        as TLD
 ##############################################################################
-class TLDs       (                                                         ) :
+class TLDs                   (                                             ) :
   ############################################################################
-  def __init__   ( self                                                    ) :
-    self . Clear (                                                           )
+  def __init__               ( self                                        ) :
+    self . Clear             (                                               )
     return
   ############################################################################
-  def __del__    ( self                                                    ) :
-    pass
+  def __del__                ( self                                        ) :
+    return
   ############################################################################
-  def Clear ( self )                                                         :
+  def Clear                  ( self                                        ) :
     ##########################################################################
-    self . Names           = [ ]
-    self . Reverses        = [ ]
+    self . Names           = [                                               ]
+    self . Reverses        = [                                               ]
     ##########################################################################
-    self . NamesToIds      = { }
-    self . NamesToUuids    = { }
-    self . IdsToNames      = { }
-    self . UuidsToNames    = { }
+    self . NamesToIds      = {                                               }
+    self . NamesToUuids    = {                                               }
+    self . IdsToNames      = {                                               }
+    self . UuidsToNames    = {                                               }
     ##########################################################################
-    self . ReversesToIds   = { }
-    self . ReversesToUuids = { }
-    self . IdsToReverses   = { }
-    self . UuidsToReverses = { }
+    self . ReversesToIds   = {                                               }
+    self . ReversesToUuids = {                                               }
+    self . IdsToReverses   = {                                               }
+    self . UuidsToReverses = {                                               }
     ##########################################################################
     return
   ############################################################################
-  def assign ( self , item )                                                 :
+  def assign                 ( self , item                                 ) :
     ##########################################################################
     self . Names           = item . Names
     self . Reverses        = item . Reverses
@@ -57,31 +57,36 @@ class TLDs       (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def ToUuid ( self , id ) :
+  def ToUuid                 ( self , id                                   ) :
     return id + 8300000000001000000
   ############################################################################
-  def FromUuid ( self , uuid ) :
+  def FromUuid               ( self , uuid                                 ) :
     return uuid - 8300000000001000000
   ############################################################################
-  def obtains ( self , DB , Table )                                          :
+  def obtains                    ( self , DB , Table                       ) :
     ##########################################################################
-    self . Clear ( )
+    self  . Clear                (                                           )
     ##########################################################################
-    QQ    = f"select `id`,`uuid`,`name`,`reverse` from {Table} where ( `used` > 0 ) and ( `id` > 0 ) order by `id` asc ;"
-    DB    . Query         ( QQ )
-    RR    = DB . FetchAll (    )
-    if ( not ( ( RR == None ) or ( len ( RR ) <= 0 ) ) )                     :
+    QQ    = f"""select `id`,`uuid`,`name`,`reverse` from {Table}
+                where ( `used` > 0 )
+                and ( `id` > 0 )
+                order by `id` asc ;"""
+    QQ    = " " . join           ( QQ . split ( )                            )
+    DB    . Query                ( QQ                                        )
+    RR    = DB . FetchAll        (                                           )
+    ##########################################################################
+    if ( not ( ( RR in [ False , None ] ) or ( len ( RR ) <= 0 ) ) )         :
       for R in RR                                                            :
         ######################################################################
-        ID      = R [ 0 ]
-        UUID    = R [ 1 ]
-        N       = R [ 2 ]
-        X       = R [ 3 ]
-        NAME    = N . lower ( )
-        REVERSE = X . lower ( )
+        ID      = R              [ 0                                         ]
+        UUID    = R              [ 1                                         ]
+        N       = R              [ 2                                         ]
+        X       = R              [ 3                                         ]
+        NAME    = N . lower      (                                           )
+        REVERSE = X . lower      (                                           )
         ######################################################################
-        self . Names    . append ( NAME    )
-        self . Reverses . append ( REVERSE )
+        self . Names    . append ( NAME                                      )
+        self . Reverses . append ( REVERSE                                   )
         ######################################################################
         self . NamesToIds      [ NAME    ] = ID
         self . NamesToUuids    [ NAME    ] = UUID
@@ -95,27 +100,35 @@ class TLDs       (                                                         ) :
     ##########################################################################
     return True
   ############################################################################
-  def IdByName ( self , name                                               ) :
-    n = name . lower ( )
-    if         ( n not in self . Names                                     ) :
+  def IdByName                    ( self , name                            ) :
+    ##########################################################################
+    n = name . lower              (                                          )
+    if                            ( n not in self . Names                  ) :
       return 0
-    return self . NamesToIds [ n ]
+    ##########################################################################
+    return self . NamesToIds      [ n                                        ]
   ############################################################################
-  def UuidByName ( self , name                                             ) :
-    n = name . lower ( )
-    if         ( n not in self . Names                                     ) :
+  def UuidByName                  ( self , name                            ) :
+    ##########################################################################
+    n = name . lower              (                                          )
+    if                            ( n not in self . Names                  ) :
       return 0
-    return self . NamesToUuids [ n ]
+    ##########################################################################
+    return self . NamesToUuids    [ n                                        ]
   ############################################################################
-  def IdByReverse ( self , name                                            ) :
-    n = name . lower ( )
-    if         ( n not in self . Reverses                                  ) :
+  def IdByReverse                 ( self , name                            ) :
+    ##########################################################################
+    n = name . lower              (                                          )
+    if                            ( n not in self . Reverses               ) :
       return 0
-    return self . ReversesToIds [ n ]
+    ##########################################################################
+    return self . ReversesToIds   [ n                                        ]
   ############################################################################
-  def IdByReverse ( self , name                                            ) :
-    n = name . lower ( )
-    if         ( n not in self . Reverses                                  ) :
+  def IdByReverse                 ( self , name                            ) :
+    ##########################################################################
+    n = name . lower              (                                          )
+    if                            ( n not in self . Reverses               ) :
       return 0
-    return self . ReversesToUuids [ n ]
+    ##########################################################################
+    return self . ReversesToUuids [ n                                        ]
 ##############################################################################
