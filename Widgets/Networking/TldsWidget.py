@@ -646,6 +646,7 @@ class TldsWidget                   ( TreeDock                              ) :
     if                           ( DB in [ False , None ]                  ) :
       return
     ##########################################################################
+    self     . OnBusy  . emit    (                                           )
     TLDTAB   = self . Tables     [ "TLD"                                     ]
     ##########################################################################
     QQ       = f"""select `uuid` from {TLDTAB}
@@ -658,8 +659,8 @@ class TldsWidget                   ( TreeDock                              ) :
       for UUID in UUIDs                                                      :
         self . TldBelongings     ( DB , UUID                                 )
     ##########################################################################
+    self     . GoRelax . emit    (                                           )
     DB       . Close             (                                           )
-    ##########################################################################
     self     . Notify            ( 5                                         )
     ##########################################################################
     return

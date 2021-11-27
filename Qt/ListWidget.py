@@ -61,6 +61,8 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   emitAssignToolTip       = pyqtSignal ( QListWidgetItem , str               )
   emitBustle              = pyqtSignal (                                     )
   emitVacancy             = pyqtSignal (                                     )
+  OnBusy                  = pyqtSignal (                                     )
+  GoRelax                 = pyqtSignal (                                     )
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
@@ -84,6 +86,8 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     self . emitAssignToolTip   . connect    ( self . AcceptToolTip           )
     self . emitBustle          . connect    ( self . DoBustle                )
     self . emitVacancy         . connect    ( self . DoVacancy               )
+    self . OnBusy              . connect    ( self . AtBusy                  )
+    self . GoRelax             . connect    ( self . OnRelax                 )
     ##########################################################################
     self . droppingAction = False
     self . VoiceJSON      =                 {                                }
@@ -565,6 +569,18 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
       TEXT = atItem . text (                                                 )
     ##########################################################################
     return ATID , TEXT
+  ############################################################################
+  def AtBusy           ( self                                              ) :
+    ##########################################################################
+    self . doStartBusy (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OnRelax          ( self                                              ) :
+    ##########################################################################
+    self . doStopBusy  (                                                     )
+    ##########################################################################
+    return
   ############################################################################
   def InsertItem              ( self                                       ) :
     raise NotImplementedError (                                              )

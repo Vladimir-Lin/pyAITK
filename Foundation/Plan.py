@@ -330,26 +330,32 @@ class Plan                    ( PurePlan                                   ) :
   ############################################################################
   def RealStart             ( self                                         ) :
     ##########################################################################
-    if                      ( self . statusBar in [ False , None ]         ) :
+    if                      ( self . statusBar        in [ False , None ]  ) :
+      return
+    ##########################################################################
+    if                      ( self . IndicatorCreator in [ False , None ]  ) :
       return
     ##########################################################################
     if                      ( self . Indicator in [ False , None ]         ) :
       ########################################################################
-      blue = QColor         ( 0 , 0 , 255                                    )
+      blue             = QColor                  ( 0 , 0 , 255               )
       ########################################################################
-      self . Indicator = ProgressIndicator  ( self . statusBar , self.MyFunc )
-      self . Indicator . setColor           ( blue                           )
-      self . Indicator . setAnimationDelay  ( 100                            )
-      self . statusBar . addPermanentWidget ( self . Indicator               )
-      self . Indicator . show               (                                )
+      self . Indicator = self . IndicatorCreator ( self . statusBar          )
+      self . Indicator . setColor                ( blue                      )
+      self . Indicator . setAnimationDelay       ( 100                       )
+      self . statusBar . addPermanentWidget      ( self . Indicator          )
+      self . Indicator . show                    (                           )
     ##########################################################################
-    self . Indicator . startAnimation ( )
+    self   . Indicator . startAnimation          (                           )
     ##########################################################################
     return
   ############################################################################
   def RealStop              ( self                                         ) :
     ##########################################################################
-    if                      ( self . Indicator in [ False , None ]         ) :
+    if                      ( self . Indicator        in [ False , None ]  ) :
+      return
+    ##########################################################################
+    if                      ( self . IndicatorCreator in [ False , None ]  ) :
       return
     ##########################################################################
     cnt = self . Indicator . stopAnimation (                                 )

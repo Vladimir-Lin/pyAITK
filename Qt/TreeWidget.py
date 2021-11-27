@@ -59,6 +59,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   emitSelectAll           = pyqtSignal (                                     )
   emitBustle              = pyqtSignal (                                     )
   emitVacancy             = pyqtSignal (                                     )
+  OnBusy                  = pyqtSignal (                                     )
+  GoRelax                 = pyqtSignal (                                     )
   emitAssignColumn        = pyqtSignal ( QTreeWidgetItem , int , str         )
   Leave                   = pyqtSignal ( QWidget                             )
   ############################################################################
@@ -81,6 +83,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     self . emitSelectAll          .connect  ( self.SelectAll                 )
     self . emitBustle             .connect  ( self.DoBustle                  )
     self . emitVacancy            .connect  ( self.DoVacancy                 )
+    self . OnBusy                 .connect  ( self.AtBusy                    )
+    self . GoRelax                .connect  ( self.OnRelax                   )
     self . emitAssignColumn       .connect  ( self.AssignColumnText          )
     ##########################################################################
     self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
@@ -709,6 +713,18 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def AssignColumnText        ( self , item , ID , text                    ) :
     ##########################################################################
     item . setText            ( ID , text                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def AtBusy           ( self                                              ) :
+    ##########################################################################
+    self . doStartBusy (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OnRelax          ( self                                              ) :
+    ##########################################################################
+    self . doStopBusy  (                                                     )
     ##########################################################################
     return
   ############################################################################
