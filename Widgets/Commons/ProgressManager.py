@@ -164,6 +164,27 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def singleClicked            ( self , item , column                      ) :
+    ##########################################################################
+    self     . Notify          ( 0                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def doubleClicked             ( self , item , column                     ) :
+    return
+  ############################################################################
+  def toETA                             ( self , START , V , MAX           ) :
+    ##########################################################################
+    if                                  ( V <= 0                           ) :
+      return START
+    ##########################################################################
+    CTX   = QDateTime . currentDateTime (                                    )
+    DTX   = START . msecsTo             ( CTX                                )
+    ##########################################################################
+    MTS   = int                         ( DTX * MAX / V                      )
+    ##########################################################################
+    return CTX . addMSecs               ( MTS                                )
+  ############################################################################
   def Relocation               ( self                                      ) :
     ##########################################################################
     if                         ( not self . isPrepared ( )                 ) :
@@ -279,6 +300,7 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     self   . GetSettings         ( "ProgressManager"                         )
     self   . show                (                                           )
+    self   . StartFlush          (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -357,99 +379,109 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def Report ( self , k ) :
+  def Report                              ( self , k                       ) :
     ##########################################################################
-    if ( k < 0 ) :
+    if                                    ( k < 0                          ) :
       return
     ##########################################################################
-    E       = QDateTime . currentDateTime ( )
-    S       = self . Begins  [ k ]
-    SAT     = self . StartAt [ k ]
-    MIN     = self . Minimum [ k ]
-    MAX     = self . Maximum [ k ]
+    E       = QDateTime . currentDateTime (                                  )
+    S       = self . Begins               [ k                                ]
+    SAT     = self . StartAt              [ k                                ]
+    MIN     = self . Minimum              [ k                                ]
+    MAX     = self . Maximum              [ k                                ]
     CHECKED = True
     ##########################################################################
+    if                                    ( k in self . Values             ) :
+      V     = self . Values               [ k                                ]
+    else                                                                     :
+      V     = self . Final                [ k                                ]
     ##########################################################################
+    if                                    ( k in self . Progress           ) :
+      ########################################################################
+      bar   = self . Progress             [ k                                ]
+      bar   . setFormat                   ( self . Formats [ k ]             )
+      ########################################################################
+      if                                  ( MAX >= MIN                     ) :
+        bar . setRange                    ( MIN , MAX                        )
+      ########################################################################
+      if                                  ( ( V >= MIN ) and ( V <= MAX )  ) :
+        bar . setValue                    ( V                                )
     ##########################################################################
+    V       = V   - SAT
+    MAX     = MAX - SAT
     ##########################################################################
+    if ( ( MAX >= MIN ) and ( MAX > 0 ) and ( MAX >= V ) )                   :
+      ########################################################################
+      E     = self . toETA                ( S , V , MAX                      )
+      ########################################################################
+      if                                  ( k in self . Items              ) :
+        ######################################################################
+        it  = self . Items                [ k                                ]
+        Z   = E . toString                ( "yyyy/MM/dd hh:mm:ss"            )
+        it  . setText                     ( 3 , Z                            )
+      ########################################################################
+      DS    = S . msecsTo                 ( QDateTime . currentDateTime ( )  )
+      ########################################################################
+      if ( ( V <= 0 ) or ( MAX <= 0 ) or ( DS <= 0 ) )                       :
+        ######################################################################
+        it  = self . Items                [ k                                ]
+        it  . setText                     ( 3 , "\u221E"                     )
+        it  . setText                     ( 4 , "\u05D0"                     )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        VC  = int                         ( V * 1000                         )
+        ######################################################################
+        if                                ( VC > DS                        ) :
+          ####################################################################
+          RX   = float                    ( float ( VC ) / float ( DS )      )
+          RT   = int                      ( RX                               )
+          RV   = int                      ( int ( RX * 1000 ) % 1000         )
+          RZ   = f"{RV}"
+          RZ   = RZ . zfill               ( 3                                )
+          TMX  = f"{RT}.{RZ}"
+          FMT  = self . FREQs             [ k                                ]
+          TMS  = FMT  . format            ( TMX                              )
+          self . Items [ k ] . setText    ( 4 , TMS                          )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          RX   = float                    ( float ( DS ) / float ( VC )      )
+          RT   = int                      ( RX                               )
+          RV   = int                      ( int ( RX * 1000 ) % 1000         )
+          RZ   = f"{RV}"
+          RZ   = RZ . zfill               ( 3                                )
+          TMX  = f"{RT}.{RZ}"
+          FMT  = self . FREQr             [ k                                ]
+          TMS  = FMT  . format            ( TMX                              )
+          self . Items [ k ] . setText    ( 4 , TMS                          )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      if                                  ( k in self . Items              ) :
+        ######################################################################
+        item = self . Items               [ k                                ]
+        item . setText                    ( 3 , "\u221E"                     )
+        item . setText                    ( 4 , "\u05D0"                     )
     ##########################################################################
-    """
-  ////////////////////////////////////////////////////////////////////////////
-  if ( Values . contains ( k ) && ( NULL != Values [ k ] ) )                 {
-    v = * ( Values [ k ] )                                                   ;
-  } else                                                                     {
-    v = Final [ k ]                                                          ;
-  }                                                                          ;
-  ////////////////////////////////////////////////////////////////////////////
-  if ( Progress . contains ( k ) )                                           {
-    Progress   [ k ] -> setFormat ( Formats [ k ] )                          ;
-    if ( Max >= Min )                                                        {
-      Progress [ k ] -> setRange  ( Min , Max     )                          ;
-    }                                                                        ;
-    if ( ( v >= Min ) && ( v <= Max ) )                                      {
-      Progress [ k ] -> setValue  ( v             )                          ;
-    }                                                                        ;
-  }                                                                          ;
-  ////////////////////////////////////////////////////////////////////////////
-  v   -= SAT                                                                 ;
-  Max -= SAT                                                                 ;
-  if ( ( Max >= Min ) && ( Max > 0 ) && ( Max >= v ) )                       {
-    //////////////////////////////////////////////////////////////////////////
-    E = Time::ETA ( S , v , Max )                                            ;
-    if ( Items . contains ( k ) )                                            {
-      Items [ k ] -> setText ( 3 , E . toString ( "yyyy/MM/dd hh:mm:ss" ) )  ;
-    }                                                                        ;
-    //////////////////////////////////////////////////////////////////////////
-    qint64 ds = S . msecsTo ( nTimeNow )                                     ;
-    if ( ( v <= 0 ) || ( Max <= 0 ) || ( ds <= 0 ) )                         {
-      Items [ k ] -> setText ( 3 , QString ( QChar ( 0x221E ) ) )            ;
-      Items [ k ] -> setText ( 4 , QString ( QChar ( 0x05D0 ) ) )            ;
-    } else                                                                   {
-      ////////////////////////////////////////////////////////////////////////
-      qint64 vc = v                                                          ;
-      vc *= 1000                                                             ;
-      ////////////////////////////////////////////////////////////////////////
-      if ( vc > ds )                                                         {
-        QString TMS                                                          ;
-        double  rx = vc                                                      ;
-        TUID    rv                                                           ;
-        rx /= ds                                                             ;
-        rv  = ((TUID)(rx*1000))%1000                                         ;
-        TMS = QString(FREQs[k]).arg((int)rx).arg(rv,3,10,QChar('0'))         ;
-        Items [ k ] -> setText ( 4 , TMS )                                   ;
-      } else                                                                 {
-        QString TMS                                                          ;
-        double  rx = ds                                                      ;
-        TUID    rv                                                           ;
-        rx /= vc                                                             ;
-        rv  = ((TUID)(rx*1000))%1000                                         ;
-        TMS = QString(FREQr[k]).arg((int)rx).arg(rv,3,10,QChar('0'))         ;
-        Items [ k ] -> setText ( 4 , TMS )                                   ;
-      }                                                                      ;
-    }                                                                        ;
-  } else                                                                     {
-    if ( Items . contains ( k ) )                                            {
-      Items [ k ] -> setText ( 3 , QString ( QChar(0x221E) ) )               ;
-      Items [ k ] -> setText ( 4 , QString ( QChar(0x05D0) ) )               ;
-    }                                                                        ;
-  }                                                                          ;
-  ////////////////////////////////////////////////////////////////////////////
-  if ( Buttons . contains ( k ) )                                            {
-    checked = Buttons [ k ] -> isChecked ( )                                 ;
-  }                                                                          ;
-  if ( ! checked )                                                           {
-    if ( Booleans . contains ( k ) ) (*Booleans[ k ]) = false                ;
-    if ( Buttons  . contains ( k ) )   Buttons [ k ] -> setEnabled ( false ) ;
-  }                                                                          ;
-  ////////////////////////////////////////////////////////////////////////////
-  if ( Items . contains ( k ) )                                              {
-    QString Z                                                                ;
-    Z            = S . toString ( "yyyy/MM/dd hh:mm:ss" )                    ;
-    Items [ k ] -> setText      ( 1 , Connects [ k ]    )                    ;
-    Items [ k ] -> setText      ( 2 , Z                 )                    ;
-    Items [ k ] -> setText      ( 5 , Message  [ k ]    )                    ;
-  }                                                                          ;
-    """
+    if                                    ( k in self . Buttons            ) :
+      CHECKED = self . Buttons [ k ] . isChecked (                           )
+    ##########################################################################
+    if                                    ( not CHECKED                    ) :
+      ########################################################################
+      if                                  ( k in self . Booleans           ) :
+        self . Booleans [ k ] = False
+      ########################################################################
+      if                                  ( k in self . Buttons            ) :
+        self . Buttons  [ k ] . setEnabled ( False                           )
+    ##########################################################################
+    if                                    ( k in self . Items              ) :
+      ########################################################################
+      item  = self . Items                [ k                                ]
+      Z     = S    . toString             ( "yyyy/MM/dd hh:mm:ss"            )
+      item  . setText                     ( 1 , self . Connects [ k ]        )
+      item  . setText                     ( 2 , Z                            )
+      item  . setText                     ( 5 , self . Message  [ k ]        )
     ##########################################################################
     return
   ############################################################################
@@ -491,67 +523,70 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def Update ( self ) :
+  def Update                     ( self                                    ) :
     ##########################################################################
-    rid = self .LimitValue(self . RunningId)
-    if ( rid > 0 ) :
+    rid     = self . LimitValue  ( self . RunningId                          )
+    if                           ( rid > 0                                 ) :
       return
     ##########################################################################
-    ## if ( LimitValues [ 212001162 ] > 0 ) return ;
+    if                           ( self . LimitValue ( 1212001162 ) > 0    ) :
+      return
     ##########################################################################
-    v = self .LimitValue(self . FittingId)
-    if ( v > 0 ) :
-      self . setLimitValue ( self . FittingId , 0 )
-      self . setWidths ( )
+    v       = self . LimitValue  ( self . FittingId                          )
+    if                           ( v > 0                                   ) :
+      self  . setLimitValue      ( self . FittingId , 0                      )
+      self  . setWidths          (                                           )
     ##########################################################################
-    rid = rid + 1
-    self . setLimitValue ( self . RunningId , rid )
+    rid     = rid + 1
+    self    . setLimitValue      ( self . RunningId , rid                    )
     ##########################################################################
-    while ( len ( self . Stoppings ) > 0 ) :
-      idx = self . Stoppings [ 0 ]
-      if ( self . End ( idx ) ) :
-        del self . Stoppings [ 0 ]
-      qApp.processEvents()
+    while                        ( len ( self . Stoppings ) > 0            ) :
+      idx   = self . Stoppings   [ 0                                         ]
+      if                         ( self . End ( idx )                      ) :
+        del self . Stoppings     [ 0                                         ]
+      qApp  . processEvents      (                                           )
     ##########################################################################
-    while ( len ( self . EnableButtons ) > 0 ) :
-      idx = self . EnableButtons [ 0 ]
-      del self . EnableButtons [ 0 ]
-      if ( idx in self . Buttons ) :
-        self . Buttons [ idx ] . setEnabled ( True )
-        self . Buttons [ idx ] . setChecked ( True )
-      qApp.processEvents()
+    while                        ( len ( self . EnableButtons ) > 0        ) :
+      idx   = self . EnableButtons [ 0                                       ]
+      del self . EnableButtons   [ 0                                         ]
+      if                         ( idx in self . Buttons                   ) :
+        self . Buttons [ idx ] . setEnabled ( True                           )
+        self . Buttons [ idx ] . setChecked ( True                           )
+      qApp  . processEvents      (                                           )
     ##########################################################################
-    self . LockGui ( )
+    self    . LockGui            (                                           )
     ##########################################################################
-    KEYs = self . Booleans . keys ( )
+    KEYs    = self . Booleans . keys (                                       )
     ##########################################################################
-    for K in KEYs :
+    for K in KEYs                                                            :
       ########################################################################
-      u = False
-      if ( K in self . Booleans ) :
-        u = self . Booleans [ K ]
-      """
-      if ( Booleans . contains ( k ) )        {
-        u = *(Booleans[k])                    ;
-      }                                       ;
-      """
-      if u                                :
-        self . Report ( K )
-        self . skip   ( 2 )
+      u     = False
+      ########################################################################
+      if                         ( K in self . Booleans                    ) :
+        ######################################################################
+        u   = self . Booleans    [ K                                         ]
+        if u                                                                 :
+          self . Report          ( K                                         )
+          self . skip            ( 2                                         )
     ##########################################################################
-    self . Minimum [ -1 ] = self . Minimum [ -1 ] + 1
-    self . UnlockGui ( )
+    ZE      = self . Minimum     [ -1                                        ]
+    ZE      = ZE + 1
+    self    . Minimum [ -1 ] = ZE
+    self    . UnlockGui          (                                           )
     ##########################################################################
-    self . LocalAccept ( )
-    if ( ( int ( self . Minimum [ -1 ] % 10 ) ) == 0 ) :
+    self    . LocalAccept        (                                           )
+    ##########################################################################
+    if ( ( int ( self . Minimum [ -1 ] % 10 ) ) == 0 )                       :
+      ########################################################################
       self . Minimum [ -1 ] = 0
-      self . Clean ( )
-      if ( self . Fitting ) :
-        self . AutoFit ( )
+      self . Clean               (                                           )
+      ########################################################################
+      if                         ( self . Fitting                          ) :
+        self . AutoFit           (                                           )
     ##########################################################################
-    v = self .LimitValue(self . RunningId)
-    v = v - 1
-    self . setLimitValue( self . RunningId , v)
+    v      = self .LimitValue    ( self . RunningId                          )
+    v      = v - 1
+    self   . setLimitValue       ( self . RunningId , v                      )
     ##########################################################################
     return
   ############################################################################
@@ -602,32 +637,33 @@ class ProgressManager           ( TreeDock                                 ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot              (                                                   )
-  def LocalAccept        ( self                                            ) :
+  @pyqtSlot                       (                                          )
+  def LocalAccept                 ( self                                   ) :
     ##########################################################################
-    """
-typedef struct   {
-  int     ID     ;
-  QString name   ;
-  QString format ;
-} LocalPmPacket  ;
-
-void N::ProgressManager::LocalAccept(void)
-{
-  if ( LimitValues [ 212001162 ] > 0 ) return       ;
-  LimitValues [ 212001162 ] ++                      ;
-  QMutexLocker L ( &QueueMutex )                    ;
-  while ( Queues . count ( ) > 0 )                  {
-    LocalPmPacket * lpm                             ;
-    lpm = (LocalPmPacket *) Queues . first ( )      ;
-    assignAccepting ( lpm->ID , lpm->name , lpm->format ) ;
-    Queues . takeAt ( 0 )                           ;
-    delete lpm                                      ;
-    qApp -> processEvents ( )                       ;
-  }                                                 ;
-  LimitValues [ 212001162 ] --                      ;
-}
-    """
+    if                            ( self . LimitValue ( 1212001162 ) > 0   ) :
+      return
+    ##########################################################################
+    V        = self . LimitValues [ 1212001162                               ]
+    V        = V + 1
+    self     . LimitValues [ 1212001162 ] = V
+    ##########################################################################
+    L        = QMutexLocker       ( self . QueueMutex                        )
+    ##########################################################################
+    while                         ( len ( self . Queues ) > 0              ) :
+      ########################################################################
+      JSON   = self   . Queues    [ 0                                        ]
+      self   . Queues . pop       ( 0                                        )
+      ########################################################################
+      ID     = JSON               [ "ID"                                     ]
+      NAME   = JSON               [ "Name"                                   ]
+      FORMAT = JSON               [ "Format"                                 ]
+      self   . assignAccepting    ( ID , NAME , FORMAT                       )
+      ########################################################################
+      qApp   . processEvents      (                                          )
+    ##########################################################################
+    V        = self . LimitValues [ 1212001162                               ]
+    V        = V - 1
+    self     . LimitValues [ 1212001162 ] = V
     ##########################################################################
     return
   ############################################################################
@@ -654,6 +690,19 @@ void N::ProgressManager::LocalAccept(void)
     self . UnlockGui (                                                       )
     ##########################################################################
     return
+  ############################################################################
+  def setValue       ( self , Id , Value                                   ) :
+    ##########################################################################
+    self . Values [ Id ] = Value
+    ##########################################################################
+    return
+  ############################################################################
+  def isRunning            ( self , Id                                     ) :
+    ##########################################################################
+    if                     ( Id not in self . Booleans                     ) :
+      return False
+    ##########################################################################
+    return self . Booleans [        Id                                       ]
   ############################################################################
   def setRange       ( self , Id , Min , Max                               ) :
     ##########################################################################
@@ -723,19 +772,15 @@ void N::ProgressManager::LocalAccept(void)
   ############################################################################
   def Start                        ( self , Id , value , running           ) :
     ##########################################################################
-    ## void N::ProgressManager::Start(int id,qint64 * Value,bool * Running)
-    ##########################################################################
     if                             ( not self . WaitForReady ( Id , 1000 ) ) :
       return
     ##########################################################################
     self   . EnableButtons . append ( Id                                     )
-    """
-    Values   [ id ]  = Value                                 ;
-    Booleans [ id ]  = Running                               ;
-    StartAt  [ id ]  = (*Value)                              ;
-    """
-    self   . Begins  [ Id ] = QDateTime . currentDateTime (                  )
-    self   . Final   [ Id ] = 0
+    self   . Values   [ Id ] = value
+    self   . Booleans [ Id ] = running
+    self   . StartAt  [ Id ] = value
+    self   . Begins   [ Id ] = QDateTime . currentDateTime (                 )
+    self   . Final    [ Id ] = 0
     ##########################################################################
     if                              ( Id not in self . Minimum             ) :
       self . Minimum [ Id ] = 0
@@ -760,15 +805,9 @@ void N::ProgressManager::LocalAccept(void)
     ##########################################################################
     if                             ( Id in self . Final                    ) :
       if                           ( Id in self . Values                   ) :
-        V = self . Values          [ Id                                      ]
-        """
-        if ( Final . contains ( id ) && Values . contains ( id ) ) {
-          if ( NotNull ( Values [ id ] ) )                         {
-            Final  [ id ] = * ( Values [ id ] )                    ;
-            Values [ id ] = NULL                                   ;
-          }                                                        ;
-        }                                                          ;
-        """
+        V    = self . Values       [ Id                                      ]
+        self . Final [ Id ] = V
+        del self . Values          [ Id                                      ]
     ##########################################################################
     self . UnlockGui               (                                         )
     self . Stoppings . append      ( Id                                      )

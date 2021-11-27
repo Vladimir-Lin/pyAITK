@@ -640,28 +640,54 @@ class TldsWidget                   ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CountAllBelongings         ( self                                    ) :
+  def CountAllBelongings          ( self                                   ) :
     ##########################################################################
-    DB       = self . ConnectDB  (                                           )
-    if                           ( DB in [ False , None ]                  ) :
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB in [ False , None ]                 ) :
       return
     ##########################################################################
-    self     . OnBusy  . emit    (                                           )
-    TLDTAB   = self . Tables     [ "TLD"                                     ]
+    plan     = None
+    if                            ( self . hasPlan ( )                     ) :
+      plan   = self . GetPlan     (                                          )
+    ##########################################################################
+    self     . OnBusy  . emit     (                                          )
+    TLDTAB   = self . Tables      [ "TLD"                                    ]
     ##########################################################################
     QQ       = f"""select `uuid` from {TLDTAB}
                   where ( `type` > 0 )
                   order by `id` asc ;"""
-    QQ       = " " . join        ( QQ . split ( )                            )
-    UUIDs    = DB  . ObtainUuids ( QQ                                        )
+    QQ       = " " . join         ( QQ . split ( )                           )
+    UUIDs    = DB  . ObtainUuids  ( QQ                                       )
     ##########################################################################
     if ( ( UUIDs not in [ False , None ] ) and ( len ( UUIDs ) > 0 ) )       :
-      for UUID in UUIDs                                                      :
-        self . TldBelongings     ( DB , UUID                                 )
+      ########################################################################
+      if                          ( plan not in [ False , None ]           ) :
+        ######################################################################
+        NAME = self . getMenuItem ( "CountAll"                               )
+        cFmt = self . getMenuItem ( "SecsCounting"                           )
+        rFmt = self . getMenuItem ( "ItemCounting"                           )
+        FMT  = self . getMenuItem ( "Percentage"                             )
+        PID  = plan . Progress    ( NAME , FMT                               )
+        plan . setFrequency       ( PID  , cFmt , rFmt                       )
+      ########################################################################
+      plan   . setRange           ( PID , 0 , len ( UUIDs )                  )
+      plan   . Start              ( PID , 0 , True                           )
+      ########################################################################
+      K      = 0
+      while ( K < len ( UUIDs ) ) and ( plan . isProgressRunning ( PID ) )   :
+        ######################################################################
+        UUID = UUIDs              [ K                                        ]
+        plan . setProgressValue   ( PID , K                                  )
+        ######################################################################
+        self . TldBelongings      ( DB , UUID                                )
+        ######################################################################
+        K    = K + 1
+      ########################################################################
+      plan   . Finish             ( PID                                      )
     ##########################################################################
-    self     . GoRelax . emit    (                                           )
-    DB       . Close             (                                           )
-    self     . Notify            ( 5                                         )
+    self     . GoRelax . emit     (                                          )
+    DB       . Close              (                                          )
+    self     . Notify             ( 5                                        )
     ##########################################################################
     return
   ############################################################################

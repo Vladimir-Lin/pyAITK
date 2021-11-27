@@ -26,6 +26,7 @@ from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
 from   PyQt5 . QtCore                 import QMimeData
 from   PyQt5 . QtCore                 import QByteArray
+from   PyQt5 . QtCore                 import QDateTime
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QPixmap
@@ -297,7 +298,7 @@ class AbstractGui        (                                                 ) :
     return self . LocalIcons [ Id                                            ]
   ############################################################################
   def getLocalIcon           ( self , Id                                   ) :
-    if                       ( Id not in self . LocalMsgs                  ) :
+    if                       ( Id not in self . LocalIcons                 ) :
       return None
     return self . LocalIcons [ Id                                            ]
   ############################################################################
