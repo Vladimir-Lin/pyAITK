@@ -672,12 +672,14 @@ class TldsWidget                   ( TreeDock                              ) :
       ########################################################################
       plan   . setRange           ( PID , 0 , len ( UUIDs )                  )
       plan   . Start              ( PID , 0 , True                           )
+      plan   . ProgressReady      ( PID , 300                                )
       ########################################################################
       K      = 0
       while ( K < len ( UUIDs ) ) and ( plan . isProgressRunning ( PID ) )   :
         ######################################################################
         UUID = UUIDs              [ K                                        ]
         plan . setProgressValue   ( PID , K                                  )
+        plan . ProgressText       ( PID , str ( UUID )                       )
         ######################################################################
         self . TldBelongings      ( DB , UUID                                )
         ######################################################################
