@@ -11,6 +11,8 @@ import threading
 import gettext
 import json
 ##############################################################################
+from   googletrans                    import Translator
+##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
 from   PyQt5                          import QtWidgets
@@ -477,6 +479,106 @@ class TimeZoneListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def NamingAll                   ( self                                   ) :
+    ##########################################################################
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB in [ False , None ]                 ) :
+      return
+    ##########################################################################
+    plan     = None
+    if                            ( self . hasPlan ( )                     ) :
+      plan   = self . GetPlan     (                                          )
+    ##########################################################################
+    GURL     = "translate.googleapis.com"
+    gt       = Translator         ( service_urls = [ GURL ]                  )
+    enUS     = self . LocalityToGoogleLC ( 1001                              )
+    zhTW     = self . LocalityToGoogleLC ( 1002                              )
+    ##########################################################################
+    self     . OnBusy  . emit     (                                          )
+    TZLTAB   = self . Tables      [ "TimeZones"                              ]
+    ##########################################################################
+    QQ       = f"""select `uuid` from {TZLTAB}
+                  where ( length(`wiki`) <= 0 )
+                  and ( ( `zonename` like "Africa/%" )
+                     or ( `zonename` like "America/%" )
+                     or ( `zonename` like "Antarctica/%" )
+                     or ( `zonename` like "Arctic/%" )
+                     or ( `zonename` like "Asia/%" )
+                     or ( `zonename` like "Atlantic/%" )
+                     or ( `zonename` like "Australia/%" )
+                     or ( `zonename` like "Europe/%" )
+                     or ( `zonename` like "Indian/%" )
+                     or ( `zonename` like "Pacific/%" ) )
+                  order by `id` asc ;"""
+    QQ       = " " . join         ( QQ . split ( )                           )
+    UUIDs    = DB  . ObtainUuids  ( QQ                                       )
+    ##########################################################################
+    if ( ( UUIDs not in [ False , None ] ) and ( len ( UUIDs ) > 0 ) )       :
+      ########################################################################
+      if                          ( plan not in [ False , None ]           ) :
+        ######################################################################
+        NAME = self . getMenuItem ( "CountAll"                               )
+        cFmt = self . getMenuItem ( "SecsCounting"                           )
+        rFmt = self . getMenuItem ( "ItemCounting"                           )
+        FMT  = self . getMenuItem ( "Percentage"                             )
+        PID  = plan . Progress    ( NAME , FMT                               )
+        plan . setFrequency       ( PID  , cFmt , rFmt                       )
+      ########################################################################
+      plan   . setRange           ( PID , 0 , len ( UUIDs )                  )
+      plan   . Start              ( PID , 0 , True                           )
+      plan   . ProgressReady      ( PID , 300                                )
+      ########################################################################
+      K      = 0
+      while ( K < len ( UUIDs ) ) and ( plan . isProgressRunning ( PID ) )   :
+        ######################################################################
+        UUID = UUIDs              [ K                                        ]
+        plan . setProgressValue   ( PID , K                                  )
+        plan . ProgressText       ( PID , str ( UUID )                       )
+        ######################################################################
+        QQ   = f"""select `zonename` from {TZLTAB}
+                   where ( `uuid` = {UUID} ) ;"""
+        QQ   = " " . join         ( QQ . split ( )                           )
+        DB   . Query              ( QQ                                       )
+        RR   = DB . FetchOne      (                                          )
+        ######################################################################
+        if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )        :
+          ####################################################################
+          NN = self . assureString ( RR [ 0 ]                                )
+          LL = NN . split         ( "/"                                      )
+          ####################################################################
+          if                      ( len ( LL ) == 2                        ) :
+            ##################################################################
+            KK    = LL            [ 1                                        ]
+            KK    = KK . replace  ( "_" , " "                                )
+            ##################################################################
+            plan  . ProgressText  ( PID , f"<{KK}>({UUID})"                  )
+            ##################################################################
+            target   = ""
+            ##################################################################
+            try                                                              :
+              target = gt . translate ( KK , src = enUS , dest = zhTW ) . text
+            except                                                           :
+              pass
+            ##################################################################
+            if                    ( len ( target ) > 0                     ) :
+              ################################################################
+              QQ     = f"""update {TZLTAB}
+                           set `wiki` = %s
+                           where ( `uuid` = {UUID} ) ;"""
+              QQ     = " " . join ( QQ . split ( )                           )
+              DB     . QueryValues ( QQ , ( target , )                       )
+        ######################################################################
+        time . sleep              ( 15.0                                     )
+        K    = K + 1
+      ########################################################################
+      plan   . Finish             ( PID                                      )
+    ##########################################################################
+    self     . GoRelax . emit     (                                          )
+    DB       . Close              (                                          )
+    self     . Notify             ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def CopyToClipboard               ( self                                 ) :
     ##########################################################################
     IT     = self . currentItem     (                                        )
@@ -528,6 +630,7 @@ class TimeZoneListings             ( TreeDock                              ) :
     mm     = self . AmountIndexMenu ( mm                                     )
     mm     . addSeparator           (                                        )
     ##########################################################################
+    mm     . addAction ( 1789 , "自動翻譯" )
     self   . AppendRefreshAction    ( mm , 1001                              )
     if                              ( atItem not in [ False , None ]       ) :
       self . AppendRenameAction     ( mm , 1101                              )
@@ -588,6 +691,10 @@ class TimeZoneListings             ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 3001                           ) :
       self . Go                     ( self . TranslateAll                    )
+      return True
+    ##########################################################################
+    if                              ( at == 1789                           ) :
+      self . Go                     ( self . NamingAll                       )
       return True
     ##########################################################################
     return True
