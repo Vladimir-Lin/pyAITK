@@ -630,7 +630,6 @@ class TimeZoneListings             ( TreeDock                              ) :
     mm     = self . AmountIndexMenu ( mm                                     )
     mm     . addSeparator           (                                        )
     ##########################################################################
-    mm     . addAction ( 1789 , "自動翻譯" )
     self   . AppendRefreshAction    ( mm , 1001                              )
     if                              ( atItem not in [ False , None ]       ) :
       self . AppendRenameAction     ( mm , 1101                              )
@@ -691,10 +690,6 @@ class TimeZoneListings             ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 3001                           ) :
       self . Go                     ( self . TranslateAll                    )
-      return True
-    ##########################################################################
-    if                              ( at == 1789                           ) :
-      self . Go                     ( self . NamingAll                       )
       return True
     ##########################################################################
     return True
