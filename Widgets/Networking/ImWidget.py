@@ -80,8 +80,8 @@ class ImWidget                     ( TreeDock                              ) :
     self . Relation . setT2        ( "InstantMessage"                        )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 6                                       )
-    self . setColumnHidden         ( 5 , True                                )
+    self . setColumnCount          ( 7                                       )
+    self . setColumnHidden         ( 6 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -103,7 +103,7 @@ class ImWidget                     ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 800 , 640                               )
+    return QSize                   ( 1024 , 640                              )
   ############################################################################
   def setGrouping                  ( self , group                          ) :
     self . Grouping = group
@@ -111,13 +111,6 @@ class ImWidget                     ( TreeDock                              ) :
   ############################################################################
   def getGrouping                  ( self                                  ) :
     return self . Grouping
-  ############################################################################
-  def setGroupOrder                ( self , order                          ) :
-    self . SortOrder = order
-    return self . SortOrder
-  ############################################################################
-  def getGroupOrder                ( self                                  ) :
-    return self . SortOrder
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -130,6 +123,7 @@ class ImWidget                     ( TreeDock                              ) :
     self . LinkAction              ( "Insert"     , self . InsertItem        )
     self . LinkAction              ( "Delete"     , self . DeleteItems       )
     self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self . LinkAction              ( "Search"     , self . Search            )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     self . LinkAction              ( "Home"       , self . PageHome          )
     self . LinkAction              ( "End"        , self . PageEnd           )
@@ -138,6 +132,8 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    ##########################################################################
+    self . LinkVoice               ( self . CommandParser                    )
     ##########################################################################
     return True
   ############################################################################
@@ -154,11 +150,13 @@ class ImWidget                     ( TreeDock                              ) :
       if                      ( column != self . CurrentItem [ "Column" ]  ) :
         self . removeParked   (                                              )
     ##########################################################################
+    self     . Notify         ( 0                                            )
+    ##########################################################################
     return
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 1 ]                      ) :
+    if                          ( column not in [ 1 , 2 , 4 ]              ) :
       return
     ##########################################################################
     if                          ( column in [ 1 ]                          ) :
@@ -168,42 +166,61 @@ class ImWidget                     ( TreeDock                              ) :
                                   self . nameChanged                         )
       line . setFocus           ( Qt . TabFocusReason                        )
     ##########################################################################
+    ## if                          ( column in [ 2 ]                          ) :
+    ##########################################################################
+    ## if                          ( column in [ 4 ]                          ) :
+    ##########################################################################
     return
   ############################################################################
-  def getItemJson                ( self , item                             ) :
-    return item . data           ( 3 , Qt . UserRole                         )
+  def getItemJson                 ( self , item                            ) :
+    return item . data            ( 6 , Qt . UserRole                        )
   ############################################################################
-  def PrepareItem                ( self , JSON                             ) :
+  def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
-    UUID   = int                 ( JSON [ "Uuid" ]                           )
-    TID    = int                 ( JSON [ "Type" ]                           )
-    UXID   = str                 ( UUID                                      )
+    TRX     = self . Translations [ "ImWidget"                               ]
     ##########################################################################
-    Name   = JSON                [ "Name"                                    ]
-    try                                                                      :
-      Name = Name . decode       ( "utf-8"                                   )
-    except                                                                   :
-      pass
+    UUID    = int                 ( JSON [ "Uuid"      ]                     )
+    UXID    = str                 ( UUID                                     )
+    ID      = int                 ( UUID % 100000000                         )
+    TID     = int                 ( JSON [ "Type"      ]                     )
+    Name    = JSON                [ "Name"                                   ]
+    OWNERS  = int                 ( JSON [ "Owners"    ]                     )
+    SHARE   = int                 ( JSON [ "Shareable" ]                     )
+    CONFIRM = int                 ( JSON [ "Confirm"   ]                     )
     ##########################################################################
-    TNAM   = ""
-    if                           ( str ( TID ) in self . ImsTypes          ) :
-      TNAM =self . ImsTypes      [ str ( TID )                               ]
+    TNAM    = ""
+    if                            ( str ( TID ) in self . ImsTypes         ) :
+      TNAM  = self . ImsTypes     [ str ( TID )                              ]
     ##########################################################################
-    IT     = QTreeWidgetItem     (                                           )
-    IT     . setText             ( 0 , TNAM                                  )
-    IT     . setToolTip          ( 0 , UXID                                  )
-    IT     . setData             ( 0 , Qt . UserRole , UXID                  )
+    SNAME   = ""
+    if                            ( str ( SHARE   ) in TRX [ "Shareable" ] ) :
+      SNAME = TRX [ "Shareable" ] [ str ( SHARE   )                          ]
     ##########################################################################
-    IT     . setText             ( 1 , Name                                  )
-    IT     . setToolTip          ( 1 , UXID                                  )
+    CNAME   = ""
+    if                            ( str ( CONFIRM ) in TRX [ "Confirm"   ] ) :
+      CNAME = TRX [ "Confirm"   ] [ str ( CONFIRM )                          ]
     ##########################################################################
-    IT     . setText             ( 2 , ""                                    )
+    IT      = QTreeWidgetItem     (                                          )
     ##########################################################################
-    IT     . setText             ( 3 , ""                                    )
+    IT      . setText             ( 0 , str ( ID )                           )
+    IT      . setToolTip          ( 0 , UXID                                 )
+    IT      . setTextAlignment    ( 0 , Qt . AlignRight                      )
+    IT      . setData             ( 0 , Qt . UserRole , UXID                 )
     ##########################################################################
-    IT     . setText             ( 4 , ""                                    )
+    IT      . setText             ( 1 , TNAM                                 )
+    IT      . setToolTip          ( 1 , UXID                                 )
+    IT      . setData             ( 1 , Qt . UserRole , TID                  )
     ##########################################################################
-    IT     . setData             ( 5 , Qt . UserRole , JSON                  )
+    IT      . setText             ( 2 , Name                                 )
+    IT      . setToolTip          ( 2 , UXID                                 )
+    ##########################################################################
+    IT      . setText             ( 3 , str ( OWNERS )                       )
+    IT      . setTextAlignment    ( 3 , Qt . AlignRight                      )
+    ##########################################################################
+    IT      . setText             ( 4 , SNAME                                )
+    IT      . setText             ( 5 , CNAME                                )
+    ##########################################################################
+    IT      . setData             ( 6 , Qt . UserRole , JSON                 )
     ##########################################################################
     return IT
   ############################################################################
@@ -214,7 +231,7 @@ class ImWidget                     ( TreeDock                              ) :
     item . setData               ( 0 , Qt . UserRole , 0                     )
     self . addTopLevelItem       ( item                                      )
     line = self . setLineEdit    ( item                                    , \
-                                   1                                       , \
+                                   2                                       , \
                                    "editingFinished"                       , \
                                    self . nameChanged                        )
     line . setFocus              ( Qt . TabFocusReason                       )
@@ -234,7 +251,7 @@ class ImWidget                     ( TreeDock                              ) :
     if                           ( IT is None                              ) :
       return
     ##########################################################################
-    self . doubleClicked         ( IT , 1                                    )
+    self . doubleClicked         ( IT , 2                                    )
     ##########################################################################
     return
   ############################################################################
@@ -264,13 +281,13 @@ class ImWidget                     ( TreeDock                              ) :
     return
   ############################################################################
   @pyqtSlot                       (        list                              )
-  def refresh                     ( self , TASKS                           ) :
+  def refresh                     ( self , IMS                             ) :
     ##########################################################################
     self   . clear                (                                          )
     ##########################################################################
-    for T in TASKS                                                           :
+    for JSON in IMS                                                          :
       ########################################################################
-      IT   = self . PrepareItem   ( T                                        )
+      IT   = self . PrepareItem   ( JSON                                     )
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
@@ -281,9 +298,9 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder ( )
+    ORDER  = self . getSortingOrder (                                        )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables     [ "Relation"                                  ]
     ##########################################################################
     if                         ( self . Grouping == "Subordination"        ) :
       OPTS = f"order by `position` {ORDER}"
@@ -314,22 +331,47 @@ class ImWidget                     ( TreeDock                              ) :
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
     IMSTAB  = self . Tables           [ "InstantMessage"                     ]
+    PRTTAB  = self . Tables           [ "Properties"                         ]
+    RELTAB  = self . Tables           [ "Relation"                           ]
+    ##########################################################################
     IMACT   =                         [                                      ]
+    ##########################################################################
+    REL     = Relation                (                                      )
+    REL     . setT1                   ( "People"                             )
+    REL     . setT2                   ( "InstantMessage"                     )
+    REL     . setRelation             ( "Subordination"                      )
+    ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      J     =                         { "Uuid" : U                         , \
-                                        "Type" : 0                         , \
-                                        "Name" : ""                          }
+      J     =                         { "Uuid"      : U                    , \
+                                        "Type"      : 0                    , \
+                                        "Name"      : ""                   , \
+                                        "Owners"    : 0                    , \
+                                        "Shareable" : 0                    , \
+                                        "Confirm"   : 0                      }
       ########################################################################
-      QQ    = f"""select `imapp`,`account` from {IMSTAB}
-                  where ( `uuid` = {U} ) ;"""
+      QQ    = f"""select
+                  {IMSTAB}.`imapp`,
+                  {IMSTAB}.`account`,
+                  {PRTTAB}.`shareable`,
+                  {PRTTAB}.`confirm`
+                  from {IMSTAB}
+                  left join {PRTTAB}
+                  on ( {PRTTAB}.`uuid` = {IMSTAB}.`uuid` )
+                  where ( {IMSTAB}.`uuid` = {U} ) ;"""
       QQ    = " " . join              ( QQ . split ( )                       )
       DB    . Query                   ( QQ                                   )
       RR    = DB . FetchOne           (                                      )
-      if ( RR not in [ False , None ] ) and ( len ( RR ) == 2 )              :
+      if ( RR not in [ False , None ] ) and ( len ( RR ) == 4 )              :
         ######################################################################
-        J [ "Type" ] = RR             [ 0                                    ]
-        J [ "Name" ] = RR             [ 1                                    ]
+        J [ "Type"      ] = RR        [ 0                                    ]
+        J [ "Name"      ] = self . assureString ( RR [ 1 ]                   )
+        J [ "Shareable" ] = RR        [ 2                                    ]
+        J [ "Confirm"   ] = RR        [ 3                                    ]
+      ########################################################################
+      REL   . set                     ( "second" , U                         )
+      OWNED = REL . CountFirst        ( DB , RELTAB                          )
+      J [ "Owners"      ] = OWNED
       ########################################################################
       IMACT . append                  ( J                                    )
     ##########################################################################
@@ -353,23 +395,21 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
-    ##########################################################################
-    IMSTAB  = self . Tables      [ "InstantMessage"                          ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
-    ##########################################################################
-    QQ      = f"""select `uuid` from {IMSTAB}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
-    ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
-    ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
-  ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Search"     , self . Search          , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkVoice       ( None                                            )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -557,12 +597,17 @@ class ImWidget                     ( TreeDock                              ) :
   ############################################################################
   def Prepare                    ( self                                    ) :
     ##########################################################################
-    self   . setColumnWidth      ( 0 , 100                                   )
-    self   . setColumnWidth      ( 1 , 320                                   )
-    self   . setColumnWidth      ( 5 ,   3                                   )
+    self   . setColumnWidth      ( 1 , 100                                   )
+    self   . setColumnWidth      ( 2 , 320                                   )
+    self   . setColumnWidth      ( 6 ,   3                                   )
     LABELs = self . Translations [ "ImWidget" ] [ "Labels"                   ]
     self   . setCentralLabels    ( LABELs                                    )
     self   . setPrepared         ( True                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def Search                       ( self                                  ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -659,32 +704,36 @@ class ImWidget                     ( TreeDock                              ) :
   ############################################################################
   def CopyToClipboard             ( self                                   ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
+    self . DoCopyToClipboard      (                                          )
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
+  def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    TRX = self . Translations
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
     ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
     ##########################################################################
-    return mm
+    return          { "Match" : False                                        }
+  ############################################################################
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 0                         )
+  ############################################################################
+  def RunColumnsMenu               ( self , at                             ) :
+    ##########################################################################
+    if                             ( at >= 9000 ) and ( at <= 9006 )         :
+      ########################################################################
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
@@ -698,6 +747,7 @@ class ImWidget                     ( TreeDock                              ) :
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     . addAction             ( 1102 ,  TRX [ "UI::Delete" ]            )
     mm     . addSeparator          (                                         )
+    mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . SortingMenu    ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
@@ -713,6 +763,9 @@ class ImWidget                     ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunColumnsMenu     ( at )      ) :
       return True
     ##########################################################################
     if                             ( self . RunSortingMenu     ( at )      ) :
