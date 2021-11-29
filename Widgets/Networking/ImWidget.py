@@ -49,10 +49,10 @@ from   AITK . Calendars  . Periode    import Periode
 ##############################################################################
 class ImWidget                     ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( list                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -80,8 +80,8 @@ class ImWidget                     ( TreeDock                              ) :
     self . Relation . setT2        ( "InstantMessage"                        )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
-    self . setColumnHidden         ( 3 , True                                )
+    self . setColumnCount          ( 6                                       )
+    self . setColumnHidden         ( 5 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -103,7 +103,7 @@ class ImWidget                     ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 480 , 640                               )
+    return QSize                   ( 800 , 640                               )
   ############################################################################
   def setGrouping                  ( self , group                          ) :
     self . Grouping = group
@@ -199,7 +199,11 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     IT     . setText             ( 2 , ""                                    )
     ##########################################################################
-    IT     . setData             ( 3 , Qt . UserRole , JSON                  )
+    IT     . setText             ( 3 , ""                                    )
+    ##########################################################################
+    IT     . setText             ( 4 , ""                                    )
+    ##########################################################################
+    IT     . setData             ( 5 , Qt . UserRole , JSON                  )
     ##########################################################################
     return IT
   ############################################################################
@@ -554,8 +558,8 @@ class ImWidget                     ( TreeDock                              ) :
   def Prepare                    ( self                                    ) :
     ##########################################################################
     self   . setColumnWidth      ( 0 , 100                                   )
-    self   . setColumnWidth      ( 1 , 240                                   )
-    self   . setColumnWidth      ( 3 ,   3                                   )
+    self   . setColumnWidth      ( 1 , 320                                   )
+    self   . setColumnWidth      ( 5 ,   3                                   )
     LABELs = self . Translations [ "ImWidget" ] [ "Labels"                   ]
     self   . setCentralLabels    ( LABELs                                    )
     self   . setPrepared         ( True                                      )
