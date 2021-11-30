@@ -66,6 +66,7 @@ class ImWidget                     ( TreeDock                              ) :
     self . StartId            = 0
     self . Amount             = 28
     self . SortOrder          = "desc"
+    self . DbProfile          = ""
     self . SearchLine         = None
     self . SearchKey          = ""
     self . UUIDs              = [                                            ]
@@ -87,6 +88,11 @@ class ImWidget                     ( TreeDock                              ) :
     self . Relation = Relation     (                                         )
     self . Relation . setT2        ( "InstantMessage"                        )
     self . Relation . setRelation  ( "Subordination"                         )
+    ##########################################################################
+    self . OwnRel   = Relation     (                                         )
+    self . OwnRel   . setT1        ( "People"                                )
+    self . OwnRel   . setT2        ( "InstantMessage"                        )
+    self . OwnRel   . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 7                                       )
     self . setColumnHidden         ( 3 , True                                )
@@ -510,11 +516,6 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     IMACT   =                         [                                      ]
     ##########################################################################
-    REL     = Relation                (                                      )
-    REL     . setT1                   ( "People"                             )
-    REL     . setT2                   ( "InstantMessage"                     )
-    REL     . setRelation             ( "Subordination"                      )
-    ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
       J     =                         { "Uuid"      : U                    , \
@@ -543,8 +544,8 @@ class ImWidget                     ( TreeDock                              ) :
         J [ "Shareable" ] = RR        [ 2                                    ]
         J [ "Confirm"   ] = RR        [ 3                                    ]
       ########################################################################
-      REL   . set                     ( "second" , U                         )
-      OWNED = REL . CountFirst        ( DB , RELTAB                          )
+      self . OwnRel . set             ( "second" , U                         )
+      OWNED = self . OwnRel . CountFirst ( DB , RELTAB                       )
       J [ "Owners"      ] = OWNED
       ########################################################################
       IMACT . append                  ( J                                    )
@@ -1036,6 +1037,55 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
+  def PickDbMenu                   ( self , mm                             ) :
+    ##########################################################################
+    TRX    = self . Translations
+    MSG    = self . getMenuItem    ( "PickDB"                                )
+    DBM    = mm . addMenu          ( MSG                                     )
+    ##########################################################################
+    DBs    = self . Hosts . keys   (                                         )
+    i      = 121330001
+    ##########################################################################
+    for DBn in DBs                                                           :
+      ########################################################################
+      hid  =                       ( DBn == self . DbProfile                 )
+      mm   . addActionFromMenu     ( DBM , i , DBn , True , hid              )
+      ########################################################################
+      i    = i + 1
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunPickDbMenu                ( self , at                             ) :
+    ##########################################################################
+    DBs    = self . Hosts . keys   (                                         )
+    DBs    = list                  ( DBs                                     )
+    b      = 121330001
+    e      = b + len               ( DBs                                     )
+    ##########################################################################
+    if                             ( at <  b                               ) :
+      return False
+    ##########################################################################
+    if                             ( at >= e                               ) :
+      return False
+    ##########################################################################
+    e      = at - b
+    N      = DBs                   [ e                                       ]
+    ##########################################################################
+    self   . DbProfile = N
+    self   . DB = self . Hosts     [ N                                       ]
+    ##########################################################################
+    if                             ( N in [ "ERP" ]                        ) :
+      ########################################################################
+      self . OwnRel . set          ( "t1" , 103                              )
+      self . OwnRel . set          ( "t2" , 113                              )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . OwnRel . setT1        ( "People"                                )
+      self . OwnRel . setT2        ( "InstantMessage"                        )
+    ##########################################################################
+    return True
+  ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
     doMenu = self . isFunction      ( self . HavingMenu                      )
@@ -1067,6 +1117,7 @@ class ImWidget                     ( TreeDock                              ) :
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     . addAction              ( 1102 ,  TRX [ "UI::Delete" ]           )
     mm     . addSeparator           (                                        )
+    mm     = self . PickDbMenu      ( mm                                     )
     mm     = self . ColumnsMenu     ( mm                                     )
     mm     = self . SortingMenu     ( mm                                     )
     self   . DockingMenu            ( mm                                     )
@@ -1092,6 +1143,13 @@ class ImWidget                     ( TreeDock                              ) :
       ########################################################################
       self . clear                  (                                        )
       self . startup                (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( self . RunPickDbMenu      ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
       ########################################################################
       return True
     ##########################################################################

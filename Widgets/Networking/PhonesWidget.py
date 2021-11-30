@@ -68,10 +68,15 @@ class PhonesWidget                 ( TreeDock                              ) :
     self . StartId            = 0
     self . Amount             = 28
     self . SortOrder          = "desc"
+    self . DbProfile          = ""
+    self . SearchLine         = None
+    self . SearchKey          = ""
+    self . UUIDs              = [                                            ]
     ##########################################################################
     self . ImsTypes           =    {                                         }
     ##########################################################################
     self . Grouping           = "Original"
+    self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
     ##########################################################################

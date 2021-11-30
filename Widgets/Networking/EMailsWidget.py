@@ -74,6 +74,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     self . DbProfile          = ""
     ##########################################################################
     self . Grouping           = "Original"
+    self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
     ##########################################################################
@@ -87,6 +88,11 @@ class EMailsWidget                 ( TreeDock                              ) :
     self . Relation = Relation     (                                         )
     self . Relation . setT2        ( "EMail"                                 )
     self . Relation . setRelation  ( "Subordination"                         )
+    ##########################################################################
+    self . OwnRel   = Relation     (                                         )
+    self . OwnRel   . setT1        ( "People"                                )
+    self . OwnRel   . setT2        ( "EMail"                                 )
+    self . OwnRel   . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 8                                       )
     self . setColumnHidden         ( 7 , True                                )
@@ -720,7 +726,7 @@ class EMailsWidget                 ( TreeDock                              ) :
   def PickDbMenu                   ( self , mm                             ) :
     ##########################################################################
     TRX    = self . Translations
-    MSG    = "選擇資料庫"
+    MSG    = self . getMenuItem    ( "PickDB"                                )
     DBM    = mm . addMenu          ( MSG                                     )
     ##########################################################################
     DBs    = self . Hosts . keys   (                                         )
@@ -738,6 +744,7 @@ class EMailsWidget                 ( TreeDock                              ) :
   def RunPickDbMenu                ( self , at                             ) :
     ##########################################################################
     DBs    = self . Hosts . keys   (                                         )
+    DBs    = list                  ( DBs                                     )
     b      = 121330001
     e      = b + len               ( DBs                                     )
     ##########################################################################
@@ -750,7 +757,18 @@ class EMailsWidget                 ( TreeDock                              ) :
     e      = at - b
     N      = DBs                   [ e                                       ]
     ##########################################################################
+    self   . DbProfile = N
     self   . DB = self . Hosts     [ N                                       ]
+    ##########################################################################
+    if                             ( N in [ "ERP" ]                        ) :
+      ########################################################################
+      self . OwnRel . set          ( "t1" , 103                              )
+      self . OwnRel . set          ( "t2" , 119                              )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . OwnRel . setT1        ( "People"                                )
+      self . OwnRel . setT2        ( "EMail"                                 )
     ##########################################################################
     return True
   ############################################################################
