@@ -50,6 +50,7 @@ from         . SpinBox                import SpinBox     as SpinBox
 class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   emitPendingTopLevelItem = pyqtSignal ( QTreeWidgetItem                     )
+  pendingRemoveItem       = pyqtSignal ( QTreeWidgetItem                     )
   pickSelectionMode       = pyqtSignal ( str                                 )
   SubmitStatusMessage     = pyqtSignal ( str , int                           )
   SubmitTtsTalk           = pyqtSignal ( str , int                           )
@@ -74,6 +75,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     self . CurrentItem =                    {                                }
     self . emitPendingTopLevelItem.connect  ( self.acceptPendingTopLevelItem )
+    self . pendingRemoveItem      .connect  ( self.removeTopLevelItem        )
     self . pickSelectionMode      .connect  ( self.assignSelectionMode       )
     self . SubmitStatusMessage    .connect  ( self.AssignStatusMessage       )
     self . SubmitTtsTalk          .connect  ( self.DoTtsTalk                 )

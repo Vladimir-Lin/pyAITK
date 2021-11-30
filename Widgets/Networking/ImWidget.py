@@ -89,6 +89,8 @@ class ImWidget                     ( TreeDock                              ) :
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 7                                       )
+    self . setColumnHidden         ( 3 , True                                )
+    self . setColumnHidden         ( 5 , True                                )
     self . setColumnHidden         ( 6 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
@@ -111,7 +113,7 @@ class ImWidget                     ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 640                              )
+    return QSize                   ( 800 , 640                               )
   ############################################################################
   def setGrouping                  ( self , group                          ) :
     self . Grouping = group
@@ -269,23 +271,24 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                        (                                         )
-  def DeleteItems                  ( self                                  ) :
+  @pyqtSlot                          (                                       )
+  def DeleteItems                    ( self                                ) :
     ##########################################################################
-    items     = self . selectItems (                                         )
-    if                             ( len ( items ) <= 0                    ) :
+    items     = self . selectedItems (                                       )
+    if                               ( len ( items ) <= 0                  ) :
       return
     ##########################################################################
-    UUIDs     =                    [                                         ]
+    UUIDs     =                      [                                       ]
     for item in items                                                        :
-      UUID    = self . itemUuid    ( item , 0                                )
-      if                           ( UUID not in UUIDs                     ) :
-        UUIDs . append             ( UUID                                    )
+      UUID    = self . itemUuid      ( item , 0                              )
+      self    . pendingRemoveItem . emit ( item                              )
+      if                             ( UUID not in UUIDs                   ) :
+        UUIDs . append               ( UUID                                  )
     ##########################################################################
-    if                             ( len ( UUIDs ) <= 0                    ) :
+    if                               ( len ( UUIDs ) <= 0                  ) :
       return
     ##########################################################################
-    self      . Go                 ( self . RemoveItems , ( UUIDs , )        )
+    self      . Go                   ( self . RemoveItems , ( UUIDs , )      )
     ##########################################################################
     return
   ############################################################################
@@ -340,7 +343,7 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     if                           ( value != cbv                            ) :
       ########################################################################
-      uuid = int                 ( item . text ( 0 )                         )
+      uuid = self . itemUuid     ( item , 0                                  )
       LL   = self . ImsTypes
       msg  = LL                  [ value                                     ]
       ########################################################################
@@ -368,7 +371,7 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     if                           ( value != cbv                            ) :
       ########################################################################
-      uuid = int                 ( item . text ( 0 )                         )
+      uuid = self . itemUuid     ( item , 0                                  )
       LL   = self . Translations [ "ImWidget" ] [ "Shareable"                ]
       msg  = LL                  [ str ( value )                             ]
       ########################################################################
