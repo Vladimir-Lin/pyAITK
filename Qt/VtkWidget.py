@@ -53,28 +53,30 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui                ) :
   ############################################################################
   def PrepareRenderer      ( self                                          ) :
     ##########################################################################
-    self . renderer   = vtk  . vtkRenderer (                                 )
+    self . renderer   = vtk  . vtkRenderer   (                               )
+    self . renderer   . SetBackground        ( 255 , 255 , 255               )
     self . GetRenderWindow ( ) . AddRenderer ( self . renderer               )
     self . interactor = self . GetRenderWindow ( ) . GetInteractor (         )
+    self . Initialize      (                                                 )
     ##########################################################################
     return
   ############################################################################
   def PrepareContent       ( self                                          ) :
     ##########################################################################
-    ## source = vtk.vtkSphereSource()
-    ## source . SetCenter(0, 0, 0)
-    ## source . SetRadius(5.0)
+    source = vtk.vtkSphereSource()
+    source . SetCenter(0, 0, 0)
+    source . SetRadius(5.0)
     ##########################################################################
     ## Create a mapper
-    ## mapper = vtk.vtkPolyDataMapper()
-    ## mapper.SetInputConnection(source.GetOutputPort())
+    mapper = vtk.vtkPolyDataMapper()
+    mapper.SetInputConnection(source.GetOutputPort())
     ##########################################################################
     # Create an actor
-    ## actor = vtk.vtkActor()
-    ## actor.SetMapper(mapper)
+    actor = vtk.vtkActor()
+    actor.SetMapper(mapper)
     ##########################################################################
-    ## self . renderer . AddActor(actor)
-    ## self . renderer . ResetCamera  ( )
+    self . renderer . AddActor(actor)
+    self . renderer . ResetCamera  ( )
     ##########################################################################
     self . interactor . Initialize ( )
     self . interactor . Start      ( )
