@@ -81,6 +81,23 @@ class Download    (                                                        ) :
         f . write            ( self . Data . getbuffer ( )                   )
     return True
   ############################################################################
+  def toUtf8                          ( self                               ) :
+    ##########################################################################
+    JDATA  = self   . Data . getvalue (                                      )
+    ##########################################################################
+    if                                ( len ( JDATA ) <= 0                 ) :
+      return ""
+    ##########################################################################
+    try                                                                      :
+      JST   = JDATA . decode          ( "utf-8"                              )
+    except                                                                   :
+      try                                                                    :
+        JST = JDATA . decode          ( "utf-8" , "ignore"                   )
+      except                                                                :
+        return ""
+    ##########################################################################
+    return JST
+  ############################################################################
   def Download               ( self                                        ) :
     self . download . setopt ( pycurl . URL            , self . URL          )
     self . download . setopt ( pycurl . HEADERFUNCTION , self . GetHeader    )
