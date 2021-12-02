@@ -88,64 +88,24 @@ class WssHttpRequest       ( BaseHTTPRequestHandler                        ) :
     ##########################################################################
     return
 ##############################################################################
-class wssClient            (                                               ) :
+class wssClient                          (                                 ) :
   ############################################################################
-  def __init__             ( self                                          , \
-                             Hostname                                      , \
-                             Interval    = 0.1                             , \
-                             UseSsl      = True                            , \
-                             SslCert     = ""                              , \
-                             SslKey      = ""                              , \
-                             SslProtocol = ssl . PROTOCOL_SSLv23           ) :
+  def __init__                           ( self , Hostname                 ) :
     ##########################################################################
-    self . Logger      = logging . getLogger (                               )
+    self . Logger  = logging . getLogger (                                   )
     ##########################################################################
-    self . Running       = False
-    self . Working       = False
-    self . Connected     = False
-    self . Thread        = None
-    self . Socket        = None
+    self . Running = False
+    self . Working = False
+    self . Thread  = None
+    self . Wss     = None
+    self . URL     = Hostname
     ##########################################################################
-    self . URL           = Hostname
-    self . Interval      = Interval
-    self . UseSSL        = UseSsl
-    self . SslCert       = SslCert
-    self . SslKey        = SslKey
-    self . SslProtocol   = SslProtocol
-    ##########################################################################
-    self . headerbuffer  = bytearray         (                               )
-    self . data          = bytearray         (                               )
-    self . sendq         = deque             (                               )
-    self . headertoread  = 2048
-    self . handshaked    = False
-    ##########################################################################
-    self . fin           = 0
-    self . opcode        = 0
-    self . hasmask       = 0
-    self . maskarray     = None
-    self . length        = 0
-    self . lengtharray   = None
-    self . index         = 0
-    self . request       = None
-    ##########################################################################
-    self . frag_start    = False
-    self . frag_type     = WSS_BINARY
-    self . frag_buffer   = None
-    self . frag_decoder  = codecs . getincrementaldecoder ( 'utf-8' ) ( errors = 'strict' )
-    self . closed        = False
-    self . state         = WSS_HEADERB1
-    ## restrict the size of header and payload for security reasons
-    self . maxheader     = WSS_MAXHEADER
-    self . maxpayload    = WSS_MAXPAYLOAD
-    ##########################################################################
-    self . Prepared      = self . PrepareSSL (                               )
-    self . Locker        = threading . Lock  (                               )
-    self . onInitialize                      (                               )
+    self . onInitialize                  (                                   )
     ##########################################################################
     return
   ############################################################################
   def __del__               ( self                                         ) :
-    pass
+    return
   ############################################################################
   def __enter__             ( self                                         ) :
     return self
@@ -154,24 +114,31 @@ class wssClient            (                                               ) :
     pass
   ############################################################################
   def onInitialize          ( self                                         ) :
+    print("onInitialize")
     return True
   ############################################################################
-  def onConnected           ( self                                         ) :
+  def onConnected           ( self , wss                                   ) :
+    print("onConnected")
     return True
   ############################################################################
-  def onDisconnected        ( self                                         ) :
+  def onDisconnected        ( self , wss , status , message                ) :
+    print ( "onDisconnected : " , status , ":" , message )
     return True
   ############################################################################
   def onClose               ( self                                         ) :
+    print("onClose")
     return True
   ############################################################################
-  def onError               ( self                                         ) :
+  def onError               ( self , wss , e                               ) :
+    print("onError")
     return True
   ############################################################################
-  def onMessage             ( self                                         ) :
+  def onMessage             ( self , wss , message                         ) :
+    print("onMessage:",message)
     return True
   ############################################################################
-  def onBinary              ( self                                         ) :
+  def onBinary              ( self , wss , message , opcode , flag         ) :
+    print("onBinary : ",message ," - " , opcode , " , " , flag )
     return True
   ############################################################################
   def Debug                 ( self , message , way ="info"                 ) :
@@ -182,365 +149,46 @@ class wssClient            (                                               ) :
     ##   self . Logger . info  ( message                                        )
     return
   ############################################################################
-  def toJson                ( self                                         ) :
+  def send            ( self , data, opcode = 1                            ) :
     ##########################################################################
-    if                      ( len ( self . data ) <= 0                     ) :
-      return                {                                                }
-    ##########################################################################
-    try                                                                      :
-      JSOX = json . loads   ( self . data                                    )
-    except                                                                   :
-      return                {                                                }
-    ##########################################################################
-    return JSOX
-  ############################################################################
-  def Lock                  ( self                                         ) :
-    self . Locker . acquire (                                                )
-    return
-  ############################################################################
-  def Unlock                ( self                                         ) :
-    self . Locker . release (                                                )
-    return
-  ############################################################################
-  def supportSSL            ( self                                         ) :
-    return                  ( ( self . Prepared ) and ( self . UseSSL )      )
-  ############################################################################
-  def PrepareSSL            ( self                                         ) :
-    ##########################################################################
-    self . Channel    = "ws"
-    self . SslContext = None
-    ##########################################################################
-    if                      ( not self . UseSSL                            ) :
-      return True
-    ##########################################################################
-    if                      ( len ( self . SslCert ) <= 0                  ) :
-      self . Debug          ( "Empty SSL Cert file"                          )
+    if                ( self . Wss in [ False , None ]                     ) :
       return False
     ##########################################################################
-    try                                                                      :
-      self . Debug          ( "WSS Cert : " + self . SslCert                 )
-      self . Debug          ( "WSS Key  : " + self . SslKey                  )
-      self . SslContext = ssl . SSLContext ( self . SslProtocol              )
-      self . SslContext . load_cert_chain  ( self . SslCert , self . SslKey  )
-      self . Channel    = "wss"
-    except Exception as e                                                    :
-      msg               = "failed to use ssl: {0}" . format ( e )
-      self . Debug          ( msg                                            )
+    self . Wss . send ( data , opcode                                        )
+    ##########################################################################
+   return
+  ############################################################################
+  def sendJson        ( self , jsox                                        ) :
+    ##########################################################################
+    if                ( self . Wss in [ False , None ]                     ) :
       return False
+    ##########################################################################
+    self . Wss . send ( json . dumps ( jsox )                                )
     ##########################################################################
     return True
   ############################################################################
-  def connectTo             ( self , URL                                   ) :
-    ##########################################################################
-    ## async with websockets . connect ( URL , ssl = self . SslContext ) as wss :
-    ##   self . Socket = wss
-    """
-    try                                                                      :
-      ########################################################################
-      if                    ( self . UseSSL                                ) :
-        print("Connect via websockets")
-        self . Socket = websockets . client. connect ( URL , ssl = self . SslContext )
-      else                                                                   :
-        ## async with websockets.connect(URL ) as wss :
-        ##   self . Socket = wss
-        pass
-      ########################################################################
-    except                                                                   :
-      self   . Socket = None
-      return False
-    """
-    ##########################################################################
-    return   True
-  ############################################################################
-  def CloseWss                 ( self                                      ) :
-    ##########################################################################
-    if                         ( self . Socket in [ False , None ]         ) :
-      return False
-    ##########################################################################
-    try                                                                      :
-      self . Socket . close    (                                             )
-      self . Socket = None
-    except Exception as ex                                                   :
-      MSG  = "WSS Client Closing Exception : {0}" . format ( str ( ex )      )
-      self . Debug             ( MSG                                         )
-    ##########################################################################
-    return True
-  ############################################################################
-  def flushBuffer             ( self , buff , send_all = False             ) :
-    ##########################################################################
-    size         = len        ( buff                                         )
-    tosend       = size
-    already_sent = 0
-    ##########################################################################
-    while                     ( tosend > 0                                 ) :
-      try                                                                    :
-        ######################################################################
-        ## i should be able to send a bytearray
-        ######################################################################
-        sent = self . Socket . send ( buff [ already_sent : ]                )
-        if                    ( sent == 0                                  ) :
-          ####################################################################
-          FMT  = "{0} socket connection broken"
-          MSG  = FMT . format ( self . Socket . fileno ( )                   )
-          self . Debug        ( MSG                                          )
-          ####################################################################
-          return None
-        ######################################################################
-        already_sent += sent
-        tosend       -= sent
-        ######################################################################
-      except socket . error as e                                             :
-        ######################################################################
-        ## if we have full buffers then wait for them to drain and try again
-        ######################################################################
-        if e . errno in [ errno . EAGAIN , errno . EWOULDBLOCK             ] :
-          if send_all                                                        :
-            continue
-          return buff   [ already_sent :                                     ]
-        else                                                                 :
-          raise e
-    ##########################################################################
-    return None
-  ############################################################################
-  def isUnicode               ( self , val                                 ) :
-    return isinstance         ( val  , str                                   )
-  ############################################################################
-  def sendFragmentStart       ( self , data                                ) :
-    ##########################################################################
-    opcode    = WSS_BINARY
-    if self . isUnicode       ( data                                       ) :
-       opcode = WSS_TEXT
-    return self . postMessage ( True , opcode , data                         )
-  ############################################################################
-  def sendFragment            ( self  , data                               ) :
-    return self . postMessage ( True  , WSS_STREAM , data                    )
-  ############################################################################
-  def sendFragmentEnd         ( self  , data                               ) :
-    return self . postMessage ( False , WSS_STREAM , data                    )
-  ############################################################################
-  def sendMessage             ( self , data                                ) :
-    opcode   = WSS_BINARY
-    if self . isUnicode       ( data                                       ) :
-      opcode = WSS_TEXT
-    return self . postMessage ( False , opcode , data                        )
-  ############################################################################
-  def sendJson                ( self , jsox                                ) :
-    return self . sendMessage ( json . dumps ( jsox )                        )
-  ############################################################################
-  def postMessage             ( self , fin , opcode , data                 ) :
-    ##########################################################################
-    payload = bytearray       (                                              )
-    b1      = 0
-    b2      = 0
-    ##########################################################################
-    if fin is False                                                          :
-      b1   |= 0x80
-    ##########################################################################
-    b1     |= opcode
-    ##########################################################################
-    if self . isUnicode       ( data                                       ) :
-      data  = data . encode   ( 'utf-8'                                      )
-    ##########################################################################
-    length  = len             ( data                                         )
-    payload . append          ( b1                                           )
-    ##########################################################################
-    if                        ( length <= 125                              ) :
-      b2   |= length
-      payload . append        ( b2                                           )
-    elif                      ( ( length >= 126 ) and ( length <= 65535 )  ) :
-      b2   |= 126
-      payload . append        ( b2                                           )
-      payload . extend        ( struct . pack ( "!H" , length )              )
-    else                                                                     :
-      b2   |= 127
-      payload . append        ( b2                                           )
-      payload . extend        ( struct . pack ( "!Q" , length )              )
-    ##########################################################################
-    if                        ( length > 0                                 ) :
-      payload . extend        ( data                                         )
-    ##########################################################################
-    self . sendq . append     ( ( opcode , payload )                         )
-    ##########################################################################
-    return True
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  def DoHandshaking                ( self                                  ) :
-    ##########################################################################
-    data   = self . Socket . recv  ( self . headertoread                     )
-    if                             ( ( not data ) or ( len ( data ) <= 0 ) ) :
-      return False
-    ##########################################################################
-    ## accumulate
-    ##########################################################################
-    self   . headerbuffer . extend ( data                                    )
-    if ( len ( self . headerbuffer ) >= self . maxheader )                   :
-      ########################################################################
-      FMT  = "header exceeded allowable size : {0}"
-      MSG  = FMT . format          ( len ( self . headerbuffer )             )
-      self . Debug                 ( MSG                                     )
-      ########################################################################
-      return False
-    ##########################################################################
-    ## Indicates end of HTTP header
-    ##########################################################################
-    if b'\r\n\r\n' in self . headerbuffer                                    :
-      self . request = WssHttpRequest ( self . headerbuffer                  )
-    ##########################################################################
-    ## handshake rfc 6455
-    ##########################################################################
-    try                                                                      :
-      ########################################################################
-      key  = self   . request . headers [ "Sec-WebSocket-Key"                ]
-      k    = key    . encode    ( 'ascii' ) + WSS_GUID . encode ( "ascii"    )
-      dgs  = hashlib . sha1 ( k ) . digest (                                 )
-      k_s  = base64 . b64encode ( dgs ) . decode ( "ascii"                   )
-      hStr = WSS_HANDSHAKE % { 'acceptstr' : k_s                             }
-      self . sendq . append ( ( WSS_BINARY , hStr . encode ( 'ascii' ) )     )
-      self . handshaked = True
-      self . onConnected    (                                                )
-      ########################################################################
-    except Exception as e                                                    :
-      ########################################################################
-      hStr = WSS_FAILED_HANDSHAKE
-      self . flushBuffer    ( hStr . encode ( 'ascii' ) , True               )
-      self . Socket . close (                                                )
-      self . onDisconnected (                                                )
-      self . Debug ( "handshake failed: {0}" . format ( str ( ex ) ) )
-      ########################################################################
-      return False
-    ##########################################################################
-    return True
-  ############################################################################
-  def ImportData                ( self                                     ) :
-    ##########################################################################
-    fileno = self . Socket . fileno ( )
-    if                          ( fileno < 0                               ) :
-      return False
-    ##########################################################################
-    try                                                                      :
-      data = self . Socket . recv ( 4096                                     )
-    except Exception as ex                                                   :
-      ## self . Debug ( "Exception when receiving data from {0} : {1}" . format ( fileno , str ( ex ) ) )
-      return False
-    ##########################################################################
-    if ( not data ) or ( len ( data ) <= 0 )                                 :
-      return False
-    ##########################################################################
-    ## for d in data                                                            :
-    ##   self . parseMessage       ( d                                          )
-    ##########################################################################
-    print(data)
-    return True
-  ############################################################################
-  def writing               ( self                                         ) :
-    ##########################################################################
-    print("WSS Client Writing")
-    try                                                                      :
-      ########################################################################
-      while self . sendq                                                     :
-        ######################################################################
-        opcode , payload = self . sendq . popleft (                          )
-        remaining        = self . flushBuffer     ( payload                  )
-        ######################################################################
-        if remaining is not None                                             :
-          self . sendq . appendleft ( ( opcode , remaining )                 )
-          break
-        else                                                                 :
-          if self == WSS_CLOSE                                               :
-            self . Debug    ( "Received client close"                        )
-            self . onClose  (                                                )
-            self . CloseWss (                                                )
-            return False
-      ########################################################################
-    except Exception as ex                                                   :
-      ## self . Debug ( "DispatchClient Exception : {0}" . format ( str ( ex ) ) )
-      ## self . RemoveClient ( sockno )
-      return False
-    ##########################################################################
-    return True
-  ############################################################################
-  def reading               ( self                                         ) :
-    ##########################################################################
-    print("WSS Client Reading")
-    if self       . handshaked is False                                      :
-      return self . DoHandshaking (                                          )
-    ##########################################################################
-    return self   . ImportData    (                                          )
-  ############################################################################
-  def dispatcher            ( self                                         ) :
-    ##########################################################################
-    if                      ( not self . Running                           ) :
-      return False
-    ##########################################################################
-    if                      ( not self . Connected                         ) :
-      ########################################################################
-      self    . Lock        (                                                )
-      self    . Connected = self . connectTo ( self . URL                    )
-      self    . Unlock      (                                                )
-    ##########################################################################
-    if                      ( not self . Running                           ) :
-      return False
-    ##########################################################################
-    if                      ( not self . Connected                         ) :
-      time    . sleep       ( self . Interval                                )
-      return False
-    ##########################################################################
-    if                      ( not self . Running                           ) :
-      return False
-    ##########################################################################
-    Listeners =             [ self . Socket                                  ]
-    self      . Lock        (                                                )
-    rList , wList , xList = select ( Listeners                               ,
-                                     Listeners                               ,
-                                     Listeners                               ,
-                                     self . Interval                         )
-    self      . Unlock      (                                                )
-    ##########################################################################
-    if                      ( not self . Running                           ) :
-      return False
-    ##########################################################################
-    if ( ( len ( wList ) > 0 ) and ( self . Socket in wList ) )              :
-      self    . writing     (                                                )
-    ##########################################################################
-    if                      ( not self . Running                           ) :
-      return False
-    ##########################################################################
-    if ( ( len ( rList ) > 0 ) and ( self . Socket in rList ) )              :
-      self    . reading     (                                                )
-    ##########################################################################
-    if                      ( not self . Running                           ) :
-      return False
-    ##########################################################################
-    if ( ( len ( xList ) > 0 ) and ( self . Socket in xList ) )              :
-      self    . CloseWss    (                                                )
-    ##########################################################################
-    return True
-  ############################################################################
-  def monitor               ( self                                         ) :
+  def monitor                ( self                                        ) :
     ##########################################################################
     self . Running = True
     self . Working = True
     ##########################################################################
-    self . Debug            ( "Start Moniting Websocket SSL Client channel"  )
+    MSG  = "Start Moniting Websocket SSL Client channel"
+    self . Debug             ( MSG                                           )
     ##########################################################################
-    ## while self . Running                                                     :
-    ##   self . dispatcher     (                                                )
+    websocket  . enableTrace ( True                                          )
+    self . Wss = websocket . WebSocketApp ( self . URL                     , \
+                                            on_open    = onConnected       , \
+                                            on_message = onMessage         , \
+                                            on_data    = onBinary          , \
+                                            on_error   = onError           , \
+                                            on_close   = onDisconnected      )
+    self . Wss . run_forever (                                               )
     ##########################################################################
-    ## self . CloseWss         (                                                )
+    self . onClose           (                                               )
     ##########################################################################
-    ws = websocket.WebSocket()
-    ws . connect ( self . URL )
-    ws . send  ( "Hello, Server" )
-    ws . recv  ( )
-    ws . close ( )
+    MSG  = "Stop Moniting Websocket SSL Client channel"
+    self . Debug             ( MSG                                           )
     ##########################################################################
-    self . Debug            ( "Stop Moniting Websocket SSL Client channel"   )
     self . Working = False
     ##########################################################################
     return
@@ -548,6 +196,12 @@ class wssClient            (                                               ) :
   def stop                  ( self , waiting = False                       ) :
     ##########################################################################
     self . Running = False
+    ##########################################################################
+    if                      ( self . Wss in [ False , None ]               ) :
+      return
+    ##########################################################################
+    self . Wss . close      (                                                )
+    self . Wss = None
     ##########################################################################
     if                      ( not waiting                                  ) :
       return
