@@ -210,7 +210,11 @@ class wssClient                            (                               ) :
                                on_error   = self . onError                 , \
                                on_close   = self . onPrivateDisconnected     )
       self . Wss . run_forever (                                             )
-      time . sleep             ( 0.5                                         )
+      self . Wss = None
+      for i in range           ( 0 , 50                                    ) :
+        if                     ( not self . Running                        ) :
+          continue
+        time . sleep           ( 0.1                                         )
     ##########################################################################
     self   . onClose           (                                             )
     ##########################################################################
