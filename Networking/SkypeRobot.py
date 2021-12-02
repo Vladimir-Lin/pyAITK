@@ -324,9 +324,7 @@ class SkypeRobot (                                                         ) :
       ########################################################################
       Events   =                  [                                          ]
       try                                                                    :
-        print("Wait For IMS . getEvents")
         Events = self . IMS . getEvents (                                    )
-        print("Get IMS . getEvents")
       except                                                                 :
         continue
       ########################################################################
@@ -458,8 +456,11 @@ class SkypeRobot (                                                         ) :
     if                        ( self . Watcher == None                     ) :
       return False
     ##########################################################################
-    self . debug              ( "Shutdown Skype Robot HTTP Watcher"          )
+    MSG  = "Trying to shutdown Skype Robot HTTP Watcher"
+    self . debug              ( MSG                                          )
     self . Watcher . shutdown (                                              )
+    MSG  = "Skype Robot HTTP Watcher is Stopping"
+    self . debug              ( MSG                                          )
     ##########################################################################
     return True
   ############################################################################
