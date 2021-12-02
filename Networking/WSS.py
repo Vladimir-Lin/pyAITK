@@ -21,7 +21,7 @@ import logging
 import requests
 import threading
 import shutil
-import websockets
+import websocket
 ##############################################################################
 from   socketserver                   import ThreadingMixIn
 from   http . server                  import HTTPServer
@@ -232,16 +232,23 @@ class wssClient            (                                               ) :
   ############################################################################
   def connectTo             ( self , URL                                   ) :
     ##########################################################################
+    async with websockets . connect ( URL , ssl = self . SslContext ) as wss :
+      self . Socket = wss
+    """
     try                                                                      :
       ########################################################################
       if                    ( self . UseSSL                                ) :
-        self . Socket = websockets . connect ( URL , ssl = self . SslContext )
+        print("Connect via websockets")
+        self . Socket = websockets . client. connect ( URL , ssl = self . SslContext )
       else                                                                   :
-        self . Socket = websockets . connect ( URL                           )
+        ## async with websockets.connect(URL ) as wss :
+        ##   self . Socket = wss
+        pass
       ########################################################################
     except                                                                   :
       self   . Socket = None
       return False
+    """
     ##########################################################################
     return   True
   ############################################################################
@@ -522,10 +529,17 @@ class wssClient            (                                               ) :
     ##########################################################################
     self . Debug            ( "Start Moniting Websocket SSL Client channel"  )
     ##########################################################################
-    while self . Running                                                     :
-      self . dispatcher     (                                                )
+    ## while self . Running                                                     :
+    ##   self . dispatcher     (                                                )
     ##########################################################################
-    self . CloseWss         (                                                )
+    ## self . CloseWss         (                                                )
+    ##########################################################################
+    ws = websocket.WebSocket()
+    ws . connect ( self . URL )
+    ws . send  ( "Hello, Server" )
+    ws . recv  ( )
+    ws . close ( )
+    ##########################################################################
     self . Debug            ( "Stop Moniting Websocket SSL Client channel"   )
     self . Working = False
     ##########################################################################
