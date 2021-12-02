@@ -232,8 +232,8 @@ class wssClient            (                                               ) :
   ############################################################################
   def connectTo             ( self , URL                                   ) :
     ##########################################################################
-    async with websockets . connect ( URL , ssl = self . SslContext ) as wss :
-      self . Socket = wss
+    ## async with websockets . connect ( URL , ssl = self . SslContext ) as wss :
+    ##   self . Socket = wss
     """
     try                                                                      :
       ########################################################################
