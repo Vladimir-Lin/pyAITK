@@ -88,19 +88,20 @@ class WssHttpRequest       ( BaseHTTPRequestHandler                        ) :
     ##########################################################################
     return
 ##############################################################################
-class wssClient                          (                                 ) :
+class wssClient                            (                               ) :
   ############################################################################
-  def __init__                           ( self , Hostname                 ) :
+  def __init__                             ( self , Hostname               ) :
     ##########################################################################
-    self . Logger  = logging . getLogger (                                   )
+    self . Logger    = logging . getLogger (                                 )
     ##########################################################################
-    self . Running = False
-    self . Working = False
-    self . Thread  = None
-    self . Wss     = None
-    self . URL     = Hostname
+    self . Running   = False
+    self . Working   = False
+    self . Connected = False
+    self . Thread    = None
+    self . Wss       = None
+    self . URL       = Hostname
     ##########################################################################
-    self . onInitialize                  (                                   )
+    self . onInitialize                    (                                 )
     ##########################################################################
     return
   ############################################################################
@@ -113,43 +114,64 @@ class wssClient                          (                                 ) :
   def __exit__              ( self , exc_type , exc_value , traceback      ) :
     pass
   ############################################################################
+  def isRunning           ( self                                           ) :
+    return self . Running
+  ############################################################################
+  def toJson              ( self , data                                    ) :
+    ##########################################################################
+    if                    ( len ( data ) <= 0                              ) :
+      return              {                                                  }
+    try                                                                      :
+      JSOX = json . loads ( data                                             )
+    except                                                                   :
+      return              {                                                  }
+    ##########################################################################
+    return JSOX
+  ############################################################################
   def onInitialize          ( self                                         ) :
-    print("onInitialize")
     return True
   ############################################################################
-  def onConnected           ( self , wss                                   ) :
-    print("onConnected")
+  def onConnected                ( self , wss                              ) :
     return True
   ############################################################################
-  def onDisconnected        ( self , wss , status , message                ) :
-    print ( "onDisconnected : " , status , ":" , message )
+  def onPrivateConnected         ( self , wss                              ) :
+    ##########################################################################
+    self . Connected = True
+    ##########################################################################
+    return self . onConnected    (        wss                                )
+  ############################################################################
+  def onDisconnected             ( self , wss , status , message           ) :
     return True
   ############################################################################
-  def onClose               ( self                                         ) :
-    print("onClose")
+  def onPrivateDisconnected      ( self , wss , status , message           ) :
+    ##########################################################################
+    self . Connected = False
+    ##########################################################################
+    return self . onDisconnected (        wss , status , message             )
+  ############################################################################
+  def onClose                    ( self                                    ) :
     return True
   ############################################################################
-  def onError               ( self , wss , e                               ) :
-    print("onError")
+  def onError                    ( self , wss , e                          ) :
     return True
   ############################################################################
-  def onMessage             ( self , wss , message                         ) :
-    print("onMessage:",message)
+  def onMessage                  ( self , wss , message                    ) :
     return True
   ############################################################################
-  def onBinary              ( self , wss , message , opcode , flag         ) :
-    print("onBinary : ",message ," - " , opcode , " , " , flag )
+  def onBinary                   ( self , wss , message , opcode , flag    ) :
     return True
   ############################################################################
   def Debug                 ( self , message , way ="info"                 ) :
-    print(message)
-    ## if                      ( way == "debug"                               ) :
-    ##   self . Logger . debug ( message                                        )
-    ## elif                    ( way == "info"                                ) :
-    ##   self . Logger . info  ( message                                        )
+    if                      ( way == "debug"                               ) :
+      self . Logger . debug ( message                                        )
+    elif                    ( way == "info"                                ) :
+      self . Logger . info  ( message                                        )
     return
   ############################################################################
   def send            ( self , data, opcode = 1                            ) :
+    ##########################################################################
+    if                ( not self . Connected                               ) :
+      return False
     ##########################################################################
     if                ( self . Wss in [ False , None ]                     ) :
       return False
@@ -159,6 +181,9 @@ class wssClient                          (                                 ) :
     return True
   ############################################################################
   def sendJson        ( self , jsox                                        ) :
+    ##########################################################################
+    if                ( not self . Connected                               ) :
+      return False
     ##########################################################################
     if                ( self . Wss in [ False , None ]                     ) :
       return False
@@ -175,13 +200,13 @@ class wssClient                          (                                 ) :
     MSG  = "Start Moniting Websocket SSL Client channel"
     self . Debug             ( MSG                                           )
     ##########################################################################
-    websocket  . enableTrace ( True                                          )
-    self . Wss = websocket . WebSocketApp ( self . URL                     , \
-                                            on_open    = onConnected       , \
-                                            on_message = onMessage         , \
-                                            on_data    = onBinary          , \
-                                            on_error   = onError           , \
-                                            on_close   = onDisconnected      )
+    self . Wss = websocket . WebSocketApp                                  ( \
+                               self . URL                                  , \
+                               on_open    = self . onPrivateConnected      , \
+                               on_message = self . onMessage               , \
+                               on_data    = self . onBinary                , \
+                               on_error   = self . onError                 , \
+                               on_close   = self . onPrivateDisconnected     )
     self . Wss . run_forever (                                               )
     ##########################################################################
     self . onClose           (                                               )
@@ -215,9 +240,6 @@ class wssClient                          (                                 ) :
     ##########################################################################
     if                      ( self . Working                               ) :
       self . Debug          ( "WSS Client is still working now"              )
-      return False
-    if                      ( not self . Prepared                          ) :
-      self . Debug          ( "WSS Client channel is not prepared"           )
       return False
     ##########################################################################
     self . Thread = threading . Thread ( target = self . monitor             )
@@ -271,11 +293,10 @@ class wssAccepter (                                                        ) :
     return
   ############################################################################
   def Debug                 ( self , message , way ="info"                 ) :
-    print(message)
-    ## if                      ( way == "debug"                               ) :
-    ##   self . Logger . debug ( message                                        )
-    ## elif                    ( way == "info"                                ) :
-    ##   self . Logger . info  ( message                                        )
+    if                      ( way == "debug"                               ) :
+      self . Logger . debug ( message                                        )
+    elif                    ( way == "info"                                ) :
+      self . Logger . info  ( message                                        )
     return
   ############################################################################
   def isUnicode             ( self , val                                   ) :
@@ -880,11 +901,10 @@ class WSS                   (                                              ) :
     pass
   ############################################################################
   def Debug                 ( self , message , way ="info"                 ) :
-    print(message)
-    ## if                      ( way == "debug"                               ) :
-    ##   self . Logger . debug ( message                                        )
-    ## elif                    ( way == "info"                                ) :
-    ##   self . Logger . info  ( message                                        )
+    if                      ( way == "debug"                               ) :
+      self . Logger . debug ( message                                        )
+    elif                    ( way == "info"                                ) :
+      self . Logger . info  ( message                                        )
     return
   ############################################################################
   def Lock                  ( self                                         ) :
