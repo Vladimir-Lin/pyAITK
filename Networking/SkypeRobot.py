@@ -451,16 +451,21 @@ class SkypeRobot (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def StopHttpd               ( self                                       ) :
+  def StopHttpd                     ( self                                 ) :
     ##########################################################################
-    if                        ( self . Watcher == None                     ) :
+    if                              ( self . Watcher == None               ) :
       return False
     ##########################################################################
-    MSG  = "Trying to shutdown Skype Robot HTTP Watcher"
-    self . debug              ( MSG                                          )
-    self . Watcher . shutdown (                                              )
-    MSG  = "Skype Robot HTTP Watcher is Stopping"
-    self . debug              ( MSG                                          )
+    MSG    = "Trying to shutdown Skype Robot HTTP Watcher"
+    self   . debug                  ( MSG                                    )
+    try                                                                      :
+      self . Watcher . shutdown     (                                        )
+      self . Watcher . server_close (                                        )
+      MSG  = "Skype Robot HTTP Watcher is Stopping"
+      self . debug                  ( MSG                                    )
+    except                                                                   :
+      MSG  = "Skype Robot HTTP Watcher shutdown failure"
+      self . debug                  ( MSG                                    )
     ##########################################################################
     return True
   ############################################################################
