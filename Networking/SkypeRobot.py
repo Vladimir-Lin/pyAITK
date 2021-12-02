@@ -324,7 +324,9 @@ class SkypeRobot (                                                         ) :
       ########################################################################
       Events   =                  [                                          ]
       try                                                                    :
+        print("Wait For IMS . getEvents")
         Events = self . IMS . getEvents (                                    )
+        print("Get IMS . getEvents")
       except                                                                 :
         continue
       ########################################################################
