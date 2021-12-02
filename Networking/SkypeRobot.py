@@ -194,6 +194,8 @@ class SkypeRobot (                                                         ) :
     self . Password     = Password
     self . Reply        = None
     self . SendTo       = None
+    self . SentSuccess  = None
+    self . SentFailure  = None
     self . HttpPlugin   = None
     ##########################################################################
     self . SetOptions ( Options )
@@ -278,15 +280,25 @@ class SkypeRobot (                                                         ) :
       return False
     ##########################################################################
     try                                                                      :
+      ########################################################################
       CH    = self . IMS . contacts [ ACCOUNT ] . chat
       CH    . sendMsg ( MESSAGE , me = False , rich = True                   )
       MSG   = f"Send Message to {ACCOUNT} for {BEAU}"
       self  . debug   ( MSG                                                  )
+      ########################################################################
       if              ( self . SendTo != None                              ) :
         self . SendTo ( ACCOUNT , BEAU , MESSAGE                             )
+        ######################################################################
+        if            ( self . SentFailure not in [ False , None ]         ) :
+          self . SentSuccess ( ACCOUNT                                       )
+      ########################################################################
     except                                                                   :
+      ########################################################################
       MSG   = f"Failure to Send Message to {ACCOUNT} for {BEAU}"
       self  . debug   ( MSG                                                  )
+      ########################################################################
+      if              ( self . SentFailure not in [ False , None ]         ) :
+        self . SentFailure ( ACCOUNT                                         )
     ##########################################################################
     return True
   ############################################################################
@@ -461,6 +473,7 @@ class SkypeRobot (                                                         ) :
     try                                                                      :
       self . Watcher . shutdown     (                                        )
       self . Watcher . server_close (                                        )
+      self . Watcher = None
       MSG  = "Skype Robot HTTP Watcher is Stopping"
       self . debug                  ( MSG                                    )
     except                                                                   :
