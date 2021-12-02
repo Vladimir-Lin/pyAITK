@@ -192,29 +192,32 @@ class wssClient                            (                               ) :
     ##########################################################################
     return True
   ############################################################################
-  def monitor                ( self                                        ) :
+  def monitor                  ( self                                      ) :
     ##########################################################################
-    self . Running = True
-    self . Working = True
+    self   . Running = True
+    self   . Working = True
     ##########################################################################
-    MSG  = "Start Moniting Websocket SSL Client channel"
-    self . Debug             ( MSG                                           )
+    MSG    = "Start Moniting Websocket SSL Client channel"
+    self   . Debug             ( MSG                                         )
     ##########################################################################
-    self . Wss = websocket . WebSocketApp                                  ( \
+    while                      ( self . Running                            ) :
+      ########################################################################
+      self . Wss = websocket . WebSocketApp                                ( \
                                self . URL                                  , \
                                on_open    = self . onPrivateConnected      , \
                                on_message = self . onMessage               , \
                                on_data    = self . onBinary                , \
                                on_error   = self . onError                 , \
                                on_close   = self . onPrivateDisconnected     )
-    self . Wss . run_forever (                                               )
+      self . Wss . run_forever (                                             )
+      time . sleep             ( 0.5                                         )
     ##########################################################################
-    self . onClose           (                                               )
+    self   . onClose           (                                             )
     ##########################################################################
-    MSG  = "Stop Moniting Websocket SSL Client channel"
-    self . Debug             ( MSG                                           )
+    MSG    = "Stop Moniting Websocket SSL Client channel"
+    self   . Debug             ( MSG                                         )
     ##########################################################################
-    self . Working = False
+    self   . Working = False
     ##########################################################################
     return
   ############################################################################
