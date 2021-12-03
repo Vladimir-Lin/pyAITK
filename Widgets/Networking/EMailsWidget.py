@@ -169,15 +169,29 @@ class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 0 ]                      ) :
+    if                          ( column not in [ 0 , 1 , 2 , 3 ]          ) :
       return
     ##########################################################################
-    if                          ( column in [ 0 ]                          ) :
+    if                          ( column in [ 0 , 1 , 2 ]                  ) :
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
                                   "editingFinished"                        , \
                                   self . nameChanged                         )
       line . setFocus           ( Qt . TabFocusReason                        )
+      return
+    ##########################################################################
+    if                          ( column in [ 3 ]                          ) :
+      ########################################################################
+      LL   = self . Translations [ "EMailsWidget" ] [ "Shareable"            ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . shareableChanged                   )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 5                                         )
+      cb   . showPopup           (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -219,17 +233,17 @@ class EMailsWidget                 ( TreeDock                              ) :
     IT        . setText             ( 2 , HOSTNAME                           )
     IT        . setToolTip          ( 2 , UXID                               )
     ##########################################################################
-    IT        . setText             ( 3 , str ( MX )                         )
-    IT        . setTextAlignment    ( 3 , Qt . AlignRight                    )
+    IT        . setText             ( 3 , SHRSTR                             )
+    IT        . setData             ( 3 , Qt . UserRole , SHAREABLE          )
     ##########################################################################
-    IT        . setText             ( 4 , str ( OWNERS )                     )
-    IT        . setTextAlignment    ( 4 , Qt . AlignRight                    )
+    IT        . setText             ( 4 , CMFSTR                             )
+    IT        . setData             ( 4 , Qt . UserRole , CONFIRM            )
     ##########################################################################
-    IT        . setText             ( 5 , SHRSTR                             )
-    IT        . setData             ( 5 , Qt . UserRole , SHAREABLE          )
+    IT        . setText             ( 5 , str ( MX )                         )
+    IT        . setTextAlignment    ( 5 , Qt . AlignRight                    )
     ##########################################################################
-    IT        . setText             ( 6 , CMFSTR                             )
-    IT        . setData             ( 6 , Qt . UserRole , CONFIRM            )
+    IT        . setText             ( 6 , str ( OWNERS )                     )
+    IT        . setTextAlignment    ( 6 , Qt . AlignRight                    )
     ##########################################################################
     IT        . setData             ( 7 , Qt . UserRole , JSON               )
     ##########################################################################
@@ -255,14 +269,19 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot                       (                                          )
+  def RenameItem                  ( self                                   ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
+    IT     = self . currentItem   (                                          )
+    if                            ( IT is None                             ) :
       return
     ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
+    column = self . currentColumn (                                          )
+    ##########################################################################
+    if                            ( column not in [ 0 , 1 , 2 , 3 ]        ) :
+      return
+    ##########################################################################
+    self   . doubleClicked        ( IT , column                              )
     ##########################################################################
     return
   ############################################################################
@@ -279,15 +298,43 @@ class EMailsWidget                 ( TreeDock                              ) :
     msg    = line . text         (                                           )
     uuid   = self . itemUuid     ( item , 0                                  )
     ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
+    ## if                           ( len ( msg ) <= 0                        ) :
+    ##   self . removeTopLevelItem  ( item                                      )
+    ##   return
     ##########################################################################
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
+    ## self   . Go                  ( self . AssureUuidItem                   , \
+    ##                                ( item , uuid , msg , )                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def shareableChanged           ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      uuid = self . itemUuid     ( item , 0                                  )
+      LL   = self . Translations [ "ImWidget" ] [ "Shareable"                ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      self . Go                  ( self . UpdateShareable                  , \
+                                   ( item , uuid , value , )                 )
+    ##########################################################################
+    self   . removeParked        (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -749,6 +796,29 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     item    . setData              ( 0 , Qt . UserRole , uuid                )
     """
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateShareable         ( self , item , uuid , shareable             ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    PRSTAB = self . Tables    [ "Properties"                                 ]
+    ##########################################################################
+    DB     . LockWrites       ( [ PRSTAB ]                                   )
+    ##########################################################################
+    QQ     = f"""update {PRSTAB}
+                 set `shareable` = {shareable}
+                 where ( `uuid` = {uuid} ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    DB     . Query            ( QQ                                           )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
