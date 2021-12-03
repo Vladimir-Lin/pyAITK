@@ -195,7 +195,6 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     IT       = QTreeWidgetItem     (                                         )
     IT       . setText             ( 0 , EMAIL                               )
-    IT       . setTextAlignment    ( 0 , Qt . AlignRight                     )
     IT       . setToolTip          ( 0 , UXID                                )
     IT       . setData             ( 0 , Qt . UserRole , UXID                )
     ##########################################################################
@@ -206,12 +205,14 @@ class EMailsWidget                 ( TreeDock                              ) :
     IT       . setToolTip          ( 2 , UXID                                )
     ##########################################################################
     IT       . setText             ( 3 , ""                                  )
+    IT       . setTextAlignment    ( 4 , Qt . AlignRight                     )
     ##########################################################################
     IT       . setText             ( 4 , ""                                  )
     ##########################################################################
     IT       . setText             ( 5 , ""                                  )
     ##########################################################################
     IT       . setText             ( 6 , ""                                  )
+    IT       . setTextAlignment    ( 6 , Qt . AlignRight                     )
     ##########################################################################
     IT       . setData             ( 7 , Qt . UserRole , JSON                )
     ##########################################################################
@@ -738,6 +739,35 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def DetectAllMXes            ( self                                      ) :
+    ##########################################################################
+    DB      = self . ConnectDB (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    EMSTAB  = self . Tables    [ "EMails"                                    ]
+    PRZTAB  = self . Tables    [ "Properties"                                ]
+    ##########################################################################
+    QQ      = f"select `hostname` from {EMSTAB} group by `hostname` asc ;"
+    HOSTs   = DB . ObtainUuids ( QQ                                          )
+    ##########################################################################
+    for HOST in HOSTs                                                        :
+      ########################################################################
+      print   ( "Query DNS : " , HOST )
+      MXes  = dns  . resolver . query ( HOST , 'MX'                          )
+      ########################################################################
+      for MX in MXes                                                         :
+        print ( MX . to_text ( ) )
+      ########################################################################
+      CNT   = len ( MXes )
+      MQ    = f"select `uuid` from {EMSTAB} where ( `hostname` = %s )"
+      QQ    = f"update {PRZTAB} set `mx` = {CNT} where ( `uuid` in ( {MQ} ) ) ;"
+      DB    . QueryValues      ( QQ , ( HOST , )                             )
+    ##########################################################################
+    DB      . Close            (                                             )
+    ##########################################################################
+    return
+  ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
     TRX = self . Translations
@@ -844,6 +874,8 @@ class EMailsWidget                 ( TreeDock                              ) :
     mm     = self . AppendRenameAction  ( mm , 1103                          )
     if                             ( atItem not in [ False , None ]        ) :
       mm   . addAction             ( 4327 , "檢驗伺服器" )
+    mm     . addAction             ( 4328 , "查詢所有伺服器MX紀錄" )
+    mm     . addAction             ( 4329 , "列出所有無效伺服器紀錄" )
     mm     . addSeparator          (                                         )
     mm     = self . PickDbMenu     ( mm                                      )
     mm     = self . ColumnsMenu    ( mm                                      )
@@ -865,10 +897,6 @@ class EMailsWidget                 ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( self . RunColumnsMenu     ( at )      ) :
-      ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
-      ########################################################################
       return True
     ##########################################################################
     if                             ( self . RunSortingMenu     ( at )      ) :
@@ -903,6 +931,10 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 4327                            ) :
       self . Go                    ( self . DetectMX , ( atItem , )          )
+      return True
+    ##########################################################################
+    if                             ( at == 4328                            ) :
+      self . Go                    ( self . DetectAllMXes                    )
       return True
     ##########################################################################
     return True

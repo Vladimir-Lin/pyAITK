@@ -88,8 +88,13 @@ class PhonesWidget                 ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "InstantMessage"                        )
+    self . Relation . setT2        ( "Phone"                                 )
     self . Relation . setRelation  ( "Subordination"                         )
+    ##########################################################################
+    self . OwnRel   = Relation     (                                         )
+    self . OwnRel   . setT1        ( "People"                                )
+    self . OwnRel   . setT2        ( "Phone"                                 )
+    self . OwnRel   . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 6                                       )
     self . setColumnHidden         ( 5 , True                                )
@@ -817,7 +822,17 @@ class PhonesWidget                 ( TreeDock                              ) :
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
+    if                             ( self . RunColumnsMenu     ( at )      ) :
+      return True
+    ##########################################################################
     if                             ( self . RunSortingMenu     ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( self . RunPickDbMenu      ( at )      ) :
       ########################################################################
       self . clear                 (                                         )
       self . startup               (                                         )

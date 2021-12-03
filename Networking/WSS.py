@@ -197,7 +197,8 @@ class wssClient                            (                               ) :
     self   . Running = True
     self   . Working = True
     ##########################################################################
-    MSG    = "Start Moniting Websocket SSL Client channel"
+    URL    = self . URL
+    MSG    = f"Start Moniting Websocket SSL Client channel for {URL}"
     self   . Debug             ( MSG                                         )
     ##########################################################################
     while                      ( self . Running                            ) :
@@ -218,7 +219,7 @@ class wssClient                            (                               ) :
     ##########################################################################
     self   . onClose           (                                             )
     ##########################################################################
-    MSG    = "Stop Moniting Websocket SSL Client channel"
+    MSG    = "Stop Moniting Websocket SSL Client channel for {URL}"
     self   . Debug             ( MSG                                         )
     ##########################################################################
     self   . Working = False
