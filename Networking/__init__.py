@@ -18,9 +18,6 @@ from . Domain           import Domain           as Domain
 from . Domains          import Domains          as Domains
 from . Host             import Host             as Host
 from . Hosts            import Hosts            as Hosts
-from . EMail            import EMail            as EMail
-from . IMS              import IMS              as IMS
-from . Phone            import Phone            as Phone
 from . WSS              import WSS              as WSS
 from . WSS              import wssAccepter      as wssAccepter
 from . WSS              import WssHttpRequest   as WssHttpRequest
@@ -37,9 +34,6 @@ __all__ = [ "RequestsDownload"                                             , \
             "Domains"                                                      , \
             "Host"                                                         , \
             "Hosts"                                                        , \
-            "EMail"                                                        , \
-            "IMS"                                                          , \
-            "Phone"                                                        , \
             "WSS"                                                          , \
             "wssAccepter"                                                  , \
             "WssHttpRequest"                                                 ]

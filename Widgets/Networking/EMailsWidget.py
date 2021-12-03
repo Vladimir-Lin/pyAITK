@@ -54,6 +54,7 @@ from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . Telecom    . EMail     import EMail       as TelecomEMail
 ##############################################################################
 class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
@@ -70,8 +71,10 @@ class EMailsWidget                 ( TreeDock                              ) :
     self . StartId            = 0
     self . Amount             = 28
     self . SortOrder          = "desc"
-    ##########################################################################
     self . DbProfile          = ""
+    self . SearchLine         = None
+    self . SearchKey          = ""
+    self . UUIDs              = [                                            ]
     ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"
@@ -363,8 +366,8 @@ class EMailsWidget                 ( TreeDock                              ) :
     if                 ( len ( T ) <= 0                                    ) :
       return
     ##########################################################################
-    ## self . clear       (                                                     )
-    ## self . Go          ( self . looking , ( T , )                            )
+    self . clear       (                                                     )
+    self . Go          ( self . looking , ( T , )                            )
     ##########################################################################
     return
   ############################################################################
@@ -413,9 +416,9 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getSortingOrder ( )
+    ORDER  = self . getSortingOrder (                                        )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables     [ "Relation"                                  ]
     ##########################################################################
     if                         ( self . Grouping == "Subordination"        ) :
       OPTS = f"order by `position` {ORDER}"
@@ -433,6 +436,57 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
+  def looking                         ( self , name                        ) :
+    ##########################################################################
+    if                                ( len ( name ) <= 0                  ) :
+      return
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
+    ##########################################################################
+    EMSTAB  = self . Tables           [ "EMails"                            ]
+    LIKE    = f"%{name}%"
+    ORDER   = self . getSortingOrder  (                                      )
+    UUIDs   =                         [                                      ]
+    ##########################################################################
+    QQ      = f"""select `uuid` from {EMSTAB}
+                  where ( `email` like %s )
+                  order by `uuid` {ORDER} ;"""
+    DB      . QueryValues             ( QQ , ( LIKE , )                      )
+    ALL     = DB . FetchAll           (                                      )
+    ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    DB      . Close                   (                                      )
+    ##########################################################################
+    if ( ( ALL in [ False , None ] ) or ( len ( ALL ) <= 0 ) )               :
+      ########################################################################
+      self  . Notify                  ( 1                                    )
+      ########################################################################
+      return
+    ##########################################################################
+    for U in ALL                                                             :
+      UUIDs . append                  ( U [ 0 ]                              )
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      ########################################################################
+      self  . Notify                  ( 1                                    )
+      ########################################################################
+      return
+    ##########################################################################
+    self . SearchKey   = name
+    self . UUIDs       = UUIDs
+    self . OldGrouping = self . Grouping
+    self . setGrouping                ( "Searching"                          )
+    ##########################################################################
+    self . loading                    (                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -440,10 +494,15 @@ class EMailsWidget                 ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     NAMEs   =                         {                                      }
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    if                                ( self . Grouping in [ "Searching" ] ) :
+      UUIDs = self . UUIDs
+    else                                                                     :
+      UUIDs = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
     EMSTAB  = self . Tables           [ "EMails"                             ]
     PRZTAB  = self . Tables           [ "Properties"                         ]
@@ -489,6 +548,8 @@ class EMailsWidget                 ( TreeDock                              ) :
       ########################################################################
       IMACT . append                  ( J                                    )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( IMACT ) <= 0                 ) :
@@ -496,6 +557,7 @@ class EMailsWidget                 ( TreeDock                              ) :
       return
     ##########################################################################
     self   . emitAllNames . emit      ( IMACT                                )
+    self   . Notify                   ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -755,74 +817,100 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def isValidEMail
-  ############################################################################
   def UpdateEMail                  ( self , item , uuid , column , name    ) :
     ##########################################################################
-    EMAIL   = item . text          ( 0                                       )
-    ACCOUNT = item . text          ( 1                                       )
-    HOST    = item . text          ( 2                                       )
+    EMAIL    = item . text         ( 0                                       )
+    ACCOUNT  = item . text         ( 1                                       )
+    HOST     = item . text         ( 2                                       )
+    ##########################################################################
+    TEM      = TelecomEMail        (                                         )
+    ##########################################################################
+    if                             ( column in [ 0 ]                       ) :
+      ########################################################################
+      if                           ( not TEM . isValidEMail    ( name )    ) :
+        self . Notify              ( 1                                       )
+        return
+      ########################################################################
+      TEM    . setEMail            ( name                                    )
+    ##########################################################################
+    if                             ( column in [ 1 ]                       ) :
+      ########################################################################
+      if                           ( not TEM . isValidAccount  ( name )    ) :
+        self . Notify              ( 1                                       )
+        return
+      ########################################################################
+      TEM    . setAccount          ( name                                    )
+      TEM    . setHostname         ( HOST                                    )
     ##########################################################################
     if                             ( column in [ 2 ]                       ) :
-      return
-    ##########################################################################
-    ##########################################################################
-    if                          ( column in [ 0 ]                          ) :
       ########################################################################
-      if ( "@" not in name ) :
+      if                           ( not TEM . isValidHostname ( name )    ) :
+        self . Notify              ( 1                                       )
+        return
+      ########################################################################
+      TEM    . setAccount          ( ACCOUNT                                 )
+      TEM    . setHostname         ( name                                    )
     ##########################################################################
-    self . emitAssignColumn . emit ( item , id , name )
+    EMAIL    = TEM . EMail
+    ACCOUNT  = TEM . Account
+    HOST     = TEM . Hostname
     ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    DB      = self . ConnectDB  (                                            )
-    if                          ( DB == None                               ) :
+    DB       = self . ConnectDB    (                                         )
+    if                             ( DB == None                            ) :
       return
     ##########################################################################
-    EMSTAB  = self . Tables     [ "EMails"                                   ]
-    PRZTAB  = self . Tables     [ "Properties"                               ]
-    HEAD    = 3000000000000000000
+    EMSTAB   = self . Tables       [ "EMails"                                ]
+    HEAD     = 3000000000000000000
+    NEWON    = False
     ##########################################################################
-    DB      . LockWrites        ( [ EMSTAB , PRZTAB ]                        )
-    ##########################################################################
-    if                          ( uuid <= 0                                ) :
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
+    DB       . LockWrites          ( [ EMSTAB ]                              )
     ##########################################################################
     if                             ( uuid <= 0                             ) :
       ########################################################################
-      uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
-      DB    . AddUuid              ( PRJTAB , uuid   , 1                     )
+      EUID   = DB . LastUuid       ( EMSTAB , "uuid" , HEAD                  )
+      DB     . AppendUuid          ( EMSTAB , EUID                           )
+      uuid   = EUID
+      NEWON  = True
+    ##########################################################################
+    QQ       = f"""update {EMSTAB}
+                   set `account` = %s , `hostname` = %s , `email` = %s
+                   where ( `uuid` = {uuid} ) ;"""
+    QQ       = " " . join          ( QQ . split ( )                          )
+    VAL      =                     ( ACCOUNT , HOST , EMAIL ,                )
+    DB       . QueryValues         ( QQ , VAL                                )
+    ##########################################################################
+    DB       . Close               (                                         )
+    ##########################################################################
+    if                             ( NEWON                                 ) :
       ########################################################################
-      NOW   = StarDate             (                                         )
-      NOW   . Now                  (                                         )
-      CDT   = NOW . Stardate
+      SHARELIST = self . Translations [ "EMailsWidget" ] [ "Shareable"       ]
+      SHARECONF = self . Translations [ "EMailsWidget" ] [ "Confirm"         ]
       ########################################################################
-      PRD   = Periode              (                                         )
-      PRID  = PRD  . GetUuid       ( DB , PRDTAB                             )
+      SHRSTR = SHARELIST           [ "0"                                     ]
+      CMFSTR = SHARECONF           [ "0"                                     ]
       ########################################################################
-      PRD   . Realm    = uuid
-      PRD   . Role     = 71
-      PRD   . Item     = 1
-      PRD   . States   = 0
-      PRD   . Creation = CDT
-      PRD   . Modified = CDT
-      Items =                      [ "realm"                               , \
-                                     "role"                                , \
-                                     "item"                                , \
-                                     "states"                              , \
-                                     "creation"                            , \
-                                     "modified"                              ]
-      PRD   . UpdateItems          ( DB , PRDTAB , Items                     )
+      JSON   =                     { "Uuid"      : uuid                    , \
+                                     "Account"   : ACCOUNT                 , \
+                                     "Hostname"  : HOST                    , \
+                                     "EMail"     : EMAIL                   , \
+                                     "Owners"    : 0                       , \
+                                     "MX"        : 0                       , \
+                                     "Shareable" : 0                       , \
+                                     "Confirm"   : 0                         }
+      ########################################################################
+      IT     . setData             ( 7 , Qt . UserRole , JSON                )
+      ########################################################################
+      self   . emitAssignColumn . emit ( item , 3 , SHRSTR                   )
+      self   . emitAssignColumn . emit ( item , 4 , CMFSTR                   )
+      self   . emitAssignColumn . emit ( item , 5 , "0"                      )
+      self   . emitAssignColumn . emit ( item , 6 , "0"                      )
     ##########################################################################
+    item     . setData             ( 0 , Qt . UserRole , uuid                )
+    self . emitAssignColumn . emit ( item , 0 , EMAIL                        )
+    self . emitAssignColumn . emit ( item , 1 , ACCOUNT                      )
+    self . emitAssignColumn . emit ( item , 2 , HOST                         )
     ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    DB      . Close                (                                         )
-    ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
-    self . emitAssignColumn . emit ( item , id , name )
+    self . Notify                  ( 5                                       )
     ##########################################################################
     return
   ############################################################################
@@ -872,71 +960,73 @@ class EMailsWidget                 ( TreeDock                              ) :
     except                                                                   :
       pass
     ##########################################################################
-    print(HOST)
     for MX in MXes                                                           :
-      print( MX . to_text ( ) )
+      print ( MX . to_text ( ) )
     ##########################################################################
     return
   ############################################################################
-  def DetectAllMXes             ( self                                     ) :
+  def DetectAllMXes               ( self                                   ) :
     ##########################################################################
-    DB       = self . ConnectDB (                                            )
-    if                          ( DB == None                               ) :
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB == None                             ) :
       return
     ##########################################################################
-    EMSTAB   = self . Tables    [ "EMails"                                   ]
-    PRZTAB   = self . Tables    [ "Properties"                               ]
+    plan     = None
+    if                            ( self . hasPlan ( )                     ) :
+      plan   = self . GetPlan     (                                          )
+    ##########################################################################
+    self     . OnBusy  . emit     (                                          )
+    ##########################################################################
+    EMSTAB   = self . Tables      [ "EMails"                                 ]
+    PRZTAB   = self . Tables      [ "Properties"                             ]
     ##########################################################################
     QQ       = f"select `hostname` from {EMSTAB} group by `hostname` asc ;"
-    HOSTs    = DB . ObtainUuids ( QQ                                         )
+    HOSTs    = DB . ObtainUuids   ( QQ                                       )
     ##########################################################################
-    """
-    if                          ( plan not in [ False , None ]           ) :
-      ######################################################################
-      NAME = self . getMenuItem ( "CountAll"                               )
-      cFmt = self . getMenuItem ( "SecsCounting"                           )
-      rFmt = self . getMenuItem ( "ItemCounting"                           )
-      FMT  = self . getMenuItem ( "Percentage"                             )
-      PID  = plan . Progress    ( NAME , FMT                               )
-      plan . setFrequency       ( PID  , cFmt , rFmt                       )
-    ########################################################################
-    plan   . setRange           ( PID , 0 , len ( UUIDs )                  )
-    plan   . Start              ( PID , 0 , True                           )
-    plan   . ProgressReady      ( PID , 300                                )
-    ########################################################################
-    K      = 0
-    while ( K < len ( UUIDs ) ) and ( plan . isProgressRunning ( PID ) )   :
-      ######################################################################
-      UUID = UUIDs              [ K                                        ]
-      plan . setProgressValue   ( PID , K                                  )
-      plan . ProgressText       ( PID , str ( UUID )                       )
-      ######################################################################
-      self . HostBelongings     ( DB , UUID                                )
-      ######################################################################
-      K    = K + 1
-    ########################################################################
-    plan   . Finish             ( PID                                      )
-    """
+    if                            ( len ( HOSTs ) > 0                      ) :
+      ########################################################################
+      if                          ( plan not in [ False , None ]           ) :
+        ######################################################################
+        NAME = self . getMenuItem ( "QueryAllMXes"                           )
+        cFmt = self . getMenuItem ( "SecsCounting"                           )
+        rFmt = self . getMenuItem ( "ItemCounting"                           )
+        FMT  = self . getMenuItem ( "Percentage"                             )
+        PID  = plan . Progress    ( NAME , FMT                               )
+        plan . setFrequency       ( PID  , cFmt , rFmt                       )
+      ########################################################################
+      plan   . setRange           ( PID , 0 , len ( HOSTs )                  )
+      plan   . Start              ( PID , 0 , True                           )
+      plan   . ProgressReady      ( PID , 300                                )
+      ########################################################################
+      K      = 0
+      while ( K < len ( HOSTs ) ) and ( plan . isProgressRunning ( PID ) )   :
+        ######################################################################
+        HOST = self . assureString ( HOSTs [ K ]                             )
+        plan . setProgressValue   ( PID , K                                  )
+        plan . ProgressText       ( PID , str ( HOST )                       )
+        ######################################################################
+        MXes =                    [                                          ]
+        if                        ( len ( HOST ) > 0                       ) :
+          try                                                                :
+            MXes = dns  . resolver . query ( HOST , 'MX'                     )
+          except                                                             :
+            pass
+        ######################################################################
+        CNT  = len                ( MXes                                     )
+        MQ   = f"select `uuid` from {EMSTAB} where ( `hostname` = %s )"
+        QQ   = f"""update {PRZTAB}
+                   set `mx` = {CNT}
+                   where ( `uuid` in ( {MQ} ) ) ;"""
+        QQ   = " " . join         ( QQ . split ( )                           )
+        DB   . QueryValues        ( QQ , ( HOST , )                          )
+        ######################################################################
+        K    = K + 1
+      ########################################################################
+      plan   . Finish             ( PID                                      )
     ##########################################################################
-    for HOST in HOSTs                                                        :
-      ########################################################################
-      print                     ( "Query DNS : " , HOST                      )
-      MXes   =                  [                                            ]
-      if                        ( len ( HOST ) > 0                         ) :
-        try                                                                  :
-          MXes = dns  . resolver . query ( HOST , 'MX'                       )
-        except                                                               :
-          pass
-      ########################################################################
-      for MX in MXes                                                         :
-        print                   ( MX . to_text ( )                           )
-      ########################################################################
-      CNT    = len              ( MXes                                       )
-      MQ     = f"select `uuid` from {EMSTAB} where ( `hostname` = %s )"
-      QQ     = f"update {PRZTAB} set `mx` = {CNT} where ( `uuid` in ( {MQ} ) ) ;"
-      DB     . QueryValues      ( QQ , ( HOST , )                            )
-    ##########################################################################
+    self     . GoRelax . emit   (                                            )
     DB       . Close            (                                            )
+    self     . Notify           ( 5                                          )
     ##########################################################################
     return
   ############################################################################
@@ -1040,6 +1130,12 @@ class EMailsWidget                 ( TreeDock                              ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     mm     = self . AmountIndexMenu     ( mm                                 )
+    ##########################################################################
+    if                             ( self . Grouping in [ "Searching" ]    ) :
+      ########################################################################
+      msg  = self . getMenuItem    ( "NotSearch"                             )
+      mm   . addAction             ( 2001 , msg                              )
+    ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     = self . AppendDeleteAction  ( mm , 1102                          )
@@ -1107,12 +1203,23 @@ class EMailsWidget                 ( TreeDock                              ) :
       self . RenameItem            (                                         )
       return True
     ##########################################################################
+    if                              ( at == 2001                           ) :
+      ########################################################################
+      self . Grouping = self . OldGrouping
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
     if                             ( at == 4327                            ) :
       self . Go                    ( self . DetectMX , ( atItem , )          )
       return True
     ##########################################################################
     if                             ( at == 4328                            ) :
       self . Go                    ( self . DetectAllMXes                    )
+      return True
+    ##########################################################################
+    if                             ( at == 4329                            ) :
       return True
     ##########################################################################
     return True
