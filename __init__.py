@@ -2,16 +2,32 @@
 ##############################################################################
 ## AITK進入點
 ##############################################################################
-__all__ = [ "Calendars"  ,
-            "Decisions"  ,
-            "Database"   ,
-            "Documents"  ,
-            "Essentials" ,
-            "UUIDs"      ,
-            "Foundation" ,
-            "System"     ,
-            "Qt"         ,
-            "Widgets"    ]
+__all__ = [ "AI"                                                           , \
+            "Calendars"                                                    , \
+            "Catalogue"                                                    , \
+            "Database"                                                     , \
+            "Decisions"                                                    , \
+            "Documents"                                                    , \
+            "Essentials"                                                   , \
+            "Foundation"                                                   , \
+            "Games"                                                        , \
+            "Google"                                                       , \
+            "Math"                                                         , \
+            "Models"                                                       , \
+            "Networking"                                                   , \
+            "People"                                                       , \
+            "Pictures"                                                     , \
+            "Qt"                                                           , \
+            "Scheduler"                                                    , \
+            "Society"                                                      , \
+            "System"                                                       , \
+            "TBL"                                                          , \
+            "Telecom"                                                      , \
+            "UUIDs"                                                        , \
+            "VCF"                                                          , \
+            "Voice"                                                        , \
+            "VTK"                                                          , \
+            "Widgets"                                                        ]
 ##############################################################################
 ## 全局變數
 ##############################################################################
