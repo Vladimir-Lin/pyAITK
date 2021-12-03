@@ -141,8 +141,9 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     self   . LinkAction            ( "Delete"     , self . DeleteItems       )
     self   . LinkAction            ( "Rename"     , self . RenameItem        )
-    self   . LinkAction            ( "Search"     , self . Search            )
     self   . LinkAction            ( "Copy"       , self . CopyToClipboard   )
+    self   . LinkAction            ( "Paste"      , self . Paste             )
+    self   . LinkAction            ( "Search"     , self . Search            )
     self   . LinkAction            ( "Home"       , self . PageHome          )
     self   . LinkAction            ( "End"        , self . PageEnd           )
     self   . LinkAction            ( "PageUp"     , self . PageUp            )
@@ -581,8 +582,9 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     self   . LinkAction    ( "Delete"     , self . DeleteItems     , False   )
     self   . LinkAction    ( "Rename"     , self . RenameItem      , False   )
-    self   . LinkAction    ( "Search"     , self . Search          , False   )
     self   . LinkAction    ( "Copy"       , self . CopyToClipboard , False   )
+    self   . LinkAction    ( "Paste"      , self . Paste           , False   )
+    self   . LinkAction    ( "Search"     , self . Search          , False   )
     self   . LinkAction    ( "Home"       , self . PageHome        , False   )
     self   . LinkAction    ( "End"        , self . PageEnd         , False   )
     self   . LinkAction    ( "PageUp"     , self . PageUp          , False   )
@@ -823,6 +825,11 @@ class ImWidget                     ( TreeDock                              ) :
     L      . setFocus                  ( Qt . TabFocusReason                 )
     ##########################################################################
     self   . SearchLine = L
+    ##########################################################################
+    return
+  ############################################################################
+  def Paste                        ( self                                  ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -1122,8 +1129,8 @@ class ImWidget                     ( TreeDock                              ) :
     mm     = self . SortingMenu     ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    mm     . setFont                ( self    . font ( )                     )
-    aa     = mm . exec_             ( QCursor . pos  ( )                     )
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
     if                              ( self . RunAmountIndexMenu ( )        ) :
