@@ -184,37 +184,54 @@ class EMailsWidget                 ( TreeDock                              ) :
   def getItemJson                  ( self , item                           ) :
     return item . data             ( 7 , Qt . UserRole                       )
   ############################################################################
-  def PrepareItem                  ( self , JSON                           ) :
+  def PrepareItem                   ( self , JSON                          ) :
     ##########################################################################
-    UUID     = int                 ( JSON [ "Uuid"                         ] )
-    UXID     = str                 ( UUID                                    )
+    UUID      = int                 ( JSON [ "Uuid"                        ] )
+    UXID      = str                 ( UUID                                   )
     ##########################################################################
-    ACCOUNT  = self . assureString ( JSON [ "Account"                      ] )
-    HOSTNAME = self . assureString ( JSON [ "Hostname"                     ] )
-    EMAIL    = self . assureString ( JSON [ "EMail"                        ] )
+    ACCOUNT   = JSON                [ "Account"                              ]
+    HOSTNAME  = JSON                [ "Hostname"                             ]
+    EMAIL     = JSON                [ "EMail"                                ]
+    OWNERS    = JSON                [ "Owners"                               ]
+    MX        = JSON                [ "MX"                                   ]
+    SHAREABLE = JSON                [ "Shareable"                            ]
+    CONFIRM   = JSON                [ "Confirm"                              ]
     ##########################################################################
-    IT       = QTreeWidgetItem     (                                         )
-    IT       . setText             ( 0 , EMAIL                               )
-    IT       . setToolTip          ( 0 , UXID                                )
-    IT       . setData             ( 0 , Qt . UserRole , UXID                )
+    SHARELIST = self . Translations [ "EMailsWidget" ] [ "Shareable"         ]
+    SHARECONF = self . Translations [ "EMailsWidget" ] [ "Confirm"           ]
     ##########################################################################
-    IT       . setText             ( 1 , ACCOUNT                             )
-    IT       . setToolTip          ( 1 , UXID                                )
+    SHRSTR    = ""
+    if                              ( str ( SHAREABLE ) in SHARELIST       ) :
+      SHRSTR  = SHARELIST           [ str ( SHAREABLE )                      ]
     ##########################################################################
-    IT       . setText             ( 2 , HOSTNAME                            )
-    IT       . setToolTip          ( 2 , UXID                                )
+    CMFSTR    = ""
+    if                              ( str ( CONFIRM   ) in SHARECONF       ) :
+      CMFSTR  = SHARECONF           [ str ( CONFIRM   )                      ]
     ##########################################################################
-    IT       . setText             ( 3 , ""                                  )
-    IT       . setTextAlignment    ( 4 , Qt . AlignRight                     )
+    IT        = QTreeWidgetItem     (                                        )
+    IT        . setText             ( 0 , EMAIL                              )
+    IT        . setToolTip          ( 0 , UXID                               )
+    IT        . setData             ( 0 , Qt . UserRole , UXID               )
     ##########################################################################
-    IT       . setText             ( 4 , ""                                  )
+    IT        . setText             ( 1 , ACCOUNT                            )
+    IT        . setToolTip          ( 1 , UXID                               )
     ##########################################################################
-    IT       . setText             ( 5 , ""                                  )
+    IT        . setText             ( 2 , HOSTNAME                           )
+    IT        . setToolTip          ( 2 , UXID                               )
     ##########################################################################
-    IT       . setText             ( 6 , ""                                  )
-    IT       . setTextAlignment    ( 6 , Qt . AlignRight                     )
+    IT        . setText             ( 3 , str ( MX )                         )
+    IT        . setTextAlignment    ( 3 , Qt . AlignRight                    )
     ##########################################################################
-    IT       . setData             ( 7 , Qt . UserRole , JSON                )
+    IT        . setText             ( 4 , str ( OWNERS )                     )
+    IT        . setTextAlignment    ( 4 , Qt . AlignRight                    )
+    ##########################################################################
+    IT        . setText             ( 5 , SHRSTR                             )
+    IT        . setData             ( 5 , Qt . UserRole , SHAREABLE          )
+    ##########################################################################
+    IT        . setText             ( 6 , CMFSTR                             )
+    IT        . setData             ( 6 , Qt . UserRole , CONFIRM            )
+    ##########################################################################
+    IT        . setData             ( 7 , Qt . UserRole , JSON               )
     ##########################################################################
     return IT
   ############################################################################
@@ -278,7 +295,6 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     ##########################################################################
     return
-  ############################################################################
   ############################################################################
   @pyqtSlot            (                                                     )
   def Finding          ( self                                              ) :
@@ -378,24 +394,46 @@ class EMailsWidget                 ( TreeDock                              ) :
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
     EMSTAB  = self . Tables           [ "EMails"                             ]
+    PRZTAB  = self . Tables           [ "Properties"                         ]
+    RELTAB  = self . Tables           [ "Relation"                           ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
-      J     =                         { "Uuid"     : U                     , \
-                                        "Account"  : ""                    , \
-                                        "Hostname" : ""                    , \
-                                        "EMail"    : ""                      }
+      J     =                         { "Uuid"      : U                    , \
+                                        "Account"   : ""                   , \
+                                        "Hostname"  : ""                   , \
+                                        "EMail"     : ""                   , \
+                                        "Owners"    : 0                    , \
+                                        "MX"        : 0                    , \
+                                        "Shareable" : 0                    , \
+                                        "Confirm"   : 0                      }
       ########################################################################
-      QQ    = f"""select `account`,`hostname`,`email` from {EMSTAB}
-                  where ( `uuid` = {U} ) ;"""
+      QQ    = f"""select
+                  {EMSTAB}.`account`,
+                  {EMSTAB}.`hostname`,
+                  {EMSTAB}.`email`,
+                  {PRZTAB}.`mx`,
+                  {PRZTAB}.`shareable`,
+                  {PRZTAB}.`confirm`
+                  from {EMSTAB}
+                  left join {PRZTAB}
+                  on ( {PRZTAB}.`uuid` = {EMSTAB}.`uuid` )
+                  where ( {EMSTAB}.`uuid` = {U} ) ;"""
       QQ    = " " . join              ( QQ . split ( )                       )
       DB    . Query                   ( QQ                                   )
       RR    = DB . FetchOne           (                                      )
-      if ( RR not in [ False , None ] ) and ( len ( RR ) == 3 )              :
+      if ( RR not in [ False , None ] ) and ( len ( RR ) == 6 )              :
         ######################################################################
-        J [ "Account"  ] = RR         [ 0                                    ]
-        J [ "Hostname" ] = RR         [ 1                                    ]
-        J [ "EMail"    ] = RR         [ 2                                    ]
+        J [ "Account"   ] = self . assureString ( RR [ 0 ]                   )
+        J [ "Hostname"  ] = self . assureString ( RR [ 1 ]                   )
+        J [ "EMail"     ] = self . assureString ( RR [ 2 ]                   )
+        J [ "MX"        ] = int       (           RR [ 3 ]                   )
+        J [ "Shareable" ] = int       (           RR [ 4 ]                   )
+        J [ "Confirm"   ] = int       (           RR [ 5 ]                   )
+      ########################################################################
+      self . OwnRel . set             ( "second" , U                         )
+      OWNED = self . OwnRel . CountFirst ( DB , RELTAB                       )
+      J   [ "Owners"    ] = OWNED
       ########################################################################
       IMACT . append                  ( J                                    )
     ##########################################################################
@@ -728,10 +766,14 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def DetectMX           ( self , item                                     ) :
+  def DetectMX                       ( self , item                         ) :
     ##########################################################################
-    HOST  = item . text  ( 2                                                 )
-    MXes  = dns  . resolver . query ( HOST , 'MX'                            )
+    HOST   = item . text             ( 2                                     )
+    MXes   =                         [                                       ]
+    try                                                                      :
+      MXes = dns  . resolver . query ( HOST , 'MX'                           )
+    except                                                                   :
+      pass
     ##########################################################################
     print(HOST)
     for MX in MXes                                                           :
@@ -739,32 +781,65 @@ class EMailsWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def DetectAllMXes            ( self                                      ) :
+  def DetectAllMXes             ( self                                     ) :
     ##########################################################################
-    DB      = self . ConnectDB (                                             )
-    if                         ( DB == None                                ) :
+    DB       = self . ConnectDB (                                            )
+    if                          ( DB == None                               ) :
       return
     ##########################################################################
-    EMSTAB  = self . Tables    [ "EMails"                                    ]
-    PRZTAB  = self . Tables    [ "Properties"                                ]
+    EMSTAB   = self . Tables    [ "EMails"                                   ]
+    PRZTAB   = self . Tables    [ "Properties"                               ]
     ##########################################################################
-    QQ      = f"select `hostname` from {EMSTAB} group by `hostname` asc ;"
-    HOSTs   = DB . ObtainUuids ( QQ                                          )
+    QQ       = f"select `hostname` from {EMSTAB} group by `hostname` asc ;"
+    HOSTs    = DB . ObtainUuids ( QQ                                         )
+    ##########################################################################
+    """
+    if                          ( plan not in [ False , None ]           ) :
+      ######################################################################
+      NAME = self . getMenuItem ( "CountAll"                               )
+      cFmt = self . getMenuItem ( "SecsCounting"                           )
+      rFmt = self . getMenuItem ( "ItemCounting"                           )
+      FMT  = self . getMenuItem ( "Percentage"                             )
+      PID  = plan . Progress    ( NAME , FMT                               )
+      plan . setFrequency       ( PID  , cFmt , rFmt                       )
+    ########################################################################
+    plan   . setRange           ( PID , 0 , len ( UUIDs )                  )
+    plan   . Start              ( PID , 0 , True                           )
+    plan   . ProgressReady      ( PID , 300                                )
+    ########################################################################
+    K      = 0
+    while ( K < len ( UUIDs ) ) and ( plan . isProgressRunning ( PID ) )   :
+      ######################################################################
+      UUID = UUIDs              [ K                                        ]
+      plan . setProgressValue   ( PID , K                                  )
+      plan . ProgressText       ( PID , str ( UUID )                       )
+      ######################################################################
+      self . HostBelongings     ( DB , UUID                                )
+      ######################################################################
+      K    = K + 1
+    ########################################################################
+    plan   . Finish             ( PID                                      )
+    """
     ##########################################################################
     for HOST in HOSTs                                                        :
       ########################################################################
-      print   ( "Query DNS : " , HOST )
-      MXes  = dns  . resolver . query ( HOST , 'MX'                          )
+      print                     ( "Query DNS : " , HOST                      )
+      MXes   =                  [                                            ]
+      if                        ( len ( HOST ) > 0                         ) :
+        try                                                                  :
+          MXes = dns  . resolver . query ( HOST , 'MX'                       )
+        except                                                               :
+          pass
       ########################################################################
       for MX in MXes                                                         :
-        print ( MX . to_text ( ) )
+        print                   ( MX . to_text ( )                           )
       ########################################################################
-      CNT   = len ( MXes )
-      MQ    = f"select `uuid` from {EMSTAB} where ( `hostname` = %s )"
-      QQ    = f"update {PRZTAB} set `mx` = {CNT} where ( `uuid` in ( {MQ} ) ) ;"
-      DB    . QueryValues      ( QQ , ( HOST , )                             )
+      CNT    = len              ( MXes                                       )
+      MQ     = f"select `uuid` from {EMSTAB} where ( `hostname` = %s )"
+      QQ     = f"update {PRZTAB} set `mx` = {CNT} where ( `uuid` in ( {MQ} ) ) ;"
+      DB     . QueryValues      ( QQ , ( HOST , )                            )
     ##########################################################################
-    DB      . Close            (                                             )
+    DB       . Close            (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -872,11 +947,17 @@ class EMailsWidget                 ( TreeDock                              ) :
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     = self . AppendDeleteAction  ( mm , 1102                          )
     mm     = self . AppendRenameAction  ( mm , 1103                          )
-    if                             ( atItem not in [ False , None ]        ) :
-      mm   . addAction             ( 4327 , "檢驗伺服器" )
-    mm     . addAction             ( 4328 , "查詢所有伺服器MX紀錄" )
-    mm     . addAction             ( 4329 , "列出所有無效伺服器紀錄" )
     mm     . addSeparator          (                                         )
+    ##########################################################################
+    if                             ( atItem not in [ False , None ]        ) :
+      msg  = self . getMenuItem    ( "QueryMailDNS"                          )
+      mm   . addAction             ( 4327 , msg                              )
+    msg    = self . getMenuItem    ( "QueryAllMXes"                          )
+    mm     . addAction             ( 4328 , msg                              )
+    msg    = self . getMenuItem    ( "ListAllInvalid"                        )
+    mm     . addAction             ( 4329 , msg                              )
+    mm     . addSeparator          (                                         )
+    ##########################################################################
     mm     = self . PickDbMenu     ( mm                                      )
     mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . SortingMenu    ( mm                                      )
