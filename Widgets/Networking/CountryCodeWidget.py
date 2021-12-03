@@ -82,7 +82,6 @@ class CountryCodeWidget            ( TreeDock                              ) :
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
-    self . MountClicked            ( 9                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
@@ -466,11 +465,11 @@ class CountryCodeWidget            ( TreeDock                              ) :
     return
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 1                         )
+    return self . DefaultColumnsMenu (        mm , 0                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9007 )         :
+    if                             ( at >= 9000 ) and ( at <= 9006 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
