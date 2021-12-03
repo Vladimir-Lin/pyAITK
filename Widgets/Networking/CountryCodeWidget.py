@@ -73,8 +73,10 @@ class CountryCodeWidget            ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 6                                       )
+    self . setColumnCount          ( 7                                       )
+    self . setColumnHidden         ( 4 , True                                )
     self . setColumnHidden         ( 5 , True                                )
+    self . setColumnHidden         ( 6 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -122,20 +124,22 @@ class CountryCodeWidget            ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def singleClicked         ( self , item , column                         ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    if                      ( self . isItemPicked ( )                      ) :
+      if                    ( column != self . CurrentItem [ "Column" ]    ) :
+        self . removeParked (                                                )
+    ##########################################################################
+    self     . Notify       ( 0                                              )
     ##########################################################################
     return
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 0 , 1 , 2 , 3 ]          ) :
+    if                          ( column not in [ 0 , 5 ]                  ) :
       return
     ##########################################################################
-    if                          ( column in [ 0 , 1 , 2 , 3 ]              ) :
+    if                          ( column in [ 0 , 5 ]                      ) :
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
                                   "editingFinished"                        , \
@@ -144,8 +148,8 @@ class CountryCodeWidget            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def getItemJson                ( self , item                             ) :
-    return item . data           ( 5 , Qt . UserRole                         )
+  def getItemJson                 ( self , item                            ) :
+    return item . data            ( 6 , Qt . UserRole                        )
   ############################################################################
   def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
@@ -153,12 +157,19 @@ class CountryCodeWidget            ( TreeDock                              ) :
     UXID    = str                 ( UUID                                     )
     USED    = int                 ( JSON [ "Used"     ]                      )
     NATION  = int                 ( JSON [ "Nation"   ]                      )
+    CNAME   = str                 ( JSON [ "Country"  ]                      )
     ITU     = int                 ( JSON [ "ITU"      ]                      )
+    E164    = int                 ( JSON [ "E164"     ]                      )
     PLACE   = int                 ( JSON [ "Place"    ]                      )
+    PNAME   = str                 ( JSON [ "PName"    ]                      )
     ##########################################################################
     CODE    = self . assureString ( JSON [ "Code"     ]                      )
     NAME    = self . assureString ( JSON [ "Name"     ]                      )
     COMMENT = self . assureString ( JSON [ "Comment"  ]                      )
+    ##########################################################################
+    ESTR    = ""
+    if                            ( E164 > 0                               ) :
+      ESTR  = f"{E164}"
     ##########################################################################
     IT      = QTreeWidgetItem     (                                          )
     IT      . setText             ( 0 , NAME                                 )
@@ -167,15 +178,16 @@ class CountryCodeWidget            ( TreeDock                              ) :
     ##########################################################################
     IT      . setText             ( 1 , CODE                                 )
     ##########################################################################
-    ## IT      . setText             ( 2 , AREA                                 )
-    ## IT      . setToolTip          ( 2 , UXID                                 )
+    IT      . setText             ( 2 , CNAME                                )
+    IT      . setToolTip          ( 2 , UXID                                 )
     ##########################################################################
-    ## IT      . setText             ( 3 , NUMBER                               )
-    ## IT      . setToolTip          ( 3 , UXID                                 )
+    IT      . setText             ( 3 , ESTR                                 )
     ##########################################################################
-    IT      . setText             ( 4 , ""                                   )
+    IT      . setText             ( 4 , PNAME                                )
     ##########################################################################
-    IT      . setData             ( 5 , Qt . UserRole , JSON                 )
+    IT      . setText             ( 5 , COMMENT                              )
+    ##########################################################################
+    IT      . setData             ( 6 , Qt . UserRole , JSON                 )
     ##########################################################################
     return IT
   ############################################################################
@@ -210,17 +222,17 @@ class CountryCodeWidget            ( TreeDock                              ) :
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
+    self   . Go                  ( self . UpdateItem                       , \
+                                   ( item , uuid , column , msg , )          )
     ##########################################################################
     return
   ############################################################################
   @pyqtSlot                       (        list                              )
-  def refresh                     ( self , TASKS                           ) :
+  def refresh                     ( self , CountryCodes                    ) :
     ##########################################################################
     self   . clear                (                                          )
     ##########################################################################
-    for T in TASKS                                                           :
+    for T in CountryCodes                                                    :
       ########################################################################
       IT   = self . PrepareItem   ( T                                        )
       self . addTopLevelItem      ( IT                                       )
@@ -240,12 +252,16 @@ class CountryCodeWidget            ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     NAMEs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
     PCCTAB  = self . Tables           [ "CountryCode"                        ]
+    ITUTAB  = self . Tables           [ "ITU"                                ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
@@ -253,8 +269,11 @@ class CountryCodeWidget            ( TreeDock                              ) :
                                         "Used"    : 0                      , \
                                         "Code"    : ""                     , \
                                         "Nation"  : 0                      , \
+                                        "Country" : ""                     , \
                                         "ITU"     : 0                      , \
+                                        "E164"    : 0                      , \
                                         "Place"   : 0                      , \
+                                        "PName"   : ""                     , \
                                         "Name"    : ""                     , \
                                         "Comment" : ""                       }
       ########################################################################
@@ -274,9 +293,41 @@ class CountryCodeWidget            ( TreeDock                              ) :
         J [ "Place"   ] = int         ( RR [ 4 ]                             )
         J [ "Name"    ] = RR          [ 5                                    ]
         J [ "Comment" ] = RR          [ 6                                    ]
+        ######################################################################
+        TUID            = J           [ "ITU"                                ]
+        E164            = 0
+        ######################################################################
+        if                            ( TUID > 0                           ) :
+          QQ            = f"""select `itu` from {ITUTAB}
+                              where ( `uuid` = {TUID} ) ;"""
+          QQ            = " " . join  ( QQ . split ( )                       )
+          DB            . Query       ( QQ                                   )
+          RR            = DB . FetchOne (                                    )
+          if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )      :
+            E164        = RR          [ 0                                    ]
+        ######################################################################
+        J [ "E164"    ] = E164
+        ######################################################################
+        NUID            = J           [ "Nation"                             ]
+        CNAME           = ""
+        ######################################################################
+        if                            ( NUID > 0                           ) :
+          CNAME         = self . GetName ( DB , NAMTAB , NUID                )
+        ######################################################################
+        J [ "Country" ] = CNAME
+        ######################################################################
+        PUID            = J           [ "Place"                              ]
+        PNAME           = ""
+        ######################################################################
+        if                            ( PUID > 0                           ) :
+          PNAME         = self . GetName ( DB , NAMTAB , PUID                )
+        ######################################################################
+        J [ "PName"   ] = PNAME
       ########################################################################
       IMACT . append                  ( J                                    )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( IMACT ) <= 0                 ) :
@@ -309,6 +360,12 @@ class CountryCodeWidget            ( TreeDock                              ) :
     return DB . ObtainUuids      ( QQ , 0                                    )
   ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -364,64 +421,92 @@ class CountryCodeWidget            ( TreeDock                              ) :
   ############################################################################
   def Prepare                    ( self                                    ) :
     ##########################################################################
-    ## self   . setColumnWidth      ( 0 , 200                                   )
-    ## self   . setColumnWidth      ( 1 ,  80                                   )
-    ## self   . setColumnWidth      ( 2 ,  80                                   )
-    ## self   . setColumnWidth      ( 3 , 160                                   )
-    ## self   . setColumnWidth      ( 4 , 100                                   )
-    self   . setColumnWidth      ( 5 ,   3                                   )
+    self   . setColumnWidth      ( 1 , 120                                   )
+    self   . setColumnWidth      ( 3 , 120                                   )
+    self   . setColumnWidth      ( 6 ,   3                                   )
     LABELs = self . Translations [ "CountryCodeWidget" ] [ "Labels"          ]
     self   . setCentralLabels    ( LABELs                                    )
     self   . setPrepared         ( True                                      )
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
+  def UpdateItem              ( self , item , uuid , column , name         ) :
     ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
+    PCCTAB = self . Tables    [ "CountryCode"                                ]
     ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    DB     . LockWrites       ( [ PCCTAB ]                                   )
     ##########################################################################
-    return mm
+    ITEM   = "name"
+    if                        ( column == 0                                ) :
+      ITEM = "name"
+    elif                      ( column == 5                                ) :
+      ITEM = "comment"
+    ##########################################################################
+    QQ     = f"""update {PCCTAB}
+                   set `{ITEM}` = %s
+                   where ( `uuid` = {uuid} ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    VAL    =                  ( name ,                                       )
+    DB     . QueryValues      ( QQ , VAL                                     )
+    ##########################################################################
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 1                         )
+  ############################################################################
+  def RunColumnsMenu               ( self , at                             ) :
+    ##########################################################################
+    if                             ( at >= 9001 ) and ( at <= 9007 )         :
+      ########################################################################
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
-    items  = self . selectedItems  (                                         )
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
+    ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
+    ##########################################################################
     mm     . addSeparator          (                                         )
+    mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . SortingMenu    ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunColumnsMenu     ( at )      ) :
       return True
     ##########################################################################
     if                             ( self . RunSortingMenu     ( at )      ) :
@@ -432,6 +517,7 @@ class CountryCodeWidget            ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
+      self . clear                 (                                         )
       self . startup               (                                         )
       return True
     ##########################################################################

@@ -910,7 +910,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     self . emitAssignColumn . emit ( item , 1 , ACCOUNT                      )
     self . emitAssignColumn . emit ( item , 2 , HOST                         )
     ##########################################################################
-    self . Notify                  ( 5                                       )
+    self     . Notify              ( 5                                       )
     ##########################################################################
     return
   ############################################################################
