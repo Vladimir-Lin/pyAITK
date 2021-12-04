@@ -137,15 +137,29 @@ class AreaCodeWidget               ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 0 , 1 , 2 , 3 ]          ) :
+    if                          ( column not in [ 0 , 3 , 8 ]              ) :
       return
     ##########################################################################
-    if                          ( column in [ 0 , 1 , 2 , 3 ]              ) :
+    if                          ( column in [ 0 , 8 ]                      ) :
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
                                   "editingFinished"                        , \
                                   self . nameChanged                         )
       line . setFocus           ( Qt . TabFocusReason                        )
+      return
+    ##########################################################################
+    if                          ( column in [ 3 ]                          ) :
+      ########################################################################
+      LL   = self . Translations [ "AreaCodeWidget" ] [ "Used"               ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . usageChanged                       )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 5                                         )
+      cb   . showPopup           (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -228,24 +242,46 @@ class AreaCodeWidget               ( TreeDock                              ) :
     msg    = line . text         (                                           )
     uuid   = self . itemUuid     ( item , 0                                  )
     ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
+    self   . removeParked        (                                           )
+    self   . Go                  ( self . UpdateItem                       , \
+                                   ( item , uuid , column , msg , )          )
     ##########################################################################
-    item   . setText             ( column ,              msg                 )
+    return
+  ############################################################################
+  def usageChanged               ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      uuid = self . itemUuid     ( item , 0                                  )
+      LL   = self . Translations [ "AreaCodeWidget" ] [ "Used"               ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      self . Go                  ( self . UpdateUsage                      , \
+                                   ( item , uuid , value , )                 )
     ##########################################################################
     self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
     ##########################################################################
     return
   ############################################################################
   @pyqtSlot                       (        list                              )
-  def refresh                     ( self , TASKS                           ) :
+  def refresh                     ( self , AREAS                           ) :
     ##########################################################################
     self   . clear                (                                          )
     ##########################################################################
-    for T in TASKS                                                           :
+    for T in AREAS                                                           :
       ########################################################################
       IT   = self . PrepareItem   ( T                                        )
       self . addTopLevelItem      ( IT                                       )
@@ -465,186 +501,56 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def organize                     ( self                                  ) :
+  def UpdateItem                     ( self , item , uuid , column , name  ) :
     ##########################################################################
-    Filename = "D:/Workspaces/areacodes.txt"
-    with open                  ( Filename , "rb" ) as f                      :
-      TEXT   = f . read (                                                    )
-    ##########################################################################
-    S  = TEXT . decode ( "utf-8" )
-    L  = S . split ( "\n" )
-    ##########################################################################
-    U = [ ]
-    ##########################################################################
-    for P in L                                                               :
-      if ( len ( P ) <= 0 ) :
-        continue
-      if ( "+" not in P ) :
-        continue
-      if ( "-" not in P ) :
-        continue
-      K = P
-      K = K . replace ( "\t" , " " )
-      V = K . split ( )
-      Total = len ( V )
-      if ( Total < 2 ) :
-        continue
-      ########################################################################
-      PHONE = V [ Total - 1 ]
-      NAME  = K
-      NAME  = NAME . replace ( PHONE , "" )
-      NAME  = NAME .  strip ( )
-      NAME  = NAME . rstrip ( )
-      NAME  = NAME . capitalize ( )
-      RR    = f"{PHONE}*{NAME}"
-      U    . append ( RR )
-    ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
+    DB     = self . ConnectDB        (                                       )
+    if                               ( DB == None                          ) :
       return
     ##########################################################################
-    PACTAB  = self . Tables           [ "AreaCode"                           ]
+    PACTAB = self . Tables           [ "AreaCode"                            ]
     ##########################################################################
-    BASE = 3100001000000000000
-    U . sort ( )
-    KM = [ ]
-    AUIDs = [ ]
-    ID = 0
-    for S in U :
-      K  = S . split ( "*" )
-      P  = K [ 0 ]
-      N  = K [ 1 ]
-      if ( "+" not in P ) :
-        continue
-      if ( "-" not in P ) :
-        continue
-      P  = P . replace ( "+" , "" )
-      V  = P . split ( "-" )
-      ## if ( P in KM ) :
-      ##   continue
-      COUNTRY = int ( V [ 0 ] )
-      AREA    = int ( V [ 1 ] )
-      KM . append ( P )
-      ########################################################################
-      """
-      CID     = 0
-      if   ( COUNTRY <  10 ) :
-        CID   = COUNTRY * 100
-      elif ( COUNTRY < 100 ) :
-        CID   = COUNTRY *  10
-      else :
-        CID   = COUNTRY
-      """
-      ########################################################################
-      """
-      AID     = 0
-      if   ( AREA <  10 ) :
-        AID   = AREA * 1000
-      elif ( AREA < 100 ) :
-        AID   = AREA *  100
-      elif ( AREA < 1000 ) :
-        AID   = AREA *  10
-      else :
-        AID   = AREA
-      """
-      ########################################################################
-      ## CID     = CID * 1000000
-      ## AID     = AID * 100
-      ## ID      = CID + AID
-      ID      = ID + 1
-      AUID    = BASE + ID
-      ## if ( AUID in AUIDs ) :
-      ##   continue
-      ## AUIDs   . append ( AUID )
-      ########################################################################
-      print ( ID , " " , AUID , " " , COUNTRY , " @ " , AREA , " " , N )
-      QQ      = f"""insert into {PACTAB}
-                    ( `id`,`uuid`,`used`,`isd`,`code`,`comment` )
-                    values
-                    ( {ID} , {AUID} , 1 , '{COUNTRY}' , '{AREA}' ,  %s ) ;"""
-      VAL     = ( N , )
-      DB      . QueryValues ( QQ , VAL )
+    DB     . LockWrites              ( [ PACTAB ]                            )
     ##########################################################################
-    DB      . Close                   (                                      )
+    col    = "name"
+    if                               ( column in [ 0 ]                     ) :
+      col  = "name"
+    elif                             ( column in [ 8 ]                     ) :
+      col  = "comment"
+    ##########################################################################
+    QQ     = f"""update {PACTAB}
+                   set `{col}` = %s
+                   where ( `uuid` = {uuid} ) ;"""
+    QQ     = " " . join              ( QQ . split ( )                        )
+    DB     . QueryValues             ( QQ , ( name , )                       )
+    ##########################################################################
+    DB     . Close                   (                                       )
+    ##########################################################################
+    self   . emitAssignColumn . emit ( item , column , name                  )
+    ##########################################################################
+    self   . Notify                  ( 5                                     )
     ##########################################################################
     return
   ############################################################################
-  def makeConnection                  ( self                               ) :
+  def UpdateUsage             ( self , item , uuid , usage                 ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    PACTAB  = self . Tables           [ "AreaCode"                           ]
-    ITUTAB  = self . Tables           [ "ITU"                                ]
-    QQ      = f"select `uuid` from {PACTAB} order by `id` asc ;"
-    UUIDs   = DB . ObtainUuids        ( QQ                                   )
+    PACTAB = self . Tables    [ "AreaCode"                                   ]
     ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      QQ    = f"select `isd` from {PACTAB} where ( `uuid` = {UUID} ) ;"
-      DB    . Query                   ( QQ                                   )
-      RR    = DB . FetchOne           (                                      )
-      ########################################################################
-      if ( not ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) ) )  :
-        continue
-      ########################################################################
-      ISD   = self . assureString     ( RR [ 0 ]                             )
-      ISD   = int                     ( ISD                                  )
-      ########################################################################
-      QQ    = f"select `uuid` from {ITUTAB} where ( `itu` = {ISD} ) ;"
-      DB    . Query                   ( QQ                                   )
-      RR    = DB . FetchOne           (                                      )
-      ########################################################################
-      if ( not ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) ) )  :
-        continue
-      ########################################################################
-      TUID  = int                     ( RR [ 0 ]                             )
-      ########################################################################
-      QQ    = f"update {PACTAB} set `itu` = {TUID} where ( `uuid` = {UUID} ) ;"
-      DB    . Query                   ( QQ                                   )
-      ########################################################################
-      print ( UUID , " => " , TUID )
+    DB     . LockWrites       ( [ PACTAB ]                                   )
     ##########################################################################
-    DB      . Close                   (                                      )
+    QQ     = f"""update {PACTAB}
+                 set `used` = {usage}
+                 where ( `uuid` = {uuid} ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    DB     . Query            ( QQ                                           )
     ##########################################################################
-    return
-  ############################################################################
-  def makeNations                     ( self                               ) :
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      return
-    ##########################################################################
-    PCCTAB  = self . Tables           [ "CountryCode"                        ]
-    PACTAB  = self . Tables           [ "AreaCode"                           ]
-    ITUTAB  = self . Tables           [ "ITU"                                ]
-    ##########################################################################
-    QQ      = f"select `itu` from {PCCTAB} where ( `itu` > 0 ) group by `itu` asc ;"
-    UUIDs   = DB . ObtainUuids        ( QQ                                   )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      QQ    = f"""select `nation` from {PCCTAB}
-                  where ( `itu` = {UUID} )
-                  and ( `nation` > 0 )
-                  order by `id` asc
-                  limit 0 , 1 ;"""
-      DB    . Query                   ( " " . join ( QQ . split ( ) )        )
-      RR    = DB . FetchOne           (                                      )
-      ########################################################################
-      if ( not ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) ) )  :
-        continue
-      ########################################################################
-      NUID  = int                     ( RR [ 0 ]                             )
-      ########################################################################
-      QQ    = f"""update {PACTAB}
-                  set `nation` = {NUID}
-                  where ( `itu` = {UUID} ) ;"""
-      DB    . Query                   ( " " . join ( QQ . split ( ) )        )
-      print ( UUID , " : " , NUID )
-    ##########################################################################
-    DB      . Close                   (                                      )
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
@@ -677,7 +583,6 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     mm     = self . AmountIndexMenu     ( mm                                 )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     . addAction ( 1002 , "列出" )
     mm     . addSeparator          (                                         )
     mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . SortingMenu    ( mm                                      )
@@ -686,6 +591,13 @@ class AreaCodeWidget               ( TreeDock                              ) :
     mm     . setFont               ( self    . font ( )                      )
     aa     = mm . exec_            ( QCursor . pos  ( )                      )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunAmountIndexMenu ( )         ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
@@ -705,10 +617,6 @@ class AreaCodeWidget               ( TreeDock                              ) :
       self . clear                 (                                         )
       self . startup               (                                         )
       ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 1002                            ) :
-      self . Go                    ( self . makeNations                      )
       return True
     ##########################################################################
     return True
