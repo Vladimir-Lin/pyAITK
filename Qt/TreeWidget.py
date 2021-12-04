@@ -22,10 +22,15 @@ from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QMimeData
+from   PyQt5 . QtCore                 import QByteArray
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QPixmap
+from   PyQt5 . QtGui                  import QImage
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QDrag
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -33,7 +38,7 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QAbstractItemView
 from   PyQt5 . QtWidgets              import QTreeWidget
 from   PyQt5 . QtWidgets              import QTreeWidgetItem
@@ -446,6 +451,18 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def itemUuid                  ( self , item , column = 0                 ) :
     uuid = item . data          ( column , Qt . UserRole                     )
     return int                  ( uuid                                       )
+  ############################################################################
+  def getSelectedUuids            ( self , column                          ) :
+    ##########################################################################
+    UUIDs  =                      [                                          ]
+    ##########################################################################
+    items  = self . selectedItems (                                          )
+    for item in items                                                        :
+      UUID = self . itemUuid      ( item , column                            )
+      if                          ( UUID not in UUIDs                      ) :
+        UUIDs . append            ( UUID                                     )
+    ##########################################################################
+    return UUIDs
   ############################################################################
   def uuidAtItem                  ( self , UUID , column = 0               ) :
     ##########################################################################

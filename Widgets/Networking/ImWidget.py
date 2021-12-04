@@ -1122,7 +1122,13 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     . addAction              ( 1102 ,  TRX [ "UI::Delete" ]           )
+    ##########################################################################
+    if                              ( len ( items ) > 0                    ) :
+      self . AppendDeleteAction     ( mm , 1102                              )
+    ##########################################################################
+    msg    = self . getMenuItem     ( "Search"                               )
+    mm     . addAction              ( 1103 , msg                             )
+    ##########################################################################
     mm     . addSeparator           (                                        )
     mm     = self . PickDbMenu      ( mm                                     )
     mm     = self . ColumnsMenu     ( mm                                     )
@@ -1173,6 +1179,10 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 1102                           ) :
       self . DeleteItems            (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1103                           ) :
+      self . Search                 (                                        )
       return True
     ##########################################################################
     if                              ( at == 2001                           ) :
