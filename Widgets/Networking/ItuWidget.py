@@ -74,13 +74,13 @@ class ItuWidget                    ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . setColumnCount          ( 4                                       )
+    self . setColumnHidden         ( 2 , True                                )
     self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
-    self . MountClicked            ( 9                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
@@ -97,7 +97,7 @@ class ItuWidget                    ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 640                              )
+    return QSize                   ( 400 , 640                               )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -107,7 +107,6 @@ class ItuWidget                    ( TreeDock                              ) :
     self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
     self . LinkAction              ( "Refresh"    , self . startup           )
     ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
     self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
     ##########################################################################
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
@@ -122,30 +121,23 @@ class ItuWidget                    ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def singleClicked         ( self , item , column                         ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    if                      ( self . isItemPicked ( )                      ) :
+      if                    ( column != self . CurrentItem [ "Column" ]    ) :
+        self . removeParked (                                                )
+    ##########################################################################
+    self     . Notify       ( 0                                              )
     ##########################################################################
     return
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 0 , 1 , 2 , 3 ]          ) :
-      return
-    ##########################################################################
-    if                          ( column in [ 0 , 1 , 2 , 3 ]              ) :
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
     ##########################################################################
     return
   ############################################################################
   def getItemJson                ( self , item                             ) :
-    return item . data           ( 5 , Qt . UserRole                         )
+    return item . data           ( 3 , Qt . UserRole                         )
   ############################################################################
   def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
@@ -153,65 +145,30 @@ class ItuWidget                    ( TreeDock                              ) :
     UXID    = str                 ( UUID                                     )
     DETAILS = int                 ( JSON [ "Details"  ]                      )
     PLACE   = int                 ( JSON [ "Place"    ]                      )
-    ##########################################################################
-    ITU     = self . assureString ( JSON [ "ITU"     ]                      )
+    PName   = str                 ( JSON [ "PName"    ]                      )
+    ITU     = str                 ( JSON [ "ITU"      ]                      )
     ##########################################################################
     IT      = QTreeWidgetItem     (                                          )
-    IT      . setText             ( 0 , ITU                                 )
+    IT      . setText             ( 0 , ITU                                  )
     IT      . setToolTip          ( 0 , UXID                                 )
     IT      . setData             ( 0 , Qt . UserRole , UXID                 )
     ##########################################################################
-    ## IT      . setText             ( 1 , CODE                                 )
+    IT      . setText             ( 1 , PName                                )
+    IT      . setData             ( 1 , Qt . UserRole , PLACE                )
     ##########################################################################
     ## IT      . setText             ( 2 , AREA                                 )
-    ## IT      . setToolTip          ( 2 , UXID                                 )
+    IT      . setData             ( 1 , Qt . UserRole , DETAILS              )
     ##########################################################################
     IT      . setData             ( 3 , Qt . UserRole , JSON                 )
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
-    ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 1                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def nameChanged                ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isItemPicked ( )             ) :
-      return False
-    ##########################################################################
-    item   = self . CurrentItem  [ "Item"                                    ]
-    column = self . CurrentItem  [ "Column"                                  ]
-    line   = self . CurrentItem  [ "Widget"                                  ]
-    text   = self . CurrentItem  [ "Text"                                    ]
-    msg    = line . text         (                                           )
-    uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
-    ##########################################################################
-    item   . setText             ( column ,              msg                 )
-    ##########################################################################
-    self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
-    ##########################################################################
-    return
-  ############################################################################
   @pyqtSlot                       (        list                              )
-  def refresh                     ( self , TASKS                           ) :
+  def refresh                     ( self , E164s                           ) :
     ##########################################################################
     self   . clear                (                                          )
     ##########################################################################
-    for T in TASKS                                                           :
+    for T in E164s                                                           :
       ########################################################################
       IT   = self . PrepareItem   ( T                                        )
       self . addTopLevelItem      ( IT                                       )
@@ -231,12 +188,15 @@ class ItuWidget                    ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     NAMEs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
     ITUTAB  = self . Tables           [ "ITU"                                ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
@@ -252,12 +212,22 @@ class ItuWidget                    ( TreeDock                              ) :
       RR    = DB . FetchOne           (                                      )
       if ( RR not in [ False , None ] ) and ( len ( RR ) == 3 )              :
         ######################################################################
-        J [ "ITU"     ] = RR          [ 0                                    ]
+        J [ "ITU"     ] = self . assureString ( RR [ 0 ]                     )
         J [ "Details" ] = int         ( RR [ 1 ]                             )
         J [ "Place"   ] = int         ( RR [ 2 ]                             )
+        ######################################################################
+        PUID            = J           [ "Place"                              ]
+        PNAME           = ""
+        ######################################################################
+        if                            ( PUID > 0                           ) :
+          PNAME         = self . GetName ( DB , NAMTAB , PUID                )
+        ######################################################################
+        J [ "PName"   ] = PNAME
       ########################################################################
       IMACT . append                  ( J                                    )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( IMACT ) <= 0                 ) :
@@ -290,6 +260,11 @@ class ItuWidget                    ( TreeDock                              ) :
     return DB . ObtainUuids      ( QQ , 0                                    )
   ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -345,11 +320,6 @@ class ItuWidget                    ( TreeDock                              ) :
   ############################################################################
   def Prepare                    ( self                                    ) :
     ##########################################################################
-    ## self   . setColumnWidth      ( 0 , 200                                   )
-    ## self   . setColumnWidth      ( 1 ,  80                                   )
-    ## self   . setColumnWidth      ( 2 ,  80                                   )
-    ## self   . setColumnWidth      ( 3 , 160                                   )
-    ## self   . setColumnWidth      ( 4 , 100                                   )
     self   . setColumnWidth      ( 3 ,   3                                   )
     LABELs = self . Translations [ "ItuWidget" ] [ "Labels"                  ]
     self   . setCentralLabels    ( LABELs                                    )
@@ -357,52 +327,53 @@ class ItuWidget                    ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 1                         )
+  ############################################################################
+  def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    if                             ( at >= 9000 ) and ( at <= 9006 )         :
+      ########################################################################
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      ########################################################################
+      return True
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
-    ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
-    ##########################################################################
-    return mm
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
-    items  = self . selectedItems  (                                         )
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
+    ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     . addSeparator          (                                         )
+    mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . SortingMenu    ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunColumnsMenu     ( at )      ) :
       return True
     ##########################################################################
     if                             ( self . RunSortingMenu     ( at )      ) :
@@ -413,7 +384,10 @@ class ItuWidget                    ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
+      ########################################################################
+      self . clear                 (                                         )
       self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     return True
