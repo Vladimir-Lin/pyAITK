@@ -12,71 +12,45 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                         import QtCore
+from   PyQt5                         import QtGui
+from   PyQt5                         import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                import QObject
+from   PyQt5 . QtCore                import pyqtSignal
+from   PyQt5 . QtCore                import pyqtSlot
+from   PyQt5 . QtCore                import Qt
+from   PyQt5 . QtCore                import QPoint
+from   PyQt5 . QtCore                import QPointF
+from   PyQt5 . QtCore                import QSize
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                 import QIcon
+from   PyQt5 . QtGui                 import QCursor
+from   PyQt5 . QtGui                 import QKeySequence
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QAction
-from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAbstractItemView
-from   PyQt5 . QtWidgets              import QTreeWidget
-from   PyQt5 . QtWidgets              import QTreeWidgetItem
-from   PyQt5 . QtWidgets              import QLineEdit
-from   PyQt5 . QtWidgets              import QComboBox
-from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets             import QApplication
+from   PyQt5 . QtWidgets             import QWidget
+from   PyQt5 . QtWidgets             import qApp
+from   PyQt5 . QtWidgets             import QAction
+from   PyQt5 . QtWidgets             import QShortcut
+from   PyQt5 . QtWidgets             import QMenu
+from   PyQt5 . QtWidgets             import QAbstractItemView
+from   PyQt5 . QtWidgets             import QTreeWidget
+from   PyQt5 . QtWidgets             import QTreeWidgetItem
+from   PyQt5 . QtWidgets             import QLineEdit
+from   PyQt5 . QtWidgets             import QComboBox
+from   PyQt5 . QtWidgets             import QSpinBox
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
-from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
-from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
-from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
-from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
+from   AITK  . Qt . MenuManager      import MenuManager as MenuManager
+from   AITK  . Qt . TreeDock         import TreeDock    as TreeDock
+from   AITK  . Qt . LineEdit         import LineEdit    as LineEdit
+from   AITK  . Qt . ComboBox         import ComboBox    as ComboBox
+from   AITK  . Qt . SpinBox          import SpinBox     as SpinBox
 ##############################################################################
-from   AITK  . Essentials . Relation  import Relation
+from   AITK  . Essentials . Relation import Relation
 ##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
-##############################################################################
-"""
-4730000000000000001
-create table `positions` (
-  `id` integer not null auto_increment primary key,
-  `uuid` bigint not null,
-  `prefer` integer default 0,
-  `states` bigint default 0,
-  `longitude` bigint default -1,
-  `latitude` bigint default -1,
-  `altitude` bigint default 0,
-  `longstr` tinyblob default '' ,
-  `altistr` tinyblob default '' ,
-  `ltime` timestamp not null default current_timestamp() ON UPDATE current_timestamp(),
-  UNIQUE KEY `position` (`uuid`,`longitude`,`latitude`,`altitude`),
-  KEY `uuid` (`uuid`),
-  KEY `prefer` (`prefer`),
-  KEY `states` (`states`),
-  KEY `longitude` (`longitude`),
-  KEY `latitude` (`latitude`),
-  KEY `altitude` (`altitude`),
-  KEY `longstr` (`longstr`(32)),
-  KEY `altistr` (`altistr`(32)),
-  KEY `ltime` (`ltime`)
-) Engine = Federated default charset = utf8mb4 connection = "FederatedForInsider/positions" ;
-"""
+from   AITK  . Calendars  . StarDate import StarDate
+from   AITK  . Calendars  . Periode  import Periode
 ##############################################################################
 class PositionListings             ( TreeDock                              ) :
   ############################################################################
@@ -126,47 +100,47 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return self . SizeSuggestion   ( QSize ( 640 , 640 )                     )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn               ( self                                         ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                      ( not self . isPrepared ( )                    ) :
       return False
     ##########################################################################
-    self   . setActionLabel        ( "Label"      , self . windowTitle ( )   )
-    self   . LinkAction            ( "Refresh"    , self . startup           )
+    self   . setActionLabel ( "Label"      , self . windowTitle ( )          )
+    self   . LinkAction     ( "Refresh"    , self . startup                  )
     ##########################################################################
-    if                             ( int ( self . Uuid ) > 0               ) :
-      self . LinkAction            ( "Insert"     , self . InsertItem        )
+    if                      ( int ( self . Uuid ) > 0                      ) :
+      self . LinkAction     ( "Insert"     , self . InsertItem               )
     ##########################################################################
-    self   . LinkAction            ( "Delete"     , self . DeleteItems       )
-    self   . LinkAction            ( "Rename"     , self . RenameItem        )
-    self   . LinkAction            ( "Copy"       , self . CopyToClipboard   )
-    self   . LinkAction            ( "Home"       , self . PageHome          )
-    self   . LinkAction            ( "End"        , self . PageEnd           )
-    self   . LinkAction            ( "PageUp"     , self . PageUp            )
-    self   . LinkAction            ( "PageDown"   , self . PageDown          )
+    self   . LinkAction     ( "Delete"     , self . DeleteItems              )
+    self   . LinkAction     ( "Rename"     , self . RenameItem               )
+    self   . LinkAction     ( "Copy"       , self . CopyToClipboard          )
+    self   . LinkAction     ( "Home"       , self . PageHome                 )
+    self   . LinkAction     ( "End"        , self . PageEnd                  )
+    self   . LinkAction     ( "PageUp"     , self . PageUp                   )
+    self   . LinkAction     ( "PageDown"   , self . PageDown                 )
     ##########################################################################
-    self   . LinkAction            ( "SelectAll"  , self . SelectAll         )
-    self   . LinkAction            ( "SelectNone" , self . SelectNone        )
+    self   . LinkAction     ( "SelectAll"  , self . SelectAll                )
+    self   . LinkAction     ( "SelectNone" , self . SelectNone               )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut              ( self                                         ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                      ( not self . isPrepared ( )                    ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def singleClicked         ( self , item , column                         ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    if                      ( self . isItemPicked ( )                      ) :
+      if                    ( column != self . CurrentItem [ "Column" ]    ) :
+        self . removeParked (                                                )
     ##########################################################################
-    self     . Notify         ( 0                                            )
+    self     . Notify       ( 0                                              )
     ##########################################################################
     return
   ############################################################################
@@ -264,24 +238,28 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def InsertItem                 ( self                                    ) :
+  @pyqtSlot      (                                                           )
+  def InsertItem ( self                                                    ) :
     ##########################################################################
-    if                           ( int ( self . Uuid ) <= 0                ) :
+    if           ( int ( self . Uuid ) <= 0                                ) :
       return
     ##########################################################################
-    self . Go                    ( self . AppendPosition                     )
+    self . Go    ( self . AppendPosition                                     )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot                       (                                          )
+  def RenameItem                  ( self                                   ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
+    item   = self . currentItem   (                                          )
+    if                            ( item in [ False , None ]               ) :
       return
     ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
+    column = self . currentColumn (                                          )
+    if                            ( column not in [ 0 , 1 , 2 ]            ) :
+      return
+    ##########################################################################
+    self   . doubleClicked        ( item , column                            )
     ##########################################################################
     return
   ############################################################################
@@ -304,9 +282,24 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def DeleteItems                ( self                                    ) :
+  @pyqtSlot                           (                                      )
+  def DeleteItems                     ( self                               ) :
     ##########################################################################
+    items  = self . selectedItems     (                                      )
+    if                                ( len ( items ) <= 0                 ) :
+      return
+    ##########################################################################
+    UUIDs  =                          [                                      ]
+    for item in items                                                        :
+      UUID = self . itemUuid          ( item , 0                             )
+      self . pendingRemoveItem . emit ( item                                 )
+      if                              ( UUID not in UUIDs                  ) :
+        UUIDs . append                ( UUID                                 )
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      return
+    ##########################################################################
+    self . Go                         ( self . DeletePositions , ( UUIDs , ) )
     ##########################################################################
     return
   ############################################################################
@@ -330,6 +323,9 @@ class PositionListings             ( TreeDock                              ) :
     if                                ( DB == None                         ) :
       self . emitNamesShow . emit     (                                      )
       return
+    ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     ##########################################################################
     POSTAB  = self . Tables           [ "Positions"                          ]
     LISTS   =                         [                                      ]
@@ -391,6 +387,8 @@ class PositionListings             ( TreeDock                              ) :
         ######################################################################
         LISTS . append                ( J                                    )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( LISTS ) <= 0                 ) :
@@ -398,6 +396,7 @@ class PositionListings             ( TreeDock                              ) :
       return
     ##########################################################################
     self    . emitAllNames  . emit    ( LISTS                                )
+    self    . Notify                  ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -436,6 +435,18 @@ class PositionListings             ( TreeDock                              ) :
   ############################################################################
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
     ##########################################################################
@@ -449,48 +460,6 @@ class PositionListings             ( TreeDock                              ) :
     self   . setCentralLabels    ( LABELs                                    )
     ##########################################################################
     self   . setPrepared         ( True                                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -845,17 +814,31 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def DeletePositions         ( self , UUIDs                               ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      self . Notify           ( 1                                            )
       return
     ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
+    POSTAB = self . Tables    [ "Positions"                                  ]
     ##########################################################################
-    self . Go                     ( self . Talk , ( MSG , LID , )            )
+    DB     . LockWrites       ( [ POSTAB ]                                   )
+    ##########################################################################
+    for UUID in UUIDs :
+      QQ   = f"delete from {POSTAB} where ( `id` = {UUID} ) ;"
+      DB   . Query            ( QQ                                           )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyToClipboard        ( self                                        ) :
+    ##########################################################################
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################

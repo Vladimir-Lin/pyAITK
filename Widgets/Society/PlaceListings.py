@@ -67,10 +67,18 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 28
-    self . Order    = "asc"
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 28
+    self . SortOrder          = "asc"
+    self . Method             = "Original"
+    self . SearchLine         = None
+    self . SearchKey          = ""
+    self . UUIDs              = [                                            ]
+    ##########################################################################
+    self . Grouping = "Original"
+    ## self . Grouping = "Subordination"
+    ## self . Grouping = "Reverse"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -78,6 +86,10 @@ class PlaceListings                ( TreeDock                              ) :
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
+    ##########################################################################
+    self . Relation = Relation     (                                         )
+    self . Relation . setT2        ( "Place"                                 )
+    self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 3                                       )
     self . setColumnHidden         ( 1 , True                                )
@@ -97,13 +109,50 @@ class PlaceListings                ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setAcceptDrops          ( True                                    )
+    self . setDragEnabled          ( True                                    )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
     return QSize                   ( 320 , 640                               )
+  ############################################################################
+  def setGrouping                ( self , group                            ) :
+    ##########################################################################
+    self . Grouping = group
+    ##########################################################################
+    return self . Grouping
+  ############################################################################
+  def getGrouping                ( self                                    ) :
+    return self . Grouping
+  ############################################################################
+  def FetchRegularDepotCount   ( self , DB                                 ) :
+    ##########################################################################
+    TABLE  = self . Tables     [ "Places"                                    ]
+    QQ     = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    DB     . Query             ( QQ                                          )
+    ONE    = DB . FetchOne     (                                             )
+    ##########################################################################
+    if                         ( ONE == None                               ) :
+      return 0
+    ##########################################################################
+    if                         ( len ( ONE ) <= 0                          ) :
+      return 0
+    ##########################################################################
+    return ONE                 [ 0                                           ]
+  ############################################################################
+  def FetchGroupMembersCount             ( self , DB                       ) :
+    ##########################################################################
+    RELTAB = self . Tables               [ "Relation"                        ]
+    ##########################################################################
+    return self . Relation . CountSecond ( DB , RELTAB                       )
+  ############################################################################
+  def FetchGroupOwnersCount              ( self , DB                       ) :
+    ##########################################################################
+    RELTAB = self . Tables               [ "Relation"                        ]
+    ##########################################################################
+    return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -134,11 +183,13 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def singleClicked         ( self , item , column                         ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    if                      ( self . isItemPicked ( )                      ) :
+      if                    ( column != self . CurrentItem [ "Column" ]    ) :
+        self . removeParked (                                                )
+    ##########################################################################
+    self     . Notify       ( 0                                              )
     ##########################################################################
     return
   ############################################################################
@@ -148,7 +199,7 @@ class PlaceListings                ( TreeDock                              ) :
       return
     ##########################################################################
     line = self . setLineEdit ( item                                       , \
-                                0                                          , \
+                                column                                     , \
                                 "editingFinished"                          , \
                                 self . nameChanged                           )
     line . setFocus           ( Qt . TabFocusReason                          )
@@ -216,6 +267,16 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def Search                     ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def Paste                      ( self                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
   @pyqtSlot(dict)
   def refresh                         ( self , JSON                        ) :
     ##########################################################################
@@ -235,12 +296,10 @@ class PlaceListings                ( TreeDock                              ) :
   ############################################################################
   def ObtainsItemUuids                ( self , DB                          ) :
     ##########################################################################
-    QQ      = self . ObtainUuidsQuery (                                      )
-    UUIDs   =                         [                                      ]
-    if                                ( len ( QQ ) > 0                     ) :
-      UUIDs = DB   . ObtainUuids      ( QQ                                   )
+    if                                ( self . Grouping == "Original"      ) :
+      return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
-    return UUIDs
+    return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
   def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
     ##########################################################################
@@ -293,12 +352,22 @@ class PlaceListings                ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
+    ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
+    ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
@@ -317,7 +386,7 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
+  @pyqtSlot                      (                                           )
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -353,19 +422,18 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -389,19 +457,49 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery               ( self                                ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "Places"                                     ]
+    TABLE   = self . Tables          [ "Places"                              ]
     STID    = self . StartId
     AMOUNT  = self . Amount
-    ORDER   = self . Order
+    ORDER   = self . getSortingOrder (                                       )
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
                   where ( `used` = 1 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join                ( QQ . split ( )                        )
+  ############################################################################
+  def ObtainSubgroupUuids      ( self , DB                                 ) :
+    ##########################################################################
+    SID    = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                        )
+    LMTS   = f"limit {SID} , {AMOUNT}"
+    RELTAB = self . Tables     [ "Relation"                                  ]
+    ##########################################################################
+    if                         ( self . Grouping == "Subordination"        ) :
+      OPTS = f"order by `position` {ORDER}"
+      return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
+    if                         ( self . Grouping == "Reverse"              ) :
+      OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
+      return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
+    ##########################################################################
+    return                     [                                             ]
+  ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "place/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
+    ##########################################################################
+    return self . CreateDragMime ( self , 0 , mtype , message                )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
+    ##########################################################################
+    return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     formats = "people/uuids"
@@ -534,57 +632,14 @@ class PlaceListings                ( TreeDock                              ) :
     """
     return
   ############################################################################
-  def Prepare                 ( self                                       ) :
+  def Prepare                    ( self                                    ) :
     ##########################################################################
-    self   . setColumnWidth   ( 2 , 3                                        )
+    self   . setColumnWidth      ( 2 , 3                                     )
     ##########################################################################
-    TRX    = self . Translations
-    LABELs = [ "地點名稱" , TRX [ "UI::PeopleAmount" ] , ""         ]
-    self   . setCentralLabels ( LABELs                                       )
+    LABELs = self . Translations [ "PlaceListings" ] [ "Labels"              ]
+    self   . setCentralLabels    ( LABELs                                    )
     ##########################################################################
-    self   . setPrepared      ( True                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    self   . setPrepared         ( True                                      )
     ##########################################################################
     return
   ############################################################################
@@ -613,58 +668,39 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . Go                     ( self . Talk , ( MSG , LID , )            )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
-    ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
-    ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
-    ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
-    ##########################################################################
-    return mm
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
-  @pyqtSlot(int)
-  def GotoId                       ( self , Id                             ) :
+  def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      if                           ( ( at == 9001 ) and ( hid )            ) :
+        ######################################################################
+        self . startup             (                                         )
+        ######################################################################
+      return True
     ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
+    ##########################################################################
+    if                             ( not self . isPrepared ( )             ) :
+      return False
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
     if                             ( not doMenu                            ) :
       return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
     ##########################################################################
     items  = self . selectedItems  (                                         )
     atItem = self . currentItem    (                                         )
@@ -678,30 +714,19 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    T      = self . Total
-    MSG    = f"總數量:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
-    ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    SIDB   . setPrefix             ( "本頁開始:" )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    SIDB   . valueChanged . connect ( self . GotoId                          )
-    ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    SIDP   . setPrefix             ( "每頁數量:" )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    SIDP   . valueChanged . connect ( self . AssignAmount                    )
+    mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"            ] )
+    self   . AppendRefreshAction   ( mm , 1001                               )
+    self   . AppendInsertAction    ( mm , 1101                               )
     ##########################################################################
-    if                             ( atItem != None                        ) :
+    if                             ( self . Method not in [ "Original" ]   ) :
+      ########################################################################
+      msg  = self . getMenuItem    ( "Original"                              )
+      mm   . addAction             ( 1002 , msg                              )
+    ##########################################################################
+    if                             ( atItem not in [ False , None ]        ) :
       FMT  = TRX                   [ "UI::AttachCrowds"                      ]
       MSG  = FMT . format          ( atItem . text ( 0 )                     )
       mm   . addSeparator          (                                         )
@@ -709,20 +734,22 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    if                             ( len ( items ) == 1                    ) :
-      mm   . addAction             ( 7401 , "經緯度" )
+    if                             ( atItem not in [ False , None ]        ) :
+      msg  = self . getMenuItem    ( "Positions"                             )
+      mm   . addAction             ( 7401 , msg                              )
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
     ##########################################################################
     mm     = self . ColumnsMenu    ( mm                                      )
+    mm     = self . SortingMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
     mm     . addSeparator          (                                         )
     mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
@@ -731,12 +758,14 @@ class PlaceListings                ( TreeDock                              ) :
     if                             ( self . HandleLocalityMenu ( at )      ) :
       return True
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
-        self . startup             (                                         )
+    if                             ( self . RunColumnsMenu     ( at )      ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunSortingMenu     ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
@@ -755,7 +784,7 @@ class PlaceListings                ( TreeDock                              ) :
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Tasks" , uuid , NAM             )
+      self . EditAllNames          ( self , "Place" , uuid , NAM             )
       return True
     ##########################################################################
     if                             ( at == 3001                            ) :

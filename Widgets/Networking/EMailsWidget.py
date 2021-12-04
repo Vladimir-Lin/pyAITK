@@ -1108,6 +1108,9 @@ class EMailsWidget                 ( TreeDock                              ) :
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
+    if                             ( not self . isPrepared ( )             ) :
+      return False
+    ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
     if                             ( not doMenu                            ) :
       return False
