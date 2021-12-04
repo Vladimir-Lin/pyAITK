@@ -64,6 +64,9 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 28
     self . SortOrder          = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
@@ -80,7 +83,6 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
-    self . MountClicked            ( 9                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
@@ -122,11 +124,13 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def singleClicked         ( self , item , column                         ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    if                      ( self . isItemPicked ( )                      ) :
+      if                    ( column != self . CurrentItem [ "Column" ]    ) :
+        self . removeParked (                                                )
+    ##########################################################################
+    self     . Notify       ( 0                                              )
     ##########################################################################
     return
   ############################################################################
@@ -144,8 +148,8 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def getItemJson                ( self , item                             ) :
-    return item . data           ( 5 , Qt . UserRole                         )
+  def getItemJson                 ( self , item                            ) :
+    return item . data            ( 9 , Qt . UserRole                        )
   ############################################################################
   def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
@@ -153,33 +157,42 @@ class AreaCodeWidget               ( TreeDock                              ) :
     UXID    = str                 ( UUID                                     )
     USED    = int                 ( JSON [ "Used"     ]                      )
     NATION  = int                 ( JSON [ "Nation"   ]                      )
+    CNAME   = str                 ( JSON [ "Country"  ]                      )
     ITU     = int                 ( JSON [ "ITU"      ]                      )
+    E164    = int                 ( JSON [ "E164"     ]                      )
     ADMIN   = int                 ( JSON [ "Admin"    ]                      )
     PLACE   = int                 ( JSON [ "Place"    ]                      )
+    PNAME   = str                 ( JSON [ "PName"    ]                      )
     ##########################################################################
-    ISD     = self . assureString ( JSON [ "ISD"      ]                      )
-    CODE    = self . assureString ( JSON [ "Code"     ]                      )
-    NAME    = self . assureString ( JSON [ "Name"     ]                      )
-    COMMENT = self . assureString ( JSON [ "Comment"  ]                      )
+    ISD     = JSON                [ "ISD"                                    ]
+    CODE    = JSON                [ "Code"                                   ]
+    NAME    = JSON                [ "Name"                                   ]
+    COMMENT = JSON                [ "Comment"                                ]
+    ##########################################################################
+    ESTR    = ""
+    if                            ( E164 > 0                               ) :
+      ESTR  = f"{E164}"
     ##########################################################################
     IT      = QTreeWidgetItem     (                                          )
     IT      . setText             ( 0 , NAME                                 )
     IT      . setToolTip          ( 0 , UXID                                 )
     IT      . setData             ( 0 , Qt . UserRole , UXID                 )
     ##########################################################################
-    IT      . setText             ( 1 , CODE                                 )
+    IT      . setText             ( 1 , ISD                                  )
+    IT      . setToolTip          ( 2 , UXID                                 )
     ##########################################################################
-    ## IT      . setText             ( 2 , AREA                                 )
-    ## IT      . setToolTip          ( 2 , UXID                                 )
+    IT      . setText             ( 2 , CODE                                 )
+    IT      . setToolTip          ( 2 , UXID                                 )
     ##########################################################################
     ## IT      . setText             ( 3 , NUMBER                               )
-    ## IT      . setToolTip          ( 3 , UXID                                 )
     ##########################################################################
-    ## IT      . setText             ( 4 , ""                                   )
-    ## IT      . setText             ( 5 , ""                                   )
-    ## IT      . setText             ( 6 , ""                                   )
+    IT      . setText             ( 4 , CNAME                                )
+    IT      . setText             ( 5 , PNAME                                )
+    IT      . setText             ( 6 , ESTR                                 )
+    ##########################################################################
     ## IT      . setText             ( 7 , ""                                   )
-    ## IT      . setText             ( 8 , ""                                   )
+    ##########################################################################
+    IT      . setText             ( 8 , COMMENT                              )
     ##########################################################################
     IT      . setData             ( 9 , Qt . UserRole , JSON                 )
     ##########################################################################
@@ -192,7 +205,7 @@ class AreaCodeWidget               ( TreeDock                              ) :
     if                           ( IT is None                              ) :
       return
     ##########################################################################
-    self . doubleClicked         ( IT , 1                                    )
+    self . doubleClicked         ( IT , 0                                    )
     ##########################################################################
     return
   ############################################################################
@@ -246,12 +259,15 @@ class AreaCodeWidget               ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     NAMEs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
     PACTAB  = self . Tables           [ "AreaCode"                           ]
+    ITUTAB  = self . Tables           [ "ITU"                                ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
@@ -260,9 +276,12 @@ class AreaCodeWidget               ( TreeDock                              ) :
                                         "ISD"     : ""                     , \
                                         "Code"    : ""                     , \
                                         "Nation"  : 0                      , \
+                                        "Country" : ""                     , \
                                         "ITU"     : 0                      , \
+                                        "E164"    : 0                      , \
                                         "Admin"   : 0                      , \
                                         "Place"   : 0                      , \
+                                        "PName"   : ""                     , \
                                         "Name"    : ""                     , \
                                         "Comment" : ""                       }
       ########################################################################
@@ -274,20 +293,52 @@ class AreaCodeWidget               ( TreeDock                              ) :
       QQ    = " " . join              ( QQ . split ( )                       )
       DB    . Query                   ( QQ                                   )
       RR    = DB . FetchOne           (                                      )
-      if ( RR not in [ False , None ] ) and ( len ( RR ) == 7 )              :
+      if ( RR not in [ False , None ] ) and ( len ( RR ) == 9 )              :
         ######################################################################
         J [ "Used"    ] = int         ( RR [ 0 ]                             )
-        J [ "ISD"     ] = RR          [ 1                                    ]
-        J [ "Code"    ] = RR          [ 2                                    ]
+        J [ "ISD"     ] = self . assureString ( RR [ 1 ]                     )
+        J [ "Code"    ] = self . assureString ( RR [ 2 ]                     )
         J [ "Nation"  ] = int         ( RR [ 3 ]                             )
         J [ "ITU"     ] = int         ( RR [ 4 ]                             )
         J [ "Admin"   ] = int         ( RR [ 5 ]                             )
         J [ "Place"   ] = int         ( RR [ 6 ]                             )
-        J [ "Name"    ] = RR          [ 7                                    ]
-        J [ "Comment" ] = RR          [ 8                                    ]
+        J [ "Name"    ] = self . assureString ( RR [ 7 ]                     )
+        J [ "Comment" ] = self . assureString ( RR [ 8 ]                     )
+        ######################################################################
+        TUID            = J           [ "ITU"                                ]
+        E164            = 0
+        ######################################################################
+        if                            ( TUID > 0                           ) :
+          QQ            = f"""select `itu` from {ITUTAB}
+                              where ( `uuid` = {TUID} ) ;"""
+          QQ            = " " . join  ( QQ . split ( )                       )
+          DB            . Query       ( QQ                                   )
+          RR            = DB . FetchOne (                                    )
+          if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )      :
+            E164        = RR          [ 0                                    ]
+        ######################################################################
+        J [ "E164"    ] = E164
+        ######################################################################
+        NUID            = J           [ "Nation"                             ]
+        CNAME           = ""
+        ######################################################################
+        if                            ( NUID > 0                           ) :
+          CNAME         = self . GetName ( DB , NAMTAB , NUID                )
+        ######################################################################
+        J [ "Country" ] = CNAME
+        ######################################################################
+        PUID            = J           [ "Place"                              ]
+        PNAME           = ""
+        ######################################################################
+        if                            ( PUID > 0                           ) :
+          PNAME         = self . GetName ( DB , NAMTAB , PUID                )
+        ######################################################################
+        J [ "PName"   ] = PNAME
       ########################################################################
       IMACT . append                  ( J                                    )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( IMACT ) <= 0                 ) :
@@ -320,6 +371,12 @@ class AreaCodeWidget               ( TreeDock                              ) :
     return DB . ObtainUuids      ( QQ , 0                                    )
   ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -361,9 +418,13 @@ class AreaCodeWidget               ( TreeDock                              ) :
   def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
     PACTAB  = self . Tables   [ "AreaCode"                                   ]
+    STID    = self . StartId
+    AMOUNT  = self . Amount
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"select `uuid` from {PACTAB} order by `id` {ORDER} ;"
+    QQ      = f"""select `uuid` from {PACTAB}
+                  order by `id` {ORDER}
+                  limit {STID} , {AMOUNT} ;"""
     ##########################################################################
     return " " . join         ( QQ . split ( )                               )
   ############################################################################
@@ -391,44 +452,189 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
+  def organize                     ( self                                  ) :
     ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    Filename = "D:/Workspaces/areacodes.txt"
+    with open                  ( Filename , "rb" ) as f                      :
+      TEXT   = f . read (                                                    )
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
+    S  = TEXT . decode ( "utf-8" )
+    L  = S . split ( "\n" )
     ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    U = [ ]
     ##########################################################################
-    return mm
+    for P in L                                                               :
+      if ( len ( P ) <= 0 ) :
+        continue
+      if ( "+" not in P ) :
+        continue
+      if ( "-" not in P ) :
+        continue
+      K = P
+      K = K . replace ( "\t" , " " )
+      V = K . split ( )
+      Total = len ( V )
+      if ( Total < 2 ) :
+        continue
+      ########################################################################
+      PHONE = V [ Total - 1 ]
+      NAME  = K
+      NAME  = NAME . replace ( PHONE , "" )
+      NAME  = NAME .  strip ( )
+      NAME  = NAME . rstrip ( )
+      NAME  = NAME . capitalize ( )
+      RR    = f"{PHONE}*{NAME}"
+      U    . append ( RR )
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    PACTAB  = self . Tables           [ "AreaCode"                           ]
+    ##########################################################################
+    BASE = 3100001000000000000
+    U . sort ( )
+    KM = [ ]
+    AUIDs = [ ]
+    ID = 0
+    for S in U :
+      K  = S . split ( "*" )
+      P  = K [ 0 ]
+      N  = K [ 1 ]
+      if ( "+" not in P ) :
+        continue
+      if ( "-" not in P ) :
+        continue
+      P  = P . replace ( "+" , "" )
+      V  = P . split ( "-" )
+      ## if ( P in KM ) :
+      ##   continue
+      COUNTRY = int ( V [ 0 ] )
+      AREA    = int ( V [ 1 ] )
+      KM . append ( P )
+      ########################################################################
+      """
+      CID     = 0
+      if   ( COUNTRY <  10 ) :
+        CID   = COUNTRY * 100
+      elif ( COUNTRY < 100 ) :
+        CID   = COUNTRY *  10
+      else :
+        CID   = COUNTRY
+      """
+      ########################################################################
+      """
+      AID     = 0
+      if   ( AREA <  10 ) :
+        AID   = AREA * 1000
+      elif ( AREA < 100 ) :
+        AID   = AREA *  100
+      elif ( AREA < 1000 ) :
+        AID   = AREA *  10
+      else :
+        AID   = AREA
+      """
+      ########################################################################
+      ## CID     = CID * 1000000
+      ## AID     = AID * 100
+      ## ID      = CID + AID
+      ID      = ID + 1
+      AUID    = BASE + ID
+      ## if ( AUID in AUIDs ) :
+      ##   continue
+      ## AUIDs   . append ( AUID )
+      ########################################################################
+      print ( ID , " " , AUID , " " , COUNTRY , " @ " , AREA , " " , N )
+      QQ      = f"""insert into {PACTAB}
+                    ( `id`,`uuid`,`used`,`isd`,`code`,`comment` )
+                    values
+                    ( {ID} , {AUID} , 1 , '{COUNTRY}' , '{AREA}' ,  %s ) ;"""
+      VAL     = ( N , )
+      DB      . QueryValues ( QQ , VAL )
+    ##########################################################################
+    DB      . Close                   (                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def makeConnection                  ( self                               ) :
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    PACTAB  = self . Tables           [ "AreaCode"                           ]
+    ITUTAB  = self . Tables           [ "ITU"                                ]
+    QQ      = f"select `uuid` from {PACTAB} order by `id` asc ;"
+    UUIDs   = DB . ObtainUuids        ( QQ                                   )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ    = f"select `isd` from {PACTAB} where ( `uuid` = {UUID} ) ;"
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      ########################################################################
+      if ( not ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) ) )  :
+        continue
+      ########################################################################
+      ISD   = self . assureString     ( RR [ 0 ]                             )
+      ISD   = int                     ( ISD                                  )
+      ########################################################################
+      QQ    = f"select `uuid` from {ITUTAB} where ( `itu` = {ISD} ) ;"
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      ########################################################################
+      if ( not ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) ) )  :
+        continue
+      ########################################################################
+      TUID  = int                     ( RR [ 0 ]                             )
+      ########################################################################
+      QQ    = f"update {PACTAB} set `itu` = {TUID} where ( `uuid` = {UUID} ) ;"
+      DB    . Query                   ( QQ                                   )
+      ########################################################################
+      print ( UUID , " => " , TUID )
+    ##########################################################################
+    DB      . Close                   (                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 0                         )
+  ############################################################################
+  def RunColumnsMenu               ( self , at                             ) :
+    ##########################################################################
+    if                             ( at >= 9000 ) and ( at <= 9006 )         :
+      ########################################################################
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
-    items  = self . selectedItems  (                                         )
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
+    ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
+    mm     = self . AmountIndexMenu     ( mm                                 )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
+    mm     . addAction ( 1002 , "列出" )
     mm     . addSeparator          (                                         )
+    mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . SortingMenu    ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
@@ -437,6 +643,9 @@ class AreaCodeWidget               ( TreeDock                              ) :
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunColumnsMenu     ( at )      ) :
       return True
     ##########################################################################
     if                             ( self . RunSortingMenu     ( at )      ) :
@@ -448,6 +657,10 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1001                            ) :
       self . startup               (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1002                            ) :
+      self . Go                    ( self . makeConnection                   )
       return True
     ##########################################################################
     return True
