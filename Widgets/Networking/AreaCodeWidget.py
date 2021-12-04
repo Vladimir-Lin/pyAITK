@@ -77,6 +77,7 @@ class AreaCodeWidget               ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . setColumnCount          ( 10                                      )
+    self . setColumnHidden         ( 7 , True                                )
     self . setColumnHidden         ( 9 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
@@ -153,6 +154,8 @@ class AreaCodeWidget               ( TreeDock                              ) :
   ############################################################################
   def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
+    USAGE   = self . Translations [ "AreaCodeWidget" ] [ "Used"              ]
+    ##########################################################################
     UUID    = int                 ( JSON [ "Uuid"     ]                      )
     UXID    = str                 ( UUID                                     )
     USED    = int                 ( JSON [ "Used"     ]                      )
@@ -173,6 +176,8 @@ class AreaCodeWidget               ( TreeDock                              ) :
     if                            ( E164 > 0                               ) :
       ESTR  = f"{E164}"
     ##########################################################################
+    UNAME   = USAGE               [ str ( USED )                             ]
+    ##########################################################################
     IT      = QTreeWidgetItem     (                                          )
     IT      . setText             ( 0 , NAME                                 )
     IT      . setToolTip          ( 0 , UXID                                 )
@@ -184,7 +189,8 @@ class AreaCodeWidget               ( TreeDock                              ) :
     IT      . setText             ( 2 , CODE                                 )
     IT      . setToolTip          ( 2 , UXID                                 )
     ##########################################################################
-    ## IT      . setText             ( 3 , NUMBER                               )
+    IT      . setText             ( 3 , UNAME                                )
+    IT      . setData             ( 3 , Qt . UserRole , USED                 )
     ##########################################################################
     IT      . setText             ( 4 , CNAME                                )
     IT      . setText             ( 5 , PNAME                                )
@@ -268,6 +274,7 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     PACTAB  = self . Tables           [ "AreaCode"                           ]
     ITUTAB  = self . Tables           [ "ITU"                                ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
@@ -603,12 +610,50 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def makeNations                     ( self                               ) :
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    PCCTAB  = self . Tables           [ "CountryCode"                        ]
+    PACTAB  = self . Tables           [ "AreaCode"                           ]
+    ITUTAB  = self . Tables           [ "ITU"                                ]
+    ##########################################################################
+    QQ      = f"select `itu` from {PCCTAB} where ( `itu` > 0 ) group by `itu` asc ;"
+    UUIDs   = DB . ObtainUuids        ( QQ                                   )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ    = f"""select `nation` from {PCCTAB}
+                  where ( `itu` = {UUID} )
+                  and ( `nation` > 0 )
+                  order by `id` asc
+                  limit 0 , 1 ;"""
+      DB    . Query                   ( " " . join ( QQ . split ( ) )        )
+      RR    = DB . FetchOne           (                                      )
+      ########################################################################
+      if ( not ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) ) )  :
+        continue
+      ########################################################################
+      NUID  = int                     ( RR [ 0 ]                             )
+      ########################################################################
+      QQ    = f"""update {PACTAB}
+                  set `nation` = {NUID}
+                  where ( `itu` = {UUID} ) ;"""
+      DB    . Query                   ( " " . join ( QQ . split ( ) )        )
+      print ( UUID , " : " , NUID )
+    ##########################################################################
+    DB      . Close                   (                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     return self . DefaultColumnsMenu (        mm , 0                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9000 ) and ( at <= 9006 )         :
+    if                             ( at >= 9000 ) and ( at <= 9009 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -656,11 +701,14 @@ class AreaCodeWidget               ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
+      ########################################################################
+      self . clear                 (                                         )
       self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1002                            ) :
-      self . Go                    ( self . makeConnection                   )
+      self . Go                    ( self . makeNations                      )
       return True
     ##########################################################################
     return True
