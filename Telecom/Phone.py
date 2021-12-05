@@ -62,6 +62,8 @@ class Phone              ( Columns                                         ) :
     self . Shareable =  0
     self . Confirm   =  0
     self . Owners    =  0
+    self . Region    = ""
+    self . Nation    = ""
     ##########################################################################
     return
   ############################################################################
@@ -80,6 +82,8 @@ class Phone              ( Columns                                         ) :
     self . Shareable = item . Shareable
     self . Confirm   = item . Confirm
     self . Owners    = item . Owners
+    self . Region    = item . Region
+    self . Nation    = item . Nation
     ##########################################################################
     return
   ############################################################################
@@ -164,13 +168,20 @@ class Phone              ( Columns                                         ) :
                    "ltime"                                                   ]
   ############################################################################
   def toJson ( self                                                        ) :
-    return   { "id"      : self . Id                                       , \
-               "uuid"    : self . Uuid                                     , \
-               "used"    : self . Used                                     , \
-               "country" : self . Country                                  , \
-               "area"    : self . Area                                     , \
-               "number"  : self . Number                                   , \
-               "ltime"   : self . ltime                                      }
+    return   { "id"        : self . Id                                     , \
+               "uuid"      : self . Uuid                                   , \
+               "used"      : self . Used                                   , \
+               "country"   : self . Country                                , \
+               "area"      : self . Area                                   , \
+               "number"    : self . Number                                 , \
+               "ltime"     : self . ltime                                  , \
+               "correct"   : self . Correct                                , \
+               "mobile"    : self . Mobile                                 , \
+               "shareable" : self . Shareable                              , \
+               "confirm"   : self . Confirm                                , \
+               "owners"    : self . Owners                                 , \
+               "region"    : self . Region                                 , \
+               "nation"    : self . Nation                                   }
   ############################################################################
   def checkFormat ( self , Number , FORMATs                                ) :
     ##########################################################################
@@ -217,7 +228,7 @@ class Phone              ( Columns                                         ) :
   ############################################################################
   def ObtainsProperties     ( self , DB , Table                            ) :
     ##########################################################################
-    ITS  = "`correct`,`mobile`,`shareable`,`confirm`"
+    ITS  = "`correct`,`mobile`,`shareable`,`confirm`,`region`"
     WHS  = DB . WhereUuid   ( self . Uuid , True                             )
     QQ   = f"select {ITS} from {Table} {WHS}"
     DB   . Execute          ( QQ                                             )
@@ -234,6 +245,7 @@ class Phone              ( Columns                                         ) :
     self . Mobile    = int  ( LL [ 1 ]                                       )
     self . Shareable = int  ( LL [ 2 ]                                       )
     self . Confirm   = int  ( LL [ 3 ]                                       )
+    self . Region    = self . assureString  ( LL [ 4 ]                       )
     ##########################################################################
     return True
   ############################################################################
@@ -288,19 +300,19 @@ class Phone              ( Columns                                         ) :
     ##########################################################################
     return   f"+{COUNTRY}-{AREA}-{NUMBER}"
   ############################################################################
-  def Verify ( self , Number ) :
+  def Verify                                ( self , Number                ) :
     ##########################################################################
-    ppn = phonenumbers . parse ( Number )
-    ntp = number_type          ( ppn    )
-    cim = carrier._is_mobile   ( ntp    )
-    regcode = region_code_for_country_code(ppn.country_code)
-    print ( ppn )
-    print ( ppn . country_code )
-    print ( ppn . extension )
-    print ( ppn . national_number )
-    print ( regcode )
-    print ( ntp )
-    print ( cim )
+    ppn              = phonenumbers . parse ( Number                         )
+    self   . Mobile  = number_type          ( ppn                            )
+    self   . Correct = 1
+    self   . Region  = ""
     ##########################################################################
-    return
+    if                                      ( self . Mobile in [ 99 ]      ) :
+      self . Correct = 0
+      return False
+    ##########################################################################
+    reg    = region_code_for_country_code ( ppn . country_code              )
+    self   . Region  = reg
+    ##########################################################################
+    return   True
 ##############################################################################

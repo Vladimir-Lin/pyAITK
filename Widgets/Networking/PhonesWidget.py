@@ -54,6 +54,49 @@ from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . Telecom    . Phone     import Phone       as TelecomPhone
 ##############################################################################
+FLAGs = [ "AD.png" , "AE.png" , "AF.png" , "AG.png" , "AI.png" , "AL.png" ,  \
+          "AM.png" , "AO.png" , "AQ.png" , "AR.png" , "AS.png" , "AT.png" ,  \
+          "AU.png" , "AW.png" , "AX.png" , "AZ.png" , "BA.png" , "BB.png" ,  \
+          "BD.png" , "BE.png" , "BF.png" , "BG.png" , "BH.png" , "BI.png" ,  \
+          "BJ.png" , "BL.png" , "BM.png" , "BN.png" , "BO.png" , "BR.png" ,  \
+          "BS.png" , "BT.png" , "BV.png" , "BW.png" , "BY.png" , "BZ.png" ,  \
+          "CA.png" , "CC.png" , "CD.png" , "CF.png" , "CG.png" , "CH.png" ,  \
+          "CI.png" , "CK.png" , "CL.png" , "CM.png" , "CN.png" , "CO.png" ,  \
+          "CR.png" , "CU.png" , "CV.png" , "CW.png" , "CX.png" , "CY.png" ,  \
+          "CZ.png" , "DE.png" , "DJ.png" , "DK.png" , "DM.png" , "DO.png" ,  \
+          "DZ.png" , "EC.png" , "EE.png" , "EG.png" , "EH.png" , "ER.png" ,  \
+          "ES.png" , "ET.png" , "FI.png" , "FJ.png" , "FK.png" , "FM.png" ,  \
+          "FO.png" , "FR.png" , "GA.png" , "GB.png" , "GD.png" , "GE.png" ,  \
+          "GF.png" , "GG.png" , "GH.png" , "GI.png" , "GL.png" , "GM.png" ,  \
+          "GN.png" , "GP.png" , "GQ.png" , "GR.png" , "GS.png" , "GT.png" ,  \
+          "GU.png" , "GW.png" , "GY.png" , "HK.png" , "HM.png" , "HN.png" ,  \
+          "HR.png" , "HT.png" , "HU.png" , "ID.png" , "IE.png" , "IL.png" ,  \
+          "IM.png" , "IN.png" , "IO.png" , "IQ.png" , "IR.png" , "IS.png" ,  \
+          "IT.png" , "JE.png" , "JM.png" , "JO.png" , "JP.png" , "KE.png" ,  \
+          "KG.png" , "KH.png" , "KI.png" , "KM.png" , "KN.png" , "KP.png" ,  \
+          "KR.png" , "KW.png" , "KY.png" , "KZ.png" , "LA.png" , "LB.png" ,  \
+          "LC.png" , "LI.png" , "LK.png" , "LR.png" , "LS.png" , "LT.png" ,  \
+          "LU.png" , "LV.png" , "LY.png" , "MA.png" , "MC.png" , "MD.png" ,  \
+          "ME.png" , "MF.png" , "MG.png" , "MH.png" , "MK.png" , "ML.png" ,  \
+          "MM.png" , "MN.png" , "MO.png" , "MP.png" , "MQ.png" , "MR.png" ,  \
+          "MS.png" , "MT.png" , "MU.png" , "MV.png" , "MW.png" , "MX.png" ,  \
+          "MY.png" , "MZ.png" , "NA.png" , "NC.png" , "NE.png" , "NF.png" ,  \
+          "NG.png" , "NI.png" , "NL.png" , "NO.png" , "NP.png" , "NR.png" ,  \
+          "NU.png" , "NZ.png" , "OM.png" , "PA.png" , "PE.png" , "PF.png" ,  \
+          "PG.png" , "PH.png" , "PK.png" , "PL.png" , "PM.png" , "PN.png" ,  \
+          "PR.png" , "PS.png" , "PT.png" , "PW.png" , "PY.png" , "QA.png" ,  \
+          "RE.png" , "RO.png" , "RS.png" , "RU.png" , "RW.png" , "SA.png" ,  \
+          "SB.png" , "SC.png" , "SD.png" , "SE.png" , "SG.png" , "SH.png" ,  \
+          "SI.png" , "SJ.png" , "SK.png" , "SL.png" , "SM.png" , "SN.png" ,  \
+          "SO.png" , "SR.png" , "SS.png" , "ST.png" , "SV.png" , "SY.png" ,  \
+          "SZ.png" , "TC.png" , "TD.png" , "TF.png" , "TG.png" , "TH.png" ,  \
+          "TJ.png" , "TK.png" , "TL.png" , "TM.png" , "TN.png" , "TO.png" ,  \
+          "TR.png" , "TT.png" , "TV.png" , "TW.png" , "TZ.png" , "UA.png" ,  \
+          "UG.png" , "UM.png" , "US.png" , "UY.png" , "UZ.png" , "VA.png" ,  \
+          "VC.png" , "VE.png" , "VG.png" , "VI.png" , "VN.png" , "VU.png" ,  \
+          "WF.png" , "WS.png" , "YE.png" , "YT.png" , "ZA.png" , "ZM.png" ,  \
+          "ZW.png"                                                           ]
+##############################################################################
 class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   HavingMenu    = 1371434312
@@ -95,8 +138,8 @@ class PhonesWidget                 ( TreeDock                              ) :
     self . OwnRel   . setT2        ( "Phone"                                 )
     self . OwnRel   . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 10                                      )
-    self . setColumnHidden         (  9 , True                               )
+    self . setColumnCount          ( 12                                      )
+    self . setColumnHidden         ( 11 , True                               )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -183,6 +226,8 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def PrepareItem                 ( self , phone                           ) :
     ##########################################################################
+    global FLAGs
+    ##########################################################################
     CLIST   = self . Translations [ "PhonesWidget" ] [ "Correctness"         ]
     MLIST   = self . Translations [ "PhonesWidget" ] [ "Mobile"              ]
     SLIST   = self . Translations [ "PhonesWidget" ] [ "Shareable"           ]
@@ -195,6 +240,8 @@ class PhonesWidget                 ( TreeDock                              ) :
     COUNTRY = phone . Country
     AREA    = phone . Area
     NUMBER  = phone . Number
+    REGION  = phone . Region
+    NATION  = phone . Nation
     ##########################################################################
     CORRECT = CLIST               [ str ( phone . Correct   )                ]
     MOBILE  = MLIST               [ str ( phone . Mobile    )                ]
@@ -202,28 +249,35 @@ class PhonesWidget                 ( TreeDock                              ) :
     CONFIRM = FLIST               [ str ( phone . Confirm   )                ]
     ##########################################################################
     IT      = QTreeWidgetItem     (                                          )
-    IT      . setText             ( 0 , PNUMBER                              )
-    IT      . setToolTip          ( 0 , UXID                                 )
-    IT      . setData             ( 0 , Qt . UserRole , UXID                 )
+    IT      . setText             (  0 , PNUMBER                             )
+    IT      . setToolTip          (  0 , UXID                                )
+    IT      . setData             (  0 , Qt . UserRole , UXID                )
     ##########################################################################
-    IT      . setText             ( 1 , COUNTRY                              )
-    IT      . setToolTip          ( 1 , UXID                                 )
+    IT      . setText             (  1 , COUNTRY                             )
+    IT      . setToolTip          (  1 , UXID                                )
     ##########################################################################
-    IT      . setText             ( 2 , AREA                                 )
-    IT      . setToolTip          ( 2 , UXID                                 )
+    IT      . setText             (  2 , AREA                                )
+    IT      . setToolTip          (  2 , UXID                                )
     ##########################################################################
-    IT      . setText             ( 3 , NUMBER                               )
-    IT      . setToolTip          ( 3 , UXID                                 )
+    IT      . setText             (  3 , NUMBER                              )
+    IT      . setToolTip          (  3 , UXID                                )
     ##########################################################################
-    IT      . setText             ( 4 , CORRECT                              )
-    IT      . setText             ( 5 , MOBILE                               )
-    IT      . setText             ( 6 , SHARE                                )
-    IT      . setText             ( 7 , CONFIRM                              )
+    IT      . setText             (  4 , NATION                              )
     ##########################################################################
-    IT      . setText             ( 8 , str ( phone . Owners )               )
-    IT      . setTextAlignment    ( 8 , Qt . AlignRight                      )
+    PNG     = f"{REGION}.png"
+    if                            ( PNG in FLAGs                           ) :
+      K     = QIcon               ( f":/nations/{PNG}"                       )
+      IT    . setIcon             (  5 , K                                   )
     ##########################################################################
-    IT      . setText             ( 9 , ""                                   )
+    IT      . setText             (  6 , CORRECT                             )
+    IT      . setText             (  7 , MOBILE                              )
+    IT      . setText             (  8 , SHARE                               )
+    IT      . setText             (  9 , CONFIRM                             )
+    ##########################################################################
+    IT      . setText             ( 10 , str ( phone . Owners )              )
+    IT      . setTextAlignment    ( 10 , Qt . AlignRight                     )
+    ##########################################################################
+    IT      . setText             ( 11 , ""                                  )
     ##########################################################################
     return IT
   ############################################################################
@@ -399,7 +453,9 @@ class PhonesWidget                 ( TreeDock                              ) :
       UUIDs = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
     PHSTAB  = self . Tables           [ "Phones"                             ]
+    CRYTAB  = self . Tables           [ "Countries"                          ]
     PRZTAB  = self . Tables           [ "Properties"                         ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
     RELTAB  = self . Tables           [ "Relation"                           ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
@@ -407,6 +463,17 @@ class PhonesWidget                 ( TreeDock                              ) :
       PHONE = TelecomPhone            (                                      )
       PHONE . Uuid = U
       PHONE . ObtainsFullPhone        ( DB , PHSTAB , PRZTAB                 )
+      ########################################################################
+      if                              ( len ( PHONE . Region ) > 0         ) :
+        ######################################################################
+        RG  = PHONE . Region
+        QQ  = f"select `uuid` from {CRYTAB} where ( `two` = '{RG}' ) ;"
+        DB  . Query                   ( QQ                                   )
+        RR  = DB . FetchOne           (                                      )
+        if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )        :
+          CUID  = int                 ( RR [ 0 ]                             )
+          CNAME = self . GetName      ( DB , NAMTAB , CUID                   )
+          PHONE . Nation = CNAME
       ########################################################################
       self  . OwnRel . set            ( "second" , U                         )
       OWNED = self . OwnRel . CountFirst ( DB , RELTAB                       )
@@ -748,6 +815,75 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def DetectAllPhones             ( self                                   ) :
+    ##########################################################################
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB == None                             ) :
+      return
+    ##########################################################################
+    plan     = None
+    if                            ( self . hasPlan ( )                     ) :
+      plan   = self . GetPlan     (                                          )
+    ##########################################################################
+    self     . OnBusy  . emit     (                                          )
+    ##########################################################################
+    PHSTAB   = self . Tables      [ "Phones"                                 ]
+    PRZTAB   = self . Tables      [ "Properties"                             ]
+    ##########################################################################
+    QQ       = f"""select `uuid` from {PHSTAB}
+                   where ( `used` = 1 )
+                   order by `id` asc ;"""
+    PHONEs   = DB . ObtainUuids   ( " " . join ( QQ . split ( ) )            )
+    ##########################################################################
+    if                            ( len ( PHONEs ) > 0                     ) :
+      ########################################################################
+      if                          ( plan not in [ False , None ]           ) :
+        ######################################################################
+        NAME = self . getMenuItem ( "QueryAllPhones"                         )
+        cFmt = self . getMenuItem ( "SecsCounting"                           )
+        rFmt = self . getMenuItem ( "ItemCounting"                           )
+        FMT  = self . getMenuItem ( "Percentage"                             )
+        PID  = plan . Progress    ( NAME , FMT                               )
+        plan . setFrequency       ( PID  , cFmt , rFmt                       )
+      ########################################################################
+      plan   . setRange           ( PID , 0 , len ( PHONEs )                 )
+      plan   . Start              ( PID , 0 , True                           )
+      plan   . ProgressReady      ( PID , 300                                )
+      ########################################################################
+      K      = 0
+      while ( K < len ( PHONEs ) ) and ( plan . isProgressRunning ( PID ) )  :
+        ######################################################################
+        UUID = PHONEs             [ K                                        ]
+        plan . setProgressValue   ( PID , K                                  )
+        ######################################################################
+        PHON = TelecomPhone       (                                          )
+        PHON . Uuid = UUID        
+        PHON . ObtainsFullPhone   ( DB , PHSTAB , PRZTAB                     )
+        PNUM = PHON . toPhone     (                                          )
+        plan . ProgressText       ( PID , str ( PNUM )                       )
+        PHON . Verify             ( PNUM                                     )
+        ######################################################################
+        CORR = PHON . Correct
+        MOBI = PHON . Mobile
+        REGC = PHON . Region
+        ######################################################################
+        QQ   = f"""update {PRZTAB}
+                   set `correct` = {CORR} ,
+                       `mobile` = {MOBI} ,
+                       `region` = '{REGC}'
+                   where ( `uuid` = {UUID} ) ) ;"""
+        QQ   = " " . join         ( QQ . split ( )                           )
+        DB   . Query              ( QQ                                       )
+        ######################################################################
+        K    = K + 1
+      ########################################################################
+      plan   . Finish             ( PID                                      )
+    ##########################################################################
+    self     . GoRelax . emit     (                                          )
+    DB       . Close              (                                          )
+    self     . Notify             ( 5                                        )
+    ##########################################################################
+    return
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
@@ -852,13 +988,15 @@ class PhonesWidget                 ( TreeDock                              ) :
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     = self . AppendDeleteAction  ( mm , 1102                          )
-    if                              ( atItem not in [ False , None ]       ) :
-      mm   . addAction ( 6001 , "檢驗" )
-    mm     . addSeparator           (                                        )
-    mm     = self . PickDbMenu      ( mm                                     )
-    mm     = self . ColumnsMenu     ( mm                                     )
-    mm     = self . SortingMenu     ( mm                                     )
-    self   . DockingMenu            ( mm                                     )
+    mm     . addSeparator          (                                         )
+    msg    = self . getMenuItem    ( "QueryAllPhones"                        )
+    mm     . addAction             ( 6001 , msg                              )
+    mm     . addSeparator          (                                         )
+    mm     = self . PickDbMenu     ( mm                                      )
+    mm     = self . ColumnsMenu    ( mm                                      )
+    mm     = self . SortingMenu    ( mm                                      )
+    mm     = self . LocalityMenu   ( mm                                      )
+    self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
@@ -872,6 +1010,13 @@ class PhonesWidget                 ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
+      return True
+    ##########################################################################
+    if                             ( self . HandleLocalityMenu ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( self . RunColumnsMenu     ( at )      ) :
@@ -905,9 +1050,7 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 6001                            ) :
       ########################################################################
-      pnumber = atItem . text      ( 0                                       )
-      PN      = TelecomPhone       (                                         )
-      PN      . Verify             ( pnumber                                 )
+      self . Go                    ( self . DetectAllPhones                  )
       ########################################################################
       return True
     ##########################################################################
