@@ -699,12 +699,13 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . setColumnWidth ( 0 , 200                                          )
-    self . setColumnWidth ( 1 ,  80                                          )
-    self . setColumnWidth ( 2 ,  80                                          )
-    self . setColumnWidth ( 3 , 160                                          )
-    self . setColumnWidth ( 4 , 100                                          )
-    self . defaultPrepare ( "PhonesWidget" , 9                               )
+    self . setColumnWidth (  0 , 200                                         )
+    self . setColumnWidth (  1 ,  80                                         )
+    self . setColumnWidth (  2 ,  80                                         )
+    self . setColumnWidth (  3 , 160                                         )
+    self . setColumnWidth (  5 ,  60                                         )
+    self . setColumnWidth ( 10 , 100                                         )
+    self . defaultPrepare ( "PhonesWidget" , 11                              )
     ##########################################################################
     return
   ############################################################################
@@ -871,7 +872,7 @@ class PhonesWidget                 ( TreeDock                              ) :
                    set `correct` = {CORR} ,
                        `mobile` = {MOBI} ,
                        `region` = '{REGC}'
-                   where ( `uuid` = {UUID} ) ) ;"""
+                   where ( `uuid` = {UUID} ) ;"""
         QQ   = " " . join         ( QQ . split ( )                           )
         DB   . Query              ( QQ                                       )
         ######################################################################
@@ -902,7 +903,7 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9009 )         :
+    if                             ( at >= 9001 ) and ( at <= 9011 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
