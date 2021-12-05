@@ -523,28 +523,28 @@ class AreaCodeWidget               ( TreeDock                              ) :
   def acceptOrganizationsDrop  ( self                                      ) :
     return True
   ############################################################################
-  def dropPlaces                       ( self , source , pos , JSOX        ) :
+  def dropPlaces                       ( self , source , pos , JSON        ) :
     return self . defaultDropInObjects ( source                            , \
                                          pos                               , \
                                          JSON                              , \
                                          0                                 , \
                                          self . AssingPlaceToAreaCode        )
   ############################################################################
-  def dropNations                      ( self , source , pos , JSOX        ) :
+  def dropNations                      ( self , source , pos , JSON        ) :
     return self . defaultDropInObjects ( source                            , \
                                          pos                               , \
                                          JSON                              , \
                                          0                                 , \
                                          self . AssingNationToAreaCode       )
   ############################################################################
-  def dropITU                          ( self , source , pos , JSOX        ) :
+  def dropITU                          ( self , source , pos , JSON        ) :
     return self . defaultDropInObjects ( source                            , \
                                          pos                               , \
                                          JSON                              , \
                                          0                                 , \
                                          self . AssingItuToAreaCode          )
   ############################################################################
-  def dropOrganizations                ( self , source , pos , JSOX        ) :
+  def dropOrganizations                ( self , source , pos , JSON        ) :
     return self . defaultDropInObjects ( source                            , \
                                          pos                               , \
                                          JSON                              , \
@@ -579,7 +579,7 @@ class AreaCodeWidget               ( TreeDock                              ) :
     NAMTAB = self . Tables           [ "Names"                               ]
     DB     . LockWrites              ( [ PACTAB ]                            )
     QQ     = f"""update {PACTAB}
-                  set `itu` = {PCID}
+                  set `{Column}` = {PCID}
                   where ( `uuid` = {UUID} ) ;"""
     QQ     = " " . join              ( QQ . split ( )                        )
     DB     . Query                   ( QQ                                    )
@@ -643,7 +643,7 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ITUTAB = self . Tables           [ "ITU"                                 ]
     DB     . LockWrites              ( [ PACTAB ]                            )
     QQ     = f"""update {PACTAB}
-                  set `{Column}` = {PCID}
+                  set `itu` = {PCID}
                   where ( `uuid` = {UUID} ) ;"""
     QQ     = " " . join              ( QQ . split ( )                        )
     DB     . Query                   ( QQ                                    )

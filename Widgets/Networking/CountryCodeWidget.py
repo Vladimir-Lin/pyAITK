@@ -469,21 +469,21 @@ class CountryCodeWidget            ( TreeDock                              ) :
   def acceptItuDrop            ( self                                      ) :
     return True
   ############################################################################
-  def dropPlaces                       ( self , source , pos , JSOX        ) :
+  def dropPlaces                       ( self , source , pos , JSON        ) :
     return self . defaultDropInObjects ( source                            , \
                                          pos                               , \
                                          JSON                              , \
                                          0                                 , \
                                          self . AssingPlaceToAreaCode        )
   ############################################################################
-  def dropNations                      ( self , source , pos , JSOX        ) :
+  def dropNations                      ( self , source , pos , JSON        ) :
     return self . defaultDropInObjects ( source                            , \
                                          pos                               , \
                                          JSON                              , \
                                          0                                 , \
                                          self . AssingNationToAreaCode       )
   ############################################################################
-  def dropITU                          ( self , source , pos , JSOX        ) :
+  def dropITU                          ( self , source , pos , JSON        ) :
     return self . defaultDropInObjects ( source                            , \
                                          pos                               , \
                                          JSON                              , \

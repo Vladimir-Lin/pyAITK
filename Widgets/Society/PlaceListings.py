@@ -504,6 +504,7 @@ class PlaceListings                ( TreeDock                              ) :
     JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
+    self   . Notify                   ( 5                                    )
     ##########################################################################
     if                                ( not self . isColumnHidden ( 1 )    ) :
       self . Go                       ( self . ReportBelongings            , \
