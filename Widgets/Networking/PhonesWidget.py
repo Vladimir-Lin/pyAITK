@@ -163,11 +163,11 @@ class PhonesWidget                 ( TreeDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 1024 , 640 )                      )
   ############################################################################
-  def setGrouping                  ( self , group                          ) :
+  def setGrouping ( self , group                                           ) :
     self . Grouping = group
     return self . Grouping
   ############################################################################
-  def getGrouping                  ( self                                  ) :
+  def getGrouping ( self                                                   ) :
     return self . Grouping
   ############################################################################
   def FocusIn             ( self                                           ) :
@@ -207,24 +207,39 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked             ( self , item , column                     ) :
+  def doubleClicked              ( self , item , column                    ) :
     ##########################################################################
-    if                          ( column not in [ 0 , 1 , 2 , 3 ]          ) :
+    if                           ( column not in [ 0 , 1 , 2 , 3 , 8 ]     ) :
       return
     ##########################################################################
-    if                          ( column in [ 0 , 1 , 2 , 3 ]              ) :
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
+    if                           ( column in [ 0 , 1 , 2 , 3 ]             ) :
+      ########################################################################
+      line = self . setLineEdit  ( item                                    , \
+                                   column                                  , \
+                                   "editingFinished"                       , \
+                                   self . nameChanged                        )
+      line . setFocus            ( Qt . TabFocusReason                       )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( column in [ 8 ]                         ) :
+      ########################################################################
+      LL   = self . Translations [ "PhonesWidget" ] [ "Shareable"            ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . shareableChanged                   )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 5                                         )
+      cb   . showPopup           (                                           )
+      ########################################################################
+      return
     ##########################################################################
     return
   ############################################################################
-  def getItemJson                 ( self , item                            ) :
-    return item . data            ( 9 , Qt . UserRole                        )
-  ############################################################################
-  def PrepareItem                 ( self , phone                           ) :
+  def PrepareItemContent          ( self , item , phone                    ) :
     ##########################################################################
     global FLAGs
     ##########################################################################
@@ -248,38 +263,48 @@ class PhonesWidget                 ( TreeDock                              ) :
     SHARE   = SLIST               [ str ( phone . Shareable )                ]
     CONFIRM = FLIST               [ str ( phone . Confirm   )                ]
     ##########################################################################
-    IT      = QTreeWidgetItem     (                                          )
-    IT      . setText             (  0 , PNUMBER                             )
-    IT      . setToolTip          (  0 , UXID                                )
-    IT      . setData             (  0 , Qt . UserRole , UXID                )
+    item    . setText             (  0 , PNUMBER                             )
+    item    . setToolTip          (  0 , UXID                                )
+    item    . setData             (  0 , Qt . UserRole , UXID                )
     ##########################################################################
-    IT      . setText             (  1 , COUNTRY                             )
-    IT      . setToolTip          (  1 , UXID                                )
+    item    . setText             (  1 , COUNTRY                             )
+    item    . setToolTip          (  1 , UXID                                )
     ##########################################################################
-    IT      . setText             (  2 , AREA                                )
-    IT      . setToolTip          (  2 , UXID                                )
+    item    . setText             (  2 , AREA                                )
+    item    . setToolTip          (  2 , UXID                                )
     ##########################################################################
-    IT      . setText             (  3 , NUMBER                              )
-    IT      . setToolTip          (  3 , UXID                                )
+    item    . setText             (  3 , NUMBER                              )
+    item    . setToolTip          (  3 , UXID                                )
     ##########################################################################
-    IT      . setText             (  4 , NATION                              )
+    item    . setText             (  4 , NATION                              )
     ##########################################################################
     PNG     = f"{REGION}.png"
     if                            ( PNG in FLAGs                           ) :
       K     = QIcon               ( f":/nations/{PNG}"                       )
-      IT    . setIcon             (  5 , K                                   )
+      item  . setIcon             (  5 , K                                   )
     ##########################################################################
-    IT      . setText             (  6 , CORRECT                             )
-    IT      . setText             (  7 , MOBILE                              )
-    IT      . setText             (  8 , SHARE                               )
-    IT      . setText             (  9 , CONFIRM                             )
+    item    . setText             (  6 , CORRECT                             )
+    item    . setData             (  6 , Qt . UserRole , phone . Correct     )
     ##########################################################################
-    IT      . setText             ( 10 , str ( phone . Owners )              )
-    IT      . setTextAlignment    ( 10 , Qt . AlignRight                     )
+    item    . setText             (  7 , MOBILE                              )
+    item    . setData             (  7 , Qt . UserRole , phone . Mobile      )
     ##########################################################################
-    IT      . setText             ( 11 , ""                                  )
+    item    . setText             (  8 , SHARE                               )
+    item    . setData             (  8 , Qt . UserRole , phone . Shareable   )
     ##########################################################################
-    return IT
+    item    . setText             (  9 , CONFIRM                             )
+    item    . setData             (  9 , Qt . UserRole , phone . Confirm     )
+    ##########################################################################
+    item    . setText             ( 10 , str ( phone . Owners )              )
+    item    . setTextAlignment    ( 10 , Qt . AlignRight                     )
+    ##########################################################################
+    item    . setText             ( 11 , ""                                  )
+    ##########################################################################
+    return item
+  ############################################################################
+  def PrepareItem                    ( self , phone                        ) :
+    IT = QTreeWidgetItem             (                                       )
+    return self . PrepareItemContent ( IT , phone                            )
   ############################################################################
   @pyqtSlot                   (                                              )
   def InsertItem              ( self                                       ) :
@@ -295,9 +320,10 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def DeleteItems                ( self                                    ) :
+  @pyqtSlot                   (                                              )
+  def DeleteItems             ( self                                       ) :
     ##########################################################################
+    self . defaultDeleteItems ( self . RemoveItems                           )
     ##########################################################################
     return
   ############################################################################
@@ -308,30 +334,56 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def nameChanged                ( self                                    ) :
+  @pyqtSlot                     (                                            )
+  def nameChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    line   = self . CurrentItem [ "Widget"                                   ]
+    text   = self . CurrentItem [ "Text"                                     ]
+    msg    = line . text        (                                            )
+    uuid   = self . itemUuid    ( item , 0                                   )
+    ##########################################################################
+    if                          ( ( len ( msg ) <= 0 ) and ( uuid <= 0 )   ) :
+      self . removeTopLevelItem ( item                                       )
+      return
+    ##########################################################################
+    item   . setText            ( column , msg                               )
+    ##########################################################################
+    self   . removeParked       (                                            )
+    self   . Go                 ( self . UpdateColumnItem                  , \
+                                  ( item , uuid , column , msg , )           )
+    ##########################################################################
+    return
+  ############################################################################
+  def shareableChanged           ( self                                    ) :
     ##########################################################################
     if                           ( not self . isItemPicked ( )             ) :
       return False
     ##########################################################################
     item   = self . CurrentItem  [ "Item"                                    ]
     column = self . CurrentItem  [ "Column"                                  ]
-    line   = self . CurrentItem  [ "Widget"                                  ]
-    text   = self . CurrentItem  [ "Text"                                    ]
-    msg    = line . text         (                                           )
-    uuid   = self . itemUuid     ( item , 0                                  )
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
     ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
-    ##########################################################################
-    item   . setText             ( column ,              msg                 )
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      uuid = self . itemUuid     ( item , 0                                  )
+      LL   = self . Translations [ "PhonesWidget" ] [ "Shareable"            ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      self . Go                  ( self . UpdateShareable                  , \
+                                   ( item , uuid , value , )                 )
     ##########################################################################
     self   . removeParked        (                                           )
-    """
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
-    """
     ##########################################################################
     return
   ############################################################################
@@ -365,9 +417,9 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getSortingOrder ( )
+    ORDER  = self . getSortingOrder (                                        )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables     [ "Relation"                                  ]
     ##########################################################################
     if                         ( self . Grouping == "Subordination"        ) :
       OPTS = f"order by `position` {ORDER}"
@@ -503,22 +555,6 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids        ( self , DB                                    ) :
-    ##########################################################################
-    PHSTAB  = self . Tables [ "Phones"                                       ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
-    ##########################################################################
-    QQ      = f"""select `uuid` from {PHSTAB}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
-    ##########################################################################
-    QQ    = " " . join      ( QQ . split ( )                                 )
-    ##########################################################################
-    return DB . ObtainUuids ( QQ , 0                                         )
-  ############################################################################
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
     self . LinkAction      ( "Refresh"    , self . startup         , False   )
@@ -540,20 +576,20 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def ObtainsInformation   ( self , DB                                     ) :
     ##########################################################################
-    self    . Total = 0
+    self   . Total = 0
     ##########################################################################
-    PHSTAB  = self . Tables           [ "Phones"                             ]
+    PHSTAB = self . Tables [ "Phones"                                        ]
     ##########################################################################
-    QQ      = f"select count(*) from {PHSTAB} where ( `used` > 0 ) ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
+    QQ     = f"select count(*) from {PHSTAB} where ( `used` > 0 ) ;"
+    DB     . Query         ( QQ                                              )
+    RR     = DB . FetchOne (                                                 )
     ##########################################################################
-    if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
+    if ( ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 ) )               :
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    self   . Total = RR    [ 0                                               ]
     ##########################################################################
     return
   ############################################################################
@@ -761,52 +797,110 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def UpdateColumnItem                ( self , item , uuid , column , name ) :
     ##########################################################################
-    """
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
       return
     ##########################################################################
-    TSKTAB  = self . Tables        [ "Tasks"                                 ]
-    PRDTAB  = self . Tables        [ "Periods"                               ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
-    HEAD    = 5702000000000000000
+    PHSTAB  = self . Tables           [ "Phones"                             ]
+    PRZTAB  = self . Tables           [ "Properties"                         ]
     ##########################################################################
-    DB      . LockWrites           ( [ PRJTAB , PRDTAB , NAMTAB ]            )
+    DB      . LockWrites              ( [ PHSTAB , PRZTAB                  ] )
     ##########################################################################
-    if                             ( uuid <= 0                             ) :
-      ########################################################################
-      uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
-      DB    . AddUuid              ( PRJTAB , uuid   , 1                     )
-      ########################################################################
-      NOW   = StarDate             (                                         )
-      NOW   . Now                  (                                         )
-      CDT   = NOW . Stardate
-      ########################################################################
-      PRD   = Periode              (                                         )
-      PRID  = PRD  . GetUuid       ( DB , PRDTAB                             )
-      ########################################################################
-      PRD   . Realm    = uuid
-      PRD   . Role     = 71
-      PRD   . Item     = 1
-      PRD   . States   = 0
-      PRD   . Creation = CDT
-      PRD   . Modified = CDT
-      Items =                      [ "realm"                               , \
-                                     "role"                                , \
-                                     "item"                                , \
-                                     "states"                              , \
-                                     "creation"                            , \
-                                     "modified"                              ]
-      PRD   . UpdateItems          ( DB , PRDTAB , Items                     )
+    if                                ( uuid <= 0                          ) :
+      uuid  = DB   . UnusedUuid       ( PHSTAB , "`uuid`"                    )
+      DB    . UseUuid                 ( PHSTAB , uuid                        )
     ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    PHONE   = TelecomPhone            (                                      )
+    PHONE   . Uuid = uuid
+    PHONE   . ObtainsFullPhone        ( DB , PHSTAB , PRZTAB                 )
     ##########################################################################
-    DB      . Close                (                                         )
+    if                                ( column in [ 0 ]                    ) :
+      PHONE . setFull                 ( name                                 )
+    elif                              ( column in [ 1 ]                    ) :
+      PHONE . setCountry              ( name                                 )
+    elif                              ( column in [ 2 ]                    ) :
+      PHONE . setArea                 ( name                                 )
+    elif                              ( column in [ 3 ]                    ) :
+      PHONE . setNumber               ( name                                 )
     ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
-    """
+    FULL    = PHONE . toPhone         (                                      )
+    PHONE   . Verify                  ( FULL                                 )
+    PHONE   . UpdateFull              ( DB , PHSTAB , PRZTAB                 )
+    ##########################################################################
+    DB      . UnlockTables            (                                      )
+    DB      . Close                   (                                      )
+    ##########################################################################
+    self    . PrepareItemContent      ( item , PHONE                         )
+    self    . emitAssignColumn . emit ( item , 0 , FULL                      )
+    self    . Notify                  ( 5                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateShareable         ( self , item , uuid , shareable             ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    PRZTAB = self . Tables    [ "Properties"                                 ]
+    ##########################################################################
+    DB     . LockWrites       ( [ PRZTAB ]                                   )
+    ##########################################################################
+    QQ     = f"""update {PRZTAB}
+                 set `shareable` = {shareable}
+                 where ( `uuid` = {uuid} ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    DB     . Query            ( QQ                                           )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def RemovePhoneItem      ( self , DB , UUID                              ) :
+    ##########################################################################
+    PHSTAB = self . Tables [ "Phones"                                        ]
+    PRZTAB = self . Tables [ "Properties"                                    ]
+    ##########################################################################
+    QQ     = f"""update {PHSTAB}
+                 set `used` = 1 ,
+                     `country` = '' ,
+                     `area` = '' ,
+                     `number` = ''
+                 where ( `uuid` = {UUID} ) ;"""
+    DB     . Query         ( QQ                                              )
+    ##########################################################################
+    QQ     = f"""update {PRZTAB}
+                 set `correct` = 1 ,
+                     `mobile` = 0 ,
+                     `shareable` = 0 ,
+                     `confirm` = 0 ,
+                     `region` = ''
+                 where ( `uuid` = {UUID} ) ;"""
+    DB     . Query         ( QQ                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def RemoveItems             ( self , UUIDs                               ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    PHSTAB = self . Tables    [ "Phones"                                     ]
+    PRZTAB = self . Tables    [ "Properties"                                 ]
+    ##########################################################################
+    DB     . LockWrites       ( [ PHSTAB , PRZTAB                          ] )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      self . RemovePhoneItem  ( DB , UUID                                    )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
     ##########################################################################
     return
   ############################################################################

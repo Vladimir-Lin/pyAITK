@@ -274,35 +274,17 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                          (                                       )
-  def DeleteItems                    ( self                                ) :
+  @pyqtSlot                   (                                              )
+  def DeleteItems             ( self                                       ) :
     ##########################################################################
-    items     = self . selectedItems (                                       )
-    if                               ( len ( items ) <= 0                  ) :
-      return
-    ##########################################################################
-    UUIDs     =                      [                                       ]
-    for item in items                                                        :
-      UUID    = self . itemUuid      ( item , 0                              )
-      self    . pendingRemoveItem . emit ( item                              )
-      if                             ( UUID not in UUIDs                   ) :
-        UUIDs . append               ( UUID                                  )
-    ##########################################################################
-    if                               ( len ( UUIDs ) <= 0                  ) :
-      return
-    ##########################################################################
-    self      . Go                   ( self . RemoveItems , ( UUIDs , )      )
+    self . defaultDeleteItems ( self . RemoveItems                           )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot             (                                                    )
+  def RenameItem        ( self                                             ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 2                                    )
+    self . goRenameItem ( 2                                                  )
     ##########################################################################
     return
   ############################################################################
@@ -825,7 +807,7 @@ class ImWidget                     ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def RemoveItem              ( self , DB , UUID                           ) :
+  def RemoveImAppItem         ( self , DB , UUID                           ) :
     ##########################################################################
     IMSTAB = self . Tables    [ "InstantMessage"                             ]
     PRSTAB = self . Tables    [ "Properties"                                 ]
@@ -856,7 +838,7 @@ class ImWidget                     ( TreeDock                              ) :
     DB     . LockWrites       ( [ IMSTAB , PRSTAB ]                          )
     ##########################################################################
     for UUID in UUIDs                                                        :
-      self . RemoveItem       ( DB , UUID                                    )
+      self . RemoveImAppItem  ( DB , UUID                                    )
     ##########################################################################
     DB     . UnlockTables     (                                              )
     DB     . Close            (                                              )

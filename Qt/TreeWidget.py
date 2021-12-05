@@ -834,6 +834,24 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def DeleteItems             ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
+  def defaultDeleteItems             ( self , func                         ) :
+    ##########################################################################
+    UUIDs     =                      [                                       ]
+    ##########################################################################
+    items     = self . selectedItems (                                       )
+    for item in items                                                        :
+      UUID    = self . itemUuid      ( item , column                         )
+      self    . pendingRemoveItem    ( item                                  )
+      if                             ( UUID not in UUIDs                   ) :
+        UUIDs . append               ( UUID                                  )
+    ##########################################################################
+    if                               ( len ( UUIDs ) <= 0                  ) :
+      return
+    ##########################################################################
+    self      . Go                   ( func , ( UUIDs , )                    )
+    ##########################################################################
+    return
+  ############################################################################
   def RenameItem              ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
