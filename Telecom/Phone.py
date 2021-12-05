@@ -5,197 +5,276 @@
 import os
 import sys
 ##############################################################################
-import mysql . connector
-from   mysql . connector             import Error
+import phonenumbers
+from   phonenumbers                   import carrier
+from   phonenumbers . phonenumberutil import number_type
 ##############################################################################
-from   ..      Database . Query      import Query      as Query
-from   ..      Database . Connection import Connection as Connection
-from   ..      Database . Columns    import Columns    as Columns
+import mysql        . connector
+from   mysql        . connector       import Error
 ##############################################################################
-class Phone ( Columns ) :
+from   ..      Database . Query       import Query      as Query
+from   ..      Database . Connection  import Connection as Connection
+from   ..      Database . Columns     import Columns    as Columns
+##############################################################################
+class Phone              ( Columns                                         ) :
   ############################################################################
-  def __init__ ( self ) :
+  def __init__           ( self                                            ) :
     ##########################################################################
-    super ( ) . __init__ ( )
-    self . Clear                    ( )
+    super ( ) . __init__ (                                                   )
+    self . Clear         (                                                   )
     ##########################################################################
     return
   ############################################################################
-  def __del__ ( self ) :
+  def __del__ ( self                                                       ) :
     return
   ############################################################################
-  def Clear ( self ) :
-    self . Columns  = [ ]
-    self . Id       = -1
-    self . Uuid     =  0
-    self . Used     =  1
-    self . Type     =  0
-    self . Owner    =  0
-    self . Name     =  ""
-    self . Reverse  =  ""
-    self . IANA     =  ""
-    self . Explain  =  ""
-    self . SLD      =  0
-    self . Domains  =  0
-    self . Hosts    =  0
-    self . Pages    =  0
-    self . Update   =  False
+  def Clear            ( self                                              ) :
+    ##########################################################################
+    self . Columns   = [                                                     ]
+    self . Id        = -1
+    self . Uuid      =  0
+    self . Used      =  1
+    self . Country   =  ""
+    self . Area      =  ""
+    self . Number    =  ""
+    self . ltime     =  False
+    self . Correct   =  1
+    self . Mobile    =  0
+    self . Shareable =  0
+    self . Confirm   =  0
+    ##########################################################################
+    return
   ############################################################################
-  def assign ( self , item ) :
-    self . Columns  = item . Columns
-    self . Id       = item . Id
-    self . Uuid     = item . Uuid
-    self . Used     = item . Used
-    self . Type     = item . Type
-    self . Owner    = item . Owner
-    self . Name     = item . Name
-    self . Reverse  = item . Reverse
-    self . IANA     = item . IANA
-    self . Explain  = item . Explain
-    self . SLD      = item . SLD
-    self . Domains  = item . Domains
-    self . Hosts    = item . Hosts
-    self . Pages    = item . Pages
-    self . Update   = item . Update
+  def assign ( self , item                                                 ) :
+    ##########################################################################
+    self . Columns   = item . Columns
+    self . Id        = item . Id
+    self . Uuid      = item . Uuid
+    self . Used      = item . Used
+    self . Country   = item . Country
+    self . Area      = item . Area
+    self . Number    = item . Number
+    self . ltime     = item . ltime
+    self . Correct   = item . Correct
+    self . Mobile    = item . Mobile
+    self . Shareable = item . Shareable
+    self . Confirm   = item . Confirm
+    ##########################################################################
+    return
   ############################################################################
-  def set ( self , item , value ) :
-    a = item . lower ( )
-    if ( "id"       == a ) :
-      self . Id      = value
-    if ( "uuid"     == a ) :
-      self . Uuid    = value
-    if ( "used"     == a ) :
-      self . Used    = value
-    if ( "type"     == a ) :
-      self . Type    = value
-    if ( "owner"    == a ) :
-      self . Owner   = value
-    if ( "name"     == a ) :
-      self . Name    = value
-    if ( "reverse"  == a ) :
-      self . Reverse = value
-    if ( "iana"     == a ) :
-      self . IANA    = value
-    if ( "explain"  == a ) :
-      self . Explain = value
-    if ( "sld"      == a ) :
-      self . SLD     = value
-    if ( "domains"  == a ) :
-      self . Domains = value
-    if ( "hosts"    == a ) :
-      self . Hosts   = value
-    if ( "pages"    == a ) :
-      self . Pages   = value
-    if ( "ltime"    == a ) :
-      self . Update  = value
+  def set                  ( self , item , value                           ) :
+    ##########################################################################
+    a    = item . lower    (                                                 )
+    ##########################################################################
+    if                     ( "id"      == a                                ) :
+      self . Id      = int ( value                                           )
+    if                     ( "uuid"    == a                                ) :
+      self . Uuid    = int ( value                                           )
+    if                     ( "used"    == a                                ) :
+      self . Used    = int ( value                                           )
+    if                     ( "country" == a                                ) :
+      self . Country = str ( value                                           )
+    if                     ( "area"    == a                                ) :
+      self . Area    = str ( value                                           )
+    if                     ( "number"  == a                                ) :
+      self . Number  = str ( value                                           )
+    if                     ( "ltime"   == a                                ) :
+      self . ltime   = value
+    ##########################################################################
+    return
   ############################################################################
-  def get ( self , item ) :
-    a = item . lower ( )
-    if ( "id"       == a ) :
+  def get                 ( self , item                                    ) :
+    ##########################################################################
+    a      = item . lower (                                                  )
+    ##########################################################################
+    if                    ( "id"      == a                                 ) :
       return self . Id
-    if ( "uuid"     == a ) :
+    if                    ( "uuid"    == a                                 ) :
       return self . Uuid
-    if ( "used"     == a ) :
+    if                    ( "used"    == a                                 ) :
       return self . Used
-    if ( "type"     == a ) :
-      return self . Type
-    if ( "owner"    == a ) :
-      return self . Owner
-    if ( "name"     == a ) :
-      return self . Name
-    if ( "reverse"  == a ) :
-      return self . Reverse
-    if ( "iana"     == a ) :
-      return self . IANA
-    if ( "explain"  == a ) :
-      return self . Explain
-    if ( "sld"      == a ) :
-      return self . SLD
-    if ( "domains"  == a ) :
-      return self . Domains
-    if ( "hosts"    == a ) :
-      return self . Hosts
-    if ( "pages"    == a ) :
-      return self . Pages
-    if ( "ltime"    == a ) :
-      return self . Update
+    if                    ( "country" == a                                 ) :
+      return self . Country
+    if                    ( "area"    == a                                 ) :
+      return self . Area
+    if                    ( "number"  == a                                 ) :
+      return self . Number
+    if                    ( "ltime"   == a                                 ) :
+      return self . ltime
+    ##########################################################################
     return ""
   ############################################################################
-  def tableItems ( self ) :
-    return [ "id"      ,
-             "uuid"    ,
-             "used"    ,
-             "type"    ,
-             "owner"   ,
-             "name"    ,
-             "reverse" ,
-             "iana"    ,
-             "explain" ,
-             "sld"     ,
-             "domains" ,
-             "hosts"   ,
-             "pages"   ,
-             "ltime"   ]
+  def tableItems ( self                                                    ) :
+    return       [ "id"                                                    , \
+                   "uuid"                                                  , \
+                   "used"                                                  , \
+                   "country"                                               , \
+                   "area"                                                  , \
+                   "number"                                                , \
+                   "ltime"                                                   ]
   ############################################################################
-  def pair ( self , item ) :
-    a = item . lower (      )
-    v = self . get   ( item )
-    if ( "id"       == a ) :
+  def pair                ( self , item                                    ) :
+    ##########################################################################
+    a      = item . lower (                                                  )
+    v      = self . get   ( item                                             )
+    ##########################################################################
+    if                    ( "id"      == a                                 ) :
       return f"`{item}` = {v}"
-    if ( "uuid"     == a ) :
+    if                    ( "uuid"    == a                                 ) :
       return f"`{item}` = {v}"
-    if ( "used"     == a ) :
+    if                    ( "used"    == a                                 ) :
       return f"`{item}` = {v}"
-    if ( "type"     == a ) :
-      return f"`{item}` = {v}"
-    if ( "owner"    == a ) :
-      return f"`{item}` = {v}"
-    if ( "name"     == a ) :
+    if                    ( "country" == a                                 ) :
       return f"`{item}` = '{v}'"
-    if ( "reverse"  == a ) :
+    if                    ( "area"    == a                                 ) :
       return f"`{item}` = '{v}'"
-    if ( "iana"     == a ) :
+    if                    ( "number"  == a                                 ) :
       return f"`{item}` = '{v}'"
-    if ( "explain"  == a ) :
+    if                    ( "ltime"   == a                                 ) :
       return f"`{item}` = '{v}'"
-    if ( "sld"      == a ) :
-      return f"`{item}` = {v}"
-    if ( "domains"  == a ) :
-      return f"`{item}` = {v}"
-    if ( "hosts"    == a ) :
-      return f"`{item}` = {v}"
-    if ( "pages"    == a ) :
-      return f"`{item}` = {v}"
-    if ( "ltime"    == a ) :
-      return f"`{item}` = '{v}'"
+    ##########################################################################
     return f"`{item}` = {v}"
   ############################################################################
-  def valueItems ( self ) :
-    return [ "used"    ,
-             "type"    ,
-             "owner"   ,
-             "name"    ,
-             "reverse" ,
-             "iana"    ,
-             "explain" ,
-             "sld"     ,
-             "domains" ,
-             "hosts"   ,
-             "pages"   ]
+  def valueItems ( self                                                    ) :
+    return       [ "used"                                                  , \
+                   "country"                                               , \
+                   "area"                                                  , \
+                   "number"                                                , \
+                   "ltime"                                                   ]
   ############################################################################
-  def toJson ( self ) :
-    return { "id"      : self . Id      ,
-             "uuid"    : self . Uuid    ,
-             "used"    : self . Used    ,
-             "type"    : self . Type    ,
-             "owner"   : self . Owner   ,
-             "name"    : self . Name    ,
-             "reverse" : self . Reverse ,
-             "iana"    : self . IANA    ,
-             "explain" : self . Explain ,
-             "sld"     : self . SLD     ,
-             "domains" : self . Domains ,
-             "hosts"   : self . Hosts   ,
-             "pages"   : self . Pages   ,
-             "ltime"   : self . Update  }
+  def toJson ( self                                                        ) :
+    return   { "id"      : self . Id                                       , \
+               "uuid"    : self . Uuid                                     , \
+               "used"    : self . Used                                     , \
+               "country" : self . Country                                  , \
+               "area"    : self . Area                                     , \
+               "number"  : self . Number                                   , \
+               "ltime"   : self . ltime                                      }
+  ############################################################################
+  def checkFormat ( self , Number , FORMATs                                ) :
+    ##########################################################################
+    KEYs = list   ( Number                                                   )
+    for K in KEYs                                                            :
+      if          ( K not in FORMATs                                       ) :
+        return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def isNumberFormat          ( self , Number                              ) :
+    return self . checkFormat ( Number , "0123456789"                        )
+  ############################################################################
+  def isPhoneFormat           ( self , Number                              ) :
+    return self . checkFormat ( Number , "0123456789+-"                      )
+  ############################################################################
+  def assureString     ( self , pb                                         ) :
+    ##########################################################################
+    BB   = pb
+    ##########################################################################
+    try                                                                      :
+      BB = BB . decode ( "utf-8"                                             )
+    except                                                                   :
+      pass
+    ##########################################################################
+    return BB
+  ############################################################################
+  def VerifyFormats                      ( self                            ) :
+    ##########################################################################
+    self . Country = self . assureString ( self . Country                    )
+    self . Area    = self . assureString ( self . Area                       )
+    self . Number  = self . assureString ( self . Number                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainsPhone       ( self , DB , Table                               ) :
+    ##########################################################################
+    if                   ( not self . ObtainsByUuid ( DB , Table )         ) :
+      return False
+    ##########################################################################
+    self . VerifyFormats (                                                   )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ObtainsProperties     ( self , DB , Table                            ) :
+    ##########################################################################
+    ITS  = "`correct`,`mobile`,`shareable`,`confirm`"
+    WHS  = DB . WhereUuid   ( self . Uuid , True                             )
+    QQ   = f"select {ITS} from {Table} {WHS}"
+    DB   . Execute          ( QQ                                             )
+    ##########################################################################
+    LL   = DB    . FetchOne (                                                )
+    ##########################################################################
+    if                      ( LL in [ False , None ]                       ) :
+      return False
+    ##########################################################################
+    if                      ( len ( LL ) != 4                              ) :
+      return False
+    ##########################################################################
+    self . Correct   = int  ( LL [ 0 ]                                       )
+    self . Mobile    = int  ( LL [ 1 ]                                       )
+    self . Shareable = int  ( LL [ 2 ]                                       )
+    self . Confirm   = int  ( LL [ 3 ]                                       )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ObtainsFullPhone ( self , DB , PhoneTable , PropertiesTable          ) :
+    ##########################################################################
+    if ( not self . ObtainsPhone      ( DB , PhoneTable      )             ) :
+      return False
+    ##########################################################################
+    if ( not self . ObtainsProperties ( DB , PropertiesTable )             ) :
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def isCorrect   ( self                                                   ) :
+    return        ( self . Correct   > 0                                     )
+  ############################################################################
+  def isMobile    ( self                                                   ) :
+    return        ( self . Mobile    > 0                                     )
+  ############################################################################
+  def isShareable ( self                                                   ) :
+    return        ( self . Shareable > 0                                     )
+  ############################################################################
+  def isConfirm   ( self                                                   ) :
+    return        ( self . Confirm   > 0                                     )
+  ############################################################################
+  def setCountry         ( self , country                                  ) :
+    self . Country = str ( country                                           )
+    return
+  ############################################################################
+  def setArea            ( self , area                                     ) :
+    self . Area    = str ( area                                              )
+    return
+  ############################################################################
+  def setNumber          ( self , number                                   ) :
+    self . Number  = str ( number                                            )
+    return
+  ############################################################################
+  def toPhone ( self ) :
+    ##########################################################################
+    if        ( len ( self . Country ) <= 0 ) :
+      return ""
+    ##########################################################################
+    if        ( len ( self . Number  ) <= 0 ) :
+      return ""
+    ##########################################################################
+    COUNTRY = self . Country
+    AREA    = self . Area
+    NUMBER  = self . Number
+    ##########################################################################
+    if        ( len ( AREA    ) <= 0 ) :
+      return f"+{COUNTRY}-{NUMBER}"
+    ##########################################################################
+    return   f"+{COUNTRY}-{AREA}-{NUMBER}"
+  ############################################################################
+  def Verify ( self , Number ) :
+    ##########################################################################
+    ppn = phonenumbers . parse ( Number )
+    ntp = number_type          ( ppn    )
+    cim = carrier._is_mobile   ( ntp    )
+    print ( ppn )
+    print ( ntp )
+    print ( cim )
+    ##########################################################################
+    return
 ##############################################################################

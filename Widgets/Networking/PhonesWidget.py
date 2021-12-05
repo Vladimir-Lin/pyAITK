@@ -11,7 +11,6 @@ import threading
 import gettext
 import json
 ##############################################################################
-##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
 from   PyQt5                          import QtWidgets
@@ -53,6 +52,7 @@ from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . Telecom    . Phone     import Phone       as TelecomPhone
 ##############################################################################
 class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
