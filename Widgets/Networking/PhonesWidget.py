@@ -488,6 +488,29 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def GetPhoneExtras                       ( self , DB , PHONE             ) :
+    ##########################################################################
+    CRYTAB    = self . Tables              [ "Countries"                     ]
+    NAMTAB    = self . Tables              [ "Names"                         ]
+    RELTAB    = self . Tables              [ "Relation"                      ]
+    ##########################################################################
+    if                                     ( len ( PHONE . Region ) > 0    ) :
+      ########################################################################
+      RG      = PHONE . Region
+      QQ      = f"select `uuid` from {CRYTAB} where ( `two` = '{RG}' ) ;"
+      DB      . Query                      ( QQ                              )
+      RR      = DB . FetchOne              (                                 )
+      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )          :
+        CUID  = int                        ( RR [ 0 ]                        )
+        CNAME = self . GetName             ( DB , NAMTAB , CUID              )
+        PHONE . Nation = CNAME
+    ##########################################################################
+    self      . OwnRel . set               ( "second" , PHONE . Uuid         )
+    OWNED     = self . OwnRel . CountFirst ( DB , RELTAB                     )
+    PHONE     . Owners = OWNED
+    ##########################################################################
+    return
+  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -515,21 +538,7 @@ class PhonesWidget                 ( TreeDock                              ) :
       PHONE = TelecomPhone            (                                      )
       PHONE . Uuid = U
       PHONE . ObtainsFullPhone        ( DB , PHSTAB , PRZTAB                 )
-      ########################################################################
-      if                              ( len ( PHONE . Region ) > 0         ) :
-        ######################################################################
-        RG  = PHONE . Region
-        QQ  = f"select `uuid` from {CRYTAB} where ( `two` = '{RG}' ) ;"
-        DB  . Query                   ( QQ                                   )
-        RR  = DB . FetchOne           (                                      )
-        if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )        :
-          CUID  = int                 ( RR [ 0 ]                             )
-          CNAME = self . GetName      ( DB , NAMTAB , CUID                   )
-          PHONE . Nation = CNAME
-      ########################################################################
-      self  . OwnRel . set            ( "second" , U                         )
-      OWNED = self . OwnRel . CountFirst ( DB , RELTAB                       )
-      PHONE . Owners = OWNED
+      self  . GetPhoneExtras          ( DB , PHONE                           )
       ########################################################################
       IMACT . append                  ( PHONE                                )
     ##########################################################################
@@ -804,7 +813,9 @@ class PhonesWidget                 ( TreeDock                              ) :
       return
     ##########################################################################
     PHSTAB  = self . Tables           [ "Phones"                             ]
+    CRYTAB  = self . Tables           [ "Countries"                          ]
     PRZTAB  = self . Tables           [ "Properties"                         ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
     ##########################################################################
     DB      . LockWrites              ( [ PHSTAB , PRZTAB                  ] )
     ##########################################################################
@@ -830,6 +841,9 @@ class PhonesWidget                 ( TreeDock                              ) :
     PHONE   . UpdateFull              ( DB , PHSTAB , PRZTAB                 )
     ##########################################################################
     DB      . UnlockTables            (                                      )
+    ##########################################################################
+    self    . GetPhoneExtras          ( DB , PHONE                           )
+    ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
     self    . PrepareItemContent      ( item , PHONE                         )
