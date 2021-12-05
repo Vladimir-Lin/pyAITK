@@ -650,7 +650,7 @@ class AreaCodeWidget               ( TreeDock                              ) :
     DB     . UnlockTables            (                                       )
     ##########################################################################
     name   = ""
-    QQ     = f"select `itu` from {ITUTAB} where ( `uuid` = {UUID} ) ;"
+    QQ     = f"select `itu` from {ITUTAB} where ( `uuid` = {PCID} ) ;"
     DB     . Query                   ( QQ                                    )
     RR     = DB . FetchOne           (                                       )
     if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )            :
@@ -768,8 +768,8 @@ class AreaCodeWidget               ( TreeDock                              ) :
     mm     = self . SortingMenu    ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunAmountIndexMenu ( )         ) :
