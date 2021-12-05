@@ -197,9 +197,9 @@ class PhonesWidget                 ( TreeDock                              ) :
     NUMBER  = phone . Number
     ##########################################################################
     CORRECT = CLIST               [ str ( phone . Correct   )                ]
-    MOBILE  = CLIST               [ str ( phone . Mobile    )                ]
-    SHARE   = CLIST               [ str ( phone . Shareable )                ]
-    CONFIRM = CLIST               [ str ( phone . Confirm   )                ]
+    MOBILE  = MLIST               [ str ( phone . Mobile    )                ]
+    SHARE   = SLIST               [ str ( phone . Shareable )                ]
+    CONFIRM = FLIST               [ str ( phone . Confirm   )                ]
     ##########################################################################
     IT      = QTreeWidgetItem     (                                          )
     IT      . setText             ( 0 , PNUMBER                              )
@@ -905,9 +905,9 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 6001                            ) :
       ########################################################################
-      pnumber = atItem . text ( 0 )
-      PN      = Phone ( )
-      PN      . Verify ( pnumber )
+      pnumber = atItem . text      ( 0                                       )
+      PN      = TelecomPhone       (                                         )
+      PN      . Verify             ( pnumber                                 )
       ########################################################################
       return True
     ##########################################################################

@@ -8,6 +8,8 @@ import sys
 import phonenumbers
 from   phonenumbers                   import carrier
 from   phonenumbers . phonenumberutil import number_type
+from   phonenumbers . phonenumberutil import region_code_for_country_code
+from   phonenumbers . phonenumberutil import region_code_for_number
 ##############################################################################
 import mysql        . connector
 from   mysql        . connector       import Error
@@ -15,6 +17,23 @@ from   mysql        . connector       import Error
 from   ..      Database . Query       import Query      as Query
 from   ..      Database . Connection  import Connection as Connection
 from   ..      Database . Columns     import Columns    as Columns
+##############################################################################
+"""
+電話號碼類型
+
+固定電話 FIXED_LINE = 0
+手機 MOBILE = 1
+手機或固定電話 FIXED_LINE_OR_MOBILE = 2
+免費電話 TOLL_FREE = 3
+優惠電話 PREMIUM_RATE = 4
+費用分享服務 SHARED_COST = 5
+VoIP電話 VOIP = 6
+個人電話 PERSONAL_NUMBER = 7
+傳呼機 PAGER = 8
+通用接入號碼 UAN = 9
+商業電訊郵箱 VOICEMAIL = 10
+未知 UNKNOWN = 99
+"""
 ##############################################################################
 class Phone              ( Columns                                         ) :
   ############################################################################
@@ -232,7 +251,7 @@ class Phone              ( Columns                                         ) :
     return        ( self . Correct   > 0                                     )
   ############################################################################
   def isMobile    ( self                                                   ) :
-    return        ( self . Mobile    > 0                                     )
+    return        ( self . Mobile in [ 1 , 2 ]                               )
   ############################################################################
   def isShareable ( self                                                   ) :
     return        ( self . Shareable > 0                                     )
@@ -274,7 +293,12 @@ class Phone              ( Columns                                         ) :
     ppn = phonenumbers . parse ( Number )
     ntp = number_type          ( ppn    )
     cim = carrier._is_mobile   ( ntp    )
+    regcode = region_code_for_country_code(ppn.country_code)
     print ( ppn )
+    print ( ppn . country_code )
+    print ( ppn . extension )
+    print ( ppn . national_number )
+    print ( regcode )
     print ( ntp )
     print ( cim )
     ##########################################################################
