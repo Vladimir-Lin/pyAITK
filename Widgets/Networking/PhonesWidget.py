@@ -282,6 +282,8 @@ class PhonesWidget                 ( TreeDock                              ) :
     if                            ( PNG in FLAGs                           ) :
       K     = QIcon               ( f":/nations/{PNG}"                       )
       item  . setIcon             (  5 , K                                   )
+    else                                                                     :
+      item  . setIcon             (  5 , QIcon ( )                           )
     ##########################################################################
     item    . setText             (  6 , CORRECT                             )
     item    . setData             (  6 , Qt . UserRole , phone . Correct     )
