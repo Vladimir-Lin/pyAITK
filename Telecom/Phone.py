@@ -238,7 +238,7 @@ class Phone              ( Columns                                         ) :
     if                      ( LL in [ False , None ]                       ) :
       return False
     ##########################################################################
-    if                      ( len ( LL ) != 4                              ) :
+    if                      ( len ( LL ) != 5                              ) :
       return False
     ##########################################################################
     self . Correct   = int  ( LL [ 0 ]                                       )
@@ -283,19 +283,19 @@ class Phone              ( Columns                                         ) :
     self . Number  = str ( number                                            )
     return
   ############################################################################
-  def toPhone ( self ) :
+  def toPhone ( self                                                       ) :
     ##########################################################################
-    if        ( len ( self . Country ) <= 0 ) :
+    if        ( len ( self . Country ) <= 0                                ) :
       return ""
     ##########################################################################
-    if        ( len ( self . Number  ) <= 0 ) :
+    if        ( len ( self . Number  ) <= 0                                ) :
       return ""
     ##########################################################################
     COUNTRY = self . Country
     AREA    = self . Area
     NUMBER  = self . Number
     ##########################################################################
-    if        ( len ( AREA    ) <= 0 ) :
+    if        ( len ( AREA    ) <= 0                                       ) :
       return f"+{COUNTRY}-{NUMBER}"
     ##########################################################################
     return   f"+{COUNTRY}-{AREA}-{NUMBER}"
