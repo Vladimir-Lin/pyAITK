@@ -91,28 +91,28 @@ class CountryCodeWidget            ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( False                                   )
+    self . setAcceptDrops          ( True                                    )
     self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
+    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 640                              )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 1024 , 640 )                      )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
     return True
   ############################################################################
@@ -123,13 +123,9 @@ class CountryCodeWidget            ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked         ( self , item , column                         ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                      ( self . isItemPicked ( )                      ) :
-      if                    ( column != self . CurrentItem [ "Column" ]    ) :
-        self . removeParked (                                                )
-    ##########################################################################
-    self     . Notify       ( 0                                              )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -418,14 +414,198 @@ class CountryCodeWidget            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Prepare                    ( self                                    ) :
+  def allowedMimeTypes        ( self , mime                                ) :
+    formats = "place/uuids;nation/uuids;itu/uuids"
+    return self . MimeType    ( mime , formats                               )
+  ############################################################################
+  def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
-    self   . setColumnWidth      ( 1 , 120                                   )
-    self   . setColumnWidth      ( 3 , 120                                   )
-    self   . setColumnWidth      ( 6 ,   3                                   )
-    LABELs = self . Translations [ "CountryCodeWidget" ] [ "Labels"          ]
-    self   . setCentralLabels    ( LABELs                                    )
-    self   . setPrepared         ( True                                      )
+    if                        ( self == sourceWidget                       ) :
+      return False
+    ##########################################################################
+    return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def dropNew                       ( self                                 , \
+                                      sourceWidget                         , \
+                                      mimeData                             , \
+                                      mousePos                             ) :
+    ##########################################################################
+    if                              ( self == sourceWidget                 ) :
+      return False
+    ##########################################################################
+    RDN     = self . RegularDropNew ( mimeData                               )
+    if                              ( not RDN                              ) :
+      return False
+    ##########################################################################
+    mtype   = self . DropInJSON     [ "Mime"                                 ]
+    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    ##########################################################################
+    if                              ( mtype in [ "place/uuids" ]           ) :
+      ########################################################################
+      MSG   = self . getMenuItem    ( "AssignPlace"                          )
+      self  . ShowStatus            ( MSG                                    )
+      ########################################################################
+    elif                            ( mtype in [ "nation/uuids" ]          ) :
+      ########################################################################
+      MSG   = self . getMenuItem    ( "AssignNation"                         )
+      self  . ShowStatus            ( MSG                                    )
+      ########################################################################
+    elif                            ( mtype in [ "itu/uuids" ]             ) :
+      ########################################################################
+      MSG   = self . getMenuItem    ( "AssignITU"                            )
+      self  . ShowStatus            ( MSG                                    )
+    ##########################################################################
+    return RDN
+  ############################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  ############################################################################
+  def acceptPlacesDrop         ( self                                      ) :
+    return True
+  ############################################################################
+  def acceptNationsDrop        ( self                                      ) :
+    return True
+  ############################################################################
+  def acceptItuDrop            ( self                                      ) :
+    return True
+  ############################################################################
+  def dropPlaces                       ( self , source , pos , JSOX        ) :
+    return self . defaultDropInObjects ( source                            , \
+                                         pos                               , \
+                                         JSON                              , \
+                                         0                                 , \
+                                         self . AssingPlaceToAreaCode        )
+  ############################################################################
+  def dropNations                      ( self , source , pos , JSOX        ) :
+    return self . defaultDropInObjects ( source                            , \
+                                         pos                               , \
+                                         JSON                              , \
+                                         0                                 , \
+                                         self . AssingNationToAreaCode       )
+  ############################################################################
+  def dropITU                          ( self , source , pos , JSOX        ) :
+    return self . defaultDropInObjects ( source                            , \
+                                         pos                               , \
+                                         JSON                              , \
+                                         0                                 , \
+                                         self . AssingItuToAreaCode          )
+  ############################################################################
+  def AssingItemToAreaCode           ( self                                , \
+                                       UUID                                , \
+                                       UUIDs                               , \
+                                       msgId                               , \
+                                       Column                              , \
+                                       posId                               ) :
+    ##########################################################################
+    if                               ( UUID <= 0                           ) :
+      return
+    ##########################################################################
+    COUNT  = len                     ( UUIDs                                 )
+    if                               ( COUNT <= 0                          ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB        (                                       )
+    if                               ( DB == None                          ) :
+      return
+    ##########################################################################
+    PCID   = UUIDs                   [ 0                                     ]
+    FMT    = self . getMenuItem      ( msgId                                 )
+    MSG    = FMT  . format           ( COUNT                                 )
+    self   . ShowStatus              ( MSG                                   )
+    self   . TtsTalk                 ( MSG , 1002                            )
+    ##########################################################################
+    PCCTAB = self . Tables           [ "CountryCode"                         ]
+    NAMTAB = self . Tables           [ "Names"                               ]
+    DB     . LockWrites              ( [ PCCTAB ]                            )
+    QQ     = f"""update {PCCTAB}
+                  set `{Column}` = {PCID}
+                  where ( `uuid` = {UUID} ) ;"""
+    QQ     = " " . join              ( QQ . split ( )                        )
+    DB     . Query                   ( QQ                                    )
+    DB     . UnlockTables            (                                       )
+    ##########################################################################
+    name   = self . GetName          ( DB , NAMTAB , PCID                    )
+    ##########################################################################
+    DB     . Close                   (                                       )
+    ##########################################################################
+    self   . ShowStatus              ( ""                                    )
+    self   . Notify                  ( 5                                     )
+    ##########################################################################
+    IT     = self . uuidAtItem       ( UUID , 0                              )
+    if                               ( IT is None                          ) :
+      return
+    ##########################################################################
+    self   . emitAssignColumn . emit ( IT , posId , name                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssingPlaceToAreaCode            ( self , UUID , UUIDs               ) :
+    return self . AssingItemToAreaCode ( UUID                              , \
+                                         UUIDs                             , \
+                                         "AssignPlace"                     , \
+                                         "place"                           , \
+                                         4                                   )
+  ############################################################################
+  def AssingNationToAreaCode           ( self , UUID , UUIDs               ) :
+    return self . AssingItemToAreaCode ( UUID                              , \
+                                         UUIDs                             , \
+                                         "AssignNation"                    , \
+                                         "nation"                          , \
+                                         2                                   )
+  ############################################################################
+  def AssingItuToAreaCode            ( self , UUID , UUIDs                 ) :
+    if                               ( UUID <= 0                           ) :
+      return
+    ##########################################################################
+    COUNT  = len                     ( UUIDs                                 )
+    if                               ( COUNT <= 0                          ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB        (                                       )
+    if                               ( DB == None                          ) :
+      return
+    ##########################################################################
+    PCID   = UUIDs                   [ 0                                     ]
+    FMT    = self . getMenuItem      ( "AssignITU"                           )
+    MSG    = FMT  . format           ( COUNT                                 )
+    self   . ShowStatus              ( MSG                                   )
+    self   . TtsTalk                 ( MSG , 1002                            )
+    ##########################################################################
+    PCCTAB = self . Tables           [ "CountryCode"                         ]
+    ITUTAB = self . Tables           [ "ITU"                                 ]
+    DB     . LockWrites              ( [ PACTAB ]                            )
+    QQ     = f"""update {PCCTAB}
+                  set `itu` = {PCID}
+                  where ( `uuid` = {UUID} ) ;"""
+    QQ     = " " . join              ( QQ . split ( )                        )
+    DB     . Query                   ( QQ                                    )
+    DB     . UnlockTables            (                                       )
+    ##########################################################################
+    name   = ""
+    QQ     = f"select `itu` from {ITUTAB} where ( `uuid` = {UUID} ) ;"
+    DB     . Query                   ( QQ                                    )
+    RR     = DB . FetchOne           (                                       )
+    if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )            :
+      name = str                     ( RR [ 0 ]                              )
+    ##########################################################################
+    DB     . Close                   (                                       )
+    ##########################################################################
+    self   . ShowStatus              ( ""                                    )
+    self   . Notify                  ( 5                                     )
+    ##########################################################################
+    IT     = self . uuidAtItem       ( UUID , 0                              )
+    if                               ( IT is None                          ) :
+      return
+    ##########################################################################
+    self   . emitAssignColumn . emit ( IT , 3 , name                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def Prepare             ( self                                           ) :
+    ##########################################################################
+    self . setColumnWidth ( 1 , 120                                          )
+    self . setColumnWidth ( 3 , 120                                          )
+    self . defaultPrepare ( "CountryCodeWidget" , 6                          )
     ##########################################################################
     return
   ############################################################################

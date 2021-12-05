@@ -107,6 +107,9 @@ class AbstractGui        (                                                 ) :
                                { "Mime"     : "people/uuids"                 ,
                                  "Function" : "acceptPeopleDrop"             ,
                                  "Drop"     : "dropPeople"                 } ,
+                               { "Mime"     : "organization/uuids"           ,
+                                 "Function" : "acceptOrganizationsDrop"      ,
+                                 "Drop"     : "dropOrganizations"          } ,
                                { "Mime"     : "audio/uuids"                  ,
                                  "Function" : "acceptAudioDrop"              ,
                                  "Drop"     : "dropAudios"                 } ,
@@ -121,7 +124,16 @@ class AbstractGui        (                                                 ) :
                                  "Drop"     : "dropEyes"                   } ,
                                { "Mime"     : "hairs/uuids"                  ,
                                  "Function" : "acceptHairsDrop"              ,
-                                 "Drop"     : "dropHairs"                  } ]
+                                 "Drop"     : "dropHairs"                  } ,
+                               { "Mime"     : "itu/uuids"                    ,
+                                 "Function" : "acceptItuDrop"                ,
+                                 "Drop"     : "dropITU"                    } ,
+                               { "Mime"     : "place/uuids"                  ,
+                                 "Function" : "acceptPlacesDrop"             ,
+                                 "Drop"     : "dropPlaces"                 } ,
+                               { "Mime"     : "nation/uuids"                 ,
+                                 "Function" : "acceptNationsDrop"            ,
+                                 "Drop"     : "dropNations"                } ]
     ##########################################################################
     return
   ############################################################################

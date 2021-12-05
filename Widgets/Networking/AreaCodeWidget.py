@@ -55,10 +55,10 @@ from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class AreaCodeWidget               ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( list                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -93,28 +93,28 @@ class AreaCodeWidget               ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( False                                   )
+    self . setAcceptDrops          ( True                                    )
     self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
+    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 640                              )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 1024 , 640 )                      )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
     return True
   ############################################################################
@@ -125,40 +125,33 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked         ( self , item , column                         ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                      ( self . isItemPicked ( )                      ) :
-      if                    ( column != self . CurrentItem [ "Column" ]    ) :
-        self . removeParked (                                                )
-    ##########################################################################
-    self     . Notify       ( 0                                              )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked             ( self , item , column                     ) :
+  def doubleClicked              ( self , item , column                    ) :
     ##########################################################################
-    if                          ( column not in [ 0 , 3 , 8 ]              ) :
+    if                           ( column not in [ 0 , 3 , 8 ]             ) :
       return
     ##########################################################################
-    if                          ( column in [ 0 , 8 ]                      ) :
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
+    if                           ( column in [ 0 , 8 ]                     ) :
+      line = self . setLineEdit  ( item                                    , \
+                                   column                                  , \
+                                   "editingFinished"                       , \
+                                   self . nameChanged                        )
+      line . setFocus            ( Qt . TabFocusReason                       )
       return
     ##########################################################################
-    if                          ( column in [ 3 ]                          ) :
+    if                           ( column in [ 3 ]                         ) :
       ########################################################################
       LL   = self . Translations [ "AreaCodeWidget" ] [ "Used"               ]
-      val  = item . data         ( column , Qt . UserRole                    )
-      val  = int                 ( val                                       )
-      cb   = self . setComboBox  ( item                                      ,
-                                   column                                    ,
-                                   "activated"                               ,
-                                   self . usageChanged                       )
-      cb   . addJson             ( LL , val                                  )
-      cb   . setMaxVisibleItems  ( 5                                         )
+      cb   = self . bindComboBox ( item                                    , \
+                                   column                                  , \
+                                   LL                                      , \
+                                   self . usageChanged                     , \
+                                   5                                         )
       cb   . showPopup           (                                           )
     ##########################################################################
     return
@@ -218,14 +211,10 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot                  (                                               )
+  def RenameItem             ( self                                        ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
+    self . defaultRenameItem ( [ 0 , 3 , 8 ]                                 )
     ##########################################################################
     return
   ############################################################################
@@ -276,17 +265,11 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                       (        list                              )
-  def refresh                     ( self , AREAS                           ) :
+  @pyqtSlot                     (        list                                )
+  def refresh                   ( self , AREAS                             ) :
     ##########################################################################
-    self   . clear                (                                          )
-    ##########################################################################
-    for T in AREAS                                                           :
-      ########################################################################
-      IT   = self . PrepareItem   ( T                                        )
-      self . addTopLevelItem      ( IT                                       )
-    ##########################################################################
-    self   . emitNamesShow . emit (                                          )
+    self . defaultRefreshItems  ( AREAS , self . PrepareItem                 )
+    self . emitNamesShow . emit (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -426,50 +409,50 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def ObtainsInformation   ( self , DB                                     ) :
     ##########################################################################
-    self    . Total = 0
+    self   . Total = 0
     ##########################################################################
-    PACTAB  = self . Tables           [ "AreaCode"                           ]
+    PACTAB = self . Tables [ "AreaCode"                                      ]
     ##########################################################################
-    QQ      = f"select count(*) from {PACTAB} ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
+    QQ     = f"select count(*) from {PACTAB} ;"
+    DB     . Query         ( QQ                                              )
+    RR     = DB . FetchOne (                                                 )
     ##########################################################################
     if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    self   . Total = RR    [ 0                                               ]
     ##########################################################################
     return
   ############################################################################
-  def FetchRegularDepotCount   ( self , DB                                 ) :
+  def FetchRegularDepotCount ( self , DB                                   ) :
     ##########################################################################
-    PACTAB  = self . Tables    [ "AreaCode"                                  ]
+    PACTAB = self . Tables   [ "AreaCode"                                    ]
     QQ     = f"select count(*) from {PACTAB} ;"
-    DB     . Query             ( QQ                                          )
-    ONE    = DB . FetchOne     (                                             )
+    DB     . Query           ( QQ                                            )
+    ONE    = DB . FetchOne   (                                               )
     ##########################################################################
-    if                         ( ONE == None                               ) :
+    if                       ( ONE == None                                 ) :
       return 0
     ##########################################################################
-    if                         ( len ( ONE ) <= 0                          ) :
+    if                       ( len ( ONE ) <= 0                            ) :
       return 0
     ##########################################################################
     return ONE                 [ 0                                           ]
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
-    PACTAB  = self . Tables   [ "AreaCode"                                   ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
+    PACTAB = self . Tables [ "AreaCode"                                      ]
+    STID   = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . SortOrder
     ##########################################################################
-    QQ      = f"""select `uuid` from {PACTAB}
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ     = f"""select `uuid` from {PACTAB}
+                 order by `id` {ORDER}
+                 limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join      ( QQ . split ( )                                  )
   ############################################################################
   def FetchSessionInformation                    ( self , DB               ) :
     ##########################################################################
@@ -477,21 +460,218 @@ class AreaCodeWidget               ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Prepare                    ( self                                    ) :
+  def allowedMimeTypes        ( self , mime                                ) :
+    formats = "place/uuids;nation/uuids;itu/uuids"
+    return self . MimeType    ( mime , formats                               )
+  ############################################################################
+  def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
-    ## self   . setColumnWidth      ( 0 , 200                                   )
-    ## self   . setColumnWidth      ( 1 ,  80                                   )
-    ## self   . setColumnWidth      ( 2 ,  80                                   )
-    ## self   . setColumnWidth      ( 3 , 160                                   )
-    ## self   . setColumnWidth      ( 4 , 100                                   )
-    ## self   . setColumnWidth      ( 5 , 100                                   )
-    ## self   . setColumnWidth      ( 6 , 100                                   )
-    ## self   . setColumnWidth      ( 7 , 100                                   )
-    ## self   . setColumnWidth      ( 8 , 100                                   )
-    self   . setColumnWidth      ( 9 ,   3                                   )
-    LABELs = self . Translations [ "AreaCodeWidget" ] [ "Labels"             ]
-    self   . setCentralLabels    ( LABELs                                    )
-    self   . setPrepared         ( True                                      )
+    if                        ( self == sourceWidget                       ) :
+      return False
+    ##########################################################################
+    return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def dropNew                       ( self                                 , \
+                                      sourceWidget                         , \
+                                      mimeData                             , \
+                                      mousePos                             ) :
+    ##########################################################################
+    if                              ( self == sourceWidget                 ) :
+      return False
+    ##########################################################################
+    RDN     = self . RegularDropNew ( mimeData                               )
+    if                              ( not RDN                              ) :
+      return False
+    ##########################################################################
+    mtype   = self . DropInJSON     [ "Mime"                                 ]
+    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    ##########################################################################
+    if                              ( mtype in [ "place/uuids" ]           ) :
+      ########################################################################
+      MSG   = self . getMenuItem    ( "AssignPlace"                          )
+      self  . ShowStatus            ( MSG                                    )
+      ########################################################################
+    elif                            ( mtype in [ "nation/uuids" ]          ) :
+      ########################################################################
+      MSG   = self . getMenuItem    ( "AssignNation"                         )
+      self  . ShowStatus            ( MSG                                    )
+      ########################################################################
+    elif                            ( mtype in [ "itu/uuids" ]             ) :
+      ########################################################################
+      MSG   = self . getMenuItem    ( "AssignITU"                            )
+      self  . ShowStatus            ( MSG                                    )
+      ########################################################################
+    elif                            ( mtype in [ "organization/uuids" ]    ) :
+      ########################################################################
+      MSG   = self . getMenuItem    ( "AssignOrganization"                   )
+      self  . ShowStatus            ( MSG                                    )
+    ##########################################################################
+    return RDN
+  ############################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  ############################################################################
+  def acceptPlacesDrop         ( self                                      ) :
+    return True
+  ############################################################################
+  def acceptNationsDrop        ( self                                      ) :
+    return True
+  ############################################################################
+  def acceptItuDrop            ( self                                      ) :
+    return True
+  ############################################################################
+  def acceptOrganizationsDrop  ( self                                      ) :
+    return True
+  ############################################################################
+  def dropPlaces                       ( self , source , pos , JSOX        ) :
+    return self . defaultDropInObjects ( source                            , \
+                                         pos                               , \
+                                         JSON                              , \
+                                         0                                 , \
+                                         self . AssingPlaceToAreaCode        )
+  ############################################################################
+  def dropNations                      ( self , source , pos , JSOX        ) :
+    return self . defaultDropInObjects ( source                            , \
+                                         pos                               , \
+                                         JSON                              , \
+                                         0                                 , \
+                                         self . AssingNationToAreaCode       )
+  ############################################################################
+  def dropITU                          ( self , source , pos , JSOX        ) :
+    return self . defaultDropInObjects ( source                            , \
+                                         pos                               , \
+                                         JSON                              , \
+                                         0                                 , \
+                                         self . AssingItuToAreaCode          )
+  ############################################################################
+  def dropOrganizations                ( self , source , pos , JSOX        ) :
+    return self . defaultDropInObjects ( source                            , \
+                                         pos                               , \
+                                         JSON                              , \
+                                         0                                 , \
+                                         self . AssingOrganizationToAreaCode )
+  ############################################################################
+  def AssingItemToAreaCode           ( self                                , \
+                                       UUID                                , \
+                                       UUIDs                               , \
+                                       msgId                               , \
+                                       Column                              , \
+                                       posId                               ) :
+    ##########################################################################
+    if                               ( UUID <= 0                           ) :
+      return
+    ##########################################################################
+    COUNT  = len                     ( UUIDs                                 )
+    if                               ( COUNT <= 0                          ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB        (                                       )
+    if                               ( DB == None                          ) :
+      return
+    ##########################################################################
+    PCID   = UUIDs                   [ 0                                     ]
+    FMT    = self . getMenuItem      ( msgId                                 )
+    MSG    = FMT  . format           ( COUNT                                 )
+    self   . ShowStatus              ( MSG                                   )
+    self   . TtsTalk                 ( MSG , 1002                            )
+    ##########################################################################
+    PACTAB = self . Tables           [ "AreaCode"                            ]
+    NAMTAB = self . Tables           [ "Names"                               ]
+    DB     . LockWrites              ( [ PACTAB ]                            )
+    QQ     = f"""update {PACTAB}
+                  set `itu` = {PCID}
+                  where ( `uuid` = {UUID} ) ;"""
+    QQ     = " " . join              ( QQ . split ( )                        )
+    DB     . Query                   ( QQ                                    )
+    DB     . UnlockTables            (                                       )
+    ##########################################################################
+    name   = self . GetName          ( DB , NAMTAB , PCID                    )
+    ##########################################################################
+    DB     . Close                   (                                       )
+    ##########################################################################
+    self   . ShowStatus              ( ""                                    )
+    self   . Notify                  ( 5                                     )
+    ##########################################################################
+    IT     = self . uuidAtItem       ( UUID , 0                              )
+    if                               ( IT is None                          ) :
+      return
+    ##########################################################################
+    self   . emitAssignColumn . emit ( IT , posId , name                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssingPlaceToAreaCode            ( self , UUID , UUIDs               ) :
+    return self . AssingItemToAreaCode ( UUID                              , \
+                                         UUIDs                             , \
+                                         "AssignPlace"                     , \
+                                         "place"                           , \
+                                         5                                   )
+  ############################################################################
+  def AssingNationToAreaCode           ( self , UUID , UUIDs               ) :
+    return self . AssingItemToAreaCode ( UUID                              , \
+                                         UUIDs                             , \
+                                         "AssignNation"                    , \
+                                         "nation"                          , \
+                                         4                                   )
+  ############################################################################
+  def AssingOrganizationToAreaCode     ( self , UUID , UUIDs               ) :
+    return self . AssingItemToAreaCode ( UUID                              , \
+                                         UUIDs                             , \
+                                         "AssignOrganization"              , \
+                                         "administrative"                  , \
+                                         6                                   )
+  ############################################################################
+  def AssingItuToAreaCode            ( self , UUID , UUIDs                 ) :
+    if                               ( UUID <= 0                           ) :
+      return
+    ##########################################################################
+    COUNT  = len                     ( UUIDs                                 )
+    if                               ( COUNT <= 0                          ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB        (                                       )
+    if                               ( DB == None                          ) :
+      return
+    ##########################################################################
+    PCID   = UUIDs                   [ 0                                     ]
+    FMT    = self . getMenuItem      ( "AssignITU"                           )
+    MSG    = FMT  . format           ( COUNT                                 )
+    self   . ShowStatus              ( MSG                                   )
+    self   . TtsTalk                 ( MSG , 1002                            )
+    ##########################################################################
+    PACTAB = self . Tables           [ "AreaCode"                            ]
+    ITUTAB = self . Tables           [ "ITU"                                 ]
+    DB     . LockWrites              ( [ PACTAB ]                            )
+    QQ     = f"""update {PACTAB}
+                  set `{Column}` = {PCID}
+                  where ( `uuid` = {UUID} ) ;"""
+    QQ     = " " . join              ( QQ . split ( )                        )
+    DB     . Query                   ( QQ                                    )
+    DB     . UnlockTables            (                                       )
+    ##########################################################################
+    name   = ""
+    QQ     = f"select `itu` from {ITUTAB} where ( `uuid` = {UUID} ) ;"
+    DB     . Query                   ( QQ                                    )
+    RR     = DB . FetchOne           (                                       )
+    if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )            :
+      name = str                     ( RR [ 0 ]                              )
+    ##########################################################################
+    DB     . Close                   (                                       )
+    ##########################################################################
+    self   . ShowStatus              ( ""                                    )
+    self   . Notify                  ( 5                                     )
+    ##########################################################################
+    IT     = self . uuidAtItem       ( UUID , 0                              )
+    if                               ( IT is None                          ) :
+      return
+    ##########################################################################
+    self   . emitAssignColumn . emit ( IT , 6 , name                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def Prepare             ( self                                           ) :
+    ##########################################################################
+    self . defaultPrepare ( "AreaCodeWidget" , 9                             )
     ##########################################################################
     return
   ############################################################################

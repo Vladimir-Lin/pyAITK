@@ -186,13 +186,9 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked         ( self , item , column                         ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                      ( self . isItemPicked ( )                      ) :
-      if                    ( column != self . CurrentItem [ "Column" ]    ) :
-        self . removeParked (                                                )
-    ##########################################################################
-    self     . Notify       ( 0                                              )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -668,49 +664,18 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    ##########################################################################
-    return True
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
   ############################################################################
   def acceptPeopleDrop         ( self                                      ) :
     return True
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem is None                            ) :
-      return True
-    ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
-    ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
-    ##########################################################################
-    self . Go                  ( self . PeopleJoinPlace               , \
-                                 ( UUID , UUIDs , )                          )
-    ##########################################################################
-    return True
+  def dropPeople                       ( self , source , pos , JSON        ) :
+    return self . defaultDropInObjects ( source                            , \
+                                         pos                               , \
+                                         JSON                              , \
+                                         0                                 , \
+                                         self . PeopleJoinPlace              )
   ############################################################################
   def PeopleJoinPlace               ( self , UUID , UUIDs                  ) :
     ##########################################################################
@@ -726,6 +691,10 @@ class PlaceListings                ( TreeDock                              ) :
     DB      = self . ConnectDB      (                                        )
     if                              ( DB == None                           ) :
       return
+    ##########################################################################
+    self    . setDroppingAction     ( True                                   )
+    self    . OnBusy  . emit        (                                        )
+    self    . setBustle             (                                        )
     ##########################################################################
     FMT     = self . getMenuItem    ( "Joining"                              )
     MSG     = FMT  . format         ( COUNT                                  )
@@ -745,9 +714,11 @@ class PlaceListings                ( TreeDock                              ) :
     if                              ( not Hide                             ) :
       TOTAL = REL . CountSecond     ( DB , RELTAB                            )
     ##########################################################################
-    DB      . Close                 (                                        )
-    ##########################################################################
+    self    . setVacancy            (                                        )
+    self    . GoRelax . emit        (                                        )
+    self    . setDroppingAction     ( False                                  )
     self    . ShowStatus            ( ""                                     )
+    DB      . Close                 (                                        )
     ##########################################################################
     if                              ( Hide                                 ) :
       return
@@ -761,14 +732,9 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Prepare                    ( self                                    ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    self   . setColumnWidth      ( 2 , 3                                     )
-    ##########################################################################
-    LABELs = self . Translations [ "PlaceListings" ] [ "Labels"              ]
-    self   . setCentralLabels    ( LABELs                                    )
-    ##########################################################################
-    self   . setPrepared         ( True                                      )
+    self . defaultPrepare ( "PlaceListings" , 2                              )
     ##########################################################################
     return
   ############################################################################
@@ -948,6 +914,13 @@ class PlaceListings                ( TreeDock                              ) :
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( self . RunAmountIndexMenu ( )         ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True

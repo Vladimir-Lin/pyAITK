@@ -284,7 +284,23 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def dropNew                ( self , sourceWidget , mimeData , mousePos   ) :
     return True
   ############################################################################
-  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+  def dropMoving           ( self , sourceWidget , mimeData , mousePos     ) :
+    return True
+  ############################################################################
+  def defaultDropMoving    ( self , sourceWidget , mimeData , mousePos     ) :
+    ##########################################################################
+    if                     ( self . droppingAction                         ) :
+      return False
+    ##########################################################################
+    if                     ( sourceWidget != self                          ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt ( mousePos                                        )
+    if                     ( atItem in [ False , None ]                    ) :
+      return False
+    if                     ( atItem . isSelected ( )                       ) :
+      return False
+    ##########################################################################
     return True
   ############################################################################
   def dropAppend             ( self , sourceWidget , mimeData , mousePos   ) :
@@ -296,6 +312,35 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   def removeDrop             ( self                                        ) :
     return True
+  ############################################################################
+  def setDroppingAction ( self , dropping                                  ) :
+    ##########################################################################
+    self . droppingAction = dropping
+    ##########################################################################
+    return
+  ############################################################################
+  def defaultDropInObjects ( self , source , pos , JSON , column , func    ) :
+    ##########################################################################
+    if                     ( "UUIDs" not in JSON                           ) :
+      return True
+    ##########################################################################
+    UUIDs  = JSON          [ "UUIDs"                                         ]
+    if                     ( len ( UUIDs ) <= 0                            ) :
+      return True
+    ##########################################################################
+    atItem = self . itemAt ( pos                                             )
+    if                     ( atItem is None                                ) :
+      return True
+    ##########################################################################
+    UUID   = atItem . data ( column , Qt . UserRole                          )
+    UUID   = int           ( UUID                                            )
+    ##########################################################################
+    if                     ( UUID <= 0                                     ) :
+      return True
+    ##########################################################################
+    self . Go              ( func , ( UUID , UUIDs , )                       )
+    ##########################################################################
+    return
   ############################################################################
   def CreateDragMime                 ( self                                , \
                                        widget                              , \
@@ -586,6 +631,16 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return cb
   ############################################################################
+  def bindComboBox           ( self , item , column , JSON , func , maxs   ) :
+    ##########################################################################
+    val = item . data        ( column , Qt . UserRole                        )
+    val = int                ( val                                           )
+    cb  = self . setComboBox ( item , column , "activated" , func            )
+    cb  . addJson            ( JSON , val                                    )
+    cb  . setMaxVisibleItems ( maxs                                          )
+    ##########################################################################
+    return cb
+  ############################################################################
   def setSpinBox              ( self                                       , \
                                 item                                       , \
                                 column                                     , \
@@ -750,6 +805,16 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def singleClicked           ( self , item , column                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
+  def defaultSingleClicked  ( self , item , column                         ) :
+    ##########################################################################
+    if                      ( self . isItemPicked ( )                      ) :
+      if                    ( column != self . CurrentItem [ "Column" ]    ) :
+        self . removeParked (                                                )
+    ##########################################################################
+    self     . Notify       ( 0                                              )
+    ##########################################################################
+    return
+  ############################################################################
   def doubleClicked           ( self , item , column                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
@@ -768,6 +833,42 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   def DeleteItems             ( self                                       ) :
     raise NotImplementedError (                                              )
+  ############################################################################
+  def RenameItem              ( self                                       ) :
+    raise NotImplementedError (                                              )
+  ############################################################################
+  def defaultRenameItem           ( self , columns = [ ]                   ) :
+    ##########################################################################
+    item   = self . currentItem   (                                          )
+    if                            ( item       in [ False , None ]         ) :
+      return
+    ##########################################################################
+    column = self . currentColumn (                                          )
+    if                            ( column not in columns                  ) :
+      return
+    self   . doubleClicked        ( item , column                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def defaultRefreshItems    ( self , LISTS , prepareItem                  ) :
+    ##########################################################################
+    self   . clear           (                                               )
+    ##########################################################################
+    for T in LISTS                                                           :
+      ########################################################################
+      IT   = prepareItem     ( T                                             )
+      self . addTopLevelItem ( IT                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def defaultPrepare             ( self , widgetName , columnAt            ) :
+    ##########################################################################
+    self   . setColumnWidth      ( columnAt , 3                              )
+    LABELs = self . Translations [ widgetName ] [ "Labels"                   ]
+    self   . setCentralLabels    ( LABELs                                    )
+    self   . setPrepared         ( True                                      )
+    ##########################################################################
+    return
   ############################################################################
   def Menu                    ( self , pos                                 ) :
     raise NotImplementedError (                                              )
