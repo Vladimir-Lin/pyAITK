@@ -654,7 +654,7 @@ class AreaCodeWidget               ( TreeDock                              ) :
     DB     . Query                   ( QQ                                    )
     RR     = DB . FetchOne           (                                       )
     if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )            :
-      name = str                     ( RR [ 0 ]                              )
+      name = self . assureString     ( RR [ 0 ]                              )
     ##########################################################################
     DB     . Close                   (                                       )
     ##########################################################################
