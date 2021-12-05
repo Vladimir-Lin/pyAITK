@@ -56,10 +56,10 @@ from   AITK  . Telecom    . Phone     import Phone       as TelecomPhone
 ##############################################################################
 class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( list                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -73,8 +73,6 @@ class PhonesWidget                 ( TreeDock                              ) :
     self . SearchLine         = None
     self . SearchKey          = ""
     self . UUIDs              = [                                            ]
-    ##########################################################################
-    self . ImsTypes           =    {                                         }
     ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"
@@ -97,8 +95,8 @@ class PhonesWidget                 ( TreeDock                              ) :
     self . OwnRel   . setT2        ( "Phone"                                 )
     self . OwnRel   . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 6                                       )
-    self . setColumnHidden         ( 5 , True                                )
+    self . setColumnCount          ( 10                                      )
+    self . setColumnHidden         (  9 , True                               )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -119,8 +117,8 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 640 , 640                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 1024 , 640 )                      )
   ############################################################################
   def setGrouping                  ( self , group                          ) :
     self . Grouping = group
@@ -129,42 +127,40 @@ class PhonesWidget                 ( TreeDock                              ) :
   def getGrouping                  ( self                                  ) :
     return self . Grouping
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
-    self . LinkAction              ( "Delete"     , self . DeleteItems       )
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Paste"      , self . Paste             )
-    self . LinkAction              ( "Search"     , self . Search            )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
+    self . LinkAction     ( "Insert"     , self . InsertItem                 )
+    self . LinkAction     ( "Delete"     , self . DeleteItems                )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
+    self . LinkAction     ( "Paste"      , self . Paste                      )
+    self . LinkAction     ( "Search"     , self . Search                     )
+    self . LinkAction     ( "Home"       , self . PageHome                   )
+    self . LinkAction     ( "End"        , self . PageEnd                    )
+    self . LinkAction     ( "PageUp"     , self . PageUp                     )
+    self . LinkAction     ( "PageDown"   , self . PageDown                   )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -182,20 +178,31 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def getItemJson                ( self , item                             ) :
-    return item . data           ( 5 , Qt . UserRole                         )
+  def getItemJson                 ( self , item                            ) :
+    return item . data            ( 9 , Qt . UserRole                        )
   ############################################################################
-  def PrepareItem                 ( self , JSON                            ) :
+  def PrepareItem                 ( self , phone                           ) :
     ##########################################################################
-    UUID    = int                 ( JSON [ "Uuid" ]                          )
+    CLIST   = self . Translations [ "PhonesWidget" ] [ "Correctness"         ]
+    MLIST   = self . Translations [ "PhonesWidget" ] [ "Mobile"              ]
+    SLIST   = self . Translations [ "PhonesWidget" ] [ "Shareable"           ]
+    FLIST   = self . Translations [ "PhonesWidget" ] [ "Confirm"             ]
+    ##########################################################################
+    UUID    = int                 ( phone . Uuid                             )
     UXID    = str                 ( UUID                                     )
     ##########################################################################
-    COUNTRY = self . assureString ( JSON [ "Country" ]                       )
-    AREA    = self . assureString ( JSON [ "Area"    ]                       )
-    NUMBER  = self . assureString ( JSON [ "Number"  ]                       )
+    PNUMBER = phone . toPhone     (                                          )
+    COUNTRY = phone . Country
+    AREA    = phone . Area
+    NUMBER  = phone . Number
+    ##########################################################################
+    CORRECT = CLIST               [ str ( phone . Correct   )                ]
+    MOBILE  = CLIST               [ str ( phone . Mobile    )                ]
+    SHARE   = CLIST               [ str ( phone . Shareable )                ]
+    CONFIRM = CLIST               [ str ( phone . Confirm   )                ]
     ##########################################################################
     IT      = QTreeWidgetItem     (                                          )
-    IT      . setText             ( 0 , ""                                   )
+    IT      . setText             ( 0 , PNUMBER                              )
     IT      . setToolTip          ( 0 , UXID                                 )
     IT      . setData             ( 0 , Qt . UserRole , UXID                 )
     ##########################################################################
@@ -208,23 +215,29 @@ class PhonesWidget                 ( TreeDock                              ) :
     IT      . setText             ( 3 , NUMBER                               )
     IT      . setToolTip          ( 3 , UXID                                 )
     ##########################################################################
-    IT      . setText             ( 4 , ""                                   )
+    IT      . setText             ( 4 , CORRECT                              )
+    IT      . setText             ( 5 , MOBILE                               )
+    IT      . setText             ( 6 , SHARE                                )
+    IT      . setText             ( 7 , CONFIRM                              )
     ##########################################################################
-    IT      . setData             ( 5 , Qt . UserRole , JSON                 )
+    IT      . setText             ( 8 , str ( phone . Owners )               )
+    IT      . setTextAlignment    ( 8 , Qt . AlignRight                      )
+    ##########################################################################
+    IT      . setText             ( 9 , ""                                   )
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def InsertItem                 ( self                                    ) :
+  @pyqtSlot                   (                                              )
+  def InsertItem              ( self                                       ) :
     ##########################################################################
-    item = QTreeWidgetItem       (                                           )
-    item . setData               ( 0 , Qt . UserRole , 0                     )
-    self . addTopLevelItem       ( item                                      )
-    line = self . setLineEdit    ( item                                    , \
-                                   0                                       , \
-                                   "editingFinished"                       , \
-                                   self . nameChanged                        )
-    line . setFocus              ( Qt . TabFocusReason                       )
+    item = QTreeWidgetItem    (                                              )
+    item . setData            ( 0 , Qt . UserRole , 0                        )
+    self . addTopLevelItem    ( item                                         )
+    line = self . setLineEdit ( item                                       , \
+                                0                                          , \
+                                "editingFinished"                          , \
+                                self . nameChanged                           )
+    line . setFocus           ( Qt . TabFocusReason                          )
     ##########################################################################
     return
   ############################################################################
@@ -234,14 +247,10 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot             (                                                    )
+  def RenameItem        ( self                                             ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 1                                    )
+    self . goRenameItem ( 0                                                  )
     ##########################################################################
     return
   ############################################################################
@@ -265,20 +274,34 @@ class PhonesWidget                 ( TreeDock                              ) :
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
+    """
     self   . Go                  ( self . AssureUuidItem                   , \
                                    ( item , uuid , msg , )                   )
+    """
     ##########################################################################
     return
   ############################################################################
   @pyqtSlot                       (        list                              )
-  def refresh                     ( self , TASKS                           ) :
+  def refresh                     ( self , PHONEs                          ) :
     ##########################################################################
     self   . clear                (                                          )
     ##########################################################################
-    for T in TASKS                                                           :
+    for PHONE in PHONEs                                                      :
       ########################################################################
-      IT   = self . PrepareItem   ( T                                        )
+      IT   = self . PrepareItem   ( PHONE                                    )
       self . addTopLevelItem      ( IT                                       )
+    ##########################################################################
+    FMT    = self . getMenuItem   ( "DisplayTotal"                           )
+    MSG    = FMT  . format        ( len ( PHONEs )                           )
+    self   . setToolTip           ( MSG                                      )
+    ##########################################################################
+    if                            ( self . Grouping in [ "Searching" ]     ) :
+      ########################################################################
+      T    = self . Translations  [ "PhonesWidget" ] [ "Title"               ]
+      K    = self . SearchKey
+      T    = f"{T}:{K}"
+      ########################################################################
+      self . setWindowTitle       ( T                                        )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
     ##########################################################################
@@ -308,6 +331,57 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
+  def looking                         ( self , name                        ) :
+    ##########################################################################
+    if                                ( len ( name ) <= 0                  ) :
+      return
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
+    ##########################################################################
+    PHSTAB  = self . Tables           [ "Phones"                             ]
+    LIKE    = f"%{name}%"
+    ORDER   = self . getSortingOrder  (                                      )
+    UUIDs   =                         [                                      ]
+    ##########################################################################
+    QQ      = f"""select `uuid` from {PHSTAB}
+                  where ( `number` like %s )
+                  order by `uuid` {ORDER} ;"""
+    DB      . QueryValues             ( QQ , ( LIKE , )                      )
+    ALL     = DB . FetchAll           (                                      )
+    ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    DB      . Close                   (                                      )
+    ##########################################################################
+    if ( ( ALL in [ False , None ] ) or ( len ( ALL ) <= 0 ) )               :
+      ########################################################################
+      self  . Notify                  ( 1                                    )
+      ########################################################################
+      return
+    ##########################################################################
+    for U in ALL                                                             :
+      UUIDs . append                  ( U [ 0 ]                              )
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      ########################################################################
+      self  . Notify                  ( 1                                    )
+      ########################################################################
+      return
+    ##########################################################################
+    self . SearchKey   = name
+    self . UUIDs       = UUIDs
+    self . OldGrouping = self . Grouping
+    self . setGrouping                ( "Searching"                          )
+    ##########################################################################
+    self . loading                    (                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -315,33 +389,33 @@ class PhonesWidget                 ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
-    NAMEs   =                         {                                      }
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    if                                ( self . Grouping in [ "Searching" ] ) :
+      UUIDs = self . UUIDs
+    else                                                                     :
+      UUIDs = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
     PHSTAB  = self . Tables           [ "Phones"                             ]
+    PRZTAB  = self . Tables           [ "Properties"                         ]
+    RELTAB  = self . Tables           [ "Relation"                           ]
     IMACT   =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
-      J     =                         { "Uuid"    : U                      , \
-                                        "Country" : ""                     , \
-                                        "Area"    : ""                     , \
-                                        "Number"  : ""                       }
+      PHONE = TelecomPhone            (                                      )
+      PHONE . Uuid = U
+      PHONE . ObtainsFullPhone        ( DB , PHSTAB , PRZTAB                 )
       ########################################################################
-      QQ    = f"""select `country`,`area`,`number` from {PHSTAB}
-                  where ( `uuid` = {U} ) ;"""
-      QQ    = " " . join              ( QQ . split ( )                       )
-      DB    . Query                   ( QQ                                   )
-      RR    = DB . FetchOne           (                                      )
-      if ( RR not in [ False , None ] ) and ( len ( RR ) == 3 )              :
-        ######################################################################
-        J [ "Country" ] = RR          [ 0                                    ]
-        J [ "Area"    ] = RR          [ 1                                    ]
-        J [ "Number"  ] = RR          [ 2                                    ]
+      self  . OwnRel . set            ( "second" , U                         )
+      OWNED = self . OwnRel . CountFirst ( DB , RELTAB                       )
+      PHONE . Owners = OWNED
       ########################################################################
-      IMACT . append                  ( J                                    )
+      IMACT . append                  ( PHONE                                )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( IMACT ) <= 0                 ) :
@@ -362,9 +436,9 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
+  def ObtainAllUuids        ( self , DB                                    ) :
     ##########################################################################
-    PHSTAB  = self . Tables      [ "Phones"                                  ]
+    PHSTAB  = self . Tables [ "Phones"                                       ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . SortOrder
@@ -374,11 +448,25 @@ class PhonesWidget                 ( TreeDock                              ) :
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
+    QQ    = " " . join      ( QQ . split ( )                                 )
     ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
+    return DB . ObtainUuids ( QQ , 0                                         )
   ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Paste"      , self . Paste           , False   )
+    self . LinkAction      ( "Search"     , self . Search          , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -402,20 +490,20 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FetchRegularDepotCount   ( self , DB                                 ) :
+  def FetchRegularDepotCount ( self , DB                                   ) :
     ##########################################################################
-    PHSTAB = self . Tables     [ "Phones"                                    ]
+    PHSTAB = self . Tables   [ "Phones"                                      ]
     QQ     = f"select count(*) from {PHSTAB} where ( `used` > 0 ) ;"
-    DB     . Query             ( QQ                                          )
-    ONE    = DB . FetchOne     (                                             )
+    DB     . Query           ( QQ                                            )
+    ONE    = DB . FetchOne   (                                               )
     ##########################################################################
-    if                         ( ONE == None                               ) :
+    if                       ( ONE == None                                 ) :
       return 0
     ##########################################################################
-    if                         ( len ( ONE ) <= 0                          ) :
+    if                       ( len ( ONE ) <= 0                            ) :
       return 0
     ##########################################################################
-    return ONE                 [ 0                                           ]
+    return ONE               [ 0                                             ]
   ############################################################################
   def FetchGroupMembersCount             ( self , DB                       ) :
     ##########################################################################
@@ -423,25 +511,25 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return self . Relation . CountSecond ( DB , RELTAB                       )
   ############################################################################
-  def FetchGroupOwnersCount              ( self , DB                       ) :
+  def FetchGroupOwnersCount             ( self , DB                        ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
+    RELTAB = self . Tables              [ "Relation"                         ]
     ##########################################################################
-    return self . Relation . CountFirst  ( DB , RELTAB                       )
+    return self . Relation . CountFirst ( DB , RELTAB                        )
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery               ( self                                ) :
     ##########################################################################
-    PHSTAB  = self . Tables   [ "Phones"                                     ]
+    PHSTAB  = self . Tables          [ "Phones"                              ]
     STID    = self . StartId
     AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
+    ORDER   = self . getSortingOrder (                                       )
     ##########################################################################
     QQ      = f"""select `uuid` from {PHSTAB}
                   where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join                ( QQ . split ( )                        )
   ############################################################################
   def FetchSessionInformation         ( self , DB                          ) :
     ##########################################################################
@@ -542,26 +630,21 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def Prepare                    ( self                                    ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    self   . setColumnWidth      ( 0 , 200                                   )
-    self   . setColumnWidth      ( 1 ,  80                                   )
-    self   . setColumnWidth      ( 2 ,  80                                   )
-    self   . setColumnWidth      ( 3 , 160                                   )
-    self   . setColumnWidth      ( 4 , 100                                   )
-    self   . setColumnWidth      ( 5 ,   3                                   )
-    LABELs = self . Translations [ "PhonesWidget" ] [ "Labels"               ]
-    self   . setCentralLabels    ( LABELs                                    )
-    self   . setPrepared         ( True                                      )
+    self . setColumnWidth ( 0 , 200                                          )
+    self . setColumnWidth ( 1 ,  80                                          )
+    self . setColumnWidth ( 2 ,  80                                          )
+    self . setColumnWidth ( 3 , 160                                          )
+    self . setColumnWidth ( 4 , 100                                          )
+    self . defaultPrepare ( "PhonesWidget" , 9                               )
     ##########################################################################
     return
-  ############################################################################
   ############################################################################
   def Paste                      ( self                                    ) :
     ##########################################################################
     ##########################################################################
     return
-  ############################################################################
   ############################################################################
   @pyqtSlot            (                                                     )
   def Finding          ( self                                              ) :
@@ -578,8 +661,8 @@ class PhonesWidget                 ( TreeDock                              ) :
     if                 ( len ( T ) <= 0                                    ) :
       return
     ##########################################################################
-    ## self . clear       (                                                     )
-    ## self . Go          ( self . looking , ( T , )                            )
+    self . clear       (                                                     )
+    self . Go          ( self . looking , ( T , )                            )
     ##########################################################################
     return
   ############################################################################
@@ -607,48 +690,6 @@ class PhonesWidget                 ( TreeDock                              ) :
     L      . setFocus                  ( Qt . TabFocusReason                 )
     ##########################################################################
     self   . SearchLine = L
-    ##########################################################################
-    return
-  ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -701,17 +742,9 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -733,7 +766,7 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9007 )         :
+    if                             ( at >= 9001 ) and ( at <= 9009 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -794,7 +827,23 @@ class PhonesWidget                 ( TreeDock                              ) :
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
+    if                             ( not self . isPrepared ( )             ) :
+      return False
+    ##########################################################################
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
+    ##########################################################################
     items  = self . selectedItems  (                                         )
+    atItem = self . currentItem    (                                         )
+    uuid   = 0
+    ##########################################################################
+    if                             ( atItem != None                        ) :
+      uuid = atItem . data         ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
+    ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
@@ -802,7 +851,9 @@ class PhonesWidget                 ( TreeDock                              ) :
     mm     = self . AmountIndexMenu     ( mm                                 )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     . addAction             ( 1102 ,  TRX [ "UI::Delete" ]            )
+    mm     = self . AppendDeleteAction  ( mm , 1102                          )
+    if                              ( atItem not in [ False , None ]       ) :
+      mm   . addAction ( 6001 , "檢驗" )
     mm     . addSeparator           (                                        )
     mm     = self . PickDbMenu      ( mm                                     )
     mm     = self . ColumnsMenu     ( mm                                     )
@@ -850,6 +901,14 @@ class PhonesWidget                 ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1102                            ) :
       self . DeleteItems           (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 6001                            ) :
+      ########################################################################
+      pnumber = atItem . text ( 0 )
+      PN      = Phone ( )
+      PN      . Verify ( pnumber )
+      ########################################################################
       return True
     ##########################################################################
     return True

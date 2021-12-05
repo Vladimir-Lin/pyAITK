@@ -42,6 +42,7 @@ class Phone              ( Columns                                         ) :
     self . Mobile    =  0
     self . Shareable =  0
     self . Confirm   =  0
+    self . Owners    =  0
     ##########################################################################
     return
   ############################################################################
@@ -59,6 +60,7 @@ class Phone              ( Columns                                         ) :
     self . Mobile    = item . Mobile
     self . Shareable = item . Shareable
     self . Confirm   = item . Confirm
+    self . Owners    = item . Owners
     ##########################################################################
     return
   ############################################################################
