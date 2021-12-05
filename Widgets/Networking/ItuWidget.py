@@ -55,10 +55,10 @@ from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class ItuWidget                    ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu     = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
+  emitNamesShow  = pyqtSignal      (                                         )
+  emitAllNames   = pyqtSignal      ( list                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -90,44 +90,40 @@ class ItuWidget                    ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( False                                   )
-    self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
+    self . setAcceptDrops          ( True                                    )
+    self . setDragEnabled          ( True                                    )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 400 , 640                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 400 , 640 )                       )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked         ( self , item , column                         ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                      ( self . isItemPicked ( )                      ) :
-      if                    ( column != self . CurrentItem [ "Column" ]    ) :
-        self . removeParked (                                                )
-    ##########################################################################
-    self     . Notify       ( 0                                              )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -157,7 +153,7 @@ class ItuWidget                    ( TreeDock                              ) :
     IT      . setData             ( 1 , Qt . UserRole , PLACE                )
     ##########################################################################
     ## IT      . setText             ( 2 , AREA                                 )
-    IT      . setData             ( 1 , Qt . UserRole , DETAILS              )
+    ## IT      . setData             ( 2 , Qt . UserRole , DETAILS              )
     ##########################################################################
     IT      . setData             ( 3 , Qt . UserRole , JSON                 )
     ##########################################################################
@@ -271,20 +267,20 @@ class ItuWidget                    ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def ObtainsInformation   ( self , DB                                     ) :
     ##########################################################################
-    self    . Total = 0
+    self   . Total = 0
     ##########################################################################
-    ITUTAB  = self . Tables           [ "ITU"                                ]
+    ITUTAB = self . Tables [ "ITU"                                           ]
     ##########################################################################
-    QQ      = f"select count(*) from {ITUTAB} ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
+    QQ     = f"select count(*) from {ITUTAB} ;"
+    DB     . Query         ( QQ                                              )
+    RR     = DB . FetchOne (                                                 )
     ##########################################################################
     if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    self   . Total = RR    [ 0                                               ]
     ##########################################################################
     return
   ############################################################################
@@ -303,14 +299,14 @@ class ItuWidget                    ( TreeDock                              ) :
     ##########################################################################
     return ONE                 [ 0                                           ]
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery               ( self                                ) :
     ##########################################################################
-    ITUTAB  = self . Tables   [ "ITU"                                        ]
-    ORDER   = self . SortOrder
+    ITUTAB  = self . Tables          [ "ITU"                                 ]
+    ORDER   = self . getSortingOrder (                                       )
     ##########################################################################
     QQ      = f"select `uuid` from {ITUTAB} order by `id` {ORDER} ;"
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join                ( QQ . split ( )                        )
   ############################################################################
   def FetchSessionInformation                    ( self , DB               ) :
     ##########################################################################
@@ -318,12 +314,123 @@ class ItuWidget                    ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Prepare                    ( self                                    ) :
+  def dragMime                   ( self                                    ) :
     ##########################################################################
-    self   . setColumnWidth      ( 3 ,   3                                   )
-    LABELs = self . Translations [ "ItuWidget" ] [ "Labels"                  ]
-    self   . setCentralLabels    ( LABELs                                    )
-    self   . setPrepared         ( True                                      )
+    mtype   = "itu/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
+    ##########################################################################
+    return self . CreateDragMime ( self , 0 , mtype , message                )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def allowedMimeTypes        ( self , mime                                ) :
+    formats = "place/uuids"
+    return self . MimeType    ( mime , formats                               )
+  ############################################################################
+  def acceptDrop              ( self , sourceWidget , mimeData             ) :
+    ##########################################################################
+    if                        ( self == sourceWidget                       ) :
+      return False
+    ##########################################################################
+    return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def dropNew                       ( self                                 , \
+                                      sourceWidget                         , \
+                                      mimeData                             , \
+                                      mousePos                             ) :
+    ##########################################################################
+    if                              ( self == sourceWidget                 ) :
+      return False
+    ##########################################################################
+    RDN     = self . RegularDropNew ( mimeData                               )
+    if                              ( not RDN                              ) :
+      return False
+    ##########################################################################
+    mtype   = self . DropInJSON     [ "Mime"                                 ]
+    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    ##########################################################################
+    if                              ( mtype in [ "place/uuids" ]           ) :
+      ########################################################################
+      MSG   = self . getMenuItem    ( "AssignPlace"                          )
+      self  . ShowStatus            ( MSG                                    )
+    ##########################################################################
+    return RDN
+  ############################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  ############################################################################
+  def acceptPlacesDrop         ( self                                      ) :
+    return True
+  ############################################################################
+  def dropPlaces                       ( self , source , pos , JSON        ) :
+    return self . defaultDropInObjects ( source                            , \
+                                         pos                               , \
+                                         JSON                              , \
+                                         0                                 , \
+                                         self . AssingPlaceToITU             )
+  ############################################################################
+  def AssingItemToITU                ( self                                , \
+                                       UUID                                , \
+                                       UUIDs                               , \
+                                       msgId                               , \
+                                       Column                              , \
+                                       posId                               ) :
+    ##########################################################################
+    if                               ( UUID <= 0                           ) :
+      return
+    ##########################################################################
+    COUNT  = len                     ( UUIDs                                 )
+    if                               ( COUNT <= 0                          ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB        (                                       )
+    if                               ( DB == None                          ) :
+      return
+    ##########################################################################
+    PCID   = UUIDs                   [ 0                                     ]
+    MSG    = self . getMenuItem      ( msgId                                 )
+    self   . ShowStatus              ( MSG                                   )
+    self   . TtsTalk                 ( MSG , 1002                            )
+    ##########################################################################
+    ITUTAB = self . Tables           [ "ITU"                                 ]
+    NAMTAB = self . Tables           [ "Names"                               ]
+    DB     . LockWrites              ( [ ITUTAB ]                            )
+    QQ     = f"""update {ITUTAB}
+                  set `{Column}` = {PCID}
+                  where ( `uuid` = {UUID} ) ;"""
+    QQ     = " " . join              ( QQ . split ( )                        )
+    DB     . Query                   ( QQ                                    )
+    DB     . UnlockTables            (                                       )
+    ##########################################################################
+    name   = self . GetName          ( DB , NAMTAB , PCID                    )
+    ##########################################################################
+    DB     . Close                   (                                       )
+    ##########################################################################
+    self   . ShowStatus              ( ""                                    )
+    self   . Notify                  ( 5                                     )
+    ##########################################################################
+    IT     = self . uuidAtItem       ( UUID , 0                              )
+    if                               ( IT is None                          ) :
+      return
+    ##########################################################################
+    self   . emitAssignColumn . emit ( IT , posId , name                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssingPlaceToITU            ( self , UUID , UUIDs                    ) :
+    return self . AssingItemToITU ( UUID                                   , \
+                                    UUIDs                                  , \
+                                    "AssignPlace"                          , \
+                                    "place"                                , \
+                                    1                                        )
+  ############################################################################
+  def Prepare             ( self                                           ) :
+    ##########################################################################
+    self . defaultPrepare ( "ItuWidget" , 3                                  )
     ##########################################################################
     return
   ############################################################################
@@ -338,7 +445,7 @@ class ItuWidget                    ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9000 ) and ( at <= 9006 )         :
+    if                             ( at >= 9000 ) and ( at <= 9003 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -349,6 +456,9 @@ class ItuWidget                    ( TreeDock                              ) :
     return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
+    ##########################################################################
+    if                             ( not self . isPrepared ( )             ) :
+      return False
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
     if                             ( not doMenu                            ) :

@@ -53,7 +53,7 @@ from   AITK . Calendars . Periode     import Periode
 ##############################################################################
 class NationTypeListings           ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu        = 1371434312
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
@@ -96,37 +96,35 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 320 , 640                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -143,25 +141,21 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
+  def PrepareItem           ( self , UUID , NAME                           ) :
     ##########################################################################
-    UXID = str                   ( UUID                                      )
-    IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , NAME                                  )
-    IT   . setToolTip            ( 0 , UXID                                  )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    UXID = str              ( UUID                                           )
+    IT   = QTreeWidgetItem  (                                                )
+    IT   . setText          ( 0 , NAME                                       )
+    IT   . setToolTip       ( 0 , UXID                                       )
+    IT   . setData          ( 0 , Qt . UserRole , UUID                       )
+    IT   . setTextAlignment ( 1 , Qt.AlignRight                              )
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot             (                                                    )
+  def RenameItem        ( self                                             ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
+    self . goRenameItem ( 0                                                  )
     ##########################################################################
     return
   ############################################################################
@@ -190,20 +184,24 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
-  def refresh                         ( self , JSON                        ) :
+  @pyqtSlot                       (        dict                              )
+  def refresh                     ( self , JSON                            ) :
     ##########################################################################
-    self    . clear                   (                                      )
+    self   . clear                (                                          )
     ##########################################################################
-    UUIDs   = JSON                    [ "UUIDs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
+    UUIDs  = JSON                 [ "UUIDs"                                  ]
+    NAMEs  = JSON                 [ "NAMEs"                                  ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
-      self  . addTopLevelItem         ( IT                                   )
+      IT   = self . PrepareItem   ( U , NAMEs [ U ]                          )
+      self . addTopLevelItem      ( IT                                       )
     ##########################################################################
-    self    . emitNamesShow . emit    (                                      )
+    FMT    = self . getMenuItem   ( "DisplayTotal"                           )
+    MSG    = FMT  . format        ( len ( UUIDs )                            )
+    self   . setToolTip           ( MSG                                      )
+    ##########################################################################
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -294,13 +292,13 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def startup                    ( self                                    ) :
+  @pyqtSlot          (                                                       )
+  def startup        ( self                                                ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
     ##########################################################################
-    self   . Go                  ( self . loading                            )
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
   ############################################################################
@@ -326,19 +324,13 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -351,72 +343,63 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return f"select `uuid` from {TABLE} order by `id` asc ;"
   ############################################################################
-  def Prepare                 ( self                                       ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    self   . setColumnWidth   ( 2 , 3                                        )
-    ##########################################################################
-    TRX    = self . Translations
-    LABELs =                  [ TRX [ "UI::NationTypes" ]                  , \
-                                TRX [ "UI::Amount"      ]                  , \
-                                ""                                           ]
-    self   . setCentralLabels ( LABELs                                       )
-    ##########################################################################
-    self   . setPrepared      ( True                                         )
+    self . defaultPrepare ( "NationTypeListings" , 2                         )
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def AssureUuidItem          ( self , item , uuid , name                  ) :
     ##########################################################################
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    NAMTAB  = self . Tables        [ "Names"                                 ]
+    NAMTAB = self . Tables    [ "Names"                                      ]
     ##########################################################################
-    DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
+    DB     . LockWrites       ( [ NAMTAB                                   ] )
     ##########################################################################
-    uuid    = int                  ( uuid                                    )
-    if                             ( uuid > 0                              ) :
-      self  . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    uuid   = int              ( uuid                                         )
+    if                        ( uuid > 0                                   ) :
+      self . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
-    DB      . Close                (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def CopyToClipboard             ( self                                   ) :
-    ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . Go                     ( self . Talk , ( MSG , LID , )            )
+    DB     . Close            (                                              )
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
-    msg    = TRX                   [ "UI::Amount"                            ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
+    return
+  ############################################################################
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 1                         )
+  ############################################################################
+  def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      if                           ( ( at == 9001 ) and ( hid )            ) :
+        ######################################################################
+        self . startup             (                                         )
+        ######################################################################
+      return True
     ##########################################################################
-    return mm
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
+    ##########################################################################
+    if                             ( not self . isPrepared ( )             ) :
+      return False
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
     if                             ( not doMenu                            ) :
       return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
     ##########################################################################
     items  = self . selectedItems  (                                         )
     atItem = self . currentItem    (                                         )
@@ -430,7 +413,7 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
+    self   . AppendRefreshAction   ( mm , 1001                               )
     ##########################################################################
     if                             ( len ( items ) == 1                    ) :
       if                           ( self . EditAllNames != None           ) :
@@ -444,8 +427,8 @@ class NationTypeListings           ( TreeDock                              ) :
     ## mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
@@ -454,12 +437,7 @@ class NationTypeListings           ( TreeDock                              ) :
     if                             ( self . HandleLocalityMenu ( at )      ) :
       return True
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
-        self . startup             (                                         )
+    if                             ( self . RunColumnsMenu     ( at )      ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :

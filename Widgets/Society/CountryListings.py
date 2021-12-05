@@ -96,12 +96,13 @@ FLAGs = [ "AD.png" , "AE.png" , "AF.png" , "AG.png" , "AI.png" , "AL.png" ,
 ##############################################################################
 class CountryListings              ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
-  PeopleGroup       = pyqtSignal   ( str , int , str                         )
+  emitNamesShow       = pyqtSignal (                                         )
+  emitAllNames        = pyqtSignal ( dict                                    )
+  emitAssignAmounts   = pyqtSignal ( str , int                               )
+  PeopleGroup         = pyqtSignal ( str , int , str                         )
+  BelongingEarthSpots = pyqtSignal ( str , str , QIcon                       )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -112,7 +113,7 @@ class CountryListings              ( TreeDock                              ) :
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 28
-    self . Order              = "asc"
+    self . SortOrder          = "asc"
     ##########################################################################
     self . NationTypes        =    {                                         }
     self . CountryUsed        =    {                                         }
@@ -148,33 +149,33 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 320 , 640                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
+    self . LinkAction     ( "Home"       , self . PageHome                   )
+    self . LinkAction     ( "End"        , self . PageEnd                    )
+    self . LinkAction     ( "PageUp"     , self . PageUp                     )
+    self . LinkAction     ( "PageDown"   , self . PageDown                   )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
@@ -252,64 +253,60 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME , INFO               ) :
+  def PrepareItem              ( self , UUID , NAME , INFO                 ) :
     ##########################################################################
     global FLAGs
     ##########################################################################
-    UUID = int                   ( UUID                                      )
-    UXID = str                   ( UUID                                      )
+    UUID = int                 ( UUID                                        )
+    UXID = str                 ( UUID                                        )
     ##########################################################################
-    IT   = QTreeWidgetItem       (                                           )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
+    IT   = QTreeWidgetItem     (                                             )
+    IT   . setData             ( 0 , Qt . UserRole , UUID                    )
     ##########################################################################
-    IT   . setText               ( 0 , NAME                                  )
-    IT   . setToolTip            ( 0 , UXID                                  )
+    IT   . setText             ( 0 , NAME                                    )
+    IT   . setToolTip          ( 0 , UXID                                    )
     ##########################################################################
-    NAME = self . BlobToString   ( INFO [ 7 ]                                )
-    IT   . setText               ( 1 , NAME                                  )
+    NAME = self . BlobToString ( INFO [ 7 ]                                  )
+    IT   . setText             ( 1 , NAME                                    )
     ##########################################################################
-    TYID = int                   ( INFO [ 1 ]                                )
-    IT   . setText               ( 2 , self . NationTypes [ TYID ]           )
-    IT   . setData               ( 2 , Qt . UserRole , TYID                  )
+    TYID = int                 ( INFO [ 1 ]                                  )
+    IT   . setText             ( 2 , self . NationTypes [ TYID ]             )
+    IT   . setData             ( 2 , Qt . UserRole , TYID                    )
     ##########################################################################
-    USID = int                   ( INFO [ 2 ]                                )
-    IT   . setText               ( 3 , self . CountryUsed [ USID ]           )
-    IT   . setData               ( 3 , Qt . UserRole , USID                  )
+    USID = int                 ( INFO [ 2 ]                                  )
+    IT   . setText             ( 3 , self . CountryUsed [ USID ]             )
+    IT   . setData             ( 3 , Qt . UserRole , USID                    )
     ##########################################################################
-    CODE = int                   ( INFO [ 3 ]                                )
-    IT   . setText               ( 4 , str ( CODE )                          )
-    IT   . setTextAlignment      ( 4 , Qt . AlignRight                       )
-    IT   . setData               ( 4 , Qt . UserRole , CODE                  )
+    CODE = int                 ( INFO [ 3 ]                                  )
+    IT   . setText             ( 4 , str ( CODE )                            )
+    IT   . setTextAlignment    ( 4 , Qt . AlignRight                         )
+    IT   . setData             ( 4 , Qt . UserRole , CODE                    )
     ##########################################################################
-    TWO  = self . BlobToString   ( INFO [ 4 ]                                )
-    IT   . setText               ( 5 , TWO                                   )
+    TWO  = self . BlobToString ( INFO [ 4 ]                                  )
+    IT   . setText             ( 5 , TWO                                     )
     ##########################################################################
-    THRE = self . BlobToString   ( INFO [ 5 ]                                )
-    IT   . setText               ( 6 , THRE                                  )
+    THRE = self . BlobToString ( INFO [ 5 ]                                  )
+    IT   . setText             ( 6 , THRE                                    )
     ##########################################################################
-    FOUR = self . BlobToString   ( INFO [ 6 ]                                )
-    IT   . setText               ( 7 , FOUR                                  )
+    FOUR = self . BlobToString ( INFO [ 6 ]                                  )
+    IT   . setText             ( 7 , FOUR                                    )
     ##########################################################################
-    IT   . setText               ( 8 , ""                                    )
-    IT   . setTextAlignment      ( 8 , Qt . AlignRight                       )
+    IT   . setText             ( 8 , ""                                      )
+    IT   . setTextAlignment    ( 8 , Qt . AlignRight                         )
     ##########################################################################
-    IT   . setText               ( 9 , ""                                    )
+    IT   . setText             ( 9 , ""                                      )
     ##########################################################################
     PNG  = f"{TWO}.png"
-    if                           ( PNG in FLAGs                            ) :
-      K  = QIcon                 ( f":/nations/{PNG}"                        )
-      IT . setIcon               ( 9 , K                                     )
+    if                         ( PNG in FLAGs                              ) :
+      K  = QIcon               ( f":/nations/{PNG}"                          )
+      IT . setIcon             ( 9 , K                                       )
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot             (                                                    )
+  def RenameItem        ( self                                             ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
+    self . goRenameItem ( 0                                                  )
     ##########################################################################
     return
   ############################################################################
@@ -413,21 +410,25 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
-  def refresh                         ( self , JSON                        ) :
+  @pyqtSlot                       (        dict                              )
+  def refresh                     ( self , JSON                            ) :
     ##########################################################################
-    self    . clear                   (                                      )
+    self   . clear                (                                          )
     ##########################################################################
-    UUIDs   = JSON                    [ "UUIDs"                              ]
-    INFOs   = JSON                    [ "INFOs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
+    UUIDs  = JSON                 [ "UUIDs"                                  ]
+    INFOs  = JSON                 [ "INFOs"                                  ]
+    NAMEs  = JSON                 [ "NAMEs"                                  ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ] , INFOs [ U ]        )
-      self  . addTopLevelItem         ( IT                                   )
+      IT   = self . PrepareItem   ( U , NAMEs [ U ] , INFOs [ U ]            )
+      self . addTopLevelItem      ( IT                                       )
     ##########################################################################
-    self    . emitNamesShow . emit    (                                      )
+    FMT    = self . getMenuItem   ( "DisplayTotal"                           )
+    MSG    = FMT  . format        ( len ( UUIDs )                            )
+    self   . setToolTip           ( MSG                                      )
+    ##########################################################################
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -469,37 +470,39 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return INFOs
   ############################################################################
-  @pyqtSlot                           (        str  , int                    )
-  def AssignAmounts                   ( self , UUID , Amounts              ) :
+  @pyqtSlot                (        str  , int                               )
+  def AssignAmounts        ( self , UUID , Amounts                         ) :
     ##########################################################################
-    IT    = self . uuidAtItem         ( UUID , 0                             )
-    if                                ( IT is None                         ) :
+    IT = self . uuidAtItem ( UUID , 0                                        )
+    if                     ( IT is None                                    ) :
       return
     ##########################################################################
-    IT . setText                      ( 8 , str ( Amounts )                  )
+    IT . setText           ( 8 , str ( Amounts )                             )
     ##########################################################################
     return
   ############################################################################
-  def ReportBelongings                 ( self , UUIDs                      ) :
+  def ReportBelongings                ( self , UUIDs                       ) :
     ##########################################################################
-    time    . sleep                    ( 1.0                                 )
+    time   . sleep                    ( 1.0                                  )
     ##########################################################################
-    RELTAB  = self . Tables            [ "Relation"                          ]
-    REL     = Relation                 (                                     )
-    REL     . setT1                    ( "Nation"                            )
-    REL     . setT2                    ( "People"                            )
-    REL     . setRelation              ( "Subordination"                     )
+    RELTAB = self . Tables            [ "Relation"                           ]
+    REL    = Relation                 (                                      )
+    REL    . setT1                    ( "Nation"                             )
+    REL    . setT2                    ( "People"                             )
+    REL    . setRelation              ( "Subordination"                      )
     ##########################################################################
-    DB      = self . ConnectDB         (                                     )
+    DB     = self . ConnectDB         (                                      )
+    self   . OnBusy  . emit           (                                      )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      REL   . set                      ( "first" , UUID                      )
-      CNT   = REL . CountSecond        ( DB , RELTAB                         )
+      REL  . set                      ( "first" , UUID                       )
+      CNT  = REL . CountSecond        ( DB , RELTAB                          )
       ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
+      self . emitAssignAmounts . emit ( str ( UUID ) , CNT                   )
     ##########################################################################
-    DB      . Close                    (                                     )
+    self   . GoRelax . emit           (                                      )
+    DB     . Close                    (                                      )
     ##########################################################################
     return
   ############################################################################
@@ -507,8 +510,11 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
     if                                ( DB == None                         ) :
-      self . emitNamesShow . emit     (                                      )
+      self  . emitNamesShow . emit    (                                      )
       return
+    ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     ##########################################################################
     NAMTAB  = self . Tables           [ "Names"                              ]
     self    . ObtainsInformation      ( DB                                   )
@@ -520,6 +526,8 @@ class CountryListings              ( TreeDock                              ) :
       INFOs = self . ObtainsUuidInfos ( DB , UUIDs                           )
       NAMEs = self . GetNames         ( DB , NAMTAB , UUIDs                  )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
@@ -539,27 +547,27 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def startup                    ( self                                    ) :
+  @pyqtSlot          (                                                       )
+  def startup        ( self                                                ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
     ##########################################################################
-    self   . Go                  ( self . loading                            )
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
+  def ObtainAllUuids        ( self , DB                                    ) :
     ##########################################################################
-    TABLE = self . Tables        [ "Countries"                               ]
+    TABLE = self . Tables   [ "Countries"                                    ]
     ##########################################################################
     QQ    = f"""select `uuid` from {TABLE}
                   where ( `used` > 0 )
                   order by `id` asc ;"""
     ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
+    QQ    = " " . join      ( QQ . split ( )                                 )
     ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
+    return DB . ObtainUuids ( QQ , 0                                         )
   ############################################################################
   def TranslateAll              ( self                                     ) :
     ##########################################################################
@@ -575,19 +583,17 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  ############################################################################
   def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -634,7 +640,7 @@ class CountryListings              ( TreeDock                              ) :
     TABLE   = self . Tables   [ "Countries"                                  ]
     STID    = self . StartId
     AMOUNT  = self . Amount
-    ORDER   = self . Order
+    ORDER   = self . getSortingOrder ( )
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
                   order by `id` {ORDER}
@@ -645,8 +651,7 @@ class CountryListings              ( TreeDock                              ) :
   def dragMime                   ( self                                    ) :
     ##########################################################################
     mtype   = "nation/uuids"
-    message = "選擇了{0}個國家"
-    ## message = self . getMenuItem ( "TotalPicked"                             )
+    message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , 0 , mtype , message                )
   ############################################################################
@@ -686,7 +691,8 @@ class CountryListings              ( TreeDock                              ) :
       ########################################################################
       title = sourceWidget . windowTitle ( )
       CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
+      FMT   = self . getMenuItem    ( "Copying"                              )
+      MSG   = FMT  . format         ( title , CNT                            )
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
     return RDN
@@ -719,11 +725,12 @@ class CountryListings              ( TreeDock                              ) :
     if                              ( DB == None                           ) :
       return
     ##########################################################################
-    MSG     = "加入{0}個人物" . format ( COUNT )
+    FMT     = self . getMenuItem    ( "Joining"                              )
+    MSG     = FMT  . format         ( COUNT                                  )
     self    . ShowStatus            ( MSG                                    )
     self    . TtsTalk               ( MSG , 1002                             )
     ##########################################################################
-    RELTAB  = self . Tables         [ "Relation"                             ]
+    RELTAB  = self . Tables         [ "RelationPeople"                       ]
     REL     = Relation              (                                        )
     REL     . set                   ( "first" , UUID                         )
     REL     . setT1                 ( "Nation"                               )
@@ -752,25 +759,9 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Prepare                 ( self                                       ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    self   . setColumnWidth   ( 9 , 3                                        )
-    ##########################################################################
-    TRX    = self . Translations
-    LABELs =                  [ "國家" , \
-                                "英文" , \
-                                "種類" , \
-                                "狀態" , \
-                                "國碼" , \
-                                "兩碼" , \
-                                "三碼" , \
-                                "四碼" , \
-                                "總人數" , \
-                                ""                                           ]
-    self   . setCentralLabels ( LABELs                                       )
-    ##########################################################################
-    self   . setPrepared      ( True                                         )
-    ## self . defaultPrepare ( "CountryListings" , 9                          )
+    self . defaultPrepare ( "CountryListings" , 9                            )
     ##########################################################################
     return
   ############################################################################
@@ -817,61 +808,39 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( self . currentColumn ( )                 )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
-    ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
-    ##########################################################################
-    cols   = self . columnCount    (                                         )
-    HIT    = self . headerItem     (                                         )
-    ##########################################################################
-    for i in range                 ( 1 , cols                              ) :
-      ########################################################################
-      T    = HIT . text            ( i                                       )
-      if                           ( len ( T ) <= 0                        ) :
-        T  = TRX                   [ "UI::Whitespace"                        ]
-      hid  = self . isColumnHidden ( i                                       )
-      mm   . addActionFromMenu     ( COL , 9000 + i , T , True , not hid     )
-    ##########################################################################
-    return mm
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
-  @pyqtSlot(int)
-  def GotoId                       ( self , Id                             ) :
+  def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    if                             ( at >= 9001 ) and ( at <= 9010 )         :
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      if                           ( ( at == 9008 ) and ( hid )            ) :
+        ######################################################################
+        self . startup             (                                         )
+        ######################################################################
+      return True
     ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
+    ##########################################################################
+    if                             ( not self . isPrepared ( )             ) :
+      return False
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
     if                             ( not doMenu                            ) :
       return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
     ##########################################################################
     items  = self . selectedItems  (                                         )
     atItem = self . currentItem    (                                         )
@@ -885,29 +854,11 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    T      = self . Total
-    MSG    = f"總數量:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
+    mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    SIDB   . setPrefix             ( "本頁開始:" )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    SIDB   . valueChanged . connect ( self . GotoId                          )
+    self   . AppendRefreshAction   ( mm , 1001                               )
     ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    SIDP   . setPrefix             ( "每頁數量:" )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    SIDP   . valueChanged . connect ( self . AssignAmount                    )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
-    ##########################################################################
-    if                             ( atItem != None                        ) :
+    if                             ( atItem not in [ False , None ]        ) :
       FMT  = TRX                   [ "UI::AttachCrowds"                      ]
       MSG  = FMT . format          ( atItem . text ( 0 )                     )
       mm   . addSeparator          (                                         )
@@ -915,19 +866,22 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    if                             ( len ( items ) == 1                    ) :
+    if                             ( atItem not in [ False , None ]        ) :
+      msg  = self . getMenuItem    ( "Positions"                             )
+      mm   . addAction             ( 7401 , msg                              )
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
     ##########################################################################
+    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
+    mm     . addSeparator          (                                         )
     mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
-    mm     . addSeparator          (                                         )
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
+    mm     = self . SortingMenu    ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
@@ -936,12 +890,14 @@ class CountryListings              ( TreeDock                              ) :
     if                             ( self . HandleLocalityMenu ( at )      ) :
       return True
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9010 )         :
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9008 ) and ( hid )            ) :
-        self . startup             (                                         )
+    if                             ( self . RunColumnsMenu     ( at )      ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunSortingMenu     ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
@@ -961,6 +917,15 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 3001                            ) :
       self . Go                    ( self . TranslateAll                     )
+      return True
+    ##########################################################################
+    if                             ( at == 7401                            ) :
+      ########################################################################
+      head = atItem . text         ( 0                                       )
+      uuid = self   . itemUuid     ( atItem , 0                              )
+      icon = self   . windowIcon   (                                         )
+      self . BelongingEarthSpots . emit ( str ( uuid ) , head , icon         )
+      ########################################################################
       return True
     ##########################################################################
     return True
