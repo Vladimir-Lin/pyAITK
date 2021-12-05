@@ -302,7 +302,13 @@ class Phone              ( Columns                                         ) :
   ############################################################################
   def Verify                                ( self , Number                ) :
     ##########################################################################
-    ppn              = phonenumbers . parse ( Number                         )
+    try                                                                      :
+      ppn            = phonenumbers . parse ( Number                         )
+    except                                                                   :
+      self . Correct = 0
+      self . Mobile  = 99
+      return False
+    ##########################################################################
     self   . Mobile  = number_type          ( ppn                            )
     self   . Correct = 1
     self   . Region  = ""
