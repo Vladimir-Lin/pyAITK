@@ -894,7 +894,7 @@ class EMailsWidget                 ( TreeDock                              ) :
     HOST   = item . text             ( 2                                     )
     MXes   =                         [                                       ]
     try                                                                      :
-      MXes = dns  . resolver . query ( HOST , 'MX'                           )
+      MXes = dns  . resolver . resolve ( HOST , 'MX'                         )
     except                                                                   :
       pass
     ##########################################################################
@@ -946,15 +946,26 @@ class EMailsWidget                 ( TreeDock                              ) :
         MXes =                    [                                          ]
         if                        ( len ( HOST ) > 0                       ) :
           try                                                                :
-            MXes = dns  . resolver . query ( HOST , 'MX'                     )
+            MXes = dns  . resolver . resolve ( HOST , 'MX'                   )
           except                                                             :
             pass
         ######################################################################
         CNT  = len                ( MXes                                     )
-        MQ   = f"select `uuid` from {EMSTAB} where ( `hostname` = %s )"
-        QQ   = f"""update {PRZTAB}
+        ######################################################################
+        if                        ( CNT <= 0                               ) :
+          ####################################################################
+          MQ = f"select `uuid` from {EMSTAB} where ( `hostname` = %s )"
+          QQ = f"""update {PRZTAB}
+                   set `mx` = 0 , `confirm` = 2
+                   where ( `uuid` in ( {MQ} ) ) ;"""
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          MQ = f"select `uuid` from {EMSTAB} where ( `hostname` = %s )"
+          QQ = f"""update {PRZTAB}
                    set `mx` = {CNT}
                    where ( `uuid` in ( {MQ} ) ) ;"""
+        ######################################################################
         QQ   = " " . join         ( QQ . split ( )                           )
         DB   . QueryValues        ( QQ , ( HOST , )                          )
         ######################################################################
