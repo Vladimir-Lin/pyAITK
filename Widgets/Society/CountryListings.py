@@ -114,6 +114,7 @@ class CountryListings              ( TreeDock                              ) :
     self . StartId            = 0
     self . Amount             = 28
     self . SortOrder          = "asc"
+    self . ValidOnly          = False
     ##########################################################################
     self . NationTypes        =    {                                         }
     self . CountryUsed        =    {                                         }
@@ -541,7 +542,7 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
     ##########################################################################
-    if                                ( not self . isColumnHidden ( 7 )    ) :
+    if                                ( not self . isColumnHidden ( 8 )    ) :
       self . Go                       ( self . ReportBelongings            , \
                                         ( UUIDs , )                          )
     ##########################################################################
@@ -624,7 +625,11 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} ;"
+    if                                ( self . ValidOnly                   ) :
+      QQ    = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
+    else                                                                     :
+      QQ    = f"select count(*) from {TABLE} ;"
+    ##########################################################################
     DB      . Query                   ( QQ                                   )
     RR      = DB . FetchOne           (                                      )
     ##########################################################################
@@ -642,7 +647,13 @@ class CountryListings              ( TreeDock                              ) :
     AMOUNT  = self . Amount
     ORDER   = self . getSortingOrder ( )
     ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
+    if                                ( self . ValidOnly                   ) :
+      QQ    = f"""select `uuid` from {TABLE}
+                  where ( `used` > 0 )
+                  order by `id` {ORDER}
+                  limit {STID} , {AMOUNT} ;"""
+    else                                                                     :
+      QQ    = f"""select `uuid` from {TABLE}
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
@@ -819,7 +830,7 @@ class CountryListings              ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9010 )         :
+    if                             ( at >= 9001 ) and ( at <= 9009 )         :
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
@@ -857,6 +868,9 @@ class CountryListings              ( TreeDock                              ) :
     mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )
+    ##########################################################################
+    msg    = self . getMenuItem    ( "ValidOnly"                             )
+    mm     . addAction             ( 3223 , msg , True , self . ValidOnly    )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
       FMT  = TRX                   [ "UI::AttachCrowds"                      ]
@@ -908,7 +922,10 @@ class CountryListings              ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
+      ########################################################################
+      self . clear                 (                                         )
       self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1201                            ) :
@@ -916,9 +933,22 @@ class CountryListings              ( TreeDock                              ) :
       self . PeopleGroup   . emit  ( head , 43 , str ( uuid )                )
       return True
     ##########################################################################
+    if                             ( at == 3223                            ) :
+      ########################################################################
+      if                           ( self . ValidOnly                      ) :
+        self . ValidOnly = False
+      else                                                                   :
+        self . ValidOnly = True
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "Names"                                 ]
+      ## NAM  = self . Tables         [ "Names"                                 ]
+      NAM  = self . Tables         [ "NamesCountry"                          ]
       self . EditAllNames          ( self , "Country" , uuid , NAM           )
       return True
     ##########################################################################
