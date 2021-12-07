@@ -87,6 +87,7 @@ class StellarSpectrumWidget     ( TreeDock                                 ) :
     self . setColumnHidden         ( 0 , True                                )
     self . setColumnHidden         ( 1 , True                                )
     self . setColumnHidden         ( 2 , True                                )
+    self . setColumnHidden         ( 5 , True                                )
     self . setColumnHidden         ( 6 , True                                )
     self . setColumnHidden         ( 7 , True                                )
     self . setRootIsDecorated      ( False                                   )
@@ -245,7 +246,7 @@ class StellarSpectrumWidget     ( TreeDock                                 ) :
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
-    MSG    = FMT  . format        ( len ( IMS )                              )
+    MSG    = FMT  . format        ( len ( LISTS )                            )
     self   . setToolTip           ( MSG                                      )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
