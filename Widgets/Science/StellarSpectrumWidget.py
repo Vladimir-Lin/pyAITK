@@ -111,7 +111,7 @@ class StellarSpectrumWidget     ( TreeDock                                 ) :
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return self . SizeSuggestion   ( QSize ( 400 , 640 )                     )
+    return self . SizeSuggestion   ( QSize ( 320 , 640 )                     )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
