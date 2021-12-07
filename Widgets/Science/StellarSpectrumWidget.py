@@ -523,7 +523,7 @@ class StellarSpectrumWidget     ( TreeDock                                 ) :
     return False
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 1                         )
+    return self . DefaultColumnsMenu (        mm , 0                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
