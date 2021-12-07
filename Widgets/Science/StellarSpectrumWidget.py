@@ -208,10 +208,14 @@ class StellarSpectrumWidget     ( TreeDock                                 ) :
   def PrepareItem                    ( self , JSON                         ) :
     return self . PrepareItemContent ( QTreeWidgetItem ( ) , JSON            )
   ############################################################################
-  @pyqtSlot                  (                                               )
-  def RenameItem             ( self                                        ) :
+  @pyqtSlot                       (                                          )
+  def RenameItem                  ( self                                   ) :
     ##########################################################################
-    self . defaultRenameItem ( [ 1 , 4 , 5 , 6                             ] )
+    column = self . currentColumn (                                          )
+    if                            ( self . isColumnHidden ( column ) <= 0  ) :
+      return
+    ##########################################################################
+    self . defaultRenameItem      ( [ 1 , 4 , 5 , 6                        ] )
     ##########################################################################
     return
   ############################################################################
