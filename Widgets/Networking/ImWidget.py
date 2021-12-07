@@ -1027,19 +1027,22 @@ class ImWidget                     ( TreeDock                              ) :
   ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                      )
-    if                              ( not doMenu                           ) :
+    if                             ( not self . isPrepared ( )             ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                      )
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
     ##########################################################################
-    items  = self . selectedItems   (                                        )
-    atItem = self . currentItem     (                                        )
+    self   . Notify                ( 0                                       )
+    ##########################################################################
+    items  = self . selectedItems  (                                         )
+    atItem = self . currentItem    (                                         )
     uuid   = 0
     ##########################################################################
-    if                              ( atItem != None                       ) :
-      uuid = atItem . data          ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
+    if                             ( atItem != None                        ) :
+      uuid = atItem . data         ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
     ##########################################################################
     mm     = MenuManager            ( self                                   )
     ##########################################################################
