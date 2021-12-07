@@ -102,13 +102,14 @@ class RaceListings                 ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setAcceptDrops          ( True                                    )
+    self . setDragEnabled          ( True                                    )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 320 , 640                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
   def FocusIn                      ( self                                  ) :
     ##########################################################################
@@ -132,6 +133,8 @@ class RaceListings                 ( TreeDock                              ) :
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
     ##########################################################################
+    self . LinkVoice               ( self . CommandParser                    )
+    ##########################################################################
     return True
   ############################################################################
   def FocusOut                     ( self                                  ) :
@@ -141,13 +144,10 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
-    self     . Notify         ( 0                                            )
     return
   ############################################################################
   def doubleClicked           ( self , item , column                       ) :
@@ -270,20 +270,32 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                           (        dict                          )
-  def refresh                         ( self , JSON                        ) :
+  @pyqtSlot                        (        dict                             )
+  def refresh                      ( self , JSON                           ) :
     ##########################################################################
-    self    . clear                   (                                      )
+    self    . clear                (                                         )
     ##########################################################################
-    UUIDs   = JSON                    [ "UUIDs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
+    UUIDs   = JSON                 [ "UUIDs"                                 ]
+    NAMEs   = JSON                 [ "NAMEs"                                 ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
-      self  . addTopLevelItem         ( IT                                   )
+      IT    = self . PrepareItem   ( U , NAMEs [ U ]                         )
+      self  . addTopLevelItem      ( IT                                      )
     ##########################################################################
-    self    . emitNamesShow . emit    (                                      )
+    FMT     = self . getMenuItem   ( "DisplayTotal"                          )
+    MSG     = FMT  . format        ( len ( UUIDs )                           )
+    self    . setToolTip           ( MSG                                     )
+    ##########################################################################
+    if                             ( self . Method in [ "Searching" ]      ) :
+      ########################################################################
+      T     = self . Translations  [ "RaceListings" ] [ "Title"              ]
+      K     = self . SearchKey
+      T     = f"{T}:{K}"
+      ########################################################################
+      self  . setWindowTitle       ( T                                       )
+    ##########################################################################
+    self    . emitNamesShow . emit (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -401,6 +413,7 @@ class RaceListings                 ( TreeDock                              ) :
     FMT     = self . Translations     [ "UI::StartLoading"                   ]
     MSG     = FMT . format            ( self . windowTitle ( )               )
     self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
     self    . setBustle               (                                      )
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
@@ -415,6 +428,7 @@ class RaceListings                 ( TreeDock                              ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
@@ -471,6 +485,7 @@ class RaceListings                 ( TreeDock                              ) :
     self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
     self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
     self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkVoice       ( None                                            )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -494,19 +509,32 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery      ( self                                         ) :
+  def ObtainUuidsQuery               ( self                                ) :
     ##########################################################################
-    RACTAB  = self . Tables [ "Races"                                        ]
+    RACTAB  = self . Tables          [ "Races"                               ]
     STID    = self . StartId
     AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
+    ORDER   = self . getSortingOrder (                                       )
     ##########################################################################
     QQ      = f"""select `uuid` from {RACTAB}
                   where ( `used` = 1 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join       ( QQ . split ( )                                 )
+    return " " . join                ( QQ . split ( )                        )
+  ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "race/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
+    ##########################################################################
+    return self . CreateDragMime ( self , 0 , mtype , message                )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
+    ##########################################################################
+    return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     formats = "people/uuids"
@@ -610,7 +638,7 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     TYPE    = "Race"
     PER     = People                (                                        )
-    RELTAB  = self . Tables         [ "Relation"                             ]
+    RELTAB  = self . Tables         [ "RelationPeople"                       ]
     DB      . LockWrites            ( [ RELTAB ]                             )
     PER     . ConnectToPeople       ( DB , RELTAB , UUID , TYPE , UUIDs      )
     DB      . UnlockTables          (                                        )
@@ -646,48 +674,6 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
   def AssureUuidItem               ( self , item , uuid , name             ) :
     ##########################################################################
     DB      = self . ConnectDB     (                                         )
@@ -695,7 +681,7 @@ class RaceListings                 ( TreeDock                              ) :
       return
     ##########################################################################
     RACTAB  = self . Tables        [ "Races"                                 ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
+    NAMTAB  = self . Tables        [ "NamesRaces"                            ]
     ##########################################################################
     DB      . LockWrites           ( [ RACTAB , NAMTAB                     ] )
     ##########################################################################
@@ -713,17 +699,9 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -738,7 +716,7 @@ class RaceListings                 ( TreeDock                              ) :
       return
     ##########################################################################
     RACTAB = self . Tables    [ "Races"                                      ]
-    NAMTAB = self . Tables    [ "Names"                                      ]
+    NAMTAB = self . Tables    [ "NamesRaces"                                 ]
     ##########################################################################
     DB     . LockWrites       ( [ RACTAB , NAMTAB                          ] )
     ##########################################################################
@@ -805,20 +783,20 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
+  def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    TRX = self . Translations
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
     ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
     ##########################################################################
-    return mm
+    return          { "Match" : False                                        }
+  ############################################################################
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
@@ -863,6 +841,9 @@ class RaceListings                 ( TreeDock                              ) :
   ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
+    if                             ( not self . isPrepared ( )             ) :
+      return False
+    ##########################################################################
     doMenu = self . isFunction      ( self . HavingMenu                      )
     if                              ( not doMenu                           ) :
       return False
@@ -894,12 +875,8 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     self   . AppendInsertAction     ( mm , 1101                              )
     self   . AppendRenameAction     ( mm , 1102                              )
-    mm     . addSeparator           (                                        )
     ##########################################################################
     if                              ( atItem not in [ False , None ]       ) :
-      ########################################################################
-      mm   = self . GroupsMenu      ( mm , atItem                            )
-      mm   . addSeparator           (                                        )
       ########################################################################
       if                            ( self . EditAllNames != None          ) :
         ######################################################################
@@ -907,6 +884,10 @@ class RaceListings                 ( TreeDock                              ) :
     ##########################################################################
     mm     . addAction              ( 3001 ,  TRX [ "UI::TranslateAll"     ] )
     mm     . addSeparator           (                                        )
+    ##########################################################################
+    if                              ( atItem not in [ False , None ]       ) :
+      ########################################################################
+      mm   = self . GroupsMenu      ( mm , atItem                            )
     ##########################################################################
     mm     = self . ColumnsMenu     ( mm                                     )
     mm     = self . SortingMenu     ( mm                                     )
@@ -971,7 +952,7 @@ class RaceListings                 ( TreeDock                              ) :
     if                              ( at == 1601                           ) :
       ########################################################################
       uuid = self . itemUuid        ( atItem , 0                             )
-      NAM  = self . Tables          [ "Names"                                ]
+      NAM  = self . Tables          [ "NamesRaces"                           ]
       self . EditAllNames           ( self , "Races" , uuid , NAM            )
       ########################################################################
       return True
