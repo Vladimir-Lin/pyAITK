@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## ObjectTypesEditor
+## ObjectRelationsEditor
 ##############################################################################
 import os
 import sys
@@ -53,7 +53,7 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
 ##############################################################################
-class ObjectTypesEditor            ( TreeDock                              ) :
+class ObjectRelationsEditor        ( TreeDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
@@ -66,10 +66,10 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . Total              = 0
-    self . StartId            = 0
-    self . Amount             = 25
-    self . SortOrder          = "asc"
+    self . Total    = 0
+    self . StartId  = 0
+    self . Amount   = 25
+    self . Order    = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -79,7 +79,6 @@ class ObjectTypesEditor            ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . setColumnCount          ( 9                                       )
-    self . setColumnHidden         ( 8 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -211,10 +210,14 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot             (                                                    )
-  def RenameItem        ( self                                             ) :
+  @pyqtSlot                      (                                           )
+  def RenameItem                 ( self                                    ) :
     ##########################################################################
-    self . goRenameItem ( 0                                                  )
+    IT = self . currentItem      (                                           )
+    if                           ( IT is None                              ) :
+      return
+    ##########################################################################
+    self . doubleClicked         ( IT , 0                                    )
     ##########################################################################
     return
   ############################################################################
@@ -347,27 +350,23 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                           (        dict                          )
+  @pyqtSlot(dict)
   def refresh                         ( self , JSON                        ) :
     ##########################################################################
-    self   . clear                   (                                       )
+    self    . clear                   (                                      )
     ##########################################################################
-    UUIDs  = JSON                    [ "UUIDs"                               ]
-    TYPEs  = JSON                    [ "TYPEs"                               ]
+    UUIDs   = JSON                    [ "UUIDs"                              ]
+    TYPEs   = JSON                    [ "TYPEs"                              ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT   = self . PrepareItem      ( U , TYPEs [ U ]                       )
-      self . addTopLevelItem         ( IT                                    )
+      IT    = self . PrepareItem      ( U , TYPEs [ U ]                      )
+      self  . addTopLevelItem         ( IT                                   )
     ##########################################################################
-    FMT    = self . getMenuItem      ( "DisplayTotal"                        )
-    MSG    = FMT  . format           ( len ( UUIDs )                         )
-    self   . setToolTip              ( MSG                                   )
+    self    . emitNamesShow . emit    (                                      )
     ##########################################################################
-    self   . emitNamesShow . emit    (                                       )
-    ##########################################################################
-    TOTAL  = self . columnCount      (                                       )
-    self   . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )               )
+    TOTAL   = self . columnCount      (                                      )
+    self    . resizeColumnsToContents ( range ( 0 , TOTAL - 1 )              )
     ##########################################################################
     return
   ############################################################################
@@ -386,13 +385,11 @@ class ObjectTypesEditor            ( TreeDock                              ) :
       return                          {                                      }
     ##########################################################################
     TYPEs   =                         {                                      }
-    TYPTAB  = self . Tables           [ "Types"                              ]
+    TABLE   = self . Tables           [ "Types"                              ]
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      QQ    = f"""select
-                  `id`,`used`,`name`,`head`,`digits`,`ready`,`comment`,`wiki`
-                  from {TYPTAB}
+      QQ    = f"""select `id`,`used`,`name`,`head`,`digits`,`ready`,`comment`,`wiki` from {TABLE}
                   where ( `uuid` = {UUID} ) ;"""
       QQ    = " " . join              ( QQ . split ( )                       )
       DB    . Query                   ( QQ                                   )
@@ -409,13 +406,6 @@ class ObjectTypesEditor            ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
-    self    . Notify                  ( 3                                    )
-    ##########################################################################
-    FMT     = self . Translations     [ "UI::StartLoading"                   ]
-    MSG     = FMT . format            ( self . windowTitle ( )               )
-    self    . ShowStatus              ( MSG                                  )
-    self    . OnBusy  . emit          (                                      )
-    self    . setBustle               (                                      )
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     TYPEs   =                         {                                      }
@@ -423,9 +413,6 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     if                                ( len ( UUIDs ) > 0                  ) :
       TYPEs = self . ObtainsUuidTypes ( DB , UUIDs                           )
     ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . GoRelax . emit          (                                      )
-    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
@@ -440,7 +427,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
+  @pyqtSlot()
   def startup                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -450,17 +437,17 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids        ( self , DB                                    ) :
+  def ObtainAllUuids             ( self , DB                               ) :
     ##########################################################################
-    TYPTAB = self . Tables  [ "Types"                                        ]
+    TABLE = self . Tables        [ "Types"                                   ]
     ##########################################################################
-    QQ     = f"""select `uuid` from {TYPTAB}
+    QQ    = f"""select `uuid` from {TABLE}
                 where ( `used` = 1 )
                 order by `id` asc ;"""
     ##########################################################################
-    QQ     = " " . join     ( QQ . split ( )                                 )
+    QQ    = " " . join           ( QQ . split ( )                            )
     ##########################################################################
-    return DB . ObtainUuids ( QQ , 0                                         )
+    return DB . ObtainUuids      ( QQ , 0                                    )
   ############################################################################
   def TranslateAll              ( self                                     ) :
     ##########################################################################
@@ -519,51 +506,54 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def PrepareMessages            ( self                                    ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    self . LinkAction      ( "Home"       , self . PageHome        , False   )
-    self . LinkAction      ( "End"        , self . PageEnd         , False   )
-    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
-    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
+    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
+    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
+    ##########################################################################
+    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
+    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
+    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
+    ##########################################################################
+    return
+  ############################################################################
+  def closeEvent           ( self , event                                  ) :
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
     ##########################################################################
     return
   ############################################################################
-  def ObtainsInformation   ( self , DB                                     ) :
+  def ObtainsInformation              ( self , DB                          ) :
     ##########################################################################
-    self   . Total = 0
+    self    . Total = 0
     ##########################################################################
-    TYPTAB = self . Tables [ "Types"                                         ]
+    TABLE   = self . Tables           [ "Types"                              ]
     ##########################################################################
-    QQ     = f"select count(*) from {TYPTAB} where ( `used` = 1 ) ;"
-    DB     . Query         ( QQ                                              )
-    RR     = DB . FetchOne (                                                 )
+    QQ      = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
+    DB      . Query                   ( QQ                                   )
+    RR      = DB . FetchOne           (                                      )
     ##########################################################################
     if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
       return
     ##########################################################################
-    self   . Total = RR    [ 0                                               ]
+    self    . Total = RR              [ 0                                    ]
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery               ( self                                ) :
+  def ObtainUuidsQuery        ( self                                       ) :
     ##########################################################################
-    TABLE   = self . Tables          [ "Types"                               ]
+    TABLE   = self . Tables   [ "Types"                                      ]
     STID    = self . StartId
     AMOUNT  = self . Amount
-    ORDER   = self . getSortingOrder (                                       )
+    ORDER   = self . Order
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join                ( QQ . split ( )                        )
+    return " " . join         ( QQ . split ( )                               )
   ############################################################################
   def Prepare                 ( self                                       ) :
     ##########################################################################
@@ -571,7 +561,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     self   . setColumnWidth   ( 8 , 3                                        )
     ##########################################################################
     TRX    = self . Translations
-    LABELs = TRX              [ "ObjectTypesEditor" ] [ "Labels"             ]
+    LABELs = [ "" , "編號" , "名稱" , "維基" , "起頭" , "位數" , "完成度" , "註解" , "" ]
     self   . setCentralLabels ( LABELs                                       )
     ##########################################################################
     self   . setPrepared      ( True                                         )
@@ -584,59 +574,87 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 1                         )
+  def ColumnsMenu                  ( self , mm                             ) :
+    ##########################################################################
+    TRX    = self . Translations
+    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    ##########################################################################
+    msg    = TRX [ "UI::PeopleAmount" ]
+    hid    = self . isColumnHidden ( 1                                       )
+    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
+    ##########################################################################
+    msg    = TRX                   [ "UI::Whitespace"                        ]
+    hid    = self . isColumnHidden ( 2                                       )
+    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    ##########################################################################
+    return mm
   ############################################################################
-  def RunColumnsMenu               ( self , at                             ) :
+  @pyqtSlot(int)
+  def GotoId                       ( self , Id                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9008 )         :
-      ########################################################################
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
-      ########################################################################
-      ## if                           ( ( at == 9001 ) and ( hid )            ) :
-      ##   self . startup             (                                         )
-      ########################################################################
-      return True
+    self . StartId    = Id
+    self . clear                   (                                         )
+    self . startup                 (                                         )
     ##########################################################################
-    return False
+    return
+  ############################################################################
+  @pyqtSlot(int)
+  def AssignAmount                 ( self , Amount                         ) :
+    ##########################################################################
+    self . Amount    = Amount
+    self . clear                   (                                         )
+    self . startup                 (                                         )
+    ##########################################################################
+    return
   ############################################################################
   def Menu                         ( self , pos                            ) :
-    ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
-      return False
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
     if                             ( not doMenu                            ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                      )
-    ##########################################################################
-    items  = self . selectedItems   (                                        )
-    atItem = self . currentItem     (                                        )
+    items  = self . selectedItems  (                                         )
+    atItem = self . currentItem    (                                         )
     uuid   = 0
     ##########################################################################
-    if                              ( atItem != None                       ) :
-      uuid = atItem . data          ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
+    if                             ( atItem != None                        ) :
+      uuid = atItem . data         ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
     ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    self   . AppendRefreshAction   ( mm , 1001                               )
+    T      = self . Total
+    MSG    = f"總數量:{T}"
+    mm     . addAction             ( 9999991 , MSG                           )
+    ##########################################################################
+    SIDB   = SpinBox               ( None , self . PlanFunc                  )
+    SIDB   . setRange              ( 0 , self . Total                        )
+    SIDB   . setValue              ( self . StartId                          )
+    SIDB   . setPrefix             ( "本頁開始:" )
+    mm     . addWidget             ( 9999992 , SIDB                          )
+    SIDB   . valueChanged . connect ( self . GotoId                          )
+    ##########################################################################
+    SIDP   = SpinBox               ( None , self . PlanFunc                  )
+    SIDP   . setRange              ( 0 , 10000                               )
+    SIDP   . setValue              ( self . Amount                           )
+    SIDP   . setPrefix             ( "每頁數量:" )
+    mm     . addWidget             ( 9999993 , SIDP                          )
+    SIDP   . valueChanged . connect ( self . AssignAmount                    )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    if                              ( atItem not in [ False , None ]       ) :
+    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
+    ##########################################################################
+    mm     . addSeparator          (                                         )
+    ##########################################################################
+    if                             ( len ( items ) == 1                    ) :
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
     ##########################################################################
     mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . SortingMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
     mm     . addSeparator          (                                         )
     mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
@@ -650,20 +668,14 @@ class ObjectTypesEditor            ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
-      ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
-      ########################################################################
       return True
     ##########################################################################
-    if                             ( self . RunColumnsMenu     ( at )      ) :
-      return True
-    ##########################################################################
-    if                             ( self . RunSortingMenu     ( at )      ) :
-      ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
-      ########################################################################
+    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      if                           ( ( at == 9001 ) and ( hid )            ) :
+        self . startup             (                                         )
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
