@@ -625,7 +625,6 @@ class RoleListings                 ( TreeDock                              ) :
       ########################################################################
       FMT  = TRX                    [ "UI::AttachCrowds"                     ]
       MSG  = FMT . format           ( atItem . text ( 0 )                    )
-      mm   . addSeparator           (                                        )
       mm   . addAction              ( 1201 ,  MSG                            )
     ##########################################################################
     mm     . addSeparator           (                                        )
