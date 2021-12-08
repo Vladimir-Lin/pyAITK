@@ -55,10 +55,10 @@ from   AITK . Calendars . Periode     import Periode
 ##############################################################################
 class ObjectTypesEditor            ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( dict                                    )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( dict                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -88,9 +88,9 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
-    self . emitNamesShow     . connect ( self . show                         )
-    self . emitAllNames      . connect ( self . refresh                      )
-    self . itemChanged       . connect ( self . AcceptItemChanged            )
+    self . emitNamesShow . connect ( self . show                             )
+    self . emitAllNames  . connect ( self . refresh                          )
+    self . itemChanged   . connect ( self . AcceptItemChanged                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -121,7 +121,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     self . LinkAction              ( "SelectAll"  , self . SelectAll         )
     self . LinkAction              ( "SelectNone" , self . SelectNone        )
     ##########################################################################
-    ## self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self . LinkAction              ( "Rename"     , self . RenameItem        )
     ##########################################################################
     return True
   ############################################################################
@@ -211,10 +211,10 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot             (                                                    )
-  def RenameItem        ( self                                             ) :
+  @pyqtSlot                  (                                               )
+  def RenameItem             ( self                                        ) :
     ##########################################################################
-    self . goRenameItem ( 0                                                  )
+    self . defaultRenameItem ( [ 2 , 3 , 4 , 5 , 6 , 7 ]                     )
     ##########################################################################
     return
   ############################################################################
@@ -523,6 +523,7 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     self . LinkAction      ( "Refresh"    , self . startup         , False   )
     self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Copy"       , self . RenameItem      , False   )
     self . LinkAction      ( "Home"       , self . PageHome        , False   )
     self . LinkAction      ( "End"        , self . PageEnd         , False   )
     self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
@@ -602,13 +603,13 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                          ( self , pos                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                              ( not self . isPrepared ( )            ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
       return False
     ##########################################################################
     self   . Notify                 ( 0                                      )
@@ -617,67 +618,67 @@ class ObjectTypesEditor            ( TreeDock                              ) :
     atItem = self . currentItem     (                                        )
     uuid   = 0
     ##########################################################################
-    if                              ( atItem != None                       ) :
+    if                              ( atItem not in [ False , None ]       ) :
       uuid = atItem . data          ( 0 , Qt . UserRole                      )
       uuid = int                    ( uuid                                   )
     ##########################################################################
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
     mm     = self . AmountIndexMenu ( mm                                     )
-    self   . AppendRefreshAction   ( mm , 1001                               )
+    self   . AppendRefreshAction    ( mm , 1001                              )
     ##########################################################################
-    mm     . addSeparator          (                                         )
+    mm     . addSeparator           (                                        )
     ##########################################################################
     if                              ( atItem not in [ False , None ]       ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
+      if                            ( self . EditAllNames != None          ) :
+        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
+        mm . addSeparator           (                                        )
     ##########################################################################
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . SortingMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    mm     . addSeparator          (                                         )
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
-    self   . DockingMenu           ( mm                                      )
+    mm     = self . ColumnsMenu     ( mm                                     )
+    mm     = self . SortingMenu     ( mm                                     )
+    mm     = self . LocalityMenu    ( mm                                     )
+    mm     . addSeparator           (                                        )
+    mm     . addAction              ( 3001 ,  TRX [ "UI::TranslateAll"     ] )
+    self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
-    at     = mm . at               ( aa                                      )
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
+    at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
+    if                              ( self . RunDocking   ( mm , aa )      ) :
       return True
     ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
+    if                              ( self . HandleLocalityMenu ( at )     ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( self . RunColumnsMenu     ( at )      ) :
-      return True
-    ##########################################################################
-    if                             ( self . RunSortingMenu     ( at )      ) :
-      ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . clear                  (                                        )
+      self . startup                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+    if                              ( self . RunColumnsMenu     ( at )     ) :
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Types" , uuid , NAM             )
+    if                              ( self . RunSortingMenu     ( at )     ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
+    if                              ( at == 1001                           ) :
+      self . startup                (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1601                           ) :
+      uuid = self . itemUuid        ( items [ 0 ] , 0                        )
+      NAM  = self . Tables          [ "NamesEditing"                         ]
+      self . EditAllNames           ( self , "Types" , uuid , NAM            )
+      return True
+    ##########################################################################
+    if                              ( at == 3001                           ) :
+      self . Go                     ( self . TranslateAll                    )
       return True
     ##########################################################################
     return True
