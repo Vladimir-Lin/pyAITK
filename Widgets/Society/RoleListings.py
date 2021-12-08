@@ -668,7 +668,7 @@ class RoleListings                 ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 1201                           ) :
       head = atItem . text          ( 0                                      )
-      self . PeopleGroup   . emit   ( head , 40 , str ( uuid )               )
+      self . PeopleGroup   . emit   ( head , 186 , str ( uuid )              )
       return True
     ##########################################################################
     if                              ( at == 1601                           ) :
