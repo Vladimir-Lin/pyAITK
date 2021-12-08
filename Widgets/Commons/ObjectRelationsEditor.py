@@ -166,7 +166,7 @@ class ObjectRelationsEditor        ( TreeDock                              ) :
     Flags       = item . flags     (                                         )
     Flags       = Flags | Qt . ItemIsUserCheckable
     item        . setFlags         ( Flags                                   )
-    IT          . setData          ( 0 , Qt . UserRole , UXID                )
+    item        . setData          ( 0 , Qt . UserRole , UXID                )
     ##########################################################################
     if                             ( USED == 0                             ) :
       item      . setCheckState    ( 0 , Qt . Unchecked                      )
@@ -301,7 +301,7 @@ class ObjectRelationsEditor        ( TreeDock                              ) :
     if                         ( len ( UUIDs ) <= 0                        ) :
       return                   {                                             }
     ##########################################################################
-    LISTs     =                {                                             }
+    LISTs     =                [                                             ]
     GRPTAB    = self . Tables  [ "Groups"                                    ]
     NAMTAB    = self . Tables  [ "Names"                                     ]
     ##########################################################################
@@ -588,6 +588,13 @@ class ObjectRelationsEditor        ( TreeDock                              ) :
     mm     . setFont                ( self    . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
+    ##########################################################################
+    if                              ( self   . RunAmountIndexMenu ( )      ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
+      return
     ##########################################################################
     if                              ( self . RunDocking   ( mm , aa )      ) :
       return True
