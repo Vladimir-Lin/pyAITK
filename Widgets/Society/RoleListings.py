@@ -616,13 +616,13 @@ class RoleListings                 ( TreeDock                              ) :
     self   . AppendRefreshAction    ( mm , 1001                              )
     self   . AppendInsertAction     ( mm , 1101                              )
     ##########################################################################
-    mm     . addSeparator           (                                        )
-    ##########################################################################
     if                              ( atItem not in [ False , None ]       ) :
+      ########################################################################
+      mm   . addSeparator           (                                        )
+      ########################################################################
       if                            ( self . EditAllNames != None          ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
-    ##########################################################################
-    if                              ( atItem not in [ False , None ]       ) :
+      ########################################################################
       FMT  = TRX                    [ "UI::AttachCrowds"                     ]
       MSG  = FMT . format           ( atItem . text ( 0 )                    )
       mm   . addSeparator           (                                        )
