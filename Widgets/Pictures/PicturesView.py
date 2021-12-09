@@ -390,7 +390,7 @@ class PicturesView                ( IconDock                               ) :
     for UUID in UUIDs                                                        :
       ########################################################################
       self . Relation . set   ( "second" , UUID                              )
-      WS   = self . ExactItem (                                              )
+      WS   = self . Relation . ExactItem (                                   )
       QQ   = f"update {RELTAB} set `position` = {LUID} {WS} ;"
       SQLs . append           ( QQ                                           )
       ########################################################################
