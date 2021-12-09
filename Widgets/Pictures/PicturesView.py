@@ -150,7 +150,7 @@ class PicturesView                ( IconDock                               ) :
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables     [ "Relation"                                  ]
     ##########################################################################
     if                         ( self . Grouping == "Subordination"        ) :
       OPTS = f"order by `position` {ORDER}"
