@@ -398,11 +398,6 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     return SQLs
   ############################################################################
-  def ExecuteMovingSqlCommands ( self , DB , SQLs                          ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
   def PicturesMoving          ( self , atUuid , JSON                       ) :
     ##########################################################################
     UUIDs  = JSON             [ "UUIDs"                                      ]
@@ -425,9 +420,7 @@ class PicturesView                ( IconDock                               ) :
     LAST   = self . GetLastestPosition ( DB     , LUID                       )
     PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
     SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteMovingSqlCommands  ( DB     , SQLs                       )
-    ##########################################################################
-    print ( "PicturesMoving : " , SQLs )
+    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
     ##########################################################################
     DB     . UnlockTables     (                                              )
     ##########################################################################
@@ -463,9 +456,7 @@ class PicturesView                ( IconDock                               ) :
     LAST   = self . GetLastestPosition ( DB     , LUID                       )
     PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
     SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteMovingSqlCommands  ( DB     , SQLs                       )
-    ##########################################################################
-    print ( "PicturesAppending : " , SQLs )
+    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
     ##########################################################################
     DB     . UnlockTables      (                                             )
     self   . setVacancy        (                                             )
@@ -496,14 +487,15 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     self   . OnBusy  . emit           (                                      )
     self   . setBustle                (                                      )
-    ##########################################################################
     DB     . LockWrites               ( [ RELTAB                           ] )
     ##########################################################################
-    print ( "DeleteItems:" , SQLs )
+    TITLE  = "RemovePictureItems"
+    self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
     ##########################################################################
     DB     . UnlockTables             (                                      )
     self   . setVacancy               (                                      )
     self   . GoRelax . emit           (                                      )
+    ##########################################################################
     DB     . Close                    (                                      )
     ##########################################################################
     self   . loading                  (                                      )
