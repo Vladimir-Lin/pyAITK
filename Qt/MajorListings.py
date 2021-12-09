@@ -68,54 +68,66 @@ class MajorListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                        ( self                               ) :
-    return QSize                      ( 320 , 640                            )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
-  def FocusIn                    ( self                                    ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . LinkAction            ( "Insert" , self . InsertItem              )
-    self . LinkAction            ( "Delete" , self . DeleteItems             )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
+    ##########################################################################
+    self . LinkAction     ( "Insert"     , self . InsertItem                 )
+    self . LinkAction     ( "Delete"     , self . DeleteItems                )
+    ##########################################################################
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                   ( self                                    ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked              ( self , item , column                    ) :
+  def closeEvent           ( self , event                                  ) :
     ##########################################################################
-    if                           ( self . isItemPicked ( )                 ) :
-      if ( column != self . CurrentItem [ "Column" ] )                       :
-        self . removeParked      (                                           )
+    self . LinkAction      ( "Refresh"    , self . startup     , False       )
+    ##########################################################################
+    self . LinkAction      ( "Insert"     , self . InsertItem  , False       )
+    self . LinkAction      ( "Delete"     , self . DeleteItems , False       )
+    ##########################################################################
+    self . LinkAction      ( "SelectAll"  , self . SelectAll   , False       )
+    self . LinkAction      ( "SelectNone" , self . SelectNone  , False       )
+    ##########################################################################
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked              ( self , item , column                    ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
-  def stateChanged               ( self , item , column                    ) :
+  def doubleClicked ( self , item , column                                 ) :
     return
   ############################################################################
-  def Prepare                         ( self                               ) :
-    raise NotImplementedError         (                                      )
+  def stateChanged  ( self , item , column                                 ) :
+    return
   ############################################################################
-  def PrepareItem                     ( self , UUID , NAME                 ) :
-    ##########################################################################
-    IT = QTreeWidgetItem              (                                      )
-    IT . setText                      ( 0 , NAME                             )
-    IT . setData                      ( 0 , Qt . UserRole , UUID             )
-    ##########################################################################
-    return IT
+  def Prepare                 ( self                                       ) :
+    raise NotImplementedError (                                              )
   ############################################################################
-  @pyqtSlot()
+  def PrepareItem                 ( self , UUID , NAME                     ) :
+    return self . PrepareUuidItem ( 0    , UUID , NAME                       )
+  ############################################################################
+  @pyqtSlot                   (                                              )
   def InsertItem              ( self                                       ) :
     ##########################################################################
     item = QTreeWidgetItem    (                                              )
@@ -129,13 +141,11 @@ class MajorListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def DeleteItems                  ( self                                  ) :
-    ##########################################################################
-    ##########################################################################
+  @pyqtSlot       (                                                          )
+  def DeleteItems ( self                                                   ) :
     return
   ############################################################################
-  @pyqtSlot()
+  @pyqtSlot                     (                                            )
   def nameChanged               ( self                                     ) :
     ##########################################################################
     if                          ( not self . isItemPicked ( )              ) :
@@ -163,20 +173,24 @@ class MajorListings                ( TreeDock                              ) :
   def AssureUuidItem               ( self , item , uuid , name             ) :
     raise NotImplementedError      (                                         )
   ############################################################################
-  @pyqtSlot(dict)
-  def refresh                         ( self , JSON                        ) :
+  def RefreshToolTip              ( self , Total                           ) :
+    return
+  ############################################################################
+  @pyqtSlot                       (        dict                              )
+  def refresh                     ( self , JSON                            ) :
     ##########################################################################
-    self    . clear                   (                                      )
+    self   . clear                (                                          )
     ##########################################################################
-    UUIDs   = JSON                    [ "UUIDs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
+    UUIDs  = JSON                 [ "UUIDs"                                  ]
+    NAMEs  = JSON                 [ "NAMEs"                                  ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
-      self  . addTopLevelItem         ( IT                                   )
+      IT   = self . PrepareItem   ( U , NAMEs [ U ]                          )
+      self . addTopLevelItem      ( IT                                       )
     ##########################################################################
-    self    . emitNamesShow . emit    (                                      )
+    self   . RefreshToolTip       ( len ( UUIDs )                            )
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -192,13 +206,15 @@ class MajorListings                ( TreeDock                              ) :
     ##########################################################################
     return UUIDs
   ############################################################################
-  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
+  def ObtainsUuidNames      ( self , DB , UUIDs                            ) :
     ##########################################################################
-    NAMEs   =                         {                                      }
+    NAMEs =                 {                                                }
     ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
+    if                      ( len ( UUIDs ) <= 0                           ) :
+      return NAMEs
+    ##########################################################################
+    TABLE = self . Tables   [ "Names"                                        ]
+    NAMEs = self . GetNames ( DB , TABLE , UUIDs                             )
     ##########################################################################
     return NAMEs
   ############################################################################
@@ -209,30 +225,39 @@ class MajorListings                ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . Notify                  ( 3                                    )
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
+    ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
+    ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
-      self . emitNamesShow . emit     (                                      )
+      self  . emitNamesShow . emit    (                                      )
       return
     ##########################################################################
-    JSON             =                {                                      }
-    JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
+    JSON    =                         {  "UUIDs" : UUIDs , "NAMEs" : NAMEs   }
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def startup                    ( self                                    ) :
+  @pyqtSlot          (                                                       )
+  def startup        ( self                                                ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
     ##########################################################################
-    self   . Go                  ( self . loading                            )
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
 ##############################################################################

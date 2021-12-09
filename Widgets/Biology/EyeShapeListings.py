@@ -65,25 +65,6 @@ class EyeShapeListings   ( MajorListings                                   ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
-    ##########################################################################
-    return
-  ############################################################################
   def ObtainUuidsQuery                ( self                               ) :
     ##########################################################################
     TABLE   = self . Tables           [ "EyeShapes"                          ]
@@ -152,17 +133,22 @@ class EyeShapeListings   ( MajorListings                                   ) :
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
+    if                             ( not self . isPrepared ( )             ) :
+      return False
+    ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
     if                             ( not doMenu                            ) :
       return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
     ##########################################################################
     items  = self . selectedItems  (                                         )
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"  ]          )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
+    self   . AppendRefreshAction   ( mm , 1001                               )
+    self   . AppendInsertAction    ( mm , 1101                               )
     mm     . addSeparator          (                                         )
     if                             ( len ( items ) == 1                    ) :
       if                           ( self . EditAllNames != None           ) :
@@ -172,8 +158,8 @@ class EyeShapeListings   ( MajorListings                                   ) :
     mm     = self . LocalityMenu   ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
@@ -183,7 +169,10 @@ class EyeShapeListings   ( MajorListings                                   ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
+      ########################################################################
+      self . clear                 (                                         )
       self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :

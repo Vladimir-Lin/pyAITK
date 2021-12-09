@@ -123,6 +123,15 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
   def FetchSessionInformation         ( self , DB                          ) :
     return
   ############################################################################
+  def PrepareUuidItem    ( self , column , UUID , NAME                     ) :
+    ##########################################################################
+    IT = QTreeWidgetItem (                                                   )
+    IT . setText         ( column , NAME                                     )
+    IT . setToolTip      ( column , str ( UUID )                             )
+    IT . setData         ( column , Qt . UserRole , str ( UUID )             )
+    ##########################################################################
+    return IT
+  ############################################################################
   def DockIn        ( self , shown                                         ) :
     ##########################################################################
     self . ShowDock (        shown                                           )
