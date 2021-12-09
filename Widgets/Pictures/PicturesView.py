@@ -315,7 +315,7 @@ class PicturesView                ( IconDock                               ) :
     ## 從外部加入
     ##########################################################################
     uuid     = -1
-    if                         ( atItem in [ False , None ]                ) :
+    if                         ( atItem not in [ False , None ]            ) :
       uuid   = atItem . data   ( Qt . UserRole                               )
       uuid   = int             ( uuid                                        )
     ##########################################################################
