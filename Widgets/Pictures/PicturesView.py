@@ -324,30 +324,46 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     return True
   ############################################################################
-  def OrderingPUIDs          ( self , atUuid , UUIDs , PUIDs               ) :
+  def OrderingPUIDs           ( self , atUuid , UUIDs , PUIDs              ) :
     ##########################################################################
-    KUIDs    = list          ( set ( PUIDs ) - set ( UUIDs )                 )
+    atUuid    = int           ( atUuid                                       )
+    UUIDs     = list          ( map ( int , UUIDs )                          )
+    PUIDs     = list          ( map ( int , PUIDs )                          )
     ##########################################################################
-    if                       ( atUuid < 0                                  ) :
-      RUIDs  = list          ( KUIDs + UUIDs                                 )
-      return RUIDs
+    KUIDs     =               [                                              ]
+    for UUID in PUIDs                                                        :
+      if                      ( UUID not in UUIDs                          ) :
+        KUIDs . append        ( UUID                                         )
+    ##########################################################################
+    if                        ( atUuid < 0                                 ) :
+      for UUID in UUIDs                                                      :
+        KUIDs . append        ( UUID                                         )
+      return KUIDs
     ##########################################################################
     try                                                                      :
-      atPos  = KUIDs . index ( atUuid                                        )
+      atPos   = KUIDs . index ( atUuid                                       )
     except                                                                   :
-      RUIDs  = list          ( KUIDs + UUIDs                                 )
-      return RUIDs
+      for UUID in UUIDs                                                      :
+        KUIDs . append        ( UUID                                         )
+      return KUIDs
     ##########################################################################
-    TOTAL    = len           ( KUIDs                                         )
-    LEFTs    =               [                                               ]
-    RIGHTs   = KUIDs
-    if                       ( atPos > 0                                   ) :
-      ########################################################################
-      REMAIN =               ( TOTAL - atPos                                 )
-      LEFTs  = KUIDs         [          : atPos                              ]
-      RIGHTs = KUIDs         [ - REMAIN :                                    ]
+    if                        ( atPos <= 0                                 ) :
+      for UUID in PUIDs                                                      :
+        UUIDs . append        ( UUID                                         )
+      return UUIDs
     ##########################################################################
-    return list              ( LEFTs + UUIDs + RIGHTs                        )
+    TOTAL     = len           ( KUIDs                                        )
+    REMAIN    =               ( TOTAL - atPos                                )
+    LEFTs     = KUIDs         [          : atPos                             ]
+    RIGHTs    = KUIDs         [ - REMAIN :                                   ]
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      LEFTs   . append        ( UUID                                         )
+    ##########################################################################
+    for UUID in RIGHTs                                                       :
+      LEFTs   . append        ( UUID                                         )
+    ##########################################################################
+    return LEFTs
   ############################################################################
   def GetLastestPosition    ( self , DB , LUID                             ) :
     ##########################################################################
@@ -416,6 +432,7 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     OPTS   = f"order by `position` asc"
     PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
     LUID   = PUIDs            [ -1                                           ]
     LAST   = self . GetLastestPosition ( DB     , LUID                       )
     PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
