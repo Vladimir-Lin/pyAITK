@@ -481,7 +481,7 @@ class Relation           ( Columns                                         ) :
   ############################################################################
   def ExactColumn ( self , Table , Item , Options = "" , Limits = "" ) :
     WS = self . ExactItem ( Options , Limits )
-    return f"select {Item} from {Table} {WS} ;" ;
+    return f"select {Item} from {Table} {WS} ;"
   ############################################################################
   def InsertItems ( self , Table , items ) :
     JI = self . join   ( items , " , " )

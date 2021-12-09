@@ -94,6 +94,20 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     return
   ############################################################################
+  def getSelectedUuids               ( self                                ) :
+    ##########################################################################
+    UUIDs     =                      [                                       ]
+    items     = self . selectedItems (                                       )
+    ##########################################################################
+    for item in items                                                        :
+      ########################################################################
+      UUID    = item . data          ( Qt . UserRole                         )
+      UUID    = int                  ( UUID                                  )
+      if                             ( UUID not in UUIDs                   ) :
+        UUIDs . append               ( UUID                                  )
+    ##########################################################################
+    return UUIDs
+  ############################################################################
   def FocusIn                    ( self                                    ) :
     ##########################################################################
     if                           ( not self . isPrepared ( )               ) :
@@ -130,8 +144,8 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     return self . font                (                                      )
   ############################################################################
-  @pyqtSlot(QListWidgetItem,QIcon)
-  def AssignIcon                      ( self , item , icon                 ) :
+  @pyqtSlot                           (        QListWidgetItem , QIcon       )
+  def AssignIcon                      ( self , item            , icon      ) :
     item . setIcon                    ( icon                                 )
     return
   ############################################################################
@@ -535,6 +549,7 @@ class IconDock           ( ListDock                                        ) :
     FMT     = self . Translations     [ "UI::StartLoading"                   ]
     MSG     = FMT . format            ( self . windowTitle ( )               )
     self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
     self    . setBustle               (                                      )
     ##########################################################################
     self    . FetchSessionInformation ( DB                                   )
@@ -543,6 +558,7 @@ class IconDock           ( ListDock                                        ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
     self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
@@ -561,31 +577,13 @@ class IconDock           ( ListDock                                        ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def startup                    ( self                                    ) :
+  @pyqtSlot          (                                                       )
+  def startup        ( self                                                ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
     ##########################################################################
-    self   . Go                  ( self . loading                            )
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
 ##############################################################################
-
-
-"""
-
-void N::IconDock::Configure(void)
-{
-  setViewMode                  (IconMode             ) ;
-  setIconSize                  (QSize(128,128)       ) ;
-  setGridSize                  (QSize(140,192)       ) ;
-  setDragDropMode              (DropOnly             ) ;
-  setResizeMode                (QListView::Adjust    ) ;
-  setWordWrap                  (true                 ) ;
-  setHorizontalScrollBarPolicy (Qt::ScrollBarAsNeeded) ;
-  setVerticalScrollBarPolicy   (Qt::ScrollBarAsNeeded) ;
-  setMinimumSize               (QSize(144,200)       ) ;
-}
-
-"""
