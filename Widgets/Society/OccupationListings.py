@@ -316,26 +316,26 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportBelongings                 ( self , UUIDs                      ) :
+  def ReportBelongings                ( self , UUIDs                       ) :
     ##########################################################################
-    time    . sleep                    ( 1.0                                 )
+    time   . sleep                    ( 1.0                                  )
     ##########################################################################
-    RELTAB  = self . Tables            [ "Relation"                          ]
-    REL     = Relation                 (                                     )
-    REL     . setT1                    ( "Occupation"                        )
-    REL     . setT2                    ( "People"                            )
-    REL     . setRelation              ( "Subordination"                     )
+    RELTAB = self . Tables            [ "Relation"                           ]
+    REL    = Relation                 (                                      )
+    REL    . setT1                    ( "Occupation"                         )
+    REL    . setT2                    ( "People"                             )
+    REL    . setRelation              ( "Subordination"                      )
     ##########################################################################
-    DB      = self . ConnectDB         (                                     )
+    DB     = self . ConnectDB         (                                      )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      REL   . set                      ( "first" , UUID                      )
-      CNT   = REL . CountSecond        ( DB , RELTAB                         )
+      REL  . set                      ( "first" , UUID                       )
+      CNT  = REL . CountSecond        ( DB , RELTAB                          )
       ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
+      self . emitAssignAmounts . emit ( str ( UUID ) , CNT                   )
     ##########################################################################
-    DB      . Close                    (                                     )
+    DB     . Close                    (                                      )
     ##########################################################################
     return
   ############################################################################
@@ -392,13 +392,13 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def startup                    ( self                                    ) :
+  @pyqtSlot          (                                                       )
+  def startup        ( self                                                ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
     ##########################################################################
-    self   . Go                  ( self . loading                            )
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
   ############################################################################
@@ -798,7 +798,6 @@ class OccupationListings           ( TreeDock                              ) :
     TRX    = self . Translations
     ##########################################################################
     mm     = self . AmountIndexMenu ( mm                                     )
-    ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )

@@ -51,16 +51,16 @@ from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
 from   AITK  . Essentials . Relation  import Relation
-##############################################################################
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . People     . People    import People
 ##############################################################################
 class OrganizationGroupView       ( IconDock                               ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu           = 1371434312
   ############################################################################
-  CrowdSubgroup = pyqtSignal  ( int , str                                    )
-  PeopleGroup   = pyqtSignal  ( int , str                                    )
+  OrganizationSubgroup = pyqtSignal ( str , int , str                        )
+  OrganizationGroup    = pyqtSignal ( str , int , str , str , QIcon          )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -114,12 +114,16 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     return 0
   ############################################################################
-  def ObtainUuidsQuery         ( self                                      ) :
+  def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    TABLE = self . Tables      [ "Tags"                                      ]
-    QQ    = f"select `uuid` from {TABLE} where ( `used` = 1 ) and ( `type` = 7 ) order by `id` asc ;"
+    TAGTAB = self . Tables          [ "Tags"                                 ]
+    ORDER  = self . getSortingOrder (                                        )
+    QQ     = f"""select `uuid` from {TAGTAB}
+                where ( `used` = 1 )
+                and ( `type` = 38 )
+                order by `id` {ORDER} ;"""
     ##########################################################################
-    return QQ
+    return " " . join               ( QQ . split ( )                         )
   ############################################################################
   def ObtainSubgroupUuids      ( self , DB                                 ) :
     ##########################################################################
@@ -322,18 +326,32 @@ class OrganizationGroupView       ( IconDock                               ) :
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
+      ########################################################################
       NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Crowds" , uuid , NAM            )
+      self . EditAllNames          ( self , "Organizations" , uuid , NAM     )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 2001                            ) :
+      ########################################################################
+      head = atItem . text         (                                         )
       tid  = self . Relation . get ( "t2"                                    )
-      self . CrowdSubgroup . emit  ( tid , str ( uuid )                      )
+      self . OrganizationSubgroup . emit ( head , tid , str ( uuid )         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 2002                            ) :
-      tid  = self . Relation . get ( "t2"                                    )
-      self . PeopleGroup   . emit  ( tid , str ( uuid )                      )
+      ########################################################################
+      icon    = atItem . icon      (                                         )
+      head    = atItem . text      (                                         )
+      tid     = self . Relation   . get  ( "t2"                              )
+      related = "Subordination"
+      self    . OrganizationGroup . emit ( head                            , \
+                                           tid                             , \
+                                           str ( uuid )                    , \
+                                           related                         , \
+                                           icon                              )
+      ########################################################################
       return True
     ##########################################################################
     return True
