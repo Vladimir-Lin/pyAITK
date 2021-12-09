@@ -435,36 +435,99 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot            (                                                     )
+  def Finding          ( self                                              ) :
+    ##########################################################################
+    L    = self . SearchLine
+    ##########################################################################
+    if                 ( L in [ False , None ]                             ) :
+      return
+    ##########################################################################
+    self . SearchLine = None
+    T    = L . text    (                                                     )
+    L    . deleteLater (                                                     )
+    ##########################################################################
+    if                 ( len ( T ) <= 0                                    ) :
+      return
+    ##########################################################################
+    self . Go          ( self . looking , ( T , )                            )
+    ##########################################################################
+    return
   ############################################################################
+  @pyqtSlot                            (                                     )
+  def Search                           ( self                              ) :
+    ##########################################################################
+    L      = LineEdit                  ( None , self . PlanFunc              )
+    OK     = self . attacheStatusBar   ( L , 1                               )
+    ##########################################################################
+    if                                 ( not OK                            ) :
+      ########################################################################
+      L    . deleteLater               (                                     )
+      self . Notify                    ( 1                                   )
+      ########################################################################
+      return
+    ##########################################################################
+    L      . blockSignals              ( True                                )
+    L      . editingFinished . connect ( self . Finding                      )
+    L      . blockSignals              ( False                               )
+    ##########################################################################
+    self   . Notify                    ( 0                                   )
+    ##########################################################################
+    MSG    = self . getMenuItem        ( "Search"                            )
+    L      . setPlaceholderText        ( MSG                                 )
+    L      . setFocus                  ( Qt . TabFocusReason                 )
+    ##########################################################################
+    self   . SearchLine = L
+    ##########################################################################
+    return
+  ############################################################################
+  def SearchingForT1                  ( self , name , Main , NameTable     ) :
+    ##########################################################################
+    if                                ( len ( name ) <= 0                  ) :
+      return
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    OCPTAB  = self . Tables           [ Main                                 ]
+    NAMTAB  = self . Tables           [ NameTable                            ]
+    LIC     = self . getLocality      (                                      )
+    LIKE    = f"%{name}%"
+    UUIDs   =                         [                                      ]
+    ##########################################################################
+    RQ      = f"select `uuid` from {OCPTAB} where ( `used` > 0 )"
+    QQ      = f"""select `uuid` from {NAMTAB}
+                  where ( `locality` = {LIC} )
+                  and ( `uuid` in ( {RQ} ) )
+                  and ( `name` like %s )
+                  group by `uuid` asc ;"""
+    DB      . QueryValues             ( QQ , ( LIKE , )                      )
+    ALL     = DB . FetchAll           (                                      )
+    ##########################################################################
+    DB      . Close                   (                                      )
+    ##########################################################################
+    if ( ( ALL in [ False , None ] ) or ( len ( ALL ) <= 0 ) )               :
+      ########################################################################
+      self  . Notify                  ( 1                                    )
+      ########################################################################
+      return
+    ##########################################################################
+    for U in ALL                                                             :
+      UUIDs . append                  ( U [ 0 ]                              )
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      ########################################################################
+      self  . Notify                  ( 1                                    )
+      ########################################################################
+      return
+    ##########################################################################
+    self . SearchKey = name
+    self . UUIDs     = UUIDs
+    self . Method    = "Searching"
+    ##########################################################################
+    self . loading                    (                                      )
+    ##########################################################################
+    return
   ############################################################################
 ##############################################################################
-
-"""
-    virtual QTreeWidgetItem * addItem (QString text,SUID uuid,int column = 0);
-    virtual QTreeWidgetItem * addItem (QIcon icon,QString text,SUID uuid,int column = 0);
-
-  signals:
-
-    DockSignals ;
-
-
-QTreeWidgetItem * N::TreeDock::addItem(QString text,SUID uuid,int column)
-{
-  NewTreeWidgetItem (IT                      ) ;
-  IT->setText       (column,text             ) ;
-  IT->setData       (column,Qt::UserRole,uuid) ;
-  addTopLevelItem   (IT                      ) ;
-  return IT                                    ;
-}
-
-QTreeWidgetItem * N::TreeDock::addItem(QIcon icon,QString text,SUID uuid,int column)
-{
-  NewTreeWidgetItem (IT                      ) ;
-  IT->setText       (column,text             ) ;
-  IT->setIcon       (column,icon             ) ;
-  IT->setData       (column,Qt::UserRole,uuid) ;
-  addTopLevelItem   (IT                      ) ;
-  return IT                                    ;
-}
-
-"""

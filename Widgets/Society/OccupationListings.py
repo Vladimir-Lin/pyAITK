@@ -54,7 +54,7 @@ from   AITK  . People     . People    import People
 ##############################################################################
 class OccupationListings           ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu        = 1371434312
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
@@ -110,13 +110,13 @@ class OccupationListings           ( TreeDock                              ) :
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
     self . setAcceptDrops          ( True                                    )
-    self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setDragEnabled          ( True                                    )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 320 , 640                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
   def setGrouping                ( self , group                            ) :
     ##########################################################################
@@ -154,45 +154,41 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Paste"      , self . Paste             )
-    self . LinkAction              ( "Search"     , self . Search            )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
+    self . LinkAction     ( "Insert"     , self . InsertItem                 )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
+    self . LinkAction     ( "Paste"      , self . Paste                      )
+    self . LinkAction     ( "Search"     , self . Search                     )
+    self . LinkAction     ( "Home"       , self . PageHome                   )
+    self . LinkAction     ( "End"        , self . PageEnd                    )
+    self . LinkAction     ( "PageUp"     , self . PageUp                     )
+    self . LinkAction     ( "PageDown"   , self . PageDown                   )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
-    self . LinkVoice               ( self . CommandParser                    )
+    self . LinkVoice      ( self . CommandParser                             )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked         ( self , item , column                         ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                      ( self . isItemPicked ( )                      ) :
-      if                    ( column != self . CurrentItem [ "Column" ]    ) :
-        self . removeParked (                                                )
-    ##########################################################################
-    self     . Notify       ( 0                                              )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -234,14 +230,10 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot             (                                                    )
+  def RenameItem        ( self                                             ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
+    self . goRenameItem ( 0                                                  )
     ##########################################################################
     return
   ############################################################################
@@ -270,30 +262,29 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Search                     ( self                                    ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
   def Paste                      ( self                                    ) :
     ##########################################################################
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                           (        dict                          )
-  def refresh                         ( self , JSON                        ) :
+  @pyqtSlot                        (        dict                             )
+  def refresh                      ( self , JSON                           ) :
     ##########################################################################
-    self    . clear                   (                                      )
+    self    . clear                (                                         )
     ##########################################################################
-    UUIDs   = JSON                    [ "UUIDs"                              ]
-    NAMEs   = JSON                    [ "NAMEs"                              ]
+    UUIDs   = JSON                 [ "UUIDs"                                 ]
+    NAMEs   = JSON                 [ "NAMEs"                                 ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
-      self  . addTopLevelItem         ( IT                                   )
+      IT    = self . PrepareItem   ( U , NAMEs [ U ]                         )
+      self  . addTopLevelItem      ( IT                                      )
     ##########################################################################
-    self    . emitNamesShow . emit    (                                      )
+    FMT     = self . getMenuItem   ( "DisplayTotal"                          )
+    MSG     = FMT  . format        ( len ( UUIDs )                           )
+    self    . setToolTip           ( MSG                                     )
+    ##########################################################################
+    self    . emitNamesShow . emit (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -348,6 +339,12 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def looking             ( self , name                                    ) :
+    ##########################################################################
+    self . SearchingForT1 ( name , "Occupations" , "NamesEditing"            )
+    ##########################################################################
+    return
+  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -365,7 +362,12 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    if                                ( self . Method in [ "Original" ]    ) :
+      self  . UUIDs =                 [                                      ]
+      UUIDs = self . ObtainsItemUuids ( DB                                   )
+    else                                                                     :
+      UUIDs = self . UUIDs
+    ##########################################################################
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
@@ -397,32 +399,6 @@ class OccupationListings           ( TreeDock                              ) :
       self . Prepare             (                                           )
     ##########################################################################
     self   . Go                  ( self . loading                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
-    ##########################################################################
-    TABLE = self . Tables        [ "Occupations"                             ]
-    ##########################################################################
-    QQ    = f"""select `uuid` from {TABLE}
-                  where ( `used` = 1 )
-                  order by `id` asc ;"""
-    ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
-    ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
-  ############################################################################
-  def TranslateAll              ( self                                     ) :
-    ##########################################################################
-    DB    = self . ConnectDB    (                                            )
-    if                          ( DB == None                               ) :
-      return
-    ##########################################################################
-    TABLE = self . Tables       [ "Names"                                    ]
-    FMT   = self . Translations [ "UI::Translating"                          ]
-    self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
-    ##########################################################################
-    DB    . Close               (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -503,6 +479,19 @@ class OccupationListings           ( TreeDock                              ) :
       return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
     ##########################################################################
     return                     [                                             ]
+  ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "occupation/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
+    ##########################################################################
+    return self . CreateDragMime ( self , 0 , mtype , message                )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
+    ##########################################################################
+    return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     formats = "people/uuids"
@@ -606,7 +595,7 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     TYPE    = "Occupation"
     PER     = People                (                                        )
-    RELTAB  = self . Tables         [ "Relation"                             ]
+    RELTAB  = self . Tables         [ "RelationPeople"                       ]
     DB      . LockWrites            ( [ RELTAB ]                             )
     PER     . ConnectToPeople       ( DB , RELTAB , UUID , TYPE , UUIDs      )
     DB      . UnlockTables          (                                        )
@@ -641,28 +630,28 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def AssureUuidItem          ( self , item , uuid , name                  ) :
     ##########################################################################
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    OCPTAB  = self . Tables        [ "Occupations"                           ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
+    OCPTAB = self . Tables    [ "Occupations"                                ]
+    NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
+    DB     . LockWrites       ( [ OCPTAB , NAMTAB                          ] )
     ##########################################################################
-    uuid    = int                  ( uuid                                    )
-    if                             ( uuid <= 0                             ) :
+    uuid   = int              ( uuid                                         )
+    if                        ( uuid <= 0                                  ) :
       ########################################################################
-      uuid  = DB . UnusedUuid      ( OCPTAB                                  )
-      DB    . UseUuid              ( OCPTAB , uuid                           )
+      uuid = DB . UnusedUuid  ( OCPTAB                                       )
+      DB   . UseUuid          ( OCPTAB , uuid                                )
     ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
-    DB      . Close                (                                         )
+    DB     . Close            (                                              )
     ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
+    item   . setData          ( 0 , Qt . UserRole , uuid                     )
     ##########################################################################
     return
   ############################################################################
@@ -821,19 +810,18 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     self   . AppendInsertAction    ( mm , 1101                               )
     self   . AppendRenameAction    ( mm , 1102                               )
-    mm     . addSeparator          (                                         )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
-      ########################################################################
-      mm   = self . GroupsMenu     ( mm , atItem                             )
-      mm   . addSeparator          (                                         )
       ########################################################################
       if                           ( self . EditAllNames != None           ) :
         ######################################################################
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
     ##########################################################################
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     mm     . addSeparator          (                                         )
+    ##########################################################################
+    if                             ( atItem not in [ False , None ]        ) :
+      ########################################################################
+      mm   = self . GroupsMenu     ( mm , atItem                             )
     ##########################################################################
     mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . SortingMenu    ( mm                                      )
@@ -898,12 +886,8 @@ class OccupationListings           ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( atItem , 0                              )
-      NAM  = self . Tables         [ "Names"                                 ]
+      NAM  = self . Tables         [ "NamesEditing"                          ]
       self . EditAllNames          ( self , "Occupation" , uuid , NAM        )
-      return True
-    ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
       return True
     ##########################################################################
     return True
