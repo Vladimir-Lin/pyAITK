@@ -283,37 +283,38 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     mtype   = self . DropInJSON     [ "Mime"                                 ]
     UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    atItem  = self . itemAt         ( mousePos                               )
+    CNT     = len                   ( UUIDs                                  )
+    title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
     if                              ( mtype in [ "people/uuids" ]          ) :
       ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
-      if                            ( self == sourceWidget                 ) :
-        MSG = f"移動{CNT}個人物"
-      else                                                                   :
-        MSG = f"從「{title}」複製{CNT}個人物"
+      if                            ( atItem in [ False , None ]           ) :
+        return False
+      ########################################################################
+      FMT   = self . getMenuItem    ( "JoinPeople"                           )
+      MSG   = FMT  . format         ( title , CNT                            )
       ########################################################################
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
     elif                            ( mtype in [ "picture/uuids" ]         ) :
       ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
-      if                            ( self == sourceWidget                 ) :
-        MSG = f"移動{CNT}張圖片"
-      else                                                                   :
-        MSG = f"從「{title}」複製{CNT}張圖片"
+      if                            ( atItem in [ False , None ]           ) :
+        return False
+      ########################################################################
+      FMT   = self . getMenuItem    ( "JoinPictures"                         )
+      MSG   = FMT  . format         ( title , CNT                            )
       ########################################################################
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
     elif                            ( mtype in [ "gallery/uuids" ]         ) :
       ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
       if                            ( self == sourceWidget                 ) :
-        MSG = f"移動{CNT}個圖庫"
+        FMT = self . getMenuItem    ( "MoveGalleries"                        )
+        MSG = FMT  . format         ( CNT                                    )
       else                                                                   :
-        MSG = f"從「{title}」複製{CNT}個圖庫"
+        FMT = self . getMenuItem    ( "JoinGalleries"                        )
+        MSG = FMT  . format         ( title , CNT                            )
       ########################################################################
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
@@ -350,36 +351,201 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
+  def dropPeople               ( self , source , pos , JSON                ) :
     ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("PeopleView::dropPeople")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
+    PUID , NAME = self . itemAtPos ( pos                                     )
+    if                             ( PUID <= 0                             ) :
+      return True
     ##########################################################################
-    return True
-  ############################################################################
-  def dropPictures             ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("PeopleView::dropPictures")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
+    self . Go ( self . PeopleAppending , ( PUID , NAME , JSON , )            )
     ##########################################################################
     return True
   ############################################################################
-  def dropGalleries            ( self , source , pos , JSOX                ) :
+  def dropPictures                 ( self , source , pos , JSON            ) :
     ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("PeopleView::dropGalleries")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
+    PUID , NAME = self . itemAtPos ( pos                                     )
+    if                             ( PUID <= 0                             ) :
+      return True
+    ##########################################################################
+    self . Go ( self . PicturesAppending , ( PUID , NAME , JSON , )          )
     ##########################################################################
     return True
   ############################################################################
+  def dropGalleries            ( self , source , pos , JSON                ) :
+    ##########################################################################
+    ATID , NAME = self . itemAtPos ( pos                                     )
+    ##########################################################################
+    ## 在內部移動
+    ##########################################################################
+    if                             ( self == sourceWidget                  ) :
+      ########################################################################
+      self . Go ( self . GalleriesMoving    , ( ATID , NAME , JSOX , )       )
+      ########################################################################
+      return True
+    ##########################################################################
+    ## 從外部加入
+    ##########################################################################
+    self   . Go ( self . GalleriesAppending , ( ATID , NAME , JSOX , )       )
+    ##########################################################################
+    return True
+  ############################################################################
+  ############################################################################
+  def GenerateMovingSQL       ( self , LAST , UUIDs                        ) :
+    ##########################################################################
+    RELTAB = self . Tables    [ "RelationPeople"                             ]
+    SQLs   =                  [                                              ]
+    ##########################################################################
+    LUID   = LAST + 10000
+    ##########################################################################
+    """
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      self . Relation . set   ( "second" , UUID                              )
+      WS   = self . Relation . ExactItem (                                   )
+      QQ   = f"update {RELTAB} set `position` = {LUID} {WS} ;"
+      SQLs . append           ( QQ                                           )
+      ########################################################################
+      LUID = LUID + 1
+    ##########################################################################
+    LUID   = 0
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      self . Relation . set   ( "second" , UUID                              )
+      WS   = self . Relation . ExactItem (                                   )
+      QQ   = f"update {RELTAB} set `position` = {LUID} {WS} ;"
+      SQLs . append           ( QQ                                           )
+      ########################################################################
+      LUID = LUID + 1
+    """
+    ##########################################################################
+    return SQLs
+  ############################################################################
+  def GalleriesMoving         ( self , atUuid , NAME , JSON                ) :
+    ##########################################################################
+    UUIDs  = JSON             [ "UUIDs"                                      ]
+    if                        ( len ( UUIDs ) <= 0                         ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit   (                                              )
+    self   . setBustle        (                                              )
+    ##########################################################################
+    RELTAB = self . Tables    [ "RelationPeople"                             ]
+    DB     . LockWrites       ( [ RELTAB                                   ] )
+    ##########################################################################
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
+    LUID   = PUIDs            [ -1                                           ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    ##########################################################################
+    self   . setVacancy       (                                              )
+    self   . GoRelax . emit   (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . loading          (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def GalleriesAppending       ( self , atUuid , NAME , JSON               ) :
+    ##########################################################################
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
+    LUID   = PUIDs             [ -1                                          ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def PeopleAppending          ( self , atUuid , NAME , JSON               ) :
+    ##########################################################################
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    GALM   = GalleryItem       (                                             )
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    GALM   . ConnectToPictures ( DB , RELTAB , atUuid , "People" , UUIDs     )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def PicturesAppending        ( self , atUuid , NAME , JSON               ) :
+    ##########################################################################
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    GALM   = GalleryItem       (                                             )
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    GALM   . ConnectToPictures ( DB , RELTAB , atUuid , "People" , UUIDs     )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
+    ##########################################################################
+    return
   ############################################################################
   def LineEditorFinished                ( self                             ) :
     ##########################################################################
