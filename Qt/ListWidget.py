@@ -107,31 +107,31 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   def defaultIcon       ( self                                             ) :
     return self . DefaultItemIcon
   ############################################################################
-  def focusInEvent      ( self , event                                     ) :
+  def focusInEvent            ( self , event                               ) :
     ##########################################################################
-    if                  ( self . focusIn ( event )                         ) :
+    if                        ( self . focusIn ( event )                   ) :
       return
     ##########################################################################
-    super ( QListWidget , self ) . focusInEvent ( event                      )
+    super ( ) . focusInEvent  ( event                                        )
     ##########################################################################
     return
   ############################################################################
-  def focusOutEvent     ( self , event                                     ) :
+  def focusOutEvent           ( self , event                               ) :
     ##########################################################################
-    if                  ( self . focusOut ( event )                        ) :
+    if                        ( self . focusOut ( event )                  ) :
       return
     ##########################################################################
-    super ( QListWidget , self ) . focusOutEvent ( event                     )
+    super ( ) . focusOutEvent ( event                                        )
     ##########################################################################
     return
   ############################################################################
-  def contextMenuEvent  ( self , event                                     ) :
+  def contextMenuEvent           ( self , event                            ) :
     ##########################################################################
-    if                  ( self . Menu ( event . pos ( ) )                  ) :
-      event . accept    (                                                    )
+    if                           ( self . Menu ( event . pos ( ) )         ) :
+      event . accept             (                                           )
       return
     ##########################################################################
-    super ( QListWidget , self ) . contextMenuEvent ( event                  )
+    super ( ) . contextMenuEvent ( event                                     )
     ##########################################################################
     return
   ############################################################################
@@ -170,7 +170,7 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
         return
     ##########################################################################
     if                  ( self . PassDragDrop                              ) :
-      super ( QListWidget , self ) . dragEnterEvent ( event                  )
+      super ( ) . dragEnterEvent ( event                                     )
       return
     ##########################################################################
     event . ignore      (                                                    )
@@ -184,7 +184,7 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
       return
     ##########################################################################
     if                  ( self . PassDragDrop                              ) :
-      super ( QListWidget , self ) . dragLeaveEvent ( event                  )
+      super ( ) . dragLeaveEvent ( event                                     )
       return
     ##########################################################################
     event . ignore      (                                                    )
@@ -199,7 +199,7 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
         return
     ##########################################################################
     if                  ( self . PassDragDrop                              ) :
-      super ( QListWidget , self ) . dragMoveEvent ( event                   )
+      super ( ) . dragMoveEvent ( event                                      )
       return
     ##########################################################################
     event . ignore      (                                                    )
@@ -214,7 +214,7 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
         return
     ##########################################################################
     if                  ( self . PassDragDrop                              ) :
-      super ( QListWidget , self ) . dropEvent ( event                       )
+      super ( ) . dropEvent ( event                                          )
       return
     ##########################################################################
     event . ignore      (                                                    )
@@ -230,7 +230,7 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
     if                  ( self . allowDrag ( self . dragDropMode ( ) )     ) :
       self . dragStart  ( event                                              )
     ##########################################################################
-    super ( QListWidget , self ) . mousePressEvent ( event                   )
+    super ( ) . mousePressEvent ( event                                      )
     ##########################################################################
     return
   ############################################################################
@@ -248,12 +248,12 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
         event  . accept (                                                    )
         moving = False
         ######################################################################
-        super ( QListWidget , self ) . mouseReleaseEvent ( event             )
+        super ( ) . mouseReleaseEvent ( event                                )
         ######################################################################
-        self   . ReleasePickings (                                           )
+        self   . ReleasePickings      (                                      )
     ##########################################################################
     if                  ( moving                                           ) :
-      super ( QListWidget , self ) . mouseMoveEvent ( event                  )
+      super   ( ) . mouseMoveEvent    ( event                                )
     ##########################################################################
     return
   ############################################################################
@@ -273,7 +273,7 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
       ########################################################################
       return
     ##########################################################################
-    super ( QListWidget , self ) . mouseReleaseEvent ( event                 )
+    super ( ) . mouseReleaseEvent ( event                                    )
     ##########################################################################
     return
   ############################################################################

@@ -25,21 +25,21 @@ import dlib
 import skimage
 import numpy as np
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
+from   PyQt5                               import QtCore
+from   PyQt5                               import QtGui
 ##############################################################################
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
-from   PyQt5 . QtCore                 import QSizeF
-from   PyQt5 . QtCore                 import QByteArray
+from   PyQt5 . QtCore                      import Qt
+from   PyQt5 . QtCore                      import QObject
+from   PyQt5 . QtCore                      import QPoint
+from   PyQt5 . QtCore                      import QPointF
+from   PyQt5 . QtCore                      import QSize
+from   PyQt5 . QtCore                      import QSizeF
+from   PyQt5 . QtCore                      import QByteArray
 ##############################################################################
-from   PyQt5 . QtGui                  import QColor
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QPixmap
-from   PyQt5 . QtGui                  import QImage
+from   PyQt5 . QtGui                       import QColor
+from   PyQt5 . QtGui                       import QIcon
+from   PyQt5 . QtGui                       import QPixmap
+from   PyQt5 . QtGui                       import QImage
 ##############################################################################
 class Picture     (                                                        ) :
   ############################################################################

@@ -53,7 +53,7 @@ from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 from   AITK  . Essentials . Relation  import Relation    as Relation
 from   AITK  . Calendars  . StarDate  import StarDate    as StarDate
 from   AITK  . Calendars  . Periode   import Periode     as Periode
-from   AITK  . Pictures   . Picture   import Picture     as PictureItem
+from   AITK  . Pictures   . Gallery   import Gallery     as Gallery
 ##############################################################################
 class PicturesView                ( IconDock                               ) :
   ############################################################################
@@ -323,47 +323,6 @@ class PicturesView                ( IconDock                               ) :
                                  ( uuid , JSOX , )                           )
     ##########################################################################
     return True
-  ############################################################################
-  def OrderingPUIDs           ( self , atUuid , UUIDs , PUIDs              ) :
-    ##########################################################################
-    atUuid    = int           ( atUuid                                       )
-    UUIDs     = list          ( map ( int , UUIDs )                          )
-    PUIDs     = list          ( map ( int , PUIDs )                          )
-    ##########################################################################
-    KUIDs     =               [                                              ]
-    for UUID in PUIDs                                                        :
-      if                      ( UUID not in UUIDs                          ) :
-        KUIDs . append        ( UUID                                         )
-    ##########################################################################
-    if                        ( atUuid < 0                                 ) :
-      for UUID in UUIDs                                                      :
-        KUIDs . append        ( UUID                                         )
-      return KUIDs
-    ##########################################################################
-    try                                                                      :
-      atPos   = KUIDs . index ( atUuid                                       )
-    except                                                                   :
-      for UUID in UUIDs                                                      :
-        KUIDs . append        ( UUID                                         )
-      return KUIDs
-    ##########################################################################
-    if                        ( atPos <= 0                                 ) :
-      for UUID in PUIDs                                                      :
-        UUIDs . append        ( UUID                                         )
-      return UUIDs
-    ##########################################################################
-    TOTAL     = len           ( KUIDs                                        )
-    REMAIN    =               ( TOTAL - atPos                                )
-    LEFTs     = KUIDs         [          : atPos                             ]
-    RIGHTs    = KUIDs         [ - REMAIN :                                   ]
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      LEFTs   . append        ( UUID                                         )
-    ##########################################################################
-    for UUID in RIGHTs                                                       :
-      LEFTs   . append        ( UUID                                         )
-    ##########################################################################
-    return LEFTs
   ############################################################################
   def GetLastestPosition    ( self , DB , LUID                             ) :
     ##########################################################################

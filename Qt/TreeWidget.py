@@ -72,9 +72,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
-    ## super ( QTreeWidget , self ) . __init__ ( parent                         )
-    super (                    ) . __init__ ( parent                         )
-    super ( VirtualGui  , self ) . __init__ (                                )
+    super (                   ) . __init__  ( parent                         )
+    super ( VirtualGui , self ) . __init__  (                                )
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )
     ##########################################################################
@@ -110,22 +109,31 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     raise NotImplementedError (                                              )
   ############################################################################
   def focusInEvent            ( self , event                               ) :
+    ##########################################################################
     if                        ( self . focusIn ( event )                   ) :
       return
-    super ( QTreeWidget , self ) . focusInEvent ( event                      )
+    ##########################################################################
+    super ( ) . focusInEvent  ( event                                        )
+    ##########################################################################
     return
   ############################################################################
   def focusOutEvent           ( self , event                               ) :
+    ##########################################################################
     if                        ( self . focusOut ( event )                  ) :
       return
-    super ( QTreeWidget , self ) . focusOutEvent ( event                     )
+    ##########################################################################
+    super ( ) . focusOutEvent ( event                                        )
+    ##########################################################################
     return
   ############################################################################
-  def contextMenuEvent        ( self , event                               ) :
-    if                        ( self . Menu ( event . pos ( ) )            ) :
-      event . accept          (                                              )
+  def contextMenuEvent           ( self , event                            ) :
+    ##########################################################################
+    if                           ( self . Menu ( event . pos ( ) )         ) :
+      event . accept             (                                           )
       return
-    super ( QTreeWidget , self ) . contextMenuEvent ( event                  )
+    ##########################################################################
+    super ( ) . contextMenuEvent ( event                                     )
+    ##########################################################################
     return
   ############################################################################
   def closeEvent           ( self , event                                  ) :
@@ -163,7 +171,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
         return
     ##########################################################################
     if                  ( self . PassDragDrop                              ) :
-      super ( QTreeWidget , self ) . dragEnterEvent ( event                  )
+      super ( ) . dragEnterEvent ( event                                     )
       return
     ##########################################################################
     event . ignore      (                                                    )
@@ -177,7 +185,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
       return
     ##########################################################################
     if                  ( self . PassDragDrop                              ) :
-      super ( QTreeWidget , self ) . dragLeaveEvent ( event                  )
+      super ( ) . dragLeaveEvent ( event                                     )
       return
     ##########################################################################
     event . ignore      (                                                    )
@@ -192,7 +200,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
         return
     ##########################################################################
     if                  ( self . PassDragDrop                              ) :
-      super ( QTreeWidget , self ) . dragMoveEvent ( event                   )
+      super ( ) . dragMoveEvent ( event                                      )
       return
     ##########################################################################
     event . ignore      (                                                    )
@@ -207,7 +215,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
         return
     ##########################################################################
     if                  ( self . PassDragDrop                              ) :
-      super ( QTreeWidget , self ) . dropEvent ( event                       )
+      super ( ) . dropEvent ( event                                          )
       return
     ##########################################################################
     event . ignore      (                                                    )
@@ -223,7 +231,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     if                  ( self . allowDrag ( self . dragDropMode ( ) )     ) :
       self . dragStart  ( event                                              )
     ##########################################################################
-    super ( QTreeWidget , self ) . mousePressEvent ( event                   )
+    super ( ) . mousePressEvent ( event                                      )
     ##########################################################################
     return
   ############################################################################
@@ -241,12 +249,12 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
         event  . accept (                                                    )
         moving = False
         ######################################################################
-        super ( QTreeWidget , self ) . mouseReleaseEvent ( event             )
+        super ( ) . mouseReleaseEvent ( event                                )
         ######################################################################
         self   . ReleasePickings (                                           )
     ##########################################################################
     if                  ( moving                                           ) :
-      super ( QTreeWidget , self ) . mouseMoveEvent ( event                  )
+      super   ( ) . mouseMoveEvent    ( event                                )
     ##########################################################################
     return
   ############################################################################
@@ -266,7 +274,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
       ########################################################################
       return
     ##########################################################################
-    super ( QTreeWidget , self ) . mouseReleaseEvent ( event                 )
+    super ( ) . mouseReleaseEvent ( event                                    )
     ##########################################################################
     return
   ############################################################################

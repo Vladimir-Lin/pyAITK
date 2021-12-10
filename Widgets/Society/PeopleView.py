@@ -57,10 +57,11 @@ from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
 from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
-from   AITK  . Essentials . Relation  import Relation
-from   AITK  . Calendars  . StarDate  import StarDate
-from   AITK  . Calendars  . Periode   import Periode
-from   AITK  . People     . People    import People
+from   AITK  . Essentials . Relation  import Relation    as Relation
+from   AITK  . Calendars  . StarDate  import StarDate    as StarDate
+from   AITK  . Calendars  . Periode   import Periode     as Periode
+from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
+from   AITK  . People     . People    import People      as PeopleItem
 ##############################################################################
 class PeopleView                   ( IconDock                              ) :
   ############################################################################
@@ -75,13 +76,17 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 60
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 60
+    self . SortOrder          = "asc"
+    self . SearchLine         = None
+    self . SearchKey          = ""
+    self . UUIDs              = [                                            ]
     ##########################################################################
-    self . Grouping = "Original"
-    ## self . Grouping = "Subordination"
-    ## self . Grouping = "Reverse"
+    self . Grouping           = "Original"
+    ## self . Grouping           = "Subordination"
+    ## self . Grouping           = "Reverse"
     ##########################################################################
     self . dockingPlace       = Qt . BottomDockWidgetArea
     ##########################################################################
@@ -91,8 +96,8 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
+    self . setAcceptDrops          ( True                                    )
     self . setDragEnabled          ( True                                    )
-    ## self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
@@ -215,30 +220,30 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                    ( self                                    ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel        ( "Label"      , self . windowTitle ( )     )
-    self . LinkAction            ( "Refresh"    , self . startup             )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction            ( "Insert"     , self . InsertItem          )
-    self . LinkAction            ( "Rename"     , self . RenamePeople        )
-    self . LinkAction            ( "Delete"     , self . DeleteItems         )
-    self . LinkAction            ( "Cut"        , self . DeleteItems         )
-    self . LinkAction            ( "Copy"       , self . CopyItems           )
-    self . LinkAction            ( "Paste"      , self . PasteItems          )
-    self . LinkAction            ( "Search"     , self . Search              )
-    self . LinkAction            ( "Home"       , self . PageHome            )
-    self . LinkAction            ( "End"        , self . PageEnd             )
-    self . LinkAction            ( "PageUp"     , self . PageUp              )
-    self . LinkAction            ( "PageDown"   , self . PageDown            )
+    self . LinkAction     ( "Insert"     , self . InsertItem                 )
+    self . LinkAction     ( "Rename"     , self . RenamePeople               )
+    self . LinkAction     ( "Delete"     , self . DeleteItems                )
+    self . LinkAction     ( "Cut"        , self . DeleteItems                )
+    self . LinkAction     ( "Copy"       , self . CopyItems                  )
+    self . LinkAction     ( "Paste"      , self . PasteItems                 )
+    self . LinkAction     ( "Search"     , self . Search                     )
+    self . LinkAction     ( "Home"       , self . PageHome                   )
+    self . LinkAction     ( "End"        , self . PageEnd                    )
+    self . LinkAction     ( "PageUp"     , self . PageUp                     )
+    self . LinkAction     ( "PageDown"   , self . PageDown                   )
     ##########################################################################
-    self . LinkAction            ( "SelectAll"  , self . SelectAll           )
-    self . LinkAction            ( "SelectNone" , self . SelectNone          )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
-    self . LinkVoice             ( self . CommandParser                      )
+    self . LinkVoice      ( self . CommandParser                             )
     ##########################################################################
     return True
   ############################################################################
@@ -326,69 +331,217 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+  def dropMoving           ( self , sourceWidget , mimeData , mousePos     ) :
     ##########################################################################
-    if                         ( self . droppingAction                     ) :
+    if                     ( self . droppingAction                         ) :
       return False
     ##########################################################################
-    if                         ( sourceWidget != self                      ) :
+    if                     ( sourceWidget != self                          ) :
       return True
     ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
+    atItem = self . itemAt ( mousePos                                        )
+    if                     ( atItem in [ False , None ]                    ) :
       return False
-    if                         ( atItem . isSelected ( )                   ) :
+    if                     ( atItem . isSelected ( )                       ) :
       return False
-    ##########################################################################
     ##########################################################################
     return True
   ############################################################################
   def acceptPeopleDrop         ( self                                      ) :
     return True
   ############################################################################
-  def dropPeople                     ( self , source , pos , JSOX          ) :
+  def dropPeople                   ( self , source , pos , JSOX            ) :
     ##########################################################################
-    ATID , TEXT = self . itemAtPos   ( pos                                   )
+    ATID , NAME = self . itemAtPos ( pos                                     )
     ##########################################################################
-    if                               ( sourceWidget != self                ) :
-      return self . appendPeopleInto ( source , pos , ATID , TEXT , JSOX     )
+    ## 在內部移動
     ##########################################################################
-    self . movePeopleTo              (          pos , ATID , TEXT , JSOX     )
+    if                             ( self == sourceWidget                  ) :
+      ########################################################################
+      self . Go ( self . PeopleMoving    , ( ATID , NAME , JSOX , )          )
+      ########################################################################
+      return True
+    ##########################################################################
+    ## 從外部加入
+    ##########################################################################
+    self   . Go ( self . PeopleAppending , ( ATID , NAME , JSOX , )          )
     ##########################################################################
     return True
   ############################################################################
   def acceptPictureDrop        ( self                                      ) :
     return True
   ############################################################################
-  def dropPictures                 ( self , source , pos , JSOX            ) :
+  def dropPictures                 ( self , source , pos , JSON            ) :
     ##########################################################################
     PUID , NAME = self . itemAtPos ( pos                                     )
     if                             ( PUID <= 0                             ) :
       return True
     ##########################################################################
-    print("PeopleView::dropPictures", PUID , " - " , NAME , " at " , pos )
-    print(JSOX)
+    self . Go ( self . PicturesAppending , ( PUID , NAME , JSON , )          )
     ##########################################################################
     return True
   ############################################################################
-  def movePeopleTo             ( self , pos , PUID , NAME , JSOX           ) :
+  def GetLastestPosition    ( self , DB , LUID                             ) :
     ##########################################################################
-    print ( "Move after : " , PUID , " - " , NAME , " at " , pos )
-    print ( JSOX )
+    RELTAB = self . Tables  [ "RelationPeople"                               ]
     ##########################################################################
-    return True
+    ITEM   = "`position`"
+    OPTS   = ""
+    LMTS   = "limit 0 , 1"
+    ##########################################################################
+    self   . Relation . set ( "second" , LUID                                )
+    QQ     = self . Relation . ExactColumn ( RELTAB , ITEM , OPTS , LMTS     )
+    ##########################################################################
+    DB     . Query          ( QQ                                             )
+    RR     = DB . FetchOne  (                                                )
+    ##########################################################################
+    if                      ( RR in [ False , None ]                       ) :
+      return 0
+    ##########################################################################
+    if                      ( len ( RR ) != 1                              ) :
+      return 0
+    ##########################################################################
+    return int              ( RR [ 0 ]                                       )
   ############################################################################
-  def appendPeopleInto         ( self , source , pos , PUID , NAME , JSOX  ) :
+  def GenerateMovingSQL       ( self , LAST , UUIDs                        ) :
     ##########################################################################
-    print ( "Append after : " , PUID , " - " , NAME , " at " , pos )
-    print ( JSOX )
+    RELTAB = self . Tables    [ "RelationPeople"                             ]
+    SQLs   =                  [                                              ]
     ##########################################################################
-    return True
+    LUID   = LAST + 10000
+    ##########################################################################
+    """
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      self . Relation . set   ( "second" , UUID                              )
+      WS   = self . Relation . ExactItem (                                   )
+      QQ   = f"update {RELTAB} set `position` = {LUID} {WS} ;"
+      SQLs . append           ( QQ                                           )
+      ########################################################################
+      LUID = LUID + 1
+    ##########################################################################
+    LUID   = 0
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      self . Relation . set   ( "second" , UUID                              )
+      WS   = self . Relation . ExactItem (                                   )
+      QQ   = f"update {RELTAB} set `position` = {LUID} {WS} ;"
+      SQLs . append           ( QQ                                           )
+      ########################################################################
+      LUID = LUID + 1
+    """
+    ##########################################################################
+    return SQLs
+  ############################################################################
+  def PeopleMoving            ( self , atUuid , NAME , JSON                ) :
+    ##########################################################################
+    UUIDs  = JSON             [ "UUIDs"                                      ]
+    if                        ( len ( UUIDs ) <= 0                         ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit   (                                              )
+    self   . setBustle        (                                              )
+    ##########################################################################
+    RELTAB = self . Tables    [ "RelationPeople"                             ]
+    DB     . LockWrites       ( [ RELTAB                                   ] )
+    ##########################################################################
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
+    LUID   = PUIDs            [ -1                                           ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    ##########################################################################
+    self   . setVacancy       (                                              )
+    self   . GoRelax . emit   (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . loading          (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def PeopleAppending          ( self , atUuid , NAME , JSON               ) :
+    ##########################################################################
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
+    LUID   = PUIDs             [ -1                                          ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def PicturesAppending        ( self , atUuid , NAME , JSON               ) :
+    ##########################################################################
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    GALM   = GalleryItem       (                                             )
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    GALM   . ConnectToPictures ( DB , RELTAB , atUuid , "People" , UUIDs     )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
+    ##########################################################################
+    return
   ############################################################################
   def Prepare                  ( self                                      ) :
     ##########################################################################
     self . assignSelectionMode ( "ContiguousSelection"                       )
     self . setPrepared         ( True                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def looking             ( self , name                                    ) :
+    ##########################################################################
+    self . SearchingForT2 ( name , "People" , "Names"                        )
     ##########################################################################
     return
   ############################################################################
@@ -407,8 +560,38 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Search                       ( self                                  ) :
+  def RemoveItems                     ( self , UUIDs                       ) :
     ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      return
+    ##########################################################################
+    RELTAB = self . Tables            [ "Relation"                           ]
+    SQLs   =                          [                                      ]
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      self . Relation . set           ( "second" , UUID                      )
+      QQ   = self . Relation . Delete ( RELTAB                               )
+      SQLs . append                   ( QQ                                   )
+    ##########################################################################
+    DB     = self . ConnectDB         (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit           (                                      )
+    self   . setBustle                (                                      )
+    DB     . LockWrites               ( [ RELTAB                           ] )
+    ##########################################################################
+    TITLE  = "RemovePictureItems"
+    self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
+    ##########################################################################
+    DB     . UnlockTables             (                                      )
+    self   . setVacancy               (                                      )
+    self   . GoRelax . emit           (                                      )
+    ##########################################################################
+    DB     . Close                    (                                      )
+    ##########################################################################
+    self   . loading                  (                                      )
     ##########################################################################
     return
   ############################################################################
@@ -621,6 +804,9 @@ class PeopleView                   ( IconDock                              ) :
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
+    if ( self . RunGroupsMenu ( at , uuid , atItem ) )                       :
+      return True
+    ##########################################################################
     if                             ( self . RunSortingMenu     ( at )      ) :
       ########################################################################
       self . clear                 (                                         )
@@ -652,9 +838,6 @@ class PeopleView                   ( IconDock                              ) :
       ########################################################################
       self . RenamePeople          (                                         )
       ########################################################################
-      return True
-    ##########################################################################
-    if ( self . RunGroupsMenu ( at , uuid , atItem ) )                       :
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
