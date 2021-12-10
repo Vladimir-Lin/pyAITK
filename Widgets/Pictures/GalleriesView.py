@@ -64,7 +64,7 @@ from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
 ##############################################################################
 class GalleriesView                ( IconDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
   ############################################################################
@@ -72,17 +72,17 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 60
+    self . Total        =  0
+    self . StartId      =  0
+    self . Amount       = 60
+    self . SortOrder    = "asc"
     ##########################################################################
-    self . Grouping = "Original"
-    ## self . Grouping = "Subordination"
-    ## self . Grouping = "Reverse"
+    self . Grouping     = "Original"
+    self . OldGrouping  = "Original"
+    ## self . Grouping     = "Subordination"
+    ## self . Grouping     = "Reverse"
     ##########################################################################
-    self . GroupOrder = "asc"
-    ##########################################################################
-    self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingPlace = Qt . BottomDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
     self . Relation . setT2        ( "Gallery"                               )
@@ -92,13 +92,12 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     self . setDragEnabled          ( True                                    )
     self . setAcceptDrops          ( True                                    )
-    ## self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                ( self                                       ) :
-    return QSize              ( 840 , 800                                    )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
   def setGrouping             ( self , group                               ) :
     self . Grouping = group
@@ -106,13 +105,6 @@ class GalleriesView                ( IconDock                              ) :
   ############################################################################
   def getGrouping             ( self                                       ) :
     return self . Grouping
-  ############################################################################
-  def setGroupOrder           ( self , order                               ) :
-    self . GroupOrder = order
-    return self . GroupOrder
-  ############################################################################
-  def getGroupOrder           ( self                                       ) :
-    return self . GroupOrder
   ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
@@ -130,20 +122,20 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return 0
   ############################################################################
-  def FetchRegularDepotCount   ( self , DB                                 ) :
+  def FetchRegularDepotCount ( self , DB                                   ) :
     ##########################################################################
-    TABLE  = self . Tables     [ "Galleries"                                 ]
-    QQ     = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
-    DB     . Query             ( QQ                                          )
-    ONE    = DB . FetchOne     (                                             )
+    GALTAB = self . Tables   [ "Galleries"                                   ]
+    QQ     = f"select count(*) from {GALTAB} where ( `used` = 1 ) ;"
+    DB     . Query           ( QQ                                            )
+    ONE    = DB . FetchOne   (                                               )
     ##########################################################################
-    if                         ( ONE == None                               ) :
+    if                       ( ONE == None                                 ) :
       return 0
     ##########################################################################
-    if                         ( len ( ONE ) <= 0                          ) :
+    if                       ( len ( ONE ) <= 0                            ) :
       return 0
     ##########################################################################
-    return ONE                 [ 0                                           ]
+    return ONE               [ 0                                             ]
   ############################################################################
   def FetchGroupMembersCount             ( self , DB                       ) :
     ##########################################################################
@@ -157,24 +149,24 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery            ( self                                   ) :
+  def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    TABLE  = self . Tables        [ "Galleries"                              ]
+    GALTAB = self . Tables          [ "Galleries"                            ]
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder (                                          )
-    QQ     = f"""select `uuid` from {TABLE}
+    ORDER  = self . getSortingOrder (                                        )
+    QQ     = f"""select `uuid` from {GALTAB}
                  where ( `used` = 1 )
                  order by `id` {ORDER}
                  limit {SID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join             ( QQ . split ( )                           )
+    return " " . join               ( QQ . split ( )                         )
   ############################################################################
   def ObtainSubgroupUuids      ( self , DB                                 ) :
     ##########################################################################
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder ( )
+    ORDER  = self . getSortingOrder (                                        )
     LMTS   = f"limit {SID} , {AMOUNT}"
     RELTAB = self . Tables [ "Relation" ]
     ##########################################################################
@@ -216,25 +208,25 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                    ( self                                    ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel        ( "Label"      , self . windowTitle ( )     )
-    self . LinkAction            ( "Refresh"    , self . startup             )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction            ( "Insert"     , self . InsertItem          )
-    self . LinkAction            ( "Delete"     , self . DeleteItems         )
-    self . LinkAction            ( "Home"       , self . PageHome            )
-    self . LinkAction            ( "End"        , self . PageEnd             )
-    self . LinkAction            ( "PageUp"     , self . PageUp              )
-    self . LinkAction            ( "PageDown"   , self . PageDown            )
+    self . LinkAction     ( "Insert"     , self . InsertItem                 )
+    self . LinkAction     ( "Delete"     , self . DeleteItems                )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
     ##########################################################################
-    self . LinkAction            ( "SelectAll"  , self . SelectAll           )
-    self . LinkAction            ( "SelectNone" , self . SelectNone          )
+    self . LinkAction     ( "Home"       , self . PageHome                   )
+    self . LinkAction     ( "End"        , self . PageEnd                    )
+    self . LinkAction     ( "PageUp"     , self . PageUp                     )
+    self . LinkAction     ( "PageDown"   , self . PageDown                   )
     ##########################################################################
-    self . LinkAction            ( "Rename"     , self . RenamePeople        )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
     return True
   ############################################################################
@@ -243,13 +235,13 @@ class GalleriesView                ( IconDock                              ) :
     self . LinkAction      ( "Refresh"    , self . startup      , False      )
     self . LinkAction      ( "Insert"     , self . InsertItem   , False      )
     self . LinkAction      ( "Delete"     , self . DeleteItems  , False      )
+    self . LinkAction      ( "Rename"     , self . RenameItem   , False      )
     self . LinkAction      ( "Home"       , self . PageHome     , False      )
     self . LinkAction      ( "End"        , self . PageEnd      , False      )
     self . LinkAction      ( "PageUp"     , self . PageUp       , False      )
     self . LinkAction      ( "PageDown"   , self . PageDown     , False      )
     self . LinkAction      ( "SelectAll"  , self . SelectAll    , False      )
     self . LinkAction      ( "SelectNone" , self . SelectNone   , False      )
-    self . LinkAction      ( "Rename"     , self . RenamePeople , False      )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -258,8 +250,8 @@ class GalleriesView                ( IconDock                              ) :
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "people/uuids"
-    message = "選擇了{0}個人物"
+    mtype   = "gallery/uuids"
+    message = "選擇了{0}個圖庫"
     ##########################################################################
     return self . CreateDragMime ( self , mtype , message                    )
   ############################################################################
@@ -269,11 +261,15 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids;picture/uuids"
-    return self . MimeType    ( mime , formats                               )
+  def allowedMimeTypes     ( self , mime                                   ) :
+    FMTs    =              [ "people/uuids"                                , \
+                             "gallery/uuids"                               , \
+                             "picture/uuids"                                 ]
+    formats = ";" . join   ( FMTs                                            )
+    return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
+    ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
   def dropNew                       ( self                                 , \
@@ -355,6 +351,25 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
+  def acceptGalleriesDrop ( self                                           ) :
+    ##########################################################################
+    ALLOWED =             [ "Subordination" , "Reverse"                      ]
+    ##########################################################################
+    if                    ( self . Grouping not in ALLOWED                 ) :
+      return False
+    ##########################################################################
+    return True
+  ############################################################################
+  def dropGalleries            ( self , source , pos , JSOX                ) :
+    ##########################################################################
+    atItem = self . itemAt ( pos )
+    print("PeopleView::dropGalleries")
+    print(JSOX)
+    if ( atItem is not None ) :
+      print("TO:",atItem.text())
+    ##########################################################################
+    return True
+  ############################################################################
   def Prepare                  ( self                                      ) :
     ##########################################################################
     self . assignSelectionMode ( "ContiguousSelection"                       )
@@ -362,7 +377,7 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def RenamePeople                 ( self                                  ) :
+  def RenameItem                   ( self                                  ) :
     ##########################################################################
     ##########################################################################
     return
@@ -393,7 +408,7 @@ class GalleriesView                ( IconDock                              ) :
     mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"   ]          )
+    mm     = self . AppendInsertAction  ( mm , 1101                          )
     if                             ( uuid > 0                              ) :
       mm   . addSeparator          (                                         )
       mm   . addAction             ( 1201 ,  TRX [ "UI::PersonalGallery"   ] )
@@ -404,6 +419,7 @@ class GalleriesView                ( IconDock                              ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
     ##########################################################################
+    self   . SortingMenu           ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
@@ -421,11 +437,25 @@ class GalleriesView                ( IconDock                              ) :
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
+    if                             ( self . RunSortingMenu     ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
+      ########################################################################
+      self . clear                 (                                         )
       self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
