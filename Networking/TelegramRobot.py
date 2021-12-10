@@ -96,6 +96,7 @@ class TelegramRobot (                                                      ) :
     ACCOUNT = JSON [ "Account"                                               ]
     BEAU    = JSON [ "Beau"                                                  ]
     MSG     = JSON [ "Message"                                               ]
+    CHATID  = int  ( ACCOUNT                                                 )
     self . TelegramUpdater . bot . sendMessage ( chat_id = ACCOUNT , text = MSG )
     ##########################################################################
     MSG     = f"Sent {ACCOUNT} Message for {BEAU}"
