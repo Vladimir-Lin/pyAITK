@@ -29,20 +29,23 @@ from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
+from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QFileDialog
+from   PyQt5 . QtWidgets              import QAbstractItemView
 from   PyQt5 . QtWidgets              import QTreeWidget
 from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from         . TreeWidget             import TreeWidget as TreeWidget
-from         . AttachDock             import AttachDock as AttachDock
-from         . LineEdit               import LineEdit   as LineEdit
-from         . ComboBox               import ComboBox   as ComboBox
-from         . SpinBox                import SpinBox    as SpinBox
+from         . MenuManager            import MenuManager as MenuManager
+from         . TreeWidget             import TreeWidget  as TreeWidget
+from         . AttachDock             import AttachDock  as AttachDock
+from         . LineEdit               import LineEdit    as LineEdit
+from         . ComboBox               import ComboBox    as ComboBox
+from         . SpinBox                import SpinBox     as SpinBox
 ##############################################################################
 class TreeDock                ( TreeWidget , AttachDock                    ) :
   ############################################################################
@@ -585,6 +588,49 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     self . Grouping  = "Searching"
     ##########################################################################
     self . loading                    (                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def defaultPaste                  ( self , func                          ) :
+    ##########################################################################
+    T = qApp . clipboard ( ) . text (                                        )
+    ##########################################################################
+    if                              ( len ( T ) <= 0                       ) :
+      return
+    ##########################################################################
+    self . Go                       ( func , ( text , )                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def defaultImport                      ( self , func                     ) :
+    ##########################################################################
+    FILTERS       = self . Translations  [ "UI::PlainTextFiles"              ]
+    Filename , Ok = QFileDialog . getOpenFileName                          ( \
+                      self                                                 , \
+                      self . windowTitle (                               ) , \
+                      ""                                                   , \
+                      FILTERS                                                )
+    ##########################################################################
+    if                                   ( len ( Filename ) <= 0           ) :
+      return
+    ##########################################################################
+    BODY          = ""
+    with open                            ( Filename , "rb" ) as f            :
+      BODY        = f . read             (                                   )
+    ##########################################################################
+    if                                   ( len ( BODY ) <= 0               ) :
+      return
+    ##########################################################################
+    text          = ""
+    try                                                                      :
+      text        = BODY . decode        ( "utf-8"                           )
+    except                                                                   :
+      return
+    ##########################################################################
+    if                                   ( len ( text ) <= 0               ) :
+      return
+    ##########################################################################
+    self          . Go                   ( func , ( text , )                 )
     ##########################################################################
     return
 ##############################################################################

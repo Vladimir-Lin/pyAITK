@@ -831,6 +831,16 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def InsertItem              ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
+  def defaultInsertItem       ( self   , column        , name , func       ) :
+    ##########################################################################
+    item = QTreeWidgetItem    (                                              )
+    item . setData            ( column , Qt . UserRole , 0                   )
+    self . addTopLevelItem    ( item                                         )
+    line = self . setLineEdit ( item   , column        , name , func         )
+    line . setFocus           ( Qt . TabFocusReason                          )
+    ##########################################################################
+    return                    ( item , line                                  )
+  ############################################################################
   def DeleteItems             ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
@@ -901,7 +911,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def Menu                    ( self , pos                                 ) :
     raise NotImplementedError (                                              )
   ############################################################################
-  @pyqtSlot()
+  @pyqtSlot                   (                                              )
   def startup                 ( self                                       ) :
     raise NotImplementedError (                                              )
 ##############################################################################
