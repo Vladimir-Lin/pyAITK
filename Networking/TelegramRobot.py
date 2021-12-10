@@ -44,7 +44,6 @@ class TelegramRobot (                                                      ) :
                    Options  = { }                                          ) :
     ##########################################################################
     self . TelegramLocker     = threading . Lock (                           )
-    self . Watcher            = None
     self . DebugLogger        = None
     self . Account            = Account
     self . Token              = Token
@@ -106,7 +105,13 @@ class TelegramRobot (                                                      ) :
   ############################################################################
   def AcceptCall     ( self , update: Update , context: CallbackContext    ) :
     ##########################################################################
-    print(update.effective_chat.id, update.message.text)
+    if               ( self . Reply in [ False , None ]                    ) :
+      return
+    ##########################################################################
+    Account = update.effective_chat.id
+    Account = f"{Account}"
+    Message = update . message . text
+    self . Reply     ( Account , "Reply" , Message                           )
     ##########################################################################
     return
   ############################################################################
