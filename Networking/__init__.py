@@ -7,7 +7,6 @@ from . HttpRPC          import HttpRPC          as HttpRPC
 from . SkypeRobot       import SkypeRobot       as SkypeRobot
 from . SkypeRobot       import SkypeWatcher     as SkypeWatcher
 from . TelegramRobot    import TelegramRobot    as TelegramRobot
-from . TelegramRobot    import TelegramWatcher  as TelegramWatcher
 from . LineRobot        import LineRobot        as LineRobot
 from . LineRobot        import LineWatcher      as LineWatcher
 from . TLD              import TLD              as TLD
@@ -24,6 +23,7 @@ from . WSS              import WssHttpRequest   as WssHttpRequest
 ##############################################################################
 __all__ = [ "RequestsDownload"                                             , \
             "HttpRPC"                                                      , \
+            "TelegramRobot"                                                , \
             "SkypeRobot"                                                   , \
             "SkypeWatcher"                                                 , \
             "TLD"                                                          , \

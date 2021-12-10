@@ -26,49 +26,31 @@ from   http     . server                   import HTTPServer
 from   http     . server                   import BaseHTTPRequestHandler
 from   http     . server                   import ThreadingHTTPServer
 ##############################################################################
-## from   telegram . ext                      import Updater
-##############################################################################
-from   . HttpRPC                           import HttpRPC as HttpRPC
-##############################################################################
-class TelegramWatcher           ( HttpRPC                                  ) :
-  ############################################################################
-  ## 檢查帳號密碼
-  ############################################################################
-  def isAuthorized              ( self                                     ) :
-    ##########################################################################
-    ##########################################################################
-    return True
-  ############################################################################
-  ## 掛入額外資訊
-  ############################################################################
-  def Attache                   ( self                                     ) :
-    ##########################################################################
-    ##########################################################################
-    return True
-  ############################################################################
-  def Dispatch                  ( self , Path , Headers , JSON             ) :
-    ##########################################################################
-    ##########################################################################
-    return                      { "Answer"     : 202                         ,
-                                    "Response" :                             {
-                                    "Answer"   : "Yes"                     } }
+import telegram
+from   telegram                            import Update
+from   telegram                            import InputTextMessageContent
+from   telegram                            import InlineQueryResultArticle
+from   telegram . ext                      import Updater
+from   telegram . ext                      import CallbackContext
+from   telegram . ext                      import CommandHandler
+from   telegram . ext                      import MessageHandler
+from   telegram . ext                      import Filters
 ##############################################################################
 class TelegramRobot (                                                      ) :
   ############################################################################
   def __init__   ( self                                                      ,
-                   Username = ""                                             ,
-                   Password = ""                                             ,
                    Account  = ""                                             ,
+                   Token    = ""                                             ,
                    Options  = { }                                          ) :
     ##########################################################################
-    self . TelegramLocker = threading . Lock (                               )
-    self . Watcher        = None
-    self . DebugLogger    = None
-    self . Running        = False
-    self . Account        = Account
-    self . Username       = Username
-    self . Password       = Password
-    self . HttpPlugin     = None
+    self . TelegramLocker     = threading . Lock (                           )
+    self . Watcher            = None
+    self . DebugLogger        = None
+    self . Account            = Account
+    self . Token              = Token
+    self . TelegramUpdater    = None
+    self . TelegramDispatcher = None
+    self . Reply              = None
     self . SetOptions ( Options )
     ##########################################################################
     return
@@ -77,7 +59,9 @@ class TelegramRobot (                                                      ) :
     return
   ############################################################################
   def SetOptions ( self , Options                                          ) :
+    ##########################################################################
     self . Options = Options
+    ##########################################################################
     return
   ############################################################################
   def debug                        ( self , message , way = "info"         ) :
@@ -104,4 +88,50 @@ class TelegramRobot (                                                      ) :
   ############################################################################
   def isWorking         ( self                                             ) :
     return self . Working
+  ############################################################################
+  def append       ( self , JSON                                           ) :
+    ##########################################################################
+    if             ( self . TelegramUpdater in [ False , None ]            ) :
+      return
+    ##########################################################################
+    ACCOUNT = JSON [ "Account"                                               ]
+    BEAU    = JSON [ "Beau"                                                  ]
+    MSG     = JSON [ "Message"                                               ]
+    TelegramUpdater . bot . sendMessage ( chat_id = ACCOUNT , text = MSG     )
+    ##########################################################################
+    MSG     = f"Sent {ACCOUNT} Message for {BEAU}"
+    self    . debug           ( MSG                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def AcceptCall     ( self , update: Update , context: CallbackContext    ) :
+    ##########################################################################
+    print(update.effective_chat.id, update.message.text)
+    ##########################################################################
+    return
+  ############################################################################
+  def Shutdown       ( self                                                ) :
+    ##########################################################################
+    if               ( self . TelegramUpdater in [ False , None ]          ) :
+      return
+    ##########################################################################
+    self . TelegramUpdater . stop (                                           )
+    self . TelegramUpdater = None
+    ##########################################################################
+    return
+  ############################################################################
+  def Start                                 ( self                         ) :
+    ##########################################################################
+    self . TelegramUpdater    = Updater     ( token       = self . Token   , \
+                                              use_context = True             )
+    self . TelegramDispatcher = self . TelegramUpdater . dispatcher
+    ##########################################################################
+    Hand = MessageHandler ( Filters . text & (~Filters . command )         , \
+                            self    . AcceptCall                             )
+    self . TelegramDispatcher . add_handler ( Hand                           )
+    ##########################################################################
+    self . TelegramUpdater . start_polling  (                                )
+    self . TelegramUpdater . idle           (                                )
+    ##########################################################################
+    return
 ##############################################################################
