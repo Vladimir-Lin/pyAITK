@@ -664,25 +664,25 @@ class PicturesView                ( IconDock                               ) :
       mm   . addAction                  ( 1102 , msg                         )
     ##########################################################################
     mm     . addSeparator               (                                    )
-    self   . PropertiesMenu             ( mm                                 )
-    self   . SortingMenu                ( mm                                 )
+    mm     = self . PropertiesMenu      ( mm                                 )
+    mm     = self . SortingMenu         ( mm                                 )
     self   . DockingMenu                ( mm                                 )
     ##########################################################################
     mm     . setFont                    ( self    . menuFont ( )             )
     aa     = mm . exec_                 ( QCursor . pos      ( )             )
     at     = mm . at                    ( aa                                 )
     ##########################################################################
-    if                                  ( self . RunPropertiesMenu ( at )  ) :
-      return True
-    ##########################################################################
-    if                                  ( self . RunSortingMenu    ( at )  ) :
+    if                                  ( self . RunAmountIndexMenu ( )    ) :
       ########################################################################
       self . clear                      (                                    )
       self . startup                    (                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                                  ( self . RunAmountIndexMenu ( )    ) :
+    if                                  ( self . RunPropertiesMenu ( at )  ) :
+      return True
+    ##########################################################################
+    if                                  ( self . RunSortingMenu    ( at )  ) :
       ########################################################################
       self . clear                      (                                    )
       self . startup                    (                                    )
