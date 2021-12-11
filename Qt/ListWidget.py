@@ -51,7 +51,7 @@ from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from         . VirtualGui             import VirtualGui as VirtualGui
 ##############################################################################
-class ListWidget      ( QListWidget , VirtualGui                           ) :
+class ListWidget                       ( QListWidget , VirtualGui          ) :
   ############################################################################
   pickSelectionMode       = pyqtSignal ( str                                 )
   SubmitStatusMessage     = pyqtSignal ( str , int                           )
@@ -66,31 +66,31 @@ class ListWidget      ( QListWidget , VirtualGui                           ) :
   ############################################################################
   def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
-    super (                    ) . __init__ ( parent                         )
-    super ( VirtualGui  , self ) . __init__ (                                )
-    self . Initialize                       ( self                           )
-    self . setPlanFunction                  ( plan                           )
-    self . DefaultItemIcon   = QIcon        (                                )
+    super (                   ) . __init__ ( parent                          )
+    super ( VirtualGui , self ) . __init__ (                                 )
+    self . Initialize                      ( self                            )
+    self . setPlanFunction                 ( plan                            )
+    self . DefaultItemIcon   = QIcon       (                                 )
     ##########################################################################
-    self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
-    self . setAcceptDrops                   ( True                           )
-    self . setDragDropMode                  ( QAbstractItemView . DragDrop   )
-    self . setHorizontalScrollBarPolicy     ( Qt . ScrollBarAsNeeded         )
-    self . setVerticalScrollBarPolicy       ( Qt . ScrollBarAsNeeded         )
-    self . setFunction                      ( self . FunctionDocking , False )
+    self . setAttribute                    ( Qt . WA_InputMethodEnabled      )
+    self . setAcceptDrops                  ( True                            )
+    self . setDragDropMode                 ( QAbstractItemView . DragDrop    )
+    self . setHorizontalScrollBarPolicy    ( Qt . ScrollBarAsNeeded          )
+    self . setVerticalScrollBarPolicy      ( Qt . ScrollBarAsNeeded          )
+    self . setFunction                     ( self . FunctionDocking , False  )
     ##########################################################################
-    self . pickSelectionMode   . connect    ( self . assignSelectionMode     )
-    self . SubmitStatusMessage . connect    ( self . AssignStatusMessage     )
-    self . emitSelectAll       . connect    ( self . SelectAll               )
-    self . emitSelectNone      . connect    ( self . SelectNone              )
-    self . emitAssignToolTip   . connect    ( self . AcceptToolTip           )
-    self . emitBustle          . connect    ( self . DoBustle                )
-    self . emitVacancy         . connect    ( self . DoVacancy               )
-    self . OnBusy              . connect    ( self . AtBusy                  )
-    self . GoRelax             . connect    ( self . OnRelax                 )
+    self . pickSelectionMode   . connect   ( self . assignSelectionMode      )
+    self . SubmitStatusMessage . connect   ( self . AssignStatusMessage      )
+    self . emitSelectAll       . connect   ( self . SelectAll                )
+    self . emitSelectNone      . connect   ( self . SelectNone               )
+    self . emitAssignToolTip   . connect   ( self . AcceptToolTip            )
+    self . emitBustle          . connect   ( self . DoBustle                 )
+    self . emitVacancy         . connect   ( self . DoVacancy                )
+    self . OnBusy              . connect   ( self . AtBusy                   )
+    self . GoRelax             . connect   ( self . OnRelax                  )
     ##########################################################################
     self . droppingAction = False
-    self . VoiceJSON      =                 {                                }
+    self . VoiceJSON      =                {                                 }
     ##########################################################################
     self . EditItem       = None
     self . EditWidget     = None

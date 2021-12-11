@@ -324,54 +324,14 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     return True
   ############################################################################
-  def GetLastestPosition    ( self , DB , LUID                             ) :
-    ##########################################################################
-    RELTAB = self . Tables  [ "Relation"                                     ]
-    ITEM   = "`position`"
-    OPTS   = ""
-    LMTS   = "limit 0 , 1"
-    ##########################################################################
-    self   . Relation . set ( "second" , LUID                                )
-    QQ     = self . Relation . ExactColumn ( RELTAB , ITEM , OPTS , LMTS     )
-    DB     . Query          ( QQ                                             )
-    RR     = DB . FetchOne  (                                                )
-    ##########################################################################
-    if                      ( RR in [ False , None ]                       ) :
-      return 0
-    ##########################################################################
-    if                      ( len ( RR ) != 1                              ) :
-      return 0
-    ##########################################################################
-    return int              ( RR [ 0 ]                                       )
+  def GetLastestPosition                   ( self , DB         , LUID      ) :
+    return self . GetNormalLastestPosition ( DB   , "Relation" , LUID        )
   ############################################################################
-  def GenerateMovingSQL       ( self , LAST , UUIDs                        ) :
-    ##########################################################################
-    RELTAB = self . Tables    [ "Relation"                                   ]
-    SQLs   =                  [                                              ]
-    ##########################################################################
-    LUID   = LAST + 10000
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      self . Relation . set   ( "second" , UUID                              )
-      WS   = self . Relation . ExactItem (                                   )
-      QQ   = f"update {RELTAB} set `position` = {LUID} {WS} ;"
-      SQLs . append           ( QQ                                           )
-      ########################################################################
-      LUID = LUID + 1
-    ##########################################################################
-    LUID   = 0
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      self . Relation . set   ( "second" , UUID                              )
-      WS   = self . Relation . ExactItem (                                   )
-      QQ   = f"update {RELTAB} set `position` = {LUID} {WS} ;"
-      SQLs . append           ( QQ                                           )
-      ########################################################################
-      LUID = LUID + 1
-    ##########################################################################
-    return SQLs
+  def GenerateMovingSQL                    ( self , LAST , UUIDs           ) :
+    return self . GenerateNormalMovingSQL  ( "Relation"                    , \
+                                             LAST                          , \
+                                             UUIDs                         , \
+                                             False                           )
   ############################################################################
   def PicturesMoving          ( self , atUuid , JSON                       ) :
     ##########################################################################
@@ -443,38 +403,16 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def RemoveItems                     ( self , UUIDs                       ) :
+  def RemoveItems                      ( self , UUIDs                      ) :
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
+    if                                 ( len ( UUIDs ) <= 0                ) :
       return
-    ##########################################################################
-    RELTAB = self . Tables            [ "Relation"                           ]
-    SQLs   =                          [                                      ]
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      self . Relation . set           ( "second" , UUID                      )
-      QQ   = self . Relation . Delete ( RELTAB                               )
-      SQLs . append                   ( QQ                                   )
-    ##########################################################################
-    DB     = self . ConnectDB         (                                      )
-    if                                ( DB == None                         ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit           (                                      )
-    self   . setBustle                (                                      )
-    DB     . LockWrites               ( [ RELTAB                           ] )
     ##########################################################################
     TITLE  = "RemovePictureItems"
-    self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
-    ##########################################################################
-    DB     . UnlockTables             (                                      )
-    self   . setVacancy               (                                      )
-    self   . GoRelax . emit           (                                      )
-    ##########################################################################
-    DB     . Close                    (                                      )
-    ##########################################################################
-    self   . loading                  (                                      )
+    RELTAB = self . Tables             [ "Relation"                          ]
+    SQLs   = self . GenerateRemoveSQLs ( UUIDs , self . Relation , RELTAB    )
+    self   . QuickExecuteSQLs          ( TITLE , 100 , RELTAB , SQLs         )
+    self   . loading                   (                                     )
     ##########################################################################
     return
   ############################################################################

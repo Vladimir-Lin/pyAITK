@@ -44,7 +44,7 @@ from   PyQt5 . QtWidgets              import QSpinBox
 from         . AttachDock             import AttachDock as AttachDock
 from         . ListWidget             import ListWidget as ListWidget
 ##############################################################################
-class ListDock        ( ListWidget , AttachDock                            ) :
+class ListDock               ( ListWidget , AttachDock                     ) :
   ############################################################################
   attachNone    = pyqtSignal ( QWidget                                       )
   attachDock    = pyqtSignal ( QWidget , str , int , int                     )

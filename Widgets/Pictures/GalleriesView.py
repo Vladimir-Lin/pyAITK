@@ -99,13 +99,6 @@ class GalleriesView                ( IconDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def setGrouping             ( self , group                               ) :
-    self . Grouping = group
-    return self . Grouping
-  ############################################################################
-  def getGrouping             ( self                                       ) :
-    return self . Grouping
-  ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
     RELTAB = self . Tables       [ "Relation"                                ]
@@ -179,28 +172,28 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return                     [                                             ]
   ############################################################################
-  def ObtainsItemUuids                ( self , DB                          ) :
+  def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                                ( self . Grouping == "Original"      ) :
+    if                                      ( self . isOriginal ( )        ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
   def FetchSessionInformation         ( self , DB                          ) :
     ##########################################################################
-    if                                ( self . Grouping == "Original"      ) :
+    if                                ( self . isOriginal      ( )         ) :
       ########################################################################
       self . Total = self . FetchRegularDepotCount ( DB                      )
       ########################################################################
       return
     ##########################################################################
-    if                                ( self . Grouping == "Subordination" ) :
+    if                                ( self . isSubordination ( )         ) :
       ########################################################################
       self . Total = self . FetchGroupMembersCount ( DB                      )
       ########################################################################
       return
     ##########################################################################
-    if                                ( self . Grouping == "Reverse"       ) :
+    if                                ( self . isReverse       ( )         ) :
       ########################################################################
       self . Total = self . FetchGroupOwnersCount  ( DB                      )
       ########################################################################
@@ -292,31 +285,21 @@ class GalleriesView                ( IconDock                              ) :
       if                            ( atItem in [ False , None ]           ) :
         return False
       ########################################################################
-      FMT   = self . getMenuItem    ( "JoinPeople"                           )
-      MSG   = FMT  . format         ( title , CNT                            )
-      ########################################################################
-      self  . ShowStatus            ( MSG                                    )
+      self  . ShowMenuItemTitleStatus ( "JoinPeople"   , title , CNT         )
     ##########################################################################
     elif                            ( mtype in [ "picture/uuids" ]         ) :
       ########################################################################
       if                            ( atItem in [ False , None ]           ) :
         return False
       ########################################################################
-      FMT   = self . getMenuItem    ( "JoinPictures"                         )
-      MSG   = FMT  . format         ( title , CNT                            )
-      ########################################################################
-      self  . ShowStatus            ( MSG                                    )
+      self  . ShowMenuItemTitleStatus ( "JoinPictures" , title , CNT         )
     ##########################################################################
     elif                            ( mtype in [ "gallery/uuids" ]         ) :
       ########################################################################
       if                            ( self == sourceWidget                 ) :
-        FMT = self . getMenuItem    ( "MoveGalleries"                        )
-        MSG = FMT  . format         ( CNT                                    )
+        self . ShowMenuItemTitleStatus ( "MoveGalleries" , CNT               )
       else                                                                   :
-        FMT = self . getMenuItem    ( "JoinGalleries"                        )
-        MSG = FMT  . format         ( title , CNT                            )
-      ########################################################################
-      self  . ShowStatus            ( MSG                                    )
+        self . ShowMenuItemTitleStatus ( "JoinGalleries" , CNT               )
     ##########################################################################
     return RDN
   ############################################################################
@@ -330,7 +313,7 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     atItem = self . itemAt ( mousePos                                        )
     if                     ( atItem in [ False , None ]                    ) :
-      return False
+      return True
     if                     ( atItem . isSelected ( )                       ) :
       return False
     ##########################################################################
@@ -342,84 +325,27 @@ class GalleriesView                ( IconDock                              ) :
   def acceptPictureDrop        ( self                                      ) :
     return True
   ############################################################################
-  def acceptGalleriesDrop ( self                                           ) :
-    ##########################################################################
-    ALLOWED =             [ "Subordination" , "Reverse"                      ]
-    ##########################################################################
-    if                    ( self . Grouping not in ALLOWED                 ) :
-      return False
-    ##########################################################################
-    return True
+  def acceptGalleriesDrop    ( self                                        ) :
+    return self . isGrouping (                                               )
   ############################################################################
-  def dropPeople               ( self , source , pos , JSON                ) :
-    ##########################################################################
-    PUID , NAME = self . itemAtPos ( pos                                     )
-    if                             ( PUID <= 0                             ) :
-      return True
-    ##########################################################################
-    self . Go ( self . PeopleAppending , ( PUID , NAME , JSON , )            )
-    ##########################################################################
-    return True
+  def dropPeople                        ( self , source , pos , JSON       ) :
+    FUNC = self . PeopleAppending
+    return self . defaultDropInFunction ( self , source , pos , JSON , FUNC  )
   ############################################################################
-  def dropPictures                 ( self , source , pos , JSON            ) :
-    ##########################################################################
-    PUID , NAME = self . itemAtPos ( pos                                     )
-    if                             ( PUID <= 0                             ) :
-      return True
-    ##########################################################################
-    self . Go ( self . PicturesAppending , ( PUID , NAME , JSON , )          )
-    ##########################################################################
-    return True
+  def dropPictures                      ( self , source , pos , JSON       ) :
+    FUNC = self . PicturesAppending
+    return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
-  def dropGalleries            ( self , source , pos , JSON                ) :
-    ##########################################################################
-    ATID , NAME = self . itemAtPos ( pos                                     )
-    ##########################################################################
-    ## 在內部移動
-    ##########################################################################
-    if                             ( self == sourceWidget                  ) :
-      ########################################################################
-      self . Go ( self . GalleriesMoving    , ( ATID , NAME , JSOX , )       )
-      ########################################################################
-      return True
-    ##########################################################################
-    ## 從外部加入
-    ##########################################################################
-    self   . Go ( self . GalleriesAppending , ( ATID , NAME , JSOX , )       )
-    ##########################################################################
-    return True
+  def dropGalleries                 ( self , source , pos , JSON           ) :
+    MF   = self . GalleriesMoving
+    AF   = self . GalleriesAppending
+    return self . defaultDropInside (        source , pos , JSON , MF , AF   )
   ############################################################################
+  def GetLastestPosition                  ( self , DB , LUID               ) :
+    return self . GetGroupLastestPosition ( DB , "RelationPeople" , LUID     )
   ############################################################################
-  def GenerateMovingSQL       ( self , LAST , UUIDs                        ) :
-    ##########################################################################
-    RELTAB = self . Tables    [ "RelationPeople"                             ]
-    SQLs   =                  [                                              ]
-    ##########################################################################
-    LUID   = LAST + 10000
-    ##########################################################################
-    """
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      self . Relation . set   ( "second" , UUID                              )
-      WS   = self . Relation . ExactItem (                                   )
-      QQ   = f"update {RELTAB} set `position` = {LUID} {WS} ;"
-      SQLs . append           ( QQ                                           )
-      ########################################################################
-      LUID = LUID + 1
-    ##########################################################################
-    LUID   = 0
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      self . Relation . set   ( "second" , UUID                              )
-      WS   = self . Relation . ExactItem (                                   )
-      QQ   = f"update {RELTAB} set `position` = {LUID} {WS} ;"
-      SQLs . append           ( QQ                                           )
-      ########################################################################
-      LUID = LUID + 1
-    """
-    ##########################################################################
-    return SQLs
+  def GenerateMovingSQL                  ( self , LAST , UUIDs             ) :
+    return self . GenerateGroupMovingSQL ( "RelationPeople" , LAST , UUIDs   )
   ############################################################################
   def GalleriesMoving         ( self , atUuid , NAME , JSON                ) :
     ##########################################################################
@@ -491,179 +417,154 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PeopleAppending          ( self , atUuid , NAME , JSON               ) :
+  def PeopleAppending                    ( self , atUuid , NAME , JSON     ) :
     ##########################################################################
-    UUIDs  = JSON              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
+    T2      = "Gallery"
+    TABLE   = "RelationPeople"
+    RELATED = "Subordination"
+    ##########################################################################
+    OK      = self . AppendingIntoPeople ( atUuid                          , \
+                                           NAME                            , \
+                                           JSON                            , \
+                                           TABLE                           , \
+                                           T2                              , \
+                                           RELATED                           )
+    if                                   ( not OK                          ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB  (                                             )
-    if                         ( DB == None                                ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit    (                                             )
-    self   . setBustle         (                                             )
-    ##########################################################################
-    RELTAB = self . Tables     [ "RelationPeople"                            ]
-    GALM   = GalleryItem       (                                             )
-    ##########################################################################
-    DB     . LockWrites        ( [ RELTAB                                  ] )
-    GALM   . ConnectToPictures ( DB , RELTAB , atUuid , "People" , UUIDs     )
-    ##########################################################################
-    DB     . UnlockTables      (                                             )
-    self   . setVacancy        (                                             )
-    self   . GoRelax . emit    (                                             )
-    DB     . Close             (                                             )
-    ##########################################################################
-    self   . loading           (                                             )
+    self    . loading                    (                                   )
     ##########################################################################
     return
   ############################################################################
-  def PicturesAppending        ( self , atUuid , NAME , JSON               ) :
+  def PicturesAppending            ( self , atUuid , NAME , JSON           ) :
     ##########################################################################
-    UUIDs  = JSON              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
+    T1  = "Gallery"
+    TAB = "RelationPeople"
+    ##########################################################################
+    OK  = self . AppendingPictures (        atUuid , NAME , JSON , TAB , T1  )
+    if                             ( not OK                                ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB  (                                             )
-    if                         ( DB == None                                ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit    (                                             )
-    self   . setBustle         (                                             )
-    ##########################################################################
-    RELTAB = self . Tables     [ "RelationPeople"                            ]
-    GALM   = GalleryItem       (                                             )
-    ##########################################################################
-    DB     . LockWrites        ( [ RELTAB                                  ] )
-    GALM   . ConnectToPictures ( DB , RELTAB , atUuid , "People" , UUIDs     )
-    ##########################################################################
-    DB     . UnlockTables      (                                             )
-    self   . setVacancy        (                                             )
-    self   . GoRelax . emit    (                                             )
-    DB     . Close             (                                             )
-    ##########################################################################
-    self   . loading           (                                             )
+    self   . loading               (                                         )
     ##########################################################################
     return
   ############################################################################
-  def LineEditorFinished                ( self                             ) :
+  def RemoveItems                           ( self , UUIDs                 ) :
     ##########################################################################
-    if                                  ( self . EditItem   == None        ) :
+    if                                      ( len ( UUIDs ) <= 0           ) :
       return
     ##########################################################################
-    if                                  ( self . EditWidget == None        ) :
+    if                                      ( not self . isGrouping ( )    ) :
       return
     ##########################################################################
-    IT                = self . EditItem
-    LE                = self . EditWidget
-    self . EditItem   = None
-    self . EditWidget = None
-    CORRECT           = True
+    TITLE  = "RemoveGalleryItems"
+    RELTAB = self . Tables                  [ "Relation"                     ]
+    RV     = self . isReverse               (                                )
+    SQLs   = self . GenerateGroupRemoveSQLs ( UUIDs                        , \
+                                              self . Relation              , \
+                                              RELTAB                       , \
+                                              RV                             )
+    self   . QuickExecuteSQLs               ( TITLE , 100 , RELTAB , SQLs    )
+    self   . Notify                         ( 5                              )
     ##########################################################################
-    JSON              = self . itemJson ( IT                                 )
-    TEXT              = LE   . text     (                                    )
-    NAME              = ""
-    UUID              = 0
-    self              . setItemWidget   ( IT , None                          )
+    return
+  ############################################################################
+  def UpdateItemName             ( self           , item , uuid , name     ) :
     ##########################################################################
-    if ( ( CORRECT ) and ( "Uuid" not in JSON ) )                            :
-      CORRECT         = False
-    else                                                                     :
-      UUID            = JSON            [ "Uuid"                             ]
+    self . UpdateItemNameByTable ( "NamesEditing" , item , uuid , name       )
     ##########################################################################
-    if ( ( CORRECT ) and ( "Name" in JSON ) )                                :
-      NAME            = JSON            [ "Name"                             ]
+    return
+  ############################################################################
+  def AppendGalleryItem      ( self , DB                                   ) :
     ##########################################################################
-    if ( ( CORRECT ) and ( UUID == 0 ) and ( len ( TEXT ) <= 0 ) )           :
-      CORRECT         = False
+    GALTAB = self . Tables   [ "Galleries"                                   ]
+    uuid   = DB   . LastUuid ( GALTAB , "uuid" , 2800001000000000000         )
+    DB     . AppendUuid      ( GALTAB ,  uuid                                )
     ##########################################################################
-    if ( ( CORRECT ) and ( UUID >  0 ) and ( NAME == TEXT ) )                :
-      CORRECT         = False
+    return uuid
+  ############################################################################
+  def AppendItemName                   ( self , item , name                ) :
     ##########################################################################
-    if                                  ( not CORRECT                      ) :
-      if                                ( UUID <= 0                        ) :
-        self . takeItem                 ( self . row ( IT )                  )
+    DB      = self . ConnectDB         (                                     )
+    if                                 ( DB == None                        ) :
       return
     ##########################################################################
-    if                                  ( UUID > 0                         ) :
+    GALTAB  = self . Tables            [ "Galleries"                         ]
+    NAMTAB  = self . Tables            [ "Names"                             ]
+    RELTAB  = self . Tables            [ "Relation"                          ]
+    TABLES  =                          [ GALTAB , NAMTAB , RELTAB            ]
+    ##########################################################################
+    FRID    = self . Relation . get    ( "first"                             )
+    SEID    = self . Relation . get    ( "second"                            )
+    T1      = self . Relation . get    ( "t1"                                )
+    T2      = self . Relation . get    ( "t2"                                )
+    RR      = self . Relation . get    ( "relation"                          )
+    ##########################################################################
+    DB      . LockWrites               ( TABLES                              )
+    ##########################################################################
+    uuid    = self . AppendGalleryItem ( DB                                  )
+    self    . AssureUuidNameByLocality ( DB                                , \
+                                         NAMTAB                            , \
+                                         uuid                              , \
+                                         name                              , \
+                                         self . getLocality ( )              )
+    ##########################################################################
+    if                                 ( self . isGrouping ( )             ) :
       ########################################################################
-      if                                ( self . UsingName                 ) :
+      REL   = Relation                 (                                     )
+      REL   . set                      ( "t1"       , T1                     )
+      REL   . set                      ( "t2"       , T2                     )
+      REL   . set                      ( "relation" , RR                     )
+      ########################################################################
+      if                               ( self . isSubordination ( )        ) :
         ######################################################################
-        IT   . setText                  ( TEXT                               )
-        self . PrepareItemContent       ( IT , UUID , TEXT                   )
-        ## self . Go                       ( self . UpdateItemName            , \
-        ##                                   ( IT , UUID , TEXT , )             )
-      ########################################################################
-      return
+        REL . set                      ( "first"    , FRID                   )
+        REL . set                      ( "second"   , uuid                   )
+        REL . Join                     ( DB , RELTAB                         )
+        ######################################################################
+      elif                             ( self . isReverse       ( )        ) :
+        ######################################################################
+        REL . set                      ( "first"    , uuid                   )
+        REL . set                      ( "second"   , SEID                   )
+        REL . Join                     ( DB , RELTAB                         )
     ##########################################################################
-    IT   . setText                      ( TEXT                               )
+    DB      . UnlockTables             (                                     )
+    DB      . Close                    (                                     )
     ##########################################################################
-    ## self . Go                           ( self . AppendItemName            , \
-    ##                                       ( IT , TEXT , )                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def Prepare                  ( self                                      ) :
-    ##########################################################################
-    self . assignSelectionMode ( "ContiguousSelection"                       )
-    self . setPrepared         ( True                                        )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                          (                                       )
-  def InsertItem                     ( self                                ) :
-    ##########################################################################
-    IT     = self . PrepareEmptyItem (                                       )
-    if                               ( self . SortOrder == "asc"           ) :
-      self . addItem                 (     IT                                )
-    else                                                                     :
-      self . insertItem              ( 0 , IT                                )
-    ##########################################################################
-    self   . setLineEdit             ( IT                                  , \
-                                       "editingFinished"                   , \
-                                       self . LineEditorFinished             )
+    self    . PrepareItemContent       ( item , uuid , name                  )
+    self    . assignToolTip            ( item , str ( uuid )                 )
     ##########################################################################
     return
   ############################################################################
   def DeleteItems             ( self                                       ) :
     ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  def RenameItem              ( self                                       ) :
-    ##########################################################################
-    IT   = self . currentItem (                                              )
-    ##########################################################################
-    if                        ( IT == None                                 ) :
+    if                        ( not self . isGrouping ( )                  ) :
       return
     ##########################################################################
-    self . setLineEdit        ( IT                                         , \
-                                "editingFinished"                          , \
-                                self . LineEditorFinished                    )
+    self . defaultDeleteItems (                                              )
     ##########################################################################
     return
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                          ( self , pos                           ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                              ( not self . isPrepared ( )            ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
       return False
     ##########################################################################
-    self   . Notify                ( 0                                       )
+    self   . Notify                 ( 0                                      )
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . itemAt         ( pos                                     )
+    items  = self . selectedItems   (                                        )
+    atItem = self . itemAt          ( pos                                    )
     uuid   = 0
     ##########################################################################
-    if                             ( atItem not in [ False , None ]        ) :
-      uuid = atItem . data         ( Qt . UserRole                           )
-      uuid = int                   ( uuid                                    )
+    if                              ( atItem not in [ False , None ]       ) :
+      uuid = atItem . data          ( Qt . UserRole                          )
+      uuid = int                    ( uuid                                   )
     ##########################################################################
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
@@ -671,72 +572,73 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
-    if                             ( uuid > 0                              ) :
-      mm   . addSeparator          (                                         )
-      mm   . addAction             ( 1201 ,  TRX [ "UI::PersonalGallery"   ] )
     ##########################################################################
-    mm     . addSeparator          (                                         )
-    if                             ( atItem != None                        ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
+    if                              ( uuid > 0                             ) :
+      mm   . addSeparator           (                                        )
+      mm   . addAction              ( 1201 ,  TRX [ "UI::PersonalGallery"  ] )
     ##########################################################################
-    mm     = self . SortingMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    mm     . addSeparator           (                                        )
+    if                              ( atItem != None                       ) :
+      if                            ( self . EditAllNames != None          ) :
+        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
+        mm . addSeparator           (                                        )
     ##########################################################################
-    mm     . setFont               ( self    . menuFont ( )                  )
-    aa     = mm . exec_            ( QCursor . pos      ( )                  )
-    at     = mm . at               ( aa                                      )
+    mm     = self . SortingMenu     ( mm                                     )
+    mm     = self . LocalityMenu    ( mm                                     )
+    self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    if                             ( self . RunAmountIndexMenu ( )         ) :
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
+    at     = mm . at                ( aa                                     )
+    ##########################################################################
+    if                              ( self . RunAmountIndexMenu ( )        ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
-      return True
-    ##########################################################################
-    if                             ( self . RunSortingMenu     ( at )      ) :
-      ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . clear                  (                                        )
+      self . startup                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
+    if                              ( self . RunDocking    ( mm , aa )     ) :
+      return True
+    ##########################################################################
+    if                              ( self . RunSortingMenu     ( at )     ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . clear                  (                                        )
+      self . startup                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1001                            ) :
+    if                              ( self . HandleLocalityMenu ( at )     ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . clear                  (                                        )
+      self . startup                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
+    if                              ( at == 1001                           ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1201                            ) :
+    if                              ( at == 1101                           ) :
+      self . InsertItem             (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1201                           ) :
       ########################################################################
-      text = atItem . text         (                                         )
-      icon = atItem . icon         (                                         )
-      xsid = str                   ( uuid                                    )
+      text = atItem . text          (                                        )
+      icon = atItem . icon          (                                        )
+      xsid = str                    ( uuid                                   )
       ########################################################################
       self . ShowPersonalGallery . emit ( text , 64 , xsid , icon            )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "People" , uuid , NAM            )
+    if                              ( at == 1601                           ) :
+      NAM  = self . Tables          [ "Names"                                ]
+      self . EditAllNames           ( self , "Gallery" , uuid , NAM          )
       return True
     ##########################################################################
     return True
