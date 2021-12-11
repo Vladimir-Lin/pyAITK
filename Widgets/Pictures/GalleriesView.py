@@ -262,7 +262,6 @@ class GalleriesView                ( IconDock                              ) :
     return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
   def dropNew                       ( self                                 , \
@@ -303,21 +302,8 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving           ( self , sourceWidget , mimeData , mousePos     ) :
-    ##########################################################################
-    if                     ( self . droppingAction                         ) :
-      return False
-    ##########################################################################
-    if                     ( sourceWidget != self                          ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt ( mousePos                                        )
-    if                     ( atItem in [ False , None ]                    ) :
-      return True
-    if                     ( atItem . isSelected ( )                       ) :
-      return False
-    ##########################################################################
-    return True
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
   ############################################################################
   def acceptPeopleDrop         ( self                                      ) :
     return True

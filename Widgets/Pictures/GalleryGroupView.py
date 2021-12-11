@@ -55,54 +55,90 @@ from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
 ##############################################################################
-class GalleryGroupView            ( IconDock                               ) :
+class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu      = 1371434312
   ############################################################################
-  GallerySubgroup = pyqtSignal    ( str , int , str                          )
-  GalleryGroup    = pyqtSignal    ( str , int , str                          )
+  GallerySubgroup = pyqtSignal     ( str , int , str                         )
+  GalleryGroup    = pyqtSignal     ( str , int , str                         )
   ############################################################################
-  def __init__                    ( self , parent = None , plan = None     ) :
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    super ( ) . __init__          (        parent        , plan              )
+    super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
+    self . GTYPE        = 64
+    self . SortOrder    = "desc"
+    self . PrivateIcon  = True
+    self . PrivateGroup = True
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
-    self . Relation = Relation    (                                          )
-    self . Relation . setRelation ( "Subordination"                          )
+    self . Relation     = Relation (                                         )
+    self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . Grouping = "Tag"
-    ## self . Grouping = "Catalog"
-    ## self . Grouping = "Subgroup"
+    self . Grouping     = "Tag"
+    self . OldGrouping  = "Tag"
+    ## self . Grouping     = "Catalog"
+    ## self . Grouping     = "Subgroup"
+    ## self . Grouping     = "Reverse"
     ##########################################################################
-    self . setFunction            ( self . HavingMenu      , True            )
+    self . setFunction             ( self . HavingMenu , True                )
     ##########################################################################
-    ## self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setAcceptDrops          ( True                                    )
     self . setDragEnabled          ( True                                    )
     self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                ( self                                       ) :
-    return QSize              ( 800 , 800                                    )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def setGrouping             ( self , group                               ) :
+  def setGrouping ( self , group                                           ) :
     self . Grouping = group
     return self . Grouping
   ############################################################################
-  def getGrouping             ( self                                       ) :
+  def getGrouping ( self                                                   ) :
     return self . Grouping
   ############################################################################
   def isGrouping              ( self , tag                                 ) :
     return                    ( self . Grouping == tag                       )
   ############################################################################
+  def FocusIn             ( self                                           ) :
+    ##########################################################################
+    if                    ( not self . isPrepared ( )                      ) :
+      return False
+    ##########################################################################
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
+    ##########################################################################
+    self . LinkAction     ( "Insert"     , self . InsertItem                 )
+    self . LinkAction     ( "Delete"     , self . DeleteItems                )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
+    ##########################################################################
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
+    ##########################################################################
+    return True
+  ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup      , False      )
+    self . LinkAction      ( "Insert"     , self . InsertItem   , False      )
+    self . LinkAction      ( "Delete"     , self . DeleteItems  , False      )
+    self . LinkAction      ( "Rename"     , self . RenameItem   , False      )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll    , False      )
+    self . LinkAction      ( "SelectNone" , self . SelectNone   , False      )
+    ##########################################################################
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
-    """
     RELTAB = self . Tables       [ "Relation"                                ]
     REL    = Relation            (                                           )
     REL    . set                 ( "first" , Uuid                            )
-    REL    . setT1               ( "People"                                  )
+    REL    . setT1               ( "Gallery"                                 )
     REL    . setT2               ( "Picture"                                 )
     REL    . setRelation         ( "Using"                                   )
     ##########################################################################
@@ -110,27 +146,31 @@ class GalleryGroupView            ( IconDock                               ) :
     ##########################################################################
     if                           ( len ( PICS ) > 0                        ) :
       return PICS                [ 0                                         ]
-    """
     ##########################################################################
     return 0
   ############################################################################
-  def ObtainUuidsQuery         ( self                                      ) :
+  def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
-    TABLE = self . Tables      [ "Tags"                                      ]
-    QQ    = f"select `uuid` from {TABLE} where ( `used` = 1 ) and ( `type` = 64 ) order by `id` asc ;"
+    GID    = self . GTYPE
+    TAGTAB = self . Tables [ "Tags"                                          ]
+    QQ     = f"""select `uuid` from {TAGTAB}
+                 where ( `used` = 1 )
+                   and ( `type` = {GID} )
+                 order by `id` asc ;"""
     ##########################################################################
-    return QQ
+    return " " . join      ( QQ . split ( )                                  )
   ############################################################################
-  def ObtainSubgroupUuids      ( self , DB                                 ) :
+  def ObtainSubgroupUuids                  ( self , DB                     ) :
     ##########################################################################
-    OPTS   = "order by `position` desc"
-    RELTAB = self . Tables [ "Relation" ]
+    ORDER  = self . getSortingOrder        (                                 )
+    OPTS   = "order by `position` {ORDER}"
+    RELTAB = self . Tables                 [ "Relation"                      ]
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
   ############################################################################
-  def ObtainsItemUuids                ( self , DB                          ) :
+  def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                                ( self . Grouping == "Tag"           ) :
+    if                                      ( self . isTagging ( )         ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
@@ -138,11 +178,14 @@ class GalleryGroupView            ( IconDock                               ) :
   def dragMime                   ( self                                    ) :
     ##########################################################################
     mtype   = "tag/uuids"
-    message = "選擇了{0}個分類"
+    message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , mtype , message                    )
   ############################################################################
   def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    if                  ( self . isTagging ( )                             ) :
+      return
     ##########################################################################
     self . StartingDrag (                                                    )
     ##########################################################################
@@ -150,17 +193,13 @@ class GalleryGroupView            ( IconDock                               ) :
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     ##########################################################################
-    if                        ( self . isGrouping ( "Tag"      )           ) :
+    if                        ( self . isTagging ( )                       ) :
       ########################################################################
-      formats = "tag/uuids"
+      formats = "picture/uuids;gallerygroup/uuids;"
       ########################################################################
-    elif                      ( self . isGrouping ( "Catalog"  )           ) :
+    else                                                                     :
       ########################################################################
-      formats = "tag/uuids;people/uuids"
-      ########################################################################
-    elif                      ( self . isGrouping ( "Subgroup" )           ) :
-      ########################################################################
-      formats = "tag/uuids;people/uuids"
+      formats = "picture/uuids;gallery/uuids;gallerygroup/uuids;"
     ##########################################################################
     if                        ( len ( formats ) <= 0                       ) :
       return False
@@ -168,10 +207,6 @@ class GalleryGroupView            ( IconDock                               ) :
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
   def dropNew                       ( self                                 , \
@@ -179,93 +214,275 @@ class GalleryGroupView            ( IconDock                               ) :
                                       mimeData                             , \
                                       mousePos                             ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
-      return False
-    ##########################################################################
     RDN     = self . RegularDropNew ( mimeData                               )
     if                              ( not RDN                              ) :
       return False
     ##########################################################################
     mtype   = self . DropInJSON     [ "Mime"                                 ]
     UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    atItem  = self . itemAt         ( mousePos                               )
+    CNT     = len                   ( UUIDs                                  )
+    title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    if                              ( mtype in [ "picture/uuids"         ] ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
+      self  . ShowMenuItemMessage   ( "AssignTagIcon"                        )
     ##########################################################################
-    elif                            ( mtype in [ "tag/uuids" ]             ) :
+    elif                            ( mtype in [ "gallery/uuids"         ] ) :
       ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個分類"
+      if                            ( self . isTagging ( )                 ) :
+        return False
       ########################################################################
-      self  . ShowStatus            ( MSG                                    )
+      if                            ( atItem in [ False , None ]           ) :
+        return False
+      ########################################################################
+      self  . ShowMenuItemTitleStatus ( "JoinGalleries" , title , CNT        )
+    ##########################################################################
+    elif                            ( mtype in [ "gallerygroup/uuids"    ] ) :
+      ########################################################################
+      if                            ( self == sourceWidget                 ) :
+        self . ShowMenuItemTitleStatus ( "MoveCatalogues" , CNT              )
+      else                                                                   :
+        self . ShowMenuItemTitleStatus ( "JoinCatalogues" , CNT              )
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    
-    ##########################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  ############################################################################
+  def acceptGalleryGroupsDrop  ( self                                      ) :
     return True
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
+  def acceptGalleriesDrop      ( self                                      ) :
     return True
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("CrowdView::dropPeople")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
-    ##########################################################################
+  def acceptPictureDrop        ( self                                      ) :
     return True
   ############################################################################
-  def acceptTagDrop            ( self                                      ) :
-    return True
+  def dropGalleryGroups             ( self , source , pos , JSON           ) :
+    MF   = self . GalleryGroupsMoving
+    AF   = self . GalleryGroupsAppending
+    return self . defaultDropInside (        source , pos , JSON , MF , AF   )
   ############################################################################
-  def dropTags                 ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("CrowdView::dropTags")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
-    ##########################################################################
-    return True
+  def dropGalleries                     ( self , source , pos , JSON       ) :
+    FUNC = self . GalleriesAppending
+    return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
-  def Prepare                  ( self                                      ) :
+  def dropPictures                      ( self , source , pos , JSON       ) :
+    FUNC = self . AssignTaggingIcon
+    return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
+  ############################################################################
+  """
+  def GetLastestPosition                  ( self , DB , LUID               ) :
+    return self . GetGroupLastestPosition ( DB , "RelationPeople" , LUID     )
+  """
+  ############################################################################
+  """
+  def GenerateMovingSQL                  ( self , LAST , UUIDs             ) :
+    return self . GenerateGroupMovingSQL ( "RelationPeople" , LAST , UUIDs   )
+  """
+  ############################################################################
+  def GalleryGroupsMoving     ( self , atUuid , NAME , JSON                ) :
     ##########################################################################
-    self . assignSelectionMode ( "ContiguousSelection"                       )
-    self . setPrepared         ( True                                        )
+    """
+    UUIDs  = JSON             [ "UUIDs"                                      ]
+    if                        ( len ( UUIDs ) <= 0                         ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit   (                                              )
+    self   . setBustle        (                                              )
+    ##########################################################################
+    RELTAB = self . Tables    [ "RelationPeople"                             ]
+    DB     . LockWrites       ( [ RELTAB                                   ] )
+    ##########################################################################
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
+    LUID   = PUIDs            [ -1                                           ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    ##########################################################################
+    self   . setVacancy       (                                              )
+    self   . GoRelax . emit   (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . loading          (                                              )
+    """
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def InsertItem                   ( self                                  ) :
+  def GalleryGroupsAppending   ( self , atUuid , NAME , JSON               ) :
+    ##########################################################################
+    """
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
+    LUID   = PUIDs             [ -1                                          ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def GalleriesAppending                 ( self , atUuid , NAME , JSON     ) :
     ##########################################################################
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def DeleteItems                  ( self                                  ) :
+  def AssignTaggingIcon            ( self , atUuid , NAME , JSON           ) :
     ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def RemoveItems                           ( self , UUIDs                 ) :
+    ##########################################################################
+    if                                      ( len ( UUIDs ) <= 0           ) :
+      return
+    ##########################################################################
+    if ( ( not self . isSubgroup ( ) ) and ( not self . isReverse ( ) ) )    :
+      return
+    ##########################################################################
+    TITLE  = "RemoveGalleryItems"
+    RELTAB = self . Tables                  [ "Relation"                     ]
+    RV     = self . isReverse               (                                )
+    SQLs   = self . GenerateGroupRemoveSQLs ( UUIDs                        , \
+                                              self . Relation              , \
+                                              RELTAB                       , \
+                                              RV                             )
+    self   . QuickExecuteSQLs               ( TITLE , 100 , RELTAB , SQLs    )
+    self   . Notify                         ( 5                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateItemName             ( self           , item , uuid , name     ) :
+    ##########################################################################
+    self . UpdateItemNameByTable ( "NamesEditing" , item , uuid , name       )
+    ##########################################################################
+    return
+  ############################################################################
+  def AppendTagItem                 ( self , DB                            ) :
+    ##########################################################################
+    TAGTAB = self . Tables          [ "Tags"                                 ]
+    uuid   = DB   . LastUuid        ( TAGTAB , "uuid" , 2800000000000000000  )
+    DB     . AddUuid                ( TAGTAB ,  uuid  , self . GTYPE         )
+    ##########################################################################
+    return uuid
+  ############################################################################
+  def AppendSubgroupItem            ( self , DB                            ) :
+    ##########################################################################
+    SUBTAB = self . Tables          [ "Subgroups"                            ]
+    uuid   = DB   . LastUuid        ( SUBTAB , "uuid" , 2800004000000000000  )
+    DB     . AddUuid                ( SUBTAB ,  uuid  , self . GTYPE         )
+    ##########################################################################
+    return uuid
+  ############################################################################
+  def AppendItemName                     ( self , item , name              ) :
+    ##########################################################################
+    DB       = self . ConnectDB          (                                   )
+    if                                   ( DB == None                      ) :
+      return
+    ##########################################################################
+    TAGTAB   = self . Tables             [ "Tags"                            ]
+    SUBTAB   = self . Tables             [ "Subgroups"                       ]
+    NAMTAB   = self . Tables             [ "Names"                           ]
+    RELTAB   = self . Tables             [ "RelationPeople"                  ]
+    TABLES   =                           [ NAMTAB , RELTAB                   ]
+    ##########################################################################
+    if                                   ( self . isTagging ( )            ) :
+      ########################################################################
+      TABLES . append                    ( TAGTAB                            )
+      T1     =  75
+      T2     = 158
+      RR     =   1
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      TABLES . append                    ( SUBTAB                            )
+      T1     = self . Relation . get     ( "t1"                              )
+      T2     = self . Relation . get     ( "t2"                              )
+      RR     = self . Relation . get     ( "relation"                        )
+    ##########################################################################
+    DB       . LockWrites                ( TABLES                            )
+    ##########################################################################
+    if                                   ( self . isTagging ( )            ) :
+      uuid   = self . AppendTagItem      ( DB                                )
+    else                                                                     :
+      ########################################################################
+      uuid   = self . AppendSubgroupItem ( DB                                )
+      ########################################################################
+      REL    = Relation                  (                                   )
+      REL    . set                       ( "relation" , RR                   )
+      ########################################################################
+      if                                 ( self . isSubgroup ( )           ) :
+        ######################################################################
+        PUID = self . Relation . get     ( "first"                           )
+        REL  . set                       ( "first"    , PUID                 )
+        REL  . set                       ( "second"   , uuid                 )
+        REL  . set                       ( "t1"       , T1                   )
+        REL  . set                       ( "t2"       , 158                  )
+        ######################################################################
+      elif                               ( self . isReverse  ( )           ) :
+        ######################################################################
+        PUID = self . Relation . get     ( "second"                          )
+        REL  . set                       ( "first"    , uuid                 )
+        REL  . set                       ( "second"   , PUID                 )
+        REL  . set                       ( "t1"       , 158                  )
+        REL  . set                       ( "t2"       , T2                   )
+      ########################################################################
+      REL    . Join                      ( DB , RELTAB                       )
+    ##########################################################################
+    self     . AssureUuidNameByLocality  ( DB                              , \
+                                           NAMTAB                          , \
+                                           uuid                            , \
+                                           name                            , \
+                                           self . getLocality ( )            )
+    ##########################################################################
+    DB       . UnlockTables              (                                   )
+    DB       . Close                     (                                   )
+    ##########################################################################
+    self     . PrepareItemContent        ( item , uuid , name                )
+    self     . assignToolTip             ( item , str ( uuid )               )
+    ##########################################################################
+    return
+  ############################################################################
+  def DeleteItems             ( self                                       ) :
+    ##########################################################################
+    if                        ( not self . isTagging ( )                   ) :
+      return
+    ##########################################################################
+    self . defaultDeleteItems (                                              )
     ##########################################################################
     return
   ############################################################################

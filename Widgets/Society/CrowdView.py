@@ -66,12 +66,17 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
+    self . GTYPE        = 7
+    ## self . SortOrder    = "desc"
+    ## self . PrivateIcon  = True
+    ## self . PrivateGroup = True
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . setRelation ( "Subordination"                          )
     ##########################################################################
-    self . Grouping = "Tag"
+    self . Grouping     = "Tag"
+    self . OldGrouping  = "Tag"
     ## self . Grouping = "Catalog"
     ## self . Grouping = "Subgroup"
     ## self . Grouping = "Reverse"
@@ -150,11 +155,12 @@ class CrowdView                   ( IconDock                               ) :
   ############################################################################
   def ObtainUuidsQuery         ( self                                      ) :
     ##########################################################################
+    GID   = self . GTYPE
     TABLE = self . Tables      [ "Tags"                                      ]
     ORDER = self . SortOrder
     QQ    = f"""select `uuid` from {TABLE}
                 where ( `used` = 1 )
-                and ( `type` = 7 )
+                and ( `type` = {GID} )
                 order by `id` {ORDER} ;"""
     ##########################################################################
     return " " . join          ( QQ . split ( )                              )
@@ -330,13 +336,6 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     return True
   ############################################################################
-  def Prepare                  ( self                                      ) :
-    ##########################################################################
-    self . assignSelectionMode ( "ContiguousSelection"                       )
-    self . setPrepared         ( True                                        )
-    ##########################################################################
-    return
-  ############################################################################
   def LineEditorFinished                ( self                             ) :
     ##########################################################################
     if                                  ( self . EditItem   == None        ) :
@@ -500,7 +499,7 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     TAGTAB = self . Tables          [ "Tags"                                 ]
     uuid   = DB   . LastUuid        ( TAGTAB , "uuid" , 2800000000000000000  )
-    DB     . AddUuid                ( TAGTAB ,  uuid  , 7                    )
+    DB     . AddUuid                ( TAGTAB ,  uuid  , self . GTYPE         )
     ##########################################################################
     return uuid
   ############################################################################
@@ -508,7 +507,7 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     SUBTAB = self . Tables          [ "Subgroups"                            ]
     uuid   = DB   . LastUuid        ( SUBTAB , "uuid" , 2800004000000000000  )
-    DB     . AddUuid                ( SUBTAB ,  uuid  , 7                    )
+    DB     . AddUuid                ( SUBTAB ,  uuid  , self . GTYPE         )
     ##########################################################################
     return uuid
   ############################################################################
