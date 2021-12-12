@@ -481,19 +481,19 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AppendTagItem                 ( self , DB                            ) :
+  def AppendTagItem          ( self , DB                                   ) :
     ##########################################################################
-    TAGTAB = self . Tables          [ "Tags"                                 ]
-    uuid   = DB   . LastUuid        ( TAGTAB , "uuid" , 2800000000000000000  )
-    DB     . AddUuid                ( TAGTAB ,  uuid  , self . GTYPE         )
+    TAGTAB = self . Tables   [ "Tags"                                        ]
+    uuid   = DB   . LastUuid ( TAGTAB , "uuid" , 2800000000000000000         )
+    DB     . AddUuid         ( TAGTAB ,  uuid  , self . GTYPE                )
     ##########################################################################
     return uuid
   ############################################################################
-  def AppendSubgroupItem            ( self , DB                            ) :
+  def AppendSubgroupItem     ( self , DB                                   ) :
     ##########################################################################
-    SUBTAB = self . Tables          [ "Subgroups"                            ]
-    uuid   = DB   . LastUuid        ( SUBTAB , "uuid" , 2800004000000000000  )
-    DB     . AddUuid                ( SUBTAB ,  uuid  , self . GTYPE         )
+    SUBTAB = self . Tables   [ "Subgroups"                                   ]
+    uuid   = DB   . LastUuid ( SUBTAB , "uuid" , 2800004000000000000         )
+    DB     . AddUuid         ( SUBTAB ,  uuid  , self . GTYPE                )
     ##########################################################################
     return uuid
   ############################################################################
