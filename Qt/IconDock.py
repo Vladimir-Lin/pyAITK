@@ -466,31 +466,38 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return mm
   ############################################################################
-  def AmountIndexMenu                 ( self , mm                          ) :
+  def AmountIndexMenu                   ( self , mm                        ) :
     ##########################################################################
-    T    = self . Total
-    MSG  = self . getMenuItem         ( "Total"                              )
-    SSI  = self . getMenuItem         ( "SpinStartId"                        )
-    SSA  = self . getMenuItem         ( "SpinAmount"                         )
-    MSG  = MSG . format               ( T                                    )
+    T      = int                        ( self . Total                       )
+    if                                  ( T <= 0                           ) :
+      return mm
+    if                                  ( self . Amount  > T               ) :
+      self . Amount  = T
+    if                                  ( self . StartId > T               ) :
+      self . StartId = 0
     ##########################################################################
-    mm   . addAction                  ( 9999991 , MSG                        )
+    MSG    = self . getMenuItem         ( "Total"                            )
+    SSI    = self . getMenuItem         ( "SpinStartId"                      )
+    SSA    = self . getMenuItem         ( "SpinAmount"                       )
+    MSG    = MSG . format               ( T                                  )
     ##########################################################################
-    self . SpinStartId = SpinBox      ( None , self . PlanFunc               )
-    self . SpinStartId . setPrefix    ( SSI                                  )
-    self . SpinStartId . setRange     ( 0 , self . Total                     )
-    self . SpinStartId . setValue     ( self . StartId                       )
-    self . SpinStartId . setAlignment ( Qt . AlignRight                      )
-    mm   . addWidget                  ( 9999992 , self . SpinStartId         )
+    mm     . addAction                  ( 9999991 , MSG                      )
     ##########################################################################
-    self . SpinAmount  = SpinBox      ( None , self . PlanFunc               )
-    self . SpinAmount  . setPrefix    ( SSA                                  )
-    self . SpinAmount  . setRange     ( 0 , self . Total                     )
-    self . SpinAmount  . setValue     ( self . Amount                        )
-    self . SpinAmount  . setAlignment ( Qt . AlignRight                      )
-    mm   . addWidget                  ( 9999993 , self . SpinAmount          )
+    self   . SpinStartId = SpinBox      ( None , self . PlanFunc             )
+    self   . SpinStartId . setPrefix    ( SSI                                )
+    self   . SpinStartId . setRange     ( 0 , self . Total                   )
+    self   . SpinStartId . setValue     ( self . StartId                     )
+    self   . SpinStartId . setAlignment ( Qt . AlignRight                    )
+    mm     . addWidget                  ( 9999992 , self . SpinStartId       )
     ##########################################################################
-    mm   . addSeparator               (                                      )
+    self   . SpinAmount  = SpinBox      ( None , self . PlanFunc             )
+    self   . SpinAmount  . setPrefix    ( SSA                                )
+    self   . SpinAmount  . setRange     ( 0 , self . Total                   )
+    self   . SpinAmount  . setValue     ( self . Amount                      )
+    self   . SpinAmount  . setAlignment ( Qt . AlignRight                    )
+    mm     . addWidget                  ( 9999993 , self . SpinAmount        )
+    ##########################################################################
+    mm     . addSeparator               (                                    )
     ##########################################################################
     return mm
   ############################################################################
