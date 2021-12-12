@@ -206,7 +206,7 @@ class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "tag/uuids"
+    mtype   = "gallerygroup/uuids"
     message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , mtype , message                    )
@@ -265,14 +265,14 @@ class GalleryGroupView             ( IconDock                              ) :
       if                            ( atItem in [ False , None ]           ) :
         return False
       ########################################################################
-      self  . ShowMenuItemTitleStatus ( "JoinGalleries" , title , CNT        )
+      self  . ShowMenuItemTitleStatus  ( "JoinGalleries"  , title , CNT      )
     ##########################################################################
     elif                            ( mtype in [ "gallerygroup/uuids"    ] ) :
       ########################################################################
       if                            ( self == sourceWidget                 ) :
-        self . ShowMenuItemTitleStatus ( "MoveCatalogues" , CNT              )
+        self . ShowMenuItemCountStatus ( "MoveCatalogues" , CNT              )
       else                                                                   :
-        self . ShowMenuItemTitleStatus ( "JoinCatalogues" , CNT              )
+        self . ShowMenuItemCountStatus ( "JoinCatalogues" , CNT              )
     ##########################################################################
     return RDN
   ############################################################################
