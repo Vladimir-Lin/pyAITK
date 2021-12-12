@@ -356,7 +356,7 @@ class PicturesView                ( IconDock                               ) :
     LAST   = self . GetLastestPosition ( DB     , LUID                       )
     PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
     SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
     ##########################################################################
     DB     . UnlockTables     (                                              )
     ##########################################################################
@@ -392,7 +392,7 @@ class PicturesView                ( IconDock                               ) :
     LAST   = self . GetLastestPosition ( DB     , LUID                       )
     PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
     SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
     ##########################################################################
     DB     . UnlockTables      (                                             )
     self   . setVacancy        (                                             )

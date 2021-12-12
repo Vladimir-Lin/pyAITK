@@ -301,19 +301,23 @@ class GalleryGroupView             ( IconDock                              ) :
     FUNC = self . AssignTaggingIcon
     return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
-  """
-  def GetLastestPosition                  ( self , DB , LUID               ) :
-    return self . GetGroupLastestPosition ( DB , "RelationPeople" , LUID     )
-  """
+  def GetLastestPosition                      ( self , DB , LUID           ) :
+    ##########################################################################
+    RELTAB = "Relation"
+    ##########################################################################
+    if                                        ( self . isReverse ( )       ) :
+      return self . GetReverseLastestPosition ( DB , RELTAB , LUID           )
+    return   self . GetNormalLastestPosition  ( DB , RELTAB , LUID           )
   ############################################################################
-  """
-  def GenerateMovingSQL                  ( self , LAST , UUIDs             ) :
-    return self . GenerateGroupMovingSQL ( "RelationPeople" , LAST , UUIDs   )
-  """
+  def GenerateMovingSQL                   ( self   , LAST , UUIDs          ) :
+    ##########################################################################
+    RELTAB = "Relation"
+    R      = self . isReverse             (                                  )
+    ##########################################################################
+    return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
   ############################################################################
   def GalleryGroupsMoving     ( self , atUuid , NAME , JSON                ) :
     ##########################################################################
-    """
     UUIDs  = JSON             [ "UUIDs"                                      ]
     if                        ( len ( UUIDs ) <= 0                         ) :
       return
@@ -335,7 +339,7 @@ class GalleryGroupView             ( IconDock                              ) :
     LAST   = self . GetLastestPosition ( DB     , LUID                       )
     PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
     SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
     ##########################################################################
     DB     . UnlockTables     (                                              )
     ##########################################################################
@@ -344,13 +348,11 @@ class GalleryGroupView             ( IconDock                              ) :
     DB     . Close            (                                              )
     ##########################################################################
     self   . loading          (                                              )
-    """
     ##########################################################################
     return
   ############################################################################
   def GalleryGroupsAppending   ( self , atUuid , NAME , JSON               ) :
     ##########################################################################
-    """
     UUIDs  = JSON              [ "UUIDs"                                     ]
     if                         ( len ( UUIDs ) <= 0                        ) :
       return
@@ -373,7 +375,7 @@ class GalleryGroupView             ( IconDock                              ) :
     LAST   = self . GetLastestPosition ( DB     , LUID                       )
     PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
     SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
     ##########################################################################
     DB     . UnlockTables      (                                             )
     self   . setVacancy        (                                             )
@@ -381,7 +383,6 @@ class GalleryGroupView             ( IconDock                              ) :
     DB     . Close             (                                             )
     ##########################################################################
     self   . loading           (                                             )
-    """
     ##########################################################################
     return
   ############################################################################
@@ -462,7 +463,7 @@ class GalleryGroupView             ( IconDock                              ) :
     if ( ( not self . isSubgroup ( ) ) and ( not self . isReverse ( ) ) )    :
       return
     ##########################################################################
-    TITLE  = "RemoveGalleryItems"
+    TITLE  = "RemoveGroupItems"
     RELTAB = self . Tables                  [ "Relation"                     ]
     RV     = self . isReverse               (                                )
     SQLs   = self . GenerateGroupRemoveSQLs ( UUIDs                        , \
