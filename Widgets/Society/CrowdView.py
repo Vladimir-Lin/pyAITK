@@ -67,7 +67,7 @@ class CrowdView                   ( IconDock                               ) :
     super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
     self . GTYPE        = 7
-    self . SortOrder    = "desc"
+    self . SortOrder    = "asc"
     self . PrivateIcon  = True
     self . PrivateGroup = True
     self . ExtraINFOs   = True

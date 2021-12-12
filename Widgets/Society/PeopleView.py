@@ -106,15 +106,6 @@ class PeopleView                   ( IconDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def setGrouping                ( self , group                            ) :
-    ##########################################################################
-    self . Grouping = group
-    ##########################################################################
-    return self . Grouping
-  ############################################################################
-  def getGrouping                ( self                                    ) :
-    return self . Grouping
-  ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
     RELTAB = self . Tables       [ "Relation"                                ]
@@ -729,8 +720,8 @@ class PeopleView                   ( IconDock                              ) :
     mm     = self . LocalityMenu   ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunAmountIndexMenu ( )         ) :
