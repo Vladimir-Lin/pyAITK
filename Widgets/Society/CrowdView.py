@@ -51,9 +51,9 @@ from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
 from   AITK  . Essentials . Relation  import Relation
-##############################################################################
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . People     . People    import People      as PeopleItem
 ##############################################################################
 class CrowdView                   ( IconDock                               ) :
   ############################################################################
@@ -67,13 +67,11 @@ class CrowdView                   ( IconDock                               ) :
     super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
     self . GTYPE        = 7
-    ## self . SortOrder    = "desc"
-    ## self . PrivateIcon  = True
-    ## self . PrivateGroup = True
+    self . SortOrder    = "desc"
+    self . PrivateIcon  = True
+    self . PrivateGroup = True
+    self . ExtraINFOs   = True
     self . dockingPlace = Qt . RightDockWidgetArea
-    ##########################################################################
-    self . Relation = Relation    (                                          )
-    self . Relation . setRelation ( "Subordination"                          )
     ##########################################################################
     self . Grouping     = "Tag"
     self . OldGrouping  = "Tag"
@@ -81,150 +79,117 @@ class CrowdView                   ( IconDock                               ) :
     ## self . Grouping = "Subgroup"
     ## self . Grouping = "Reverse"
     ##########################################################################
+    self . Relation = Relation    (                                          )
+    self . Relation . setRelation ( "Subordination"                          )
+    ##########################################################################
+    self . MountClicked           ( 1                                        )
+    self . MountClicked           ( 2                                        )
+    ##########################################################################
     self . setFunction            ( self . HavingMenu      , True            )
     ##########################################################################
     self . setDragEnabled         ( True                                     )
     self . setAcceptDrops         ( True                                     )
     self . setDragDropMode        ( QAbstractItemView . DragDrop             )
-    ## self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                ( self                                       ) :
-    return QSize              ( 800 , 800                                    )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def setGrouping             ( self , group                               ) :
-    self . Grouping = group
-    return self . Grouping
-  ############################################################################
-  def getGrouping             ( self                                       ) :
-    return self . Grouping
-  ############################################################################
-  def isGrouping              ( self , tag                                 ) :
-    return                    ( self . Grouping == tag                       )
-  ############################################################################
-  def FocusIn                 ( self                                       ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                        ( not self . isPrepared ( )                  ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel     ( "Label"      , self . windowTitle ( )        )
-    self . LinkAction         ( "Refresh"    , self . startup                )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction         ( "Insert"     , self . InsertItem             )
-    self . LinkAction         ( "Delete"     , self . DeleteItems            )
-    self . LinkAction         ( "Paste"      , self . PasteItems             )
-    self . LinkAction         ( "Copy"       , self . CopyToClipboard        )
+    self . LinkAction     ( "Insert"     , self . InsertItem                 )
+    self . LinkAction     ( "Delete"     , self . DeleteItems                )
+    self . LinkAction     ( "Paste"      , self . PasteItems                 )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
     ##########################################################################
-    self . LinkAction         ( "SelectAll"  , self . SelectAll              )
-    self . LinkAction         ( "SelectNone" , self . SelectNone             )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
-    self . LinkAction         ( "Rename"     , self . RenameItem             )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
     ##########################################################################
-    self . LinkVoice          ( self . CommandParser                         )
+    self . LinkVoice      ( self . CommandParser                             )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                ( self                                       ) :
+  def closeEvent           ( self , event                                  ) :
     ##########################################################################
-    if                        ( not self . isPrepared ( )                  ) :
-      return True
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Paste"      , self . PasteItems      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkVoice       ( None                                            )
     ##########################################################################
-    return False
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
   ############################################################################
-  def GetUuidIcon                ( self , DB , Uuid                        ) :
-    ##########################################################################
-    if                           ( self . Grouping in [ "Tag" ]            ) :
-      T1   =  75
-    else                                                                     :
-      T1   = 158
-    ##########################################################################
-    RELTAB = self . Tables       [ "Relation"                                ]
-    REL    = Relation            (                                           )
-    REL    . set                 ( "first" , Uuid                            )
-    REL    . set                 ( "t1"    , T1                              )
-    REL    . setT2               ( "Picture"                                 )
-    REL    . setRelation         ( "Using"                                   )
-    ##########################################################################
-    PICS   = REL . Subordination ( DB , RELTAB                               )
-    ##########################################################################
-    if                           ( len ( PICS ) > 0                        ) :
-      return PICS                [ 0                                         ]
-    ##########################################################################
-    return 0
+  def GetUuidIcon                    ( self , DB , Uuid                    ) :
+    TABLE = "RelationPictures"
+    return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
   ############################################################################
-  def ObtainUuidsQuery         ( self                                      ) :
+  def singleClicked ( self , item                                          ) :
     ##########################################################################
-    GID   = self . GTYPE
-    TABLE = self . Tables      [ "Tags"                                      ]
-    ORDER = self . SortOrder
-    QQ    = f"""select `uuid` from {TABLE}
-                where ( `used` = 1 )
-                and ( `type` = {GID} )
-                order by `id` {ORDER} ;"""
+    self . Notify   ( 0                                                      )
     ##########################################################################
-    return " " . join          ( QQ . split ( )                              )
+    return True
   ############################################################################
-  def ObtainSubgroupUuids      ( self , DB                                 ) :
+  def doubleClicked                ( self , item                           ) :
+    return self . OpenItemSubgroup (        item                             )
+  ############################################################################
+  def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
-    ORDER  = self . SortOrder
+    GID    = self . GTYPE
+    TAGTAB = self . Tables [ "Tags"                                          ]
+    ORDER  = self . getSortingOrder        (                                 )
+    QQ     = f"""select `uuid` from {TAGTAB}
+                 where ( `used` = 1 )
+                   and ( `type` = {GID} )
+                 order by `id` {ORDER} ;"""
+    ##########################################################################
+    return " " . join      ( QQ . split ( )                                  )
+  ############################################################################
+  def ObtainSubgroupUuids                  ( self , DB                     ) :
+    ##########################################################################
+    ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `position` {ORDER}"
     RELTAB = self . Tables [ "Relation" ]
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
   ############################################################################
-  def ObtainReverseUuids       ( self , DB                                 ) :
+  def ObtainReverseUuids                   ( self , DB                     ) :
     ##########################################################################
-    ORDER  = self . SortOrder
+    ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `reverse` {ORDER}"
     RELTAB = self . Tables [ "Relation" ]
     ##########################################################################
     return self . Relation . GetOwners     ( DB , RELTAB , OPTS              )
   ############################################################################
-  def ObtainsItemUuids                ( self , DB                          ) :
+  def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                                ( self . Grouping == "Tag"           ) :
+    if                                      ( self . isTagging ( )         ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
-    if                                ( self . Grouping == "Reverse"       ) :
+    if                                      ( self . isReverse ( )         ) :
       return self . ObtainReverseUuids      ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
-  def ReloadLocality                ( self , DB                            ) :
-    ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subgroup" , "Reverse"                 ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
-      return
-    ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
-    ##########################################################################
-    if                              ( SCOPE == "Subgroup"                  ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
-      ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
-    ##########################################################################
-    self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
-    ##########################################################################
-    return
-  ############################################################################
-  def FetchSessionInformation ( self , DB                                  ) :
-    ##########################################################################
-    self . ReloadLocality     (        DB                                    )
-    ##########################################################################
-    return
-  ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "tag/uuids"
-    message = "選擇了{0}個分類"
+    mtype   = "crowd/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , mtype , message                    )
   ############################################################################
@@ -236,17 +201,14 @@ class CrowdView                   ( IconDock                               ) :
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     ##########################################################################
-    if                        ( self . isGrouping ( "Tag"      )           ) :
+    ##########################################################################
+    if                        ( self . isTagging ( )                       ) :
       ########################################################################
-      formats = "tag/uuids"
+      formats = "picture/uuids;crowd/uuids"
       ########################################################################
-    elif                      ( self . isGrouping ( "Catalog"  )           ) :
+    else                                                                     :
       ########################################################################
-      formats = "tag/uuids;people/uuids"
-      ########################################################################
-    elif                      ( self . isGrouping ( "Subgroup" )           ) :
-      ########################################################################
-      formats = "tag/uuids;people/uuids"
+      formats = "picture/uuids;people/uuids;crowd/uuids"
     ##########################################################################
     if                        ( len ( formats ) <= 0                       ) :
       return False
@@ -254,10 +216,6 @@ class CrowdView                   ( IconDock                               ) :
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
   def dropNew                       ( self                                 , \
@@ -265,153 +223,181 @@ class CrowdView                   ( IconDock                               ) :
                                       mimeData                             , \
                                       mousePos                             ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
-      return False
-    ##########################################################################
     RDN     = self . RegularDropNew ( mimeData                               )
     if                              ( not RDN                              ) :
       return False
     ##########################################################################
     mtype   = self . DropInJSON     [ "Mime"                                 ]
     UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    atItem  = self . itemAt         ( mousePos                               )
+    CNT     = len                   ( UUIDs                                  )
+    title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    if                              ( mtype in [ "picture/uuids"         ] ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
+      self  . ShowMenuItemMessage   ( "AssignTagIcon"                        )
     ##########################################################################
-    elif                            ( mtype in [ "tag/uuids" ]             ) :
+    elif                            ( mtype in [ "people/uuids" ]          ) :
       ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個分類"
+      if                            ( self . isTagging ( )                 ) :
+        return False
       ########################################################################
-      self  . ShowStatus            ( MSG                                    )
+      if                            ( atItem in [ False , None ]           ) :
+        return False
+      ########################################################################
+      self  . ShowMenuItemTitleStatus ( "JoinPeople"  , title , CNT          )
+    ##########################################################################
+    elif                            ( mtype in [ "crowd/uuids" ]           ) :
+      ########################################################################
+      if                            ( self == sourceWidget                 ) :
+        self . ShowMenuItemCountStatus ( "MoveCatalogues" ,         CNT      )
+      else                                                                   :
+        self . ShowMenuItemTitleStatus ( "JoinCatalogues" , title , CNT      )
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    
-    ##########################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  ############################################################################
+  def acceptCrowdsDrop  ( self                                             ) :
     return True
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
+  def acceptPeopleDrop  ( self                                             ) :
     return True
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("CrowdView::dropPeople")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
-    ##########################################################################
+  def acceptPictureDrop ( self                                             ) :
     return True
   ############################################################################
-  def acceptTagDrop            ( self                                      ) :
-    return True
+  def dropCrowds                    ( self , source , pos , JSON           ) :
+    MF   = self . CrowdsMoving
+    AF   = self . CrowdsAppending
+    return self . defaultDropInside (        source , pos , JSON , MF , AF   )
   ############################################################################
-  def dropTags                 ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("CrowdView::dropTags")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
-    ##########################################################################
-    return True
+  def dropPeople                        ( self , source , pos , JSON       ) :
+    FUNC = self . PeopleAppending
+    return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
-  def LineEditorFinished                ( self                             ) :
+  def dropPictures                      ( self , source , pos , JSON       ) :
+    FUNC = self . AssignTaggingIcon
+    return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
+  ############################################################################
+  def GetLastestPosition                      ( self , DB , LUID           ) :
     ##########################################################################
-    if                                  ( self . EditItem   == None        ) :
+    RELTAB = "RelationPeople"
+    ##########################################################################
+    if                                        ( self . isReverse ( )       ) :
+      return self . GetReverseLastestPosition ( DB , RELTAB , LUID           )
+    return   self . GetNormalLastestPosition  ( DB , RELTAB , LUID           )
+  ############################################################################
+  def GenerateMovingSQL                   ( self   , LAST , UUIDs          ) :
+    ##########################################################################
+    RELTAB = "RelationPeople"
+    R      = self . isReverse             (                                  )
+    ##########################################################################
+    return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
+  ############################################################################
+  def CrowdsMoving            ( self , atUuid , NAME , JSON                ) :
+    ##########################################################################
+    UUIDs  = JSON             [ "UUIDs"                                      ]
+    if                        ( len ( UUIDs ) <= 0                         ) :
       return
     ##########################################################################
-    if                                  ( self . EditWidget == None        ) :
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    IT                = self . EditItem
-    LE                = self . EditWidget
-    self . EditItem   = None
-    self . EditWidget = None
-    CORRECT           = True
+    self   . OnBusy  . emit   (                                              )
+    self   . setBustle        (                                              )
     ##########################################################################
-    JSON              = self . itemJson ( IT                                 )
-    TEXT              = LE   . text     (                                    )
-    NAME              = ""
-    UUID              = 0
-    self              . setItemWidget   ( IT , None                          )
+    RELTAB = self . Tables    [ "RelationPeople"                             ]
+    DB     . LockWrites       ( [ RELTAB                                   ] )
     ##########################################################################
-    if ( ( CORRECT ) and ( "Uuid" not in JSON ) )                            :
-      CORRECT         = False
-    else                                                                     :
-      UUID            = JSON            [ "Uuid"                             ]
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
     ##########################################################################
-    if ( ( CORRECT ) and ( "Name" in JSON ) )                                :
-      NAME            = JSON            [ "Name"                             ]
+    LUID   = PUIDs            [ -1                                           ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
     ##########################################################################
-    if ( ( CORRECT ) and ( UUID == 0 ) and ( len ( TEXT ) <= 0 ) )           :
-      CORRECT         = False
+    DB     . UnlockTables     (                                              )
     ##########################################################################
-    if ( ( CORRECT ) and ( UUID >  0 ) and ( NAME == TEXT ) )                :
-      CORRECT         = False
+    self   . setVacancy       (                                              )
+    self   . GoRelax . emit   (                                              )
+    DB     . Close            (                                              )
     ##########################################################################
-    if                                  ( not CORRECT                      ) :
-      if                                ( UUID <= 0                        ) :
-        self . takeItem                 ( self . row ( IT )                  )
-      return
-    ##########################################################################
-    if                                  ( UUID > 0                         ) :
-      ########################################################################
-      if                                ( self . UsingName                 ) :
-        ######################################################################
-        IT   . setText                  ( TEXT                               )
-        self . PrepareItemContent       ( IT , UUID , TEXT                   )
-        self . Go                       ( self . UpdateItemName            , \
-                                          ( IT , UUID , TEXT , )             )
-      ########################################################################
-      return
-    ##########################################################################
-    IT   . setText                      ( TEXT                               )
-    ##########################################################################
-    self . Go                           ( self . AppendItemName            , \
-                                          ( IT , TEXT , )                    )
+    self   . loading          (                                              )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                          (                                       )
-  def InsertItem                     ( self                                ) :
+  def CrowdsAppending         ( self , atUuid , NAME , JSON               ) :
     ##########################################################################
-    IT     = self . PrepareEmptyItem (                                       )
-    if                               ( self . SortOrder == "asc"           ) :
-      self . addItem                 (     IT                                )
-    else                                                                     :
-      self . insertItem              ( 0 , IT                                )
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
     ##########################################################################
-    self   . setLineEdit             ( IT                                  , \
-                                       "editingFinished"                   , \
-                                       self . LineEditorFinished             )
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
+    LUID   = PUIDs             [ -1                                          ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                        (                                         )
-  def DeleteItems                  ( self                                  ) :
+  def PeopleAppending                  ( self , atUuid , NAME , JSON       ) :
     ##########################################################################
-    print("DeleteItems")
+    T1  = "Subgroup"
+    TAB = "RelationPeople"
+    ##########################################################################
+    OK  = self . AppendingPeopleIntoT1 ( atUuid , NAME , JSON , TAB , T1     )
+    if                                 ( not OK                            ) :
+      return
+    ##########################################################################
+    self   . loading                   (                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignTaggingIcon             ( self , atUuid , NAME , JSON          ) :
+    ##########################################################################
+    TABLE = "RelationPictures"
+    self . catalogAssignTaggingIcon (        atUuid , NAME , JSON , TABLE    )
+    ##########################################################################
+    return
+  ############################################################################
+  def RemoveItems             ( self , UUIDs                               ) :
+    ##########################################################################
+    self . catalogRemoveItems (        UUIDs                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def DeleteItems             ( self                                       ) :
+    ##########################################################################
+    if                        ( self . isTagging ( )                       ) :
+      return
+    ##########################################################################
+    self . defaultDeleteItems (                                              )
     ##########################################################################
     return
   ############################################################################
@@ -423,75 +409,15 @@ class CrowdView                   ( IconDock                               ) :
     return
   ############################################################################
   @pyqtSlot                        (                                         )
-  def RenameItem                   ( self                                  ) :
-    ##########################################################################
-    IT   = self . currentItem      (                                         )
-    ##########################################################################
-    if                             ( IT == None                            ) :
-      return
-    ##########################################################################
-    self . setLineEdit             ( IT                                    , \
-                                     "editingFinished"                     , \
-                                     self . LineEditorFinished               )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                        (                                         )
   def CopyToClipboard              ( self                                  ) :
     ##########################################################################
     print("CopyToClipboard")
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage           ( self                                 ) :
+  def UpdateItemName             ( self ,           item , uuid , name     ) :
     ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subgroup" , "Reverse"                 ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
-      return False
-    ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return False
-    ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
-    DB      . LockWrites            ( [ PAMTAB ]                             )
-    ##########################################################################
-    if                              ( SCOPE == "Subgroup"                  ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
-      ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
-    ##########################################################################
-    self    . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
-    ##########################################################################
-    DB      . UnlockTables          (                                        )
-    DB      . Close                 (                                        )
-    ##########################################################################
-    return True
-  ############################################################################
-  def UpdateItemName                   ( self , item , uuid , name         ) :
-    ##########################################################################
-    DB      = self . ConnectDB         (                                     )
-    if                                 ( DB == None                        ) :
-      return
-    ##########################################################################
-    NAMTAB  = self . Tables            [ "Names"                             ]
-    DB      . LockWrites               ( [ NAMTAB ]                          )
-    ##########################################################################
-    self    . AssureUuidNameByLocality ( DB                                , \
-                                         NAMTAB                            , \
-                                         uuid                              , \
-                                         name                              , \
-                                         self . getLocality ( )              )
-    ##########################################################################
-    DB      . UnlockTables             (                                     )
-    DB      . Close                    (                                     )
+    self . UpdateItemNameByTable ( "NamesEditing" , item , uuid , name       )
     ##########################################################################
     return
   ############################################################################
@@ -577,6 +503,82 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
+  def FetchExtraInformations           ( self , UUIDs                      ) :
+    ##########################################################################
+    if                                 ( len ( UUIDs ) <= 0                ) :
+      return
+    ##########################################################################
+    FMT        = self . getMenuItem    ( "LoadExtras"                        )
+    SFMT       = self . getMenuItem    ( "SubgroupCount"                     )
+    GFMT       = self . getMenuItem    ( "PeopleCount"                       )
+    ##########################################################################
+    DBA        = self . ConnectDB      (                  True               )
+    ##########################################################################
+    if                                 ( DBA == None                       ) :
+      return
+    ##########################################################################
+    DBG        = self . ConnectHost    ( self . GroupDB , True               )
+    ##########################################################################
+    if                                 ( DBG == None                       ) :
+      DBA      . Close                 (                                     )
+      return
+    ##########################################################################
+    RELTAB     = self . Tables         [ "Relation"                          ]
+    REL        = Relation              (                                     )
+    REL        . setRelation           ( "Subordination"                     )
+    T2         = self . Relation . get ( "t2"                                )
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      if                               ( not self . LoopRunning            ) :
+        continue
+      ########################################################################
+      if                               ( U not in self . UuidItemMaps      ) :
+        continue
+      ########################################################################
+      item     = self . UuidItemMaps   [ U                                   ]
+      JSOX     = self . itemJson       ( item                                )
+      ########################################################################
+      if                               ( "Name" in JSOX                    ) :
+        ######################################################################
+        title  = JSOX                  [ "Name"                              ]
+        ######################################################################
+        if                             ( len ( title ) > 0                 ) :
+          ####################################################################
+          MSG  = FMT . format          ( title                               )
+          self . ShowStatus            ( MSG                                 )
+      ########################################################################
+      REL      . set                   ( "first" , U                         )
+      ########################################################################
+      REL      . set                   ( "t1"    , T2                        )
+      REL      . set                   ( "t2"    , 158                       )
+      SCNT     = REL  . CountSecond    ( DBA     , RELTAB                    )
+      SMSG     = SFMT . format         ( SCNT                                )
+      ########################################################################
+      REL      . set                   ( "t1"    , T2                        )
+      REL      . setT2                 ( "People"                            )
+      GCNT     = REL  . CountSecond    ( DBG     , RELTAB                    )
+      GMSG     = GFMT . format         ( GCNT                                )
+      ########################################################################
+      tooltip  = f"{U}\n{SMSG}\n{GMSG}"
+      self     . assignToolTip         ( item    , tooltip                   )
+    ##########################################################################
+    DBG        . Close                 (                                     )
+    DBA        . Close                 (                                     )
+    self       . Notify                ( 2                                   )
+    self       . ShowStatus            ( ""                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchSessionInformation    ( self , DB                               ) :
+    ##########################################################################
+    self . catalogReloadLocality (        DB                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateLocalityUsage             ( self                               ) :
+    return catalogUpdateLocalityUsage (                                      )
+  ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
     doMenu = self . isFunction     ( self . HavingMenu                       )
@@ -626,14 +628,24 @@ class CrowdView                   ( IconDock                               ) :
       return True
     ##########################################################################
     if                              ( self . HandleLocalityMenu ( at )     ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
       return True
     ##########################################################################
     if                              ( self . RunSortingMenu     ( at )     ) :
+      ########################################################################
+      self . clear                  (                                        )
       self . startup                (                                        )
+      ########################################################################
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :
+      ########################################################################
+      self . clear                  (                                        )
       self . startup                (                                        )
+      ########################################################################
       return True
     ##########################################################################
     if                              ( at == 1101                           ) :
@@ -645,21 +657,41 @@ class CrowdView                   ( IconDock                               ) :
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
+      ########################################################################
       NAM  = self . Tables         [ "Names"                                 ]
       self . EditAllNames          ( self , "Crowds" , uuid , NAM            )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 2001                            ) :
+      ########################################################################
       head = atItem . text         (                                         )
       tid  = self . Relation . get ( "t2"                                    )
       self . CrowdSubgroup . emit  ( head , tid , str ( uuid )               )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 2002                            ) :
+      ########################################################################
       head = atItem . text         (                                         )
       tid  = self . Relation . get ( "t2"                                    )
       self . PeopleGroup   . emit  ( head , tid , str ( uuid )               )
+      ########################################################################
       return True
+    ##########################################################################
+    return True
+  ############################################################################
+  def OpenItemSubgroup            ( self , item                            ) :
+    ##########################################################################
+    uuid  = item . data           ( Qt . UserRole                            )
+    uuid  = int                   ( uuid                                     )
+    ##########################################################################
+    if                            ( uuid <= 0                              ) :
+      return False
+    ##########################################################################
+    title = item . text           (                                          )
+    tid   = self . Relation . get ( "t2"                                     )
+    self  . CrowdSubgroup . emit  ( title , tid , str ( uuid )               )
     ##########################################################################
     return True
   ############################################################################
@@ -670,36 +702,30 @@ class CrowdView                   ( IconDock                               ) :
     if                             ( atItem == None                        ) :
       return False
     ##########################################################################
-    uuid   = atItem . data         ( Qt . UserRole                           )
-    uuid   = int                   ( uuid                                    )
+    return self . OpenItemSubgroup ( atItem                                  )
+  ############################################################################
+  def OpenItemCrowd               ( self , item                            ) :
     ##########################################################################
-    if                             ( uuid <= 0                             ) :
+    uuid  = item . data           ( Qt . UserRole                            )
+    uuid  = int                   ( uuid                                     )
+    ##########################################################################
+    if                            ( uuid <= 0                              ) :
       return False
     ##########################################################################
-    title  = atItem . text         (                                         )
-    tid    = self . Relation . get ( "t2"                                    )
-    self   . CrowdSubgroup . emit  ( title , tid , str ( uuid )              )
+    title = item . text           (                                          )
+    tid   = self . Relation . get ( "t2"                                     )
+    self  . PeopleGroup . emit    ( title , tid , str ( uuid )               )
     ##########################################################################
     return True
   ############################################################################
-  def OpenCurrentCrowd             ( self                                  ) :
+  def OpenCurrentCrowd          ( self                                     ) :
     ##########################################################################
-    atItem = self . currentItem    (                                         )
+    atItem = self . currentItem (                                            )
     ##########################################################################
-    if                             ( atItem == None                        ) :
+    if                          ( atItem == None                           ) :
       return False
     ##########################################################################
-    uuid   = atItem . data         ( Qt . UserRole                           )
-    uuid   = int                   ( uuid                                    )
-    ##########################################################################
-    if                             ( uuid <= 0                             ) :
-      return False
-    ##########################################################################
-    title  = atItem . text         (                                         )
-    tid    = self . Relation . get ( "t2"                                    )
-    self   . PeopleGroup   . emit  ( title , tid , str ( uuid )              )
-    ##########################################################################
-    return True
+    return self . OpenItemCrowd ( atItem                                     )
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################

@@ -96,16 +96,6 @@ class GalleryGroupView             ( IconDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def setGrouping ( self , group                                           ) :
-    self . Grouping = group
-    return self . Grouping
-  ############################################################################
-  def getGrouping ( self                                                   ) :
-    return self . Grouping
-  ############################################################################
-  def isGrouping              ( self , tag                                 ) :
-    return                    ( self . Grouping == tag                       )
-  ############################################################################
   def FocusIn             ( self                                           ) :
     ##########################################################################
     if                    ( not self . isPrepared ( )                      ) :
@@ -117,6 +107,8 @@ class GalleryGroupView             ( IconDock                              ) :
     self . LinkAction     ( "Insert"     , self . InsertItem                 )
     self . LinkAction     ( "Delete"     , self . DeleteItems                )
     self . LinkAction     ( "Rename"     , self . RenameItem                 )
+    self . LinkAction     ( "Paste"      , self . PasteItems                 )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
     ##########################################################################
     self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
     self . LinkAction     ( "SelectNone" , self . SelectNone                 )
@@ -125,12 +117,14 @@ class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup      , False      )
-    self . LinkAction      ( "Insert"     , self . InsertItem   , False      )
-    self . LinkAction      ( "Delete"     , self . DeleteItems  , False      )
-    self . LinkAction      ( "Rename"     , self . RenameItem   , False      )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll    , False      )
-    self . LinkAction      ( "SelectNone" , self . SelectNone   , False      )
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Paste"      , self . PasteItems      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
     ##########################################################################
     self . Leave . emit    ( self                                            )
     super ( ) . closeEvent ( event                                           )
@@ -157,25 +151,9 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def GetUuidIcon                ( self , DB , Uuid                        ) :
-    ##########################################################################
-    RELTAB = self . Tables       [ "RelationPictures"                        ]
-    REL    = Relation            (                                           )
-    REL    . set                 ( "first" , Uuid                            )
-    REL    . setT2               ( "Picture"                                 )
-    REL    . setRelation         ( "Using"                                   )
-    ##########################################################################
-    if                           ( self . isTagging ( )                    ) :
-      REL  . setT1               ( "Tag"                                     )
-    else                                                                     :
-      REL  . setT1               ( "Subgroup"                                )
-    ##########################################################################
-    PICS   = REL . Subordination ( DB , RELTAB                               )
-    ##########################################################################
-    if                           ( len ( PICS ) > 0                        ) :
-      return PICS                [ 0                                         ]
-    ##########################################################################
-    return 0
+  def GetUuidIcon                    ( self , DB , Uuid                    ) :
+    TABLE = "RelationPictures"
+    return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
   ############################################################################
   def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
@@ -189,18 +167,29 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     return " " . join      ( QQ . split ( )                                  )
   ############################################################################
-  def ObtainSubgroupUuids                  ( self , DB                     ) :
+  def ObtainSubgroupUuids                   ( self , DB                    ) :
     ##########################################################################
-    ORDER  = self . getSortingOrder        (                                 )
+    ORDER  = self . getSortingOrder         (                                )
     OPTS   = f"order by `position` {ORDER}"
-    RELTAB = self . Tables                 [ "Relation"                      ]
+    RELTAB = self . Tables                  [ "Relation"                     ]
     ##########################################################################
-    return self . Relation . Subordination ( DB , RELTAB , OPTS              )
+    return self . Relation . Subordination  ( DB , RELTAB , OPTS             )
+  ############################################################################
+  def ObtainReverseUuids                    ( self , DB                    ) :
+    ##########################################################################
+    ORDER  = self . getSortingOrder         (                                )
+    OPTS   = f"order by `reverse` {ORDER}"
+    RELTAB = self . Tables                  [ "Relation"                     ]
+    ##########################################################################
+    return self . Relation . GetOwners      ( DB , RELTAB , OPTS             )
   ############################################################################
   def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
     if                                      ( self . isTagging ( )         ) :
       return self . DefaultObtainsItemUuids ( DB                             )
+    ##########################################################################
+    if                                      ( self . isReverse ( )         ) :
+      return self . ObtainReverseUuids      ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
@@ -279,13 +268,13 @@ class GalleryGroupView             ( IconDock                              ) :
   def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
     return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
   ############################################################################
-  def acceptGalleryGroupsDrop  ( self                                      ) :
+  def acceptGalleryGroupsDrop ( self                                       ) :
     return True
   ############################################################################
-  def acceptGalleriesDrop      ( self                                      ) :
+  def acceptGalleriesDrop     ( self                                       ) :
     return True
   ############################################################################
-  def acceptPictureDrop        ( self                                      ) :
+  def acceptPictureDrop       ( self                                       ) :
     return True
   ############################################################################
   def dropGalleryGroups             ( self , source , pos , JSON           ) :
@@ -415,63 +404,39 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def AssignTaggingIcon            ( self , atUuid , NAME , JSON           ) :
+  def AssignTaggingIcon             ( self , atUuid , NAME , JSON          ) :
     ##########################################################################
-    UUIDs  = JSON                  [ "UUIDs"                                 ]
-    if                             ( len ( UUIDs ) <= 0                    ) :
-      return
-    ##########################################################################
-    PUID   = int                   ( UUIDs [ 0                             ] )
-    ##########################################################################
-    DB     = self . ConnectHost    ( self . IconDB , True                    )
-    if                             ( DB == None                            ) :
-      return
-    ##########################################################################
-    RELTAB = self . Tables         [ "RelationPictures"                      ]
-    icon   = self . FetchIcon      ( DB , PUID                               )
-    DB     . LockWrites            ( [ RELTAB                              ] )
-    ##########################################################################
-    T2     = self . Relation . get ( "t2"                                    )
-    REL    = Relation              (                                         )
-    REL    . set                   ( "first"  , atUuid                       )
-    REL    . set                   ( "second" , PUID                         )
-    REL    . set                   ( "t1"     , T2                           )
-    REL    . setT2                 ( "Picture"                               )
-    REL    . setRelation           ( "Using"                                 )
-    REL    . Assure                ( DB , RELTAB                             )
-    ##########################################################################
-    DB     . UnlockTables          (                                         )
-    DB     . Close                 (                                         )
-    self   . Notify                ( 5                                       )
-    ##########################################################################
-    if                             ( icon in [ False , None ]              ) :
-      return
-    ##########################################################################
-    if                             ( atUuid not in self . UuidItemMaps     ) :
-      return
-    ##########################################################################
-    item   = self . UuidItemMaps   [ atUuid                                  ]
-    self   . emitAssignIcon . emit ( item , icon                             )
+    TABLE = "RelationPictures"
+    self . catalogAssignTaggingIcon (        atUuid , NAME , JSON , TABLE    )
     ##########################################################################
     return
   ############################################################################
-  def RemoveItems                           ( self , UUIDs                 ) :
+  def RemoveItems             ( self , UUIDs                               ) :
     ##########################################################################
-    if                                      ( len ( UUIDs ) <= 0           ) :
+    self . catalogRemoveItems (        UUIDs                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def DeleteItems             ( self                                       ) :
+    ##########################################################################
+    if                        ( self . isTagging ( )                       ) :
       return
     ##########################################################################
-    if ( ( not self . isSubgroup ( ) ) and ( not self . isReverse ( ) ) )    :
-      return
+    self . defaultDeleteItems (                                              )
     ##########################################################################
-    TITLE  = "RemoveGroupItems"
-    RELTAB = self . Tables                  [ "Relation"                     ]
-    RV     = self . isReverse               (                                )
-    SQLs   = self . GenerateGroupRemoveSQLs ( UUIDs                        , \
-                                              self . Relation              , \
-                                              RELTAB                       , \
-                                              RV                             )
-    self   . QuickExecuteSQLs               ( TITLE , 100 , RELTAB , SQLs    )
-    self   . Notify                         ( 5                              )
+    return
+  ############################################################################
+  @pyqtSlot                        (                                         )
+  def PasteItems                   ( self                                  ) :
+    ##########################################################################
+    print("PasteItems")
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                        (                                         )
+  def CopyToClipboard              ( self                                  ) :
+    ##########################################################################
+    print("CopyToClipboard")
     ##########################################################################
     return
   ############################################################################
@@ -566,15 +531,6 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def DeleteItems             ( self                                       ) :
-    ##########################################################################
-    if                        ( self . isTagging ( )                       ) :
-      return
-    ##########################################################################
-    self . defaultDeleteItems (                                              )
-    ##########################################################################
-    return
-  ############################################################################
   def FetchExtraInformations           ( self , UUIDs                      ) :
     ##########################################################################
     if                                 ( len ( UUIDs ) <= 0                ) :
@@ -641,6 +597,15 @@ class GalleryGroupView             ( IconDock                              ) :
     self       . ShowStatus            ( ""                                  )
     ##########################################################################
     return
+  ############################################################################
+  def FetchSessionInformation    ( self , DB                               ) :
+    ##########################################################################
+    self . catalogReloadLocality (        DB                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateLocalityUsage             ( self                               ) :
+    return catalogUpdateLocalityUsage (                                      )
   ############################################################################
   def Menu                           ( self , pos                          ) :
     ##########################################################################

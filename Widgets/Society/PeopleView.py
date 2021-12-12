@@ -85,6 +85,7 @@ class PeopleView                   ( IconDock                              ) :
     self . UUIDs              = [                                            ]
     ##########################################################################
     self . Grouping           = "Original"
+    self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
     ##########################################################################
