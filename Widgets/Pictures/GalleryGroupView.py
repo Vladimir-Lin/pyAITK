@@ -303,7 +303,7 @@ class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
   def GetLastestPosition                      ( self , DB , LUID           ) :
     ##########################################################################
-    RELTAB = "Relation"
+    RELTAB = "RelationPeople"
     ##########################################################################
     if                                        ( self . isReverse ( )       ) :
       return self . GetReverseLastestPosition ( DB , RELTAB , LUID           )
@@ -311,7 +311,7 @@ class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
   def GenerateMovingSQL                   ( self   , LAST , UUIDs          ) :
     ##########################################################################
-    RELTAB = "Relation"
+    RELTAB = "RelationPeople"
     R      = self . isReverse             (                                  )
     ##########################################################################
     return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
