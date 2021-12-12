@@ -1000,6 +1000,7 @@ class IconDock                      ( ListDock                             ) :
   def defaultDropInFunction        ( self , source , pos , JSON , func     ) :
     ##########################################################################
     PUID , NAME = self . itemAtPos ( pos                                     )
+    PUID        = int              ( PUID                                    )
     if                             ( PUID <= 0                             ) :
       return True
     ##########################################################################
@@ -1010,6 +1011,7 @@ class IconDock                      ( ListDock                             ) :
   def defaultDropInside            ( self , source , pos , JSON , M , A    ) :
     ##########################################################################
     ATID , NAME = self . itemAtPos ( pos                                     )
+    ATID        = int              ( ATID                                    )
     ##########################################################################
     ## 在內部移動
     ##########################################################################
