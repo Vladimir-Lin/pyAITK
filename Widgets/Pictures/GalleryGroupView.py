@@ -224,11 +224,11 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     if                        ( self . isTagging ( )                       ) :
       ########################################################################
-      formats = "picture/uuids;gallerygroup/uuids;"
+      formats = "picture/uuids;gallerygroup/uuids"
       ########################################################################
     else                                                                     :
       ########################################################################
-      formats = "picture/uuids;gallery/uuids;gallerygroup/uuids;"
+      formats = "picture/uuids;gallery/uuids;gallerygroup/uuids"
     ##########################################################################
     if                        ( len ( formats ) <= 0                       ) :
       return False
@@ -270,9 +270,9 @@ class GalleryGroupView             ( IconDock                              ) :
     elif                            ( mtype in [ "gallerygroup/uuids"    ] ) :
       ########################################################################
       if                            ( self == sourceWidget                 ) :
-        self . ShowMenuItemCountStatus ( "MoveCatalogues" , CNT              )
+        self . ShowMenuItemCountStatus ( "MoveCatalogues" ,         CNT      )
       else                                                                   :
-        self . ShowMenuItemCountStatus ( "JoinCatalogues" , CNT              )
+        self . ShowMenuItemTitleStatus ( "JoinCatalogues" , title , CNT      )
     ##########################################################################
     return RDN
   ############################################################################
@@ -568,7 +568,7 @@ class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
   def DeleteItems             ( self                                       ) :
     ##########################################################################
-    if                        ( not self . isTagging ( )                   ) :
+    if                        ( self . isTagging ( )                       ) :
       return
     ##########################################################################
     self . defaultDeleteItems (                                              )
