@@ -582,7 +582,9 @@ class GalleriesView                ( IconDock                              ) :
     mm     = self . AmountIndexMenu ( mm                                     )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     = self . AppendRenameAction  ( mm , 1102                          )
+    ##########################################################################
+    if                              ( atItem not in [ False , None ]       ) :
+      mm   = self . AppendRenameAction  ( mm , 1102                          )
     ##########################################################################
     if                              ( uuid > 0                             ) :
       mm   . addSeparator           (                                        )
