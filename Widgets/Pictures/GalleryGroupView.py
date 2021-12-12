@@ -67,9 +67,10 @@ class GalleryGroupView             ( IconDock                              ) :
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . GTYPE        = 64
-    self . SortOrder    = "desc"
+    self . SortOrder    = "asc"
     self . PrivateIcon  = True
     self . PrivateGroup = True
+    self . ExtraINFOs   = True
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation     = Relation (                                         )
@@ -144,6 +145,12 @@ class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
   def doubleClicked                ( self , item                           ) :
     ##########################################################################
+    uuid  = item . data            ( Qt . UserRole                           )
+    uuid  = int                    ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return False
+    ##########################################################################
     title = item . text            (                                         )
     tid   = self . Relation . get  ( "t2"                                    )
     self  . GallerySubgroup . emit ( title , tid , str ( uuid )              )
@@ -152,7 +159,7 @@ class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
-    RELTAB = self . Tables       [ "Relation"                                ]
+    RELTAB = self . Tables       [ "RelationPictures"                        ]
     REL    = Relation            (                                           )
     REL    . set                 ( "first" , Uuid                            )
     REL    . setT1               ( "Gallery"                                 )
@@ -374,13 +381,63 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def GalleriesAppending                 ( self , atUuid , NAME , JSON     ) :
+  def GalleriesAppending        ( self , atUuid , NAME , JSON              ) :
     ##########################################################################
+    UUIDs  = JSON               [ "UUIDs"                                    ]
+    if                          ( len ( UUIDs ) <= 0                       ) :
+      return False
     ##########################################################################
-    return
+    DB     = self . ConnectHost ( self . GroupDB , True                      )
+    if                          ( DB == None                               ) :
+      return False
+    ##########################################################################
+    self   . OnBusy  . emit     (                                            )
+    self   . setBustle          (                                            )
+    ##########################################################################
+    RELTAB = self . Tables      [ "RelationPeople"                           ]
+    GALM   = GalleryItem        (                                            )
+    T1     = "Subgroup"
+    ##########################################################################
+    DB     . LockWrites         ( [ RELTAB                                 ] )
+    GALM   . ConnectToGalleries ( DB , RELTAB , atUuid , T1 , UUIDs          )
+    ##########################################################################
+    DB     . UnlockTables       (                                            )
+    self   . setVacancy         (                                            )
+    self   . GoRelax . emit     (                                            )
+    DB     . Close              (                                            )
+    ##########################################################################
+    self   . Notify             ( 5                                          )
+    ##########################################################################
+    return True
   ############################################################################
   def AssignTaggingIcon            ( self , atUuid , NAME , JSON           ) :
     ##########################################################################
+    UUIDs  = JSON                  [ "UUIDs"                                 ]
+    if                             ( len ( UUIDs ) <= 0                    ) :
+      return
+    ##########################################################################
+    PUID   = UUIDs                 [ 0                                       ]
+    ##########################################################################
+    DB     = self . ConnectHost    ( self . IconDB , True                    )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    RELTAB = self . Tables         [ "RelationPictures"                      ]
+    DB     . LockWrites            ( [ RELTAB                              ] )
+    ##########################################################################
+    T2     = self . Relation . get ( "t2"                                    )
+    REL    = Relation              (                                         )
+    REL    . set                   ( "first"  , atUuid                       )
+    REL    . set                   ( "second" , PUID                         )
+    REL    . set                   ( "t1"     , T2                           )
+    REL    . setT2                 ( "Picture"                               )
+    REL    . setRelation           ( "Using"                                 )
+    REL    . Assure                ( DB , RELTAB                             )
+    ##########################################################################
+    DB     . UnlockTables          (                                         )
+    DB     . Close                 (                                         )
+    ##########################################################################
+    self   . Notify                ( 5                                       )
     ##########################################################################
     return
   ############################################################################
@@ -504,6 +561,73 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def FetchExtraInformations           ( self , UUIDs                      ) :
+    ##########################################################################
+    if                                 ( len ( UUIDs ) <= 0                ) :
+      return
+    ##########################################################################
+    FMT        = self . getMenuItem    ( "LoadExtras"                        )
+    SFMT       = self . getMenuItem    ( "SubgroupCount"                     )
+    GFMT       = self . getMenuItem    ( "GalleriesCount"                    )
+    ##########################################################################
+    DBA        = self . ConnectDB      (                  True               )
+    ##########################################################################
+    if                                 ( DBA == None                       ) :
+      return
+    ##########################################################################
+    DBG        = self . ConnectHost    ( self . GroupDB , True               )
+    ##########################################################################
+    if                                 ( DBG == None                       ) :
+      DBA      . Close                 (                                     )
+      return
+    ##########################################################################
+    RELTAB     = self . Tables         [ "Relation"                          ]
+    REL        = Relation              (                                     )
+    REL        . setRelation           ( "Subordination"                     )
+    T2         = self . Relation . get ( "t2"                                )
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      if                               ( not self . LoopRunning            ) :
+        continue
+      ########################################################################
+      if                               ( U not in self . UuidItemMaps      ) :
+        continue
+      ########################################################################
+      item     = self . UuidItemMaps   [ U                                   ]
+      JSOX     = self . itemJson       ( item                                )
+      ########################################################################
+      if                               ( "Name" in JSOX                    ) :
+        ######################################################################
+        title  = JSOX                  [ "Name"                              ]
+        ######################################################################
+        if                             ( len ( title ) > 0                 ) :
+          ####################################################################
+          MSG  = FMT . format          ( title                               )
+          self . ShowStatus            ( MSG                                 )
+      ########################################################################
+      REL      . set                   ( "first" , U                         )
+      ########################################################################
+      REL      . set                   ( "t1"    , T2                        )
+      REL      . set                   ( "t2"    , 158                       )
+      SCNT     = REL  . CountSecond    ( DBA     , RELTAB                    )
+      SMSG     = SFMT . format         ( SCNT                                )
+      ########################################################################
+      REL      . set                   ( "t1"    , T2                        )
+      REL      . setT2                 ( "Gallery"                           )
+      GCNT     = REL  . CountSecond    ( DBG     , RELTAB                    )
+      GMSG     = GFMT . format         ( GCNT                                )
+      ########################################################################
+      tooltip  = f"{U}\n{SMSG}\n{GMSG}"
+      self     . assignToolTip         ( item    , tooltip                   )
+    ##########################################################################
+    DBG        . Close                 (                                     )
+    DBA        . Close                 (                                     )
+    self       . Notify                ( 2                                   )
+    self       . ShowStatus            ( ""                                  )
+    ##########################################################################
+    return
+  ############################################################################
   def Menu                           ( self , pos                          ) :
     ##########################################################################
     if                               ( not self . isPrepared ( )           ) :
@@ -538,9 +662,11 @@ class GalleryGroupView             ( IconDock                              ) :
         mm  . addAction              ( 2002 , msg                            )
         ######################################################################
       mm    . addSeparator           (                                       )
-    mm      . addAction              ( 1001 ,  TRX [ "UI::Refresh"  ]        )
-    mm      . addAction              ( 1101 ,  TRX [ "UI::Insert"   ]        )
+    ##########################################################################
+    mm      = self . AppendRefreshAction ( mm , 1001                         )
+    mm      = self . AppendInsertAction  ( mm , 1101                         )
     mm      . addSeparator           (                                       )
+    ##########################################################################
     if                               ( atItem != None                      ) :
       if                             ( self . EditAllNames != None         ) :
         mm  . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]       )

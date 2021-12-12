@@ -81,6 +81,7 @@ class IconDock                      ( ListDock                             ) :
     self . Amount        = 60
     self . PrivateIcon   = False
     self . PrivateGroup  = False
+    self . ExtraINFOs    = False
     self . LoopRunning   = True
     self . SpinStartId   = None
     self . SpinAmount    = None
@@ -325,44 +326,58 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return QIcon                      ( PIX                                  )
   ############################################################################
-  def FetchIcons                      ( self , UUIDs                       ) :
+  def FetchIcons                       ( self , UUIDs                      ) :
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
+    if                                 ( len ( UUIDs ) <= 0                ) :
       return
     ##########################################################################
-    FMT     = self . Translations     [ "UI::LoadIcon"                       ]
+    FMT        = self . Translations   [ "UI::LoadIcon"                      ]
     ##########################################################################
-    if                                ( self . PrivateIcon                 ) :
-      DB    = self . ConnectHost      ( self . IconDB , True                 )
+    if                                 ( self . PrivateIcon                ) :
+      DB       = self . ConnectHost    ( self . IconDB , True                )
     else                                                                     :
-      DB    = self . ConnectDB        ( True                                 )
+      DB       = self . ConnectDB      ( True                                )
     ##########################################################################
-    if                                ( DB == None                         ) :
+    if                                 ( DB == None                        ) :
       return
     ##########################################################################
     for U in UUIDs                                                           :
-      if                              ( not self . LoopRunning             ) :
+      ########################################################################
+      if                               ( not self . LoopRunning            ) :
         continue
-      if                              ( U in self . UuidItemMaps           ) :
-        item = self . UuidItemMaps    [ U                                    ]
-        PUID = self . GetUuidIcon     ( DB , U                               )
-        if                            ( PUID > 0                           ) :
+      ########################################################################
+      if                               ( U not in self . UuidItemMaps      ) :
+        continue
+      ########################################################################
+      item     = self . UuidItemMaps   [ U                                   ]
+      PUID     = self . GetUuidIcon    ( DB , U                              )
+      ########################################################################
+      if                               ( PUID <= 0                         ) :
+        continue
+      ########################################################################
+      JSOX     = self . itemJson       ( item                                )
+      if                               ( "Name" not in JSOX                ) :
+        ######################################################################
+        title  = JSOX                  [ "Name"                              ]
+        ######################################################################
+        if                             ( len ( title ) > 0                 ) :
           ####################################################################
-          JSOX = self . itemJson      ( item                                 )
-          if                          ( "Name" in JSOX                     ) :
-            title = JSOX              [ "Name"                               ]
-            if                        ( len ( title ) > 0                  ) :
-              MSG = FMT . format      ( title                                )
-              self . ShowStatus       ( MSG                                  )
-          ####################################################################
-          icon = self . FetchIcon     ( DB , PUID                            )
-          if                          ( icon != None                       ) :
-            self . emitAssignIcon . emit ( item , icon                       )
+          MSG  = FMT . format          ( title                               )
+          self . ShowStatus            ( MSG                                 )
+      ########################################################################
+      icon     = self . FetchIcon      ( DB , PUID                           )
+      if                               ( icon not in [ False , None ]      ) :
+        self   . emitAssignIcon . emit ( item , icon                         )
     ##########################################################################
-    DB      . Close                   (                                      )
+    DB         . Close                 (                                     )
     ##########################################################################
-    self    . Notify                  ( 2                                    )
-    self    . ShowStatus              ( ""                                   )
+    self       . Notify                ( 2                                   )
+    self       . ShowStatus            ( ""                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchExtraInformations          ( self , UUIDs                       ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -572,7 +587,13 @@ class IconDock                      ( ListDock                             ) :
     self    . emitIconsShow . emit    (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) > 0                  ) :
-      self . Go                       ( self . FetchIcons , ( UUIDs , )      )
+      ########################################################################
+      self  . Go                      ( self . FetchIcons , ( UUIDs , )      )
+      ########################################################################
+      if                              ( self . ExtraINFOs                  ) :
+        ######################################################################
+        self . Go                     ( self . FetchExtraInformations      , \
+                                        ( UUIDs , )                          )
     ##########################################################################
     return
   ############################################################################
@@ -1075,6 +1096,8 @@ class IconDock                      ( ListDock                             ) :
     self   . GoRelax . emit    (                                             )
     DB     . Close             (                                             )
     ##########################################################################
+    self   . Notify            ( 5                                           )
+    ##########################################################################
     return True
   ############################################################################
   def AppendingIntoPeople     ( self                                       , \
@@ -1106,6 +1129,8 @@ class IconDock                      ( ListDock                             ) :
     self   . setVacancy       (                                              )
     self   . GoRelax . emit   (                                              )
     DB     . Close            (                                              )
+    ##########################################################################
+    self   . Notify            ( 5                                           )
     ##########################################################################
     return True
   ############################################################################

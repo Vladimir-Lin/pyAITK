@@ -36,17 +36,27 @@ class Gallery     (                                                        ) :
   def __del__     ( self                                                   ) :
     pass
   ############################################################################
-  def ConnectToPictures ( self , DB , TABLE , UUID , T1 , UUIDs            ) :
+  def ConnectToPictures  ( self , DB , TABLE , UUID , T1 , UUIDs           ) :
     ##########################################################################
-    REL = Relation      (                                                    )
-    REL . set           ( "first" , UUID                                     )
-    REL . setT1         ( T1                                                 )
-    REL . setT2         ( "Picture"                                          )
-    REL . setRelation   ( "Subordination"                                    )
-    REL . Joins         ( DB , TABLE , UUIDs                                 )
+    REL = Relation       (                                                   )
+    REL . set            ( "first" , UUID                                    )
+    REL . setT1          ( T1                                                )
+    REL . setT2          ( "Picture"                                         )
+    REL . setRelation    ( "Subordination"                                   )
+    REL . Joins          ( DB , TABLE , UUIDs                                )
     ##########################################################################
     return
   ############################################################################
+  def ConnectToGalleries ( self , DB , TABLE , UUID , T1 , UUIDs           ) :
+    ##########################################################################
+    REL = Relation       (                                                   )
+    REL . set            ( "first" , UUID                                    )
+    REL . setT1          ( T1                                                )
+    REL . setT2          ( "Gallery"                                         )
+    REL . setRelation    ( "Subordination"                                   )
+    REL . Joins          ( DB , TABLE , UUIDs                                )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
