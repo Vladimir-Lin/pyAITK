@@ -580,16 +580,16 @@ class GalleriesView                ( IconDock                              ) :
     TRX    = self . Translations
     ##########################################################################
     mm     = self . AmountIndexMenu ( mm                                     )
-    ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
+    mm     = self . AppendRenameAction  ( mm , 1102                          )
     ##########################################################################
     if                              ( uuid > 0                             ) :
       mm   . addSeparator           (                                        )
       mm   . addAction              ( 1201 ,  TRX [ "UI::PersonalGallery"  ] )
     ##########################################################################
     mm     . addSeparator           (                                        )
-    if                              ( atItem != None                       ) :
+    if                              ( atItem not in [ False , None ]       ) :
       if                            ( self . EditAllNames != None          ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
         mm . addSeparator           (                                        )
@@ -612,14 +612,14 @@ class GalleriesView                ( IconDock                              ) :
     if                              ( self . RunDocking    ( mm , aa )     ) :
       return True
     ##########################################################################
-    if                              ( self . RunSortingMenu     ( at )     ) :
+    if                              ( self . HandleLocalityMenu ( at )     ) :
       ########################################################################
       self . clear                  (                                        )
       self . startup                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( self . HandleLocalityMenu ( at )     ) :
+    if                              ( self . RunSortingMenu     ( at )     ) :
       ########################################################################
       self . clear                  (                                        )
       self . startup                (                                        )
@@ -635,6 +635,10 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     if                              ( at == 1101                           ) :
       self . InsertItem             (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1102                           ) :
+      self . RenameItem             (                                        )
       return True
     ##########################################################################
     if                              ( at == 1201                           ) :

@@ -162,9 +162,13 @@ class GalleryGroupView             ( IconDock                              ) :
     RELTAB = self . Tables       [ "RelationPictures"                        ]
     REL    = Relation            (                                           )
     REL    . set                 ( "first" , Uuid                            )
-    REL    . setT1               ( "Gallery"                                 )
     REL    . setT2               ( "Picture"                                 )
     REL    . setRelation         ( "Using"                                   )
+    ##########################################################################
+    if                           ( self . isTagging ( )                    ) :
+      REL  . setT1               ( "Tag"                                     )
+    else                                                                     :
+      REL  . setT1               ( "Subgroup"                                )
     ##########################################################################
     PICS   = REL . Subordination ( DB , RELTAB                               )
     ##########################################################################
@@ -416,7 +420,7 @@ class GalleryGroupView             ( IconDock                              ) :
     if                             ( len ( UUIDs ) <= 0                    ) :
       return
     ##########################################################################
-    PUID   = UUIDs                 [ 0                                       ]
+    PUID   = int                   ( UUIDs [ 0                             ] )
     ##########################################################################
     DB     = self . ConnectHost    ( self . IconDB , True                    )
     if                             ( DB == None                            ) :
@@ -674,15 +678,16 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     mm      = self . AppendRefreshAction ( mm , 1001                         )
     mm      = self . AppendInsertAction  ( mm , 1101                         )
+    mm      = self . AppendRenameAction  ( mm , 1102                         )
     mm      . addSeparator           (                                       )
     ##########################################################################
-    if                               ( atItem != None                      ) :
+    if                               ( atItem not in [ False , None ]      ) :
       if                             ( self . EditAllNames != None         ) :
         mm  . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]       )
         mm  . addSeparator           (                                       )
     ##########################################################################
-    mm      = self . LocalityMenu    ( mm                                    )
     mm      = self . SortingMenu     ( mm                                    )
+    mm      = self . LocalityMenu    ( mm                                    )
     self    . DockingMenu            ( mm                                    )
     ##########################################################################
     mm      . setFont                ( self    . menuFont ( )                )
@@ -715,6 +720,10 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     if                               ( at == 1101                          ) :
       self  . InsertItem             (                                       )
+      return True
+    ##########################################################################
+    if                               ( at == 1102                          ) :
+      self . RenameItem              (                                       )
       return True
     ##########################################################################
     if                               ( at == 1601                          ) :
