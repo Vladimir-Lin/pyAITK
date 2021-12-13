@@ -86,6 +86,32 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return
   ############################################################################
+  def FocusOut ( self                                                      ) :
+    ##########################################################################
+    if         ( not self . isPrepared ( )                                 ) :
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def setGrouping ( self , group                                           ) :
+    self . Grouping = group
+    return self . Grouping
+  ############################################################################
+  def getGrouping ( self                                                   ) :
+    return self . Grouping
+  ############################################################################
+  def isGrouping  ( self                                                   ) :
+    return        ( self . Grouping in [ "Subordination" , "Reverse" ]       )
+  ############################################################################
+  def isOriginal       ( self                                              ) :
+    return             ( self . Grouping in [ "Original"                   ] )
+  ############################################################################
+  def isSubordination  ( self                                              ) :
+    return             ( self . Grouping in [ "Subordination"              ] )
+  ############################################################################
+  def isReverse        ( self                                              ) :
+    return             ( self . Grouping in [  "Reverse"                   ] )
+  ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
     IDPMSG = self . Translations [ "Docking" ] [ "None"                      ]
@@ -221,31 +247,39 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return False
   ############################################################################
-  def AmountIndexMenu                 ( self , mm                          ) :
+  def AmountIndexMenu                   ( self , mm                        ) :
     ##########################################################################
-    T    = self . Total
-    MSG  = self . getMenuItem         ( "Total"                              )
-    SSI  = self . getMenuItem         ( "SpinStartId"                        )
-    SSA  = self . getMenuItem         ( "SpinAmount"                         )
-    MSG  = MSG . format               ( T                                    )
+    T      = int                        ( self . Total                       )
+    if                                  ( T <= 0                           ) :
+      return mm
+    if                                  ( self . Amount  > T               ) :
+      self . Amount  = T
+    if                                  ( self . StartId > T               ) :
+      self . StartId = 0
     ##########################################################################
-    mm   . addAction                  ( 9999991 , MSG                        )
+    T      = self . Total
+    MSG    = self . getMenuItem         ( "Total"                            )
+    SSI    = self . getMenuItem         ( "SpinStartId"                      )
+    SSA    = self . getMenuItem         ( "SpinAmount"                       )
+    MSG    = MSG . format               ( T                                  )
     ##########################################################################
-    self . SpinStartId = SpinBox      ( None , self . PlanFunc               )
-    self . SpinStartId . setPrefix    ( SSI                                  )
-    self . SpinStartId . setRange     ( 0 , self . Total                     )
-    self . SpinStartId . setValue     ( self . StartId                       )
-    self . SpinStartId . setAlignment ( Qt . AlignRight                      )
-    mm   . addWidget                  ( 9999992 , self . SpinStartId         )
+    mm     . addAction                  ( 9999991 , MSG                      )
     ##########################################################################
-    self . SpinAmount  = SpinBox      ( None , self . PlanFunc               )
-    self . SpinAmount  . setPrefix    ( SSA                                  )
-    self . SpinAmount  . setRange     ( 0 , self . Total                     )
-    self . SpinAmount  . setValue     ( self . Amount                        )
-    self . SpinAmount  . setAlignment ( Qt . AlignRight                      )
-    mm   . addWidget                  ( 9999993 , self . SpinAmount          )
+    self   . SpinStartId = SpinBox      ( None , self . PlanFunc             )
+    self   . SpinStartId . setPrefix    ( SSI                                )
+    self   . SpinStartId . setRange     ( 0 , self . Total                   )
+    self   . SpinStartId . setValue     ( self . StartId                     )
+    self   . SpinStartId . setAlignment ( Qt . AlignRight                    )
+    mm     . addWidget                  ( 9999992 , self . SpinStartId       )
     ##########################################################################
-    mm   . addSeparator               (                                      )
+    self   . SpinAmount  = SpinBox      ( None , self . PlanFunc             )
+    self   . SpinAmount  . setPrefix    ( SSA                                )
+    self   . SpinAmount  . setRange     ( 0 , self . Total                   )
+    self   . SpinAmount  . setValue     ( self . Amount                      )
+    self   . SpinAmount  . setAlignment ( Qt . AlignRight                    )
+    mm     . addWidget                  ( 9999993 , self . SpinAmount        )
+    ##########################################################################
+    mm     . addSeparator               (                                    )
     ##########################################################################
     return mm
   ############################################################################
@@ -633,4 +667,34 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     self          . Go                   ( func , ( text , )                 )
     ##########################################################################
     return
+  ############################################################################
+  def ShowMenuItemTitleStatus ( self , menuItem , title , CNT              ) :
+    ##########################################################################
+    FMT  = self . getMenuItem ( menuItem                                     )
+    MSG  = FMT  . format      ( title , CNT                                  )
+    self . ShowStatus         ( MSG                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def ShowMenuItemCountStatus ( self , menuItem , CNT                      ) :
+    ##########################################################################
+    FMT  = self . getMenuItem ( menuItem                                     )
+    MSG  = FMT  . format      ( CNT                                          )
+    self . ShowStatus         ( MSG                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def ShowMenuItemMessage     ( self , menuItem                            ) :
+    ##########################################################################
+    MSG  = self . getMenuItem ( menuItem                                     )
+    self . ShowStatus         ( MSG                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
 ##############################################################################
