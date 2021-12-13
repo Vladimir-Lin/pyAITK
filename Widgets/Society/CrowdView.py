@@ -283,7 +283,7 @@ class CrowdView                   ( IconDock                               ) :
   ############################################################################
   def GetLastestPosition                      ( self , DB , LUID           ) :
     ##########################################################################
-    RELTAB = "RelationPeople"
+    RELTAB = "Relation"
     ##########################################################################
     if                                        ( self . isReverse ( )       ) :
       return self . GetReverseLastestPosition ( DB , RELTAB , LUID           )
@@ -291,7 +291,7 @@ class CrowdView                   ( IconDock                               ) :
   ############################################################################
   def GenerateMovingSQL                   ( self   , LAST , UUIDs          ) :
     ##########################################################################
-    RELTAB = "RelationPeople"
+    RELTAB = "Relation"
     R      = self . isReverse             (                                  )
     ##########################################################################
     return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
@@ -309,7 +309,7 @@ class CrowdView                   ( IconDock                               ) :
     self   . OnBusy  . emit   (                                              )
     self   . setBustle        (                                              )
     ##########################################################################
-    RELTAB = self . Tables    [ "RelationPeople"                             ]
+    RELTAB = self . Tables    [ "Relation"                                   ]
     DB     . LockWrites       ( [ RELTAB                                   ] )
     ##########################################################################
     OPTS   = f"order by `position` asc"
@@ -344,7 +344,7 @@ class CrowdView                   ( IconDock                               ) :
     self   . OnBusy  . emit    (                                             )
     self   . setBustle         (                                             )
     ##########################################################################
-    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    RELTAB = self . Tables     [ "Relation"                                  ]
     ##########################################################################
     DB     . LockWrites        ( [ RELTAB                                  ] )
     self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
@@ -421,19 +421,19 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def AppendTagItem                 ( self , DB                            ) :
+  def AppendTagItem          ( self , DB                                   ) :
     ##########################################################################
-    TAGTAB = self . Tables          [ "Tags"                                 ]
-    uuid   = DB   . LastUuid        ( TAGTAB , "uuid" , 2800000000000000000  )
-    DB     . AddUuid                ( TAGTAB ,  uuid  , self . GTYPE         )
+    TAGTAB = self . Tables   [ "Tags"                                        ]
+    uuid   = DB   . LastUuid ( TAGTAB , "uuid" , 2800000000000000000         )
+    DB     . AddUuid         ( TAGTAB ,  uuid  , self . GTYPE                )
     ##########################################################################
     return uuid
   ############################################################################
-  def AppendSubgroupItem            ( self , DB                            ) :
+  def AppendSubgroupItem     ( self , DB                                   ) :
     ##########################################################################
-    SUBTAB = self . Tables          [ "Subgroups"                            ]
-    uuid   = DB   . LastUuid        ( SUBTAB , "uuid" , 2800004000000000000  )
-    DB     . AddUuid                ( SUBTAB ,  uuid  , self . GTYPE         )
+    SUBTAB = self . Tables   [ "Subgroups"                                   ]
+    uuid   = DB   . LastUuid ( SUBTAB , "uuid" , 2800004000000000000         )
+    DB     . AddUuid         ( SUBTAB ,  uuid  , self . GTYPE                )
     ##########################################################################
     return uuid
   ############################################################################
@@ -449,7 +449,7 @@ class CrowdView                   ( IconDock                               ) :
     RELTAB   = self . Tables             [ "RelationPeople"                  ]
     TABLES   =                           [ NAMTAB , RELTAB                   ]
     ##########################################################################
-    if                                   ( self . Grouping in [ "Tag" ]    ) :
+    if                                   ( self . isTagging ( )            ) :
       TABLES . append                    ( TAGTAB                            )
       T1     =  75
       T2     = 158
@@ -462,7 +462,7 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     DB       . LockWrites                ( TABLES                            )
     ##########################################################################
-    if                                   ( self . Grouping in [ "Tag" ]    ) :
+    if                                   ( self . isTagging ( )            ) :
       uuid   = self . AppendTagItem      ( DB                                )
     else                                                                     :
       ########################################################################
@@ -471,7 +471,7 @@ class CrowdView                   ( IconDock                               ) :
       REL    = Relation                  (                                   )
       REL    . set                       ( "relation" , RR                   )
       ########################################################################
-      if                                 ( self . Grouping == "Subgroup"   ) :
+      if                                 ( self . isSubgroup ( )           ) :
         ######################################################################
         PUID = self . Relation . get     ( "first"                           )
         REL  . set                       ( "first"    , PUID                 )
@@ -479,7 +479,7 @@ class CrowdView                   ( IconDock                               ) :
         REL  . set                       ( "t1"       , T1                   )
         REL  . set                       ( "t2"       , 158                  )
         ######################################################################
-      elif                               ( self . Grouping == "Reverse"    ) :
+      elif                               ( self . isReverse  ( )           ) :
         ######################################################################
         PUID = self . Relation . get     ( "second"                          )
         REL  . set                       ( "first"    , uuid                 )
@@ -602,15 +602,19 @@ class CrowdView                   ( IconDock                               ) :
       mg   = self . getMenuItem     ( "Subgroup"                             )
       mm   . addAction              ( 2001 , mg                              )
       ########################################################################
-      if                            ( self . Grouping == "Subgroup"        ) :
+      if                            ( self . isSubgroup ( )                ) :
         mg = self . getMenuItem     ( "Crowds"                               )
         mm . addAction              ( 2002 , mg                              )
       mm   . addSeparator           (                                        )
     ##########################################################################
-    mm     . addAction              ( 1001 , TRX [ "UI::Refresh" ]           )
-    mm     . addAction              ( 1101 , TRX [ "UI::Insert"  ]           )
-    mm     . addAction              ( 1102 , TRX [ "UI::Rename"  ]           )
-    mm     . addSeparator           (                                        )
+    mm      = self . AppendRefreshAction ( mm , 1001                         )
+    mm      = self . AppendInsertAction  ( mm , 1101                         )
+    ##########################################################################
+    if                               ( atItem not in [ False , None ]      ) :
+      mm    = self . AppendRenameAction  ( mm , 1102                         )
+    ##########################################################################
+    mm      . addSeparator           (                                       )
+    ##########################################################################
     if                              ( atItem != None                       ) :
       if                            ( self . EditAllNames != None          ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
@@ -620,8 +624,8 @@ class CrowdView                   ( IconDock                               ) :
     mm     = self . LocalityMenu    ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    mm     . setFont                ( self    . font ( )                     )
-    aa     = mm . exec_             ( QCursor . pos  ( )                     )
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
     if                              ( self . RunDocking   ( mm , aa )      ) :
