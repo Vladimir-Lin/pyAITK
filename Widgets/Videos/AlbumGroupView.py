@@ -84,6 +84,9 @@ class AlbumGroupView              ( IconDock                               ) :
     self . Relation = Relation    (                                          )
     self . Relation . setRelation ( "Subordination"                          )
     ##########################################################################
+    self . MountClicked           ( 1                                        )
+    self . MountClicked           ( 2                                        )
+    ##########################################################################
     self . setFunction            ( self . HavingMenu , True                 )
     ##########################################################################
     self . setDragEnabled         ( True                                     )
@@ -492,7 +495,7 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     FMT        = self . getMenuItem    ( "LoadExtras"                        )
     SFMT       = self . getMenuItem    ( "SubgroupCount"                     )
-    GFMT       = self . getMenuItem    ( "PeopleCount"                       )
+    GFMT       = self . getMenuItem    ( "AlbumCount"                        )
     ##########################################################################
     DBA        = self . ConnectDB      (                  True               )
     ##########################################################################
@@ -538,7 +541,7 @@ class AlbumGroupView              ( IconDock                               ) :
       SMSG     = SFMT . format         ( SCNT                                )
       ########################################################################
       REL      . set                   ( "t1"    , T2                        )
-      REL      . setT2                 ( "People"                            )
+      REL      . setT2                 ( "Album"                             )
       GCNT     = REL  . CountSecond    ( DBG     , RELTAB                    )
       GMSG     = GFMT . format         ( GCNT                                )
       ########################################################################
