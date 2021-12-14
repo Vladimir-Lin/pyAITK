@@ -295,7 +295,7 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
   ############################################################################
-  def CrowdsMoving            ( self , atUuid , NAME , JSON                ) :
+  def OrganizationGroupsMoving ( self , atUuid , NAME , JSON               ) :
     ##########################################################################
     UUIDs  = JSON             [ "UUIDs"                                      ]
     if                        ( len ( UUIDs ) <= 0                         ) :
@@ -330,7 +330,7 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def CrowdsAppending         ( self , atUuid , NAME , JSON               ) :
+  def OrganizationGroupsAppending ( self , atUuid , NAME , JSON            ) :
     ##########################################################################
     UUIDs  = JSON              [ "UUIDs"                                     ]
     if                         ( len ( UUIDs ) <= 0                        ) :
@@ -365,14 +365,14 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def PeopleAppending                  ( self , atUuid , NAME , JSON       ) :
+  def OrganizationAppending            ( self , atUuid , NAME , JSON       ) :
     ##########################################################################
     T1  = "Subgroup"
     TAB = "RelationPeople"
     ##########################################################################
-    OK  = self . AppendingPeopleIntoT1 ( atUuid , NAME , JSON , TAB , T1     )
-    if                                 ( not OK                            ) :
-      return
+    ## OK  = self . AppendingPeopleIntoT1 ( atUuid , NAME , JSON , TAB , T1     )
+    ## if                                 ( not OK                            ) :
+    ##   return
     ##########################################################################
     self   . loading                   (                                     )
     ##########################################################################
@@ -509,7 +509,7 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     FMT        = self . getMenuItem    ( "LoadExtras"                        )
     SFMT       = self . getMenuItem    ( "SubgroupCount"                     )
-    GFMT       = self . getMenuItem    ( "PeopleCount"                       )
+    GFMT       = self . getMenuItem    ( "OrganizationCount"                 )
     ##########################################################################
     DBA        = self . ConnectDB      (                  True               )
     ##########################################################################
@@ -555,7 +555,7 @@ class OrganizationGroupView       ( IconDock                               ) :
       SMSG     = SFMT . format         ( SCNT                                )
       ########################################################################
       REL      . set                   ( "t1"    , T2                        )
-      REL      . setT2                 ( "People"                            )
+      REL      . setT2                 ( "Organization"                      )
       GCNT     = REL  . CountSecond    ( DBG     , RELTAB                    )
       GMSG     = GFMT . format         ( GCNT                                )
       ########################################################################
@@ -577,8 +577,6 @@ class OrganizationGroupView       ( IconDock                               ) :
   ############################################################################
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
-  ############################################################################
-  
   ############################################################################
   def Menu                            ( self , pos                         ) :
     ##########################################################################
@@ -671,23 +669,13 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     if                                ( at == 2001                         ) :
       ########################################################################
-      head = atItem . text            (                                      )
-      tid  = self . Relation . get    ( "t2"                                 )
-      self . OrganizationSubgroup . emit ( head , tid , str ( uuid )         )
+      self . OpenItemSubgroup         ( atItem                               )
       ########################################################################
       return True
     ##########################################################################
     if                                ( at == 2002                         ) :
       ########################################################################
-      icon    = atItem . icon         (                                      )
-      head    = atItem . text         (                                      )
-      tid     = self . Relation   . get  ( "t2"                              )
-      related = "Subordination"
-      self    . OrganizationGroup . emit ( head                            , \
-                                           tid                             , \
-                                           str ( uuid )                    , \
-                                           related                         , \
-                                           icon                              )
+      self . OpenItemOrganizationGroup ( atItem                              )
       ########################################################################
       return True
     ##########################################################################
@@ -703,7 +691,7 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     title = item . text           (                                          )
     tid   = self . Relation . get ( "t2"                                     )
-    self  . CrowdSubgroup . emit  ( title , tid , str ( uuid )               )
+    self  . OrganizationSubgroup . emit  ( title , tid , str ( uuid )        )
     ##########################################################################
     return True
   ############################################################################
@@ -716,7 +704,7 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     return self . OpenItemSubgroup ( atItem                                  )
   ############################################################################
-  def OpenItemCrowd               ( self , item                            ) :
+  def OpenItemOrganizationGroup   ( self , item                            ) :
     ##########################################################################
     uuid  = item . data           ( Qt . UserRole                            )
     uuid  = int                   ( uuid                                     )
@@ -724,20 +712,26 @@ class OrganizationGroupView       ( IconDock                               ) :
     if                            ( uuid <= 0                              ) :
       return False
     ##########################################################################
-    title = item . text           (                                          )
-    tid   = self . Relation . get ( "t2"                                     )
-    self  . PeopleGroup . emit    ( title , tid , str ( uuid )               )
+    icon    = item . icon         (                                          )
+    title   = item . text         (                                          )
+    tid     = self . Relation   . get ( "t2"                                 )
+    related = "Subordination"
+    self    . OrganizationGroup . emit ( title                             , \
+                                         tid                               , \
+                                         str ( uuid )                      , \
+                                         related                           , \
+                                         icon                                )
     ##########################################################################
     return True
   ############################################################################
-  def OpenCurrentCrowd          ( self                                     ) :
+  def OpenCurrentOrganizationGroup          ( self                         ) :
     ##########################################################################
-    atItem = self . currentItem (                                            )
+    atItem = self . currentItem             (                                )
     ##########################################################################
-    if                          ( atItem == None                           ) :
+    if                                      ( atItem == None               ) :
       return False
     ##########################################################################
-    return self . OpenItemCrowd ( atItem                                     )
+    return self . OpenItemOrganizationGroup ( atItem                         )
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
