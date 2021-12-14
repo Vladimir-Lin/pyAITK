@@ -66,15 +66,23 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
+    self . GTYPE        = 76
+    self . SortOrder    = "asc"
+    self . PrivateIcon  = True
+    self . PrivateGroup = True
+    self . ExtraINFOs   = True
+    self . dockingPlace = Qt . RightDockWidgetArea
+    ##########################################################################
+    self . Grouping     = "Tag"
+    self . OldGrouping  = "Tag"
+    ## self . Grouping     = "Catalog"
+    ## self . Grouping     = "Subgroup"
+    ## self . Grouping     = "Reverse"
+    ##########################################################################
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . setRelation ( "Subordination"                          )
-    ##########################################################################
-    self . Grouping = "Tag"
-    ## self . Grouping = "Catalog"
-    ## self . Grouping = "Subgroup"
-    ## self . Grouping = "Reverse"
     ##########################################################################
     self . setFunction            ( self . HavingMenu , True                 )
     ##########################################################################
@@ -84,135 +92,88 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                ( self                                       ) :
-    return QSize              ( 800 , 800                                    )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def setGrouping             ( self , group                               ) :
-    self . Grouping = group
-    return self . Grouping
-  ############################################################################
-  def getGrouping             ( self                                       ) :
-    return self . Grouping
-  ############################################################################
-  def isGrouping              ( self , tag                                 ) :
-    return                    ( self . Grouping == tag                       )
-  ############################################################################
-  def FocusIn                 ( self                                       ) :
+  def FocusIn             ( self                                           ) :
     ##########################################################################
-    if                        ( not self . isPrepared ( )                  ) :
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel     ( "Label"      , self . windowTitle ( )        )
-    self . LinkAction         ( "Refresh"    , self . startup                )
+    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
+    self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
-    self . LinkAction         ( "Insert"     , self . InsertItem             )
-    self . LinkAction         ( "Delete"     , self . DeleteItems            )
-    self . LinkAction         ( "Paste"      , self . PasteItems             )
-    self . LinkAction         ( "Copy"       , self . CopyToClipboard        )
+    self . LinkAction     ( "Insert"     , self . InsertItem                 )
+    self . LinkAction     ( "Delete"     , self . DeleteItems                )
+    self . LinkAction     ( "Rename"     , self . RenameItem                 )
+    self . LinkAction     ( "Paste"      , self . PasteItems                 )
+    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
     ##########################################################################
-    self . LinkAction         ( "SelectAll"  , self . SelectAll              )
-    self . LinkAction         ( "SelectNone" , self . SelectNone             )
+    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
+    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
-    self . LinkAction         ( "Rename"     , self . RenameItem             )
-    ##########################################################################
-    self . LinkVoice          ( self . CommandParser                         )
+    self . LinkVoice      ( self . CommandParser                             )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                ( self                                       ) :
+  def closeEvent           ( self , event                                  ) :
     ##########################################################################
-    if                        ( not self . isPrepared ( )                  ) :
-      return True
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Paste"      , self . PasteItems      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkVoice       ( None                                            )
     ##########################################################################
-    return False
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
   ############################################################################
-  def GetUuidIcon                ( self , DB , Uuid                        ) :
-    ##########################################################################
-    if                           ( self . Grouping in [ "Tag" ]            ) :
-      T1   =  75
-    else                                                                     :
-      T1   = 158
-    ##########################################################################
-    RELTAB = self . Tables       [ "Relation"                                ]
-    REL    = Relation            (                                           )
-    REL    . set                 ( "first" , Uuid                            )
-    REL    . set                 ( "t1"    , T1                              )
-    REL    . setT2               ( "Picture"                                 )
-    REL    . setRelation         ( "Using"                                   )
-    ##########################################################################
-    PICS   = REL . Subordination ( DB , RELTAB                               )
-    ##########################################################################
-    if                           ( len ( PICS ) > 0                        ) :
-      return PICS                [ 0                                         ]
-    ##########################################################################
-    return 0
+  def GetUuidIcon                    ( self , DB , Uuid                    ) :
+    TABLE = "RelationPictures"
+    return self . catalogGetUuidIcon (        DB , Uuid , TABLE              )
   ############################################################################
-  def ObtainUuidsQuery         ( self                                      ) :
+  def singleClicked ( self , item                                          ) :
     ##########################################################################
-    TABLE = self . Tables      [ "Tags"                                      ]
-    ORDER = self . SortOrder
-    QQ    = f"""select `uuid` from {TABLE}
-                where ( `used` = 1 )
-                and ( `type` = 76 )
-                order by `id` {ORDER} ;"""
+    self . Notify   ( 0                                                      )
     ##########################################################################
-    return " " . join          ( QQ . split ( )                              )
+    return True
   ############################################################################
-  def ObtainSubgroupUuids      ( self , DB                                 ) :
+  def doubleClicked                ( self , item                           ) :
+    return self . OpenItemSubgroup (        item                             )
+  ############################################################################
+  def ObtainUuidsQuery                    ( self                           ) :
+    return self . catalogObtainUuidsQuery (                                  )
+  ############################################################################
+  def ObtainSubgroupUuids                  ( self , DB                     ) :
     ##########################################################################
-    ORDER  = self . SortOrder
+    ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `position` {ORDER}"
     RELTAB = self . Tables [ "Relation" ]
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
   ############################################################################
-  def ObtainReverseUuids       ( self , DB                                 ) :
+  def ObtainReverseUuids                   ( self , DB                     ) :
     ##########################################################################
-    ORDER  = self . SortOrder
+    ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `reverse` {ORDER}"
     RELTAB = self . Tables [ "Relation" ]
     ##########################################################################
     return self . Relation . GetOwners     ( DB , RELTAB , OPTS              )
   ############################################################################
-  def ObtainsItemUuids                ( self , DB                          ) :
+  def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                                ( self . Grouping == "Tag"           ) :
+    if                                      ( self . isTagging ( )         ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
-    if                                ( self . Grouping == "Reverse"       ) :
+    if                                      ( self . isReverse ( )         ) :
       return self . ObtainReverseUuids      ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
-  ############################################################################
-  def FetchSessionInformation ( self , DB                                  ) :
-    ##########################################################################
-    self . ReloadLocality     (        DB                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def FetchIcons                      ( self , UUIDs                       ) :
-    ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
-      return
-    ##########################################################################
-    DB      = self . ConnectHost      ( self . IconDB , True                 )
-    if                                ( DB == None                         ) :
-      return
-    ##########################################################################
-    for U in UUIDs                                                           :
-      if                              ( not self . LoopRunning             ) :
-        continue
-      if                              ( U in self . UuidItemMaps           ) :
-        item = self . UuidItemMaps    [ U                                    ]
-        PUID = self . GetUuidIcon     ( DB , U                               )
-        if                            ( PUID > 0                           ) :
-          icon = self . FetchIcon     ( DB , PUID                            )
-          if                          ( icon != None                       ) :
-            self . emitAssignIcon . emit ( item , icon                       )
-    ##########################################################################
-    DB      . Close                   (                                      )
-    ##########################################################################
-    return
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
@@ -329,89 +290,19 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return True
   ############################################################################
-  def Prepare                  ( self                                      ) :
+  ############################################################################
+  def RemoveItems             ( self , UUIDs                               ) :
     ##########################################################################
-    self . assignSelectionMode ( "ContiguousSelection"                       )
-    self . setPrepared         ( True                                        )
+    self . catalogRemoveItems (        UUIDs                                 )
     ##########################################################################
     return
   ############################################################################
-  def LineEditorFinished                ( self                             ) :
+  def DeleteItems             ( self                                       ) :
     ##########################################################################
-    if                                  ( self . EditItem   == None        ) :
+    if                        ( self . isTagging ( )                       ) :
       return
     ##########################################################################
-    if                                  ( self . EditWidget == None        ) :
-      return
-    ##########################################################################
-    IT                = self . EditItem
-    LE                = self . EditWidget
-    self . EditItem   = None
-    self . EditWidget = None
-    CORRECT           = True
-    ##########################################################################
-    JSON              = self . itemJson ( IT                                 )
-    TEXT              = LE   . text     (                                    )
-    NAME              = ""
-    UUID              = 0
-    self              . setItemWidget   ( IT , None                          )
-    ##########################################################################
-    if ( ( CORRECT ) and ( "Uuid" not in JSON ) )                            :
-      CORRECT         = False
-    else                                                                     :
-      UUID            = JSON            [ "Uuid"                             ]
-    ##########################################################################
-    if ( ( CORRECT ) and ( "Name" in JSON ) )                                :
-      NAME            = JSON            [ "Name"                             ]
-    ##########################################################################
-    if ( ( CORRECT ) and ( UUID == 0 ) and ( len ( TEXT ) <= 0 ) )           :
-      CORRECT         = False
-    ##########################################################################
-    if ( ( CORRECT ) and ( UUID >  0 ) and ( NAME == TEXT ) )                :
-      CORRECT         = False
-    ##########################################################################
-    if                                  ( not CORRECT                      ) :
-      if                                ( UUID <= 0                        ) :
-        self . takeItem                 ( self . row ( IT )                  )
-      return
-    ##########################################################################
-    if                                  ( UUID > 0                         ) :
-      ########################################################################
-      if                                ( self . UsingName                 ) :
-        ######################################################################
-        IT   . setText                  ( TEXT                               )
-        self . PrepareItemContent       ( IT , UUID , TEXT                   )
-        self . Go                       ( self . UpdateItemName            , \
-                                          ( IT , UUID , TEXT , )             )
-      ########################################################################
-      return
-    ##########################################################################
-    IT   . setText                      ( TEXT                               )
-    ##########################################################################
-    self . Go                           ( self . AppendItemName            , \
-                                          ( IT , TEXT , )                    )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                          (                                       )
-  def InsertItem                     ( self                                ) :
-    ##########################################################################
-    IT     = self . PrepareEmptyItem (                                       )
-    if                               ( self . SortOrder == "asc"           ) :
-      self . addItem                 (     IT                                )
-    else                                                                     :
-      self . insertItem              ( 0 , IT                                )
-    ##########################################################################
-    self   . setLineEdit             ( IT                                  , \
-                                       "editingFinished"                   , \
-                                       self . LineEditorFinished             )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                        (                                         )
-  def DeleteItems                  ( self                                  ) :
-    ##########################################################################
-    print("DeleteItems")
+    self . defaultDeleteItems (                                              )
     ##########################################################################
     return
   ############################################################################
@@ -419,20 +310,6 @@ class AlbumGroupView              ( IconDock                               ) :
   def PasteItems                   ( self                                  ) :
     ##########################################################################
     print("PasteItems")
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                        (                                         )
-  def RenameItem                   ( self                                  ) :
-    ##########################################################################
-    IT   = self . currentItem      (                                         )
-    ##########################################################################
-    if                             ( IT == None                            ) :
-      return
-    ##########################################################################
-    self . setLineEdit             ( IT                                    , \
-                                     "editingFinished"                     , \
-                                     self . LineEditorFinished               )
     ##########################################################################
     return
   ############################################################################
@@ -545,61 +422,14 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage           ( self                                 ) :
+  def FetchSessionInformation    ( self , DB                               ) :
     ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subgroup" , "Reverse"                 ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
-      return False
-    ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return False
-    ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
-    DB      . LockWrites            ( [ PAMTAB ]                             )
-    ##########################################################################
-    if                              ( SCOPE == "Subgroup"                  ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
-      ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
-    ##########################################################################
-    self    . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
-    ##########################################################################
-    DB      . UnlockTables          (                                        )
-    DB      . Close                 (                                        )
-    ##########################################################################
-    return True
-  ############################################################################
-  def ReloadLocality                ( self , DB                            ) :
-    ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subgroup" , "Reverse"                 ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
-      return
-    ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
-    ##########################################################################
-    if                              ( SCOPE == "Subgroup"                  ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
-      ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
-      ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
-    ##########################################################################
-    self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    self . catalogReloadLocality (        DB                                 )
     ##########################################################################
     return
+  ############################################################################
+  def UpdateLocalityUsage             ( self                               ) :
+    return catalogUpdateLocalityUsage (                                      )
   ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
@@ -701,6 +531,20 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return True
   ############################################################################
+  def OpenItemSubgroup             ( self , item                           ) :
+    ##########################################################################
+    uuid  = item . data            ( Qt . UserRole                           )
+    uuid  = int                    ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return False
+    ##########################################################################
+    title = item . text            (                                         )
+    tid   = self . Relation . get  ( "t2"                                    )
+    self  . AlbumSubgroup   . emit ( title , tid , str ( uuid )              )
+    ##########################################################################
+    return True
+  ############################################################################
   def OpenCurrentSubgroup          ( self                                  ) :
     ##########################################################################
     atItem = self . currentItem    (                                         )
@@ -708,36 +552,30 @@ class AlbumGroupView              ( IconDock                               ) :
     if                             ( atItem == None                        ) :
       return False
     ##########################################################################
-    uuid   = atItem . data         ( Qt . UserRole                           )
-    uuid   = int                   ( uuid                                    )
+    return self . OpenItemSubgroup ( atItem                                  )
+  ############################################################################
+  def OpenItemAlbum                ( self , item                           ) :
+    ##########################################################################
+    uuid  = item . data            ( Qt . UserRole                           )
+    uuid  = int                    ( uuid                                    )
     ##########################################################################
     if                             ( uuid <= 0                             ) :
       return False
     ##########################################################################
-    title  = atItem . text         (                                         )
-    tid    = self . Relation . get ( "t2"                                    )
-    self   . AlbumSubgroup . emit  ( title , tid , str ( uuid )              )
+    title = item . text            (                                         )
+    tid   = self . Relation . get  ( "t2"                                    )
+    self  . AlbumGroup      . emit ( title , tid , str ( uuid )              )
     ##########################################################################
     return True
   ############################################################################
   def OpenCurrentAlbum          ( self                                     ) :
     ##########################################################################
-    atItem = self . currentItem    (                                         )
+    atItem = self . currentItem (                                            )
     ##########################################################################
-    if                             ( atItem == None                        ) :
+    if                          ( atItem == None                           ) :
       return False
     ##########################################################################
-    uuid   = atItem . data         ( Qt . UserRole                           )
-    uuid   = int                   ( uuid                                    )
-    ##########################################################################
-    if                             ( uuid <= 0                             ) :
-      return False
-    ##########################################################################
-    title  = atItem . text         (                                         )
-    tid    = self . Relation . get ( "t2"                                    )
-    self   . AlbumGroup    . emit  ( title , tid , str ( uuid )              )
-    ##########################################################################
-    return True
+    return self . OpenItemAlbum ( atItem                                     )
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################

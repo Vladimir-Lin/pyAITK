@@ -148,17 +148,8 @@ class CrowdView                   ( IconDock                               ) :
   def doubleClicked                ( self , item                           ) :
     return self . OpenItemSubgroup (        item                             )
   ############################################################################
-  def ObtainUuidsQuery     ( self                                          ) :
-    ##########################################################################
-    GID    = self . GTYPE
-    TAGTAB = self . Tables [ "Tags"                                          ]
-    ORDER  = self . getSortingOrder        (                                 )
-    QQ     = f"""select `uuid` from {TAGTAB}
-                 where ( `used` = 1 )
-                   and ( `type` = {GID} )
-                 order by `id` {ORDER} ;"""
-    ##########################################################################
-    return " " . join      ( QQ . split ( )                                  )
+  def ObtainUuidsQuery                    ( self                           ) :
+    return self . catalogObtainUuidsQuery (                                  )
   ############################################################################
   def ObtainSubgroupUuids                  ( self , DB                     ) :
     ##########################################################################
