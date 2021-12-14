@@ -177,8 +177,8 @@ class AlbumGroupView              ( IconDock                               ) :
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "tag/uuids"
-    message = "選擇了{0}個分類"
+    mtype   = "albumgroup/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , mtype , message                    )
   ############################################################################
@@ -190,17 +190,13 @@ class AlbumGroupView              ( IconDock                               ) :
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     ##########################################################################
-    if                        ( self . isGrouping ( "Tag"      )           ) :
+    if                        ( self . isTagging ( )                       ) :
       ########################################################################
-      formats = "tag/uuids"
+      formats = "picture/uuids;albumgroup/uuids"
       ########################################################################
-    elif                      ( self . isGrouping ( "Catalog"  )           ) :
+    else                                                                     :
       ########################################################################
-      formats = "tag/uuids;people/uuids"
-      ########################################################################
-    elif                      ( self . isGrouping ( "Subgroup" )           ) :
-      ########################################################################
-      formats = "tag/uuids;people/uuids"
+      formats = "picture/uuids;album/uuids;albumgroup/uuids"
     ##########################################################################
     if                        ( len ( formats ) <= 0                       ) :
       return False
@@ -208,10 +204,6 @@ class AlbumGroupView              ( IconDock                               ) :
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
   def dropNew                       ( self                                 , \
@@ -246,50 +238,135 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    
-    ##########################################################################
+  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  ############################################################################
+  def acceptAlbumGroupsDrop ( self                                         ) :
     return True
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
+  def acceptAlbumsDrop      ( self                                         ) :
     return True
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("CrowdView::dropPeople")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
-    ##########################################################################
+  def acceptPictureDrop     ( self                                         ) :
     return True
   ############################################################################
-  def acceptTagDrop            ( self                                      ) :
-    return True
+  def dropAlbumGroups               ( self , source , pos , JSON           ) :
+    MF   = self . AlbumGroupsMoving
+    AF   = self . AlbumGroupsAppending
+    return self . defaultDropInside (        source , pos , JSON , MF , AF   )
   ############################################################################
-  def dropTags                 ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("CrowdView::dropTags")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
-    ##########################################################################
-    return True
+  def dropAlbums                        ( self , source , pos , JSON       ) :
+    FUNC = self . AlbumAppending
+    return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
+  def dropPictures                      ( self , source , pos , JSON       ) :
+    FUNC = self . AssignTaggingIcon
+    return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
+  ############################################################################
+  def GetLastestPosition                      ( self , DB , LUID           ) :
+    ##########################################################################
+    RELTAB = "Relation"
+    ##########################################################################
+    if                                        ( self . isReverse ( )       ) :
+      return self . GetReverseLastestPosition ( DB , RELTAB , LUID           )
+    return   self . GetNormalLastestPosition  ( DB , RELTAB , LUID           )
+  ############################################################################
+  def GenerateMovingSQL                   ( self   , LAST , UUIDs          ) :
+    ##########################################################################
+    RELTAB = "Relation"
+    R      = self . isReverse             (                                  )
+    ##########################################################################
+    return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
+  ############################################################################
+  def AlbumGroupsMoving       ( self , atUuid , NAME , JSON                ) :
+    ##########################################################################
+    UUIDs  = JSON             [ "UUIDs"                                      ]
+    if                        ( len ( UUIDs ) <= 0                         ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit   (                                              )
+    self   . setBustle        (                                              )
+    ##########################################################################
+    RELTAB = self . Tables    [ "Relation"                                   ]
+    DB     . LockWrites       ( [ RELTAB                                   ] )
+    ##########################################################################
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
+    LUID   = PUIDs            [ -1                                           ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    ##########################################################################
+    self   . setVacancy       (                                              )
+    self   . GoRelax . emit   (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . loading          (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def AlbumGroupsAppending     ( self , atUuid , NAME , JSON               ) :
+    ##########################################################################
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "Relation"                                  ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
+    OPTS   = f"order by `position` asc"
+    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
+    ##########################################################################
+    LUID   = PUIDs             [ -1                                          ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def AlbumAppending                   ( self , atUuid , NAME , JSON       ) :
+    ##########################################################################
+    T1  = "Subgroup"
+    TAB = "RelationPeople"
+    ##########################################################################
+    OK  = self . AppendingPeopleIntoT1 ( atUuid , NAME , JSON , TAB , T1     )
+    if                                 ( not OK                            ) :
+      return
+    ##########################################################################
+    self   . loading                   (                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignTaggingIcon             ( self , atUuid , NAME , JSON          ) :
+    ##########################################################################
+    TABLE = "RelationPictures"
+    self . catalogAssignTaggingIcon (        atUuid , NAME , JSON , TABLE    )
+    ##########################################################################
+    return
   ############################################################################
   def RemoveItems             ( self , UUIDs                               ) :
     ##########################################################################
@@ -320,39 +397,25 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateItemName                   ( self , item , uuid , name         ) :
+  def UpdateItemName             ( self ,           item , uuid , name     ) :
     ##########################################################################
-    DB      = self . ConnectDB         (                                     )
-    if                                 ( DB == None                        ) :
-      return
-    ##########################################################################
-    NAMTAB  = self . Tables            [ "Names"                             ]
-    DB      . LockWrites               ( [ NAMTAB ]                          )
-    ##########################################################################
-    self    . AssureUuidNameByLocality ( DB                                , \
-                                         NAMTAB                            , \
-                                         uuid                              , \
-                                         name                              , \
-                                         self . getLocality ( )              )
-    ##########################################################################
-    DB      . UnlockTables             (                                     )
-    DB      . Close                    (                                     )
+    self . UpdateItemNameByTable ( "NamesEditing" , item , uuid , name       )
     ##########################################################################
     return
   ############################################################################
-  def AppendTagItem                 ( self , DB                            ) :
+  def AppendTagItem          ( self , DB                                   ) :
     ##########################################################################
-    TAGTAB = self . Tables          [ "Tags"                                 ]
-    uuid   = DB   . LastUuid        ( TAGTAB , "uuid" , 2800000000000000000  )
-    DB     . AddUuid                ( TAGTAB ,  uuid  , 76                   )
+    TAGTAB = self . Tables   [ "Tags"                                        ]
+    uuid   = DB   . LastUuid ( TAGTAB , "uuid" , 2800000000000000000         )
+    DB     . AddUuid         ( TAGTAB ,  uuid  , self . GTYPE                )
     ##########################################################################
     return uuid
   ############################################################################
-  def AppendSubgroupItem            ( self , DB                            ) :
+  def AppendSubgroupItem     ( self , DB                                   ) :
     ##########################################################################
-    SUBTAB = self . Tables          [ "Subgroups"                            ]
-    uuid   = DB   . LastUuid        ( SUBTAB , "uuid" , 2800004000000000000  )
-    DB     . AddUuid                ( SUBTAB ,  uuid  , 76                   )
+    SUBTAB = self . Tables   [ "Subgroups"                                   ]
+    uuid   = DB   . LastUuid ( SUBTAB , "uuid" , 2800004000000000000         )
+    DB     . AddUuid         ( SUBTAB ,  uuid  , self . GTYPE                )
     ##########################################################################
     return uuid
   ############################################################################
@@ -419,6 +482,73 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     self     . PrepareItemContent        ( item , uuid , name                )
     self     . assignToolTip             ( item , str ( uuid )               )
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchExtraInformations           ( self , UUIDs                      ) :
+    ##########################################################################
+    if                                 ( len ( UUIDs ) <= 0                ) :
+      return
+    ##########################################################################
+    FMT        = self . getMenuItem    ( "LoadExtras"                        )
+    SFMT       = self . getMenuItem    ( "SubgroupCount"                     )
+    GFMT       = self . getMenuItem    ( "PeopleCount"                       )
+    ##########################################################################
+    DBA        = self . ConnectDB      (                  True               )
+    ##########################################################################
+    if                                 ( DBA == None                       ) :
+      return
+    ##########################################################################
+    DBG        = self . ConnectHost    ( self . GroupDB , True               )
+    ##########################################################################
+    if                                 ( DBG == None                       ) :
+      DBA      . Close                 (                                     )
+      return
+    ##########################################################################
+    RELTAB     = self . Tables         [ "Relation"                          ]
+    REL        = Relation              (                                     )
+    REL        . setRelation           ( "Subordination"                     )
+    T2         = self . Relation . get ( "t2"                                )
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      if                               ( not self . LoopRunning            ) :
+        continue
+      ########################################################################
+      if                               ( U not in self . UuidItemMaps      ) :
+        continue
+      ########################################################################
+      item     = self . UuidItemMaps   [ U                                   ]
+      JSOX     = self . itemJson       ( item                                )
+      ########################################################################
+      if                               ( "Name" in JSOX                    ) :
+        ######################################################################
+        title  = JSOX                  [ "Name"                              ]
+        ######################################################################
+        if                             ( len ( title ) > 0                 ) :
+          ####################################################################
+          MSG  = FMT . format          ( title                               )
+          self . ShowStatus            ( MSG                                 )
+      ########################################################################
+      REL      . set                   ( "first" , U                         )
+      ########################################################################
+      REL      . set                   ( "t1"    , T2                        )
+      REL      . set                   ( "t2"    , 158                       )
+      SCNT     = REL  . CountSecond    ( DBA     , RELTAB                    )
+      SMSG     = SFMT . format         ( SCNT                                )
+      ########################################################################
+      REL      . set                   ( "t1"    , T2                        )
+      REL      . setT2                 ( "People"                            )
+      GCNT     = REL  . CountSecond    ( DBG     , RELTAB                    )
+      GMSG     = GFMT . format         ( GCNT                                )
+      ########################################################################
+      tooltip  = f"{U}\n{SMSG}\n{GMSG}"
+      self     . assignToolTip         ( item    , tooltip                   )
+    ##########################################################################
+    DBG        . Close                 (                                     )
+    DBA        . Close                 (                                     )
+    self       . Notify                ( 2                                   )
+    self       . ShowStatus            ( ""                                  )
     ##########################################################################
     return
   ############################################################################

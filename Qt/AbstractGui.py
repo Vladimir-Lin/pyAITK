@@ -138,7 +138,7 @@ class AbstractGui        (                                                 ) :
                                  "Function" : "acceptVideoDrop"              ,
                                  "Drop"     : "dropVideos"                 } ,
                                { "Mime"     : "album/uuids"                  ,
-                                 "Function" : "acceptAlbumDrop"              ,
+                                 "Function" : "acceptAlbumsDrop"             ,
                                  "Drop"     : "dropAlbums"                 } ,
                                { "Mime"     : "albumgroup/uuids"             ,
                                  "Function" : "acceptAlbumGroupsDrop"        ,
