@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## PeopleView
+## CrowdView
 ##############################################################################
 import os
 import sys
@@ -200,7 +200,6 @@ class CrowdView                   ( IconDock                               ) :
     return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
-    ##########################################################################
     ##########################################################################
     if                        ( self . isTagging ( )                       ) :
       ########################################################################
@@ -579,107 +578,112 @@ class CrowdView                   ( IconDock                               ) :
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                            ( self , pos                         ) :
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    if                                ( not self . isPrepared ( )          ) :
       return False
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . itemAt         ( pos                                     )
+    doMenu = self . isFunction        ( self . HavingMenu                    )
+    if                                ( not doMenu                         ) :
+      return False
+    ##########################################################################
+    self   . Notify                   ( 0                                    )
+    ##########################################################################
+    items  = self . selectedItems     (                                      )
+    atItem = self . itemAt            ( pos                                  )
     uuid   = 0
     ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( Qt . UserRole                           )
-      uuid = int                   ( uuid                                    )
+    if                                ( atItem != None                     ) :
+      uuid = atItem . data            ( Qt . UserRole                        )
+      uuid = int                      ( uuid                                 )
     ##########################################################################
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager              ( self                                 )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    if                              ( uuid > 0                             ) :
+    if                                ( uuid > 0                           ) :
       ########################################################################
-      mg   = self . getMenuItem     ( "Subgroup"                             )
-      mm   . addAction              ( 2001 , mg                              )
+      mg   = self . getMenuItem       ( "Subgroup"                           )
+      mm   . addAction                ( 2001 , mg                            )
       ########################################################################
-      if                            ( self . isSubgroup ( )                ) :
-        mg = self . getMenuItem     ( "Crowds"                               )
-        mm . addAction              ( 2002 , mg                              )
-      mm   . addSeparator           (                                        )
+      if                              ( self . isSubgroup ( )              ) :
+        mg = self . getMenuItem       ( "Crowds"                             )
+        mm . addAction                ( 2002 , mg                            )
+      mm   . addSeparator             (                                      )
     ##########################################################################
-    mm      = self . AppendRefreshAction ( mm , 1001                         )
-    mm      = self . AppendInsertAction  ( mm , 1101                         )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    mm     = self . AppendInsertAction  ( mm , 1101                          )
     ##########################################################################
-    if                               ( atItem not in [ False , None ]      ) :
-      mm    = self . AppendRenameAction  ( mm , 1102                         )
+    if                                ( atItem not in [ False , None ]     ) :
+      mm   = self . AppendRenameAction  ( mm , 1102                         )
     ##########################################################################
-    mm      . addSeparator           (                                       )
+    mm     . addSeparator             (                                      )
     ##########################################################################
-    if                              ( atItem != None                       ) :
-      if                            ( self . EditAllNames != None          ) :
-        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
-        mm . addSeparator           (                                        )
+    if                                ( atItem != None                     ) :
+      if                              ( self . EditAllNames != None        ) :
+        mm . addAction                ( 1601 ,  TRX [ "UI::EditNames" ]      )
+        mm . addSeparator             (                                      )
     ##########################################################################
-    mm     = self . SortingMenu     ( mm                                     )
-    mm     = self . LocalityMenu    ( mm                                     )
-    self   . DockingMenu            ( mm                                     )
+    mm     = self . SortingMenu       ( mm                                   )
+    mm     = self . LocalityMenu      ( mm                                   )
+    self   . DockingMenu              ( mm                                   )
     ##########################################################################
-    mm     . setFont                ( self    . menuFont ( )                 )
-    aa     = mm . exec_             ( QCursor . pos      ( )                 )
-    at     = mm . at                ( aa                                     )
+    mm     . setFont                  ( self    . menuFont ( )               )
+    aa     = mm . exec_               ( QCursor . pos      ( )               )
+    at     = mm . at                  ( aa                                   )
     ##########################################################################
-    if                              ( self . RunDocking   ( mm , aa )      ) :
+    if                                ( self . RunDocking   ( mm , aa )    ) :
       return True
     ##########################################################################
-    if                              ( self . HandleLocalityMenu ( at )     ) :
+    if                                ( self . HandleLocalityMenu ( at )   ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( self . RunSortingMenu     ( at )     ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . clear                    (                                      )
+      self . startup                  (                                      )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1001                           ) :
+    if                                ( self . RunSortingMenu     ( at )   ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 1101                           ) :
-      self . InsertItem             (                                        )
-      return True
-    ##########################################################################
-    if                              ( at == 1102                           ) :
-      self . RenameItem             (                                        )
-      return True
-    ##########################################################################
-    if                             ( at == 1601                            ) :
-      ########################################################################
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Crowds" , uuid , NAM            )
+      self . clear                    (                                      )
+      self . startup                  (                                      )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 2001                            ) :
+    if                                ( at == 1001                         ) :
       ########################################################################
-      head = atItem . text         (                                         )
-      tid  = self . Relation . get ( "t2"                                    )
-      self . CrowdSubgroup . emit  ( head , tid , str ( uuid )               )
+      self . clear                    (                                      )
+      self . startup                  (                                      )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 2002                            ) :
+    if                                ( at == 1101                         ) :
+      self . InsertItem               (                                      )
+      return True
+    ##########################################################################
+    if                                ( at == 1102                         ) :
+      self . RenameItem               (                                      )
+      return True
+    ##########################################################################
+    if                               ( at == 1601                          ) :
       ########################################################################
-      head = atItem . text         (                                         )
-      tid  = self . Relation . get ( "t2"                                    )
-      self . PeopleGroup   . emit  ( head , tid , str ( uuid )               )
+      NAM  = self . Tables           [ "Names"                               ]
+      self . EditAllNames            ( self , "Crowds" , uuid , NAM          )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                               ( at == 2001                          ) :
+      ########################################################################
+      head = atItem . text           (                                       )
+      tid  = self . Relation . get   ( "t2"                                  )
+      self . CrowdSubgroup . emit    ( head , tid , str ( uuid )             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                               ( at == 2002                          ) :
+      ########################################################################
+      head = atItem . text           (                                       )
+      tid  = self . Relation . get   ( "t2"                                  )
+      self . PeopleGroup   . emit    ( head , tid , str ( uuid )             )
       ########################################################################
       return True
     ##########################################################################
