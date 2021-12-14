@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## 圖庫
+## 影集
 ##############################################################################
 import os
 import sys
@@ -36,25 +36,14 @@ class Album       (                                                        ) :
   def __del__     ( self                                                   ) :
     pass
   ############################################################################
-  def ConnectToPictures  ( self , DB , TABLE , UUID , T1 , UUIDs           ) :
+  def ConnectToAlbums ( self , DB , TABLE , UUID , T1 , UUIDs              ) :
     ##########################################################################
-    REL = Relation       (                                                   )
-    REL . set            ( "first" , UUID                                    )
-    REL . setT1          ( T1                                                )
-    REL . setT2          ( "Picture"                                         )
-    REL . setRelation    ( "Subordination"                                   )
-    REL . Joins          ( DB , TABLE , UUIDs                                )
-    ##########################################################################
-    return
-  ############################################################################
-  def ConnectToGalleries ( self , DB , TABLE , UUID , T1 , UUIDs           ) :
-    ##########################################################################
-    REL = Relation       (                                                   )
-    REL . set            ( "first" , UUID                                    )
-    REL . setT1          ( T1                                                )
-    REL . setT2          ( "Gallery"                                         )
-    REL . setRelation    ( "Subordination"                                   )
-    REL . Joins          ( DB , TABLE , UUIDs                                )
+    REL = Relation    (                                                      )
+    REL . set         ( "first" , UUID                                       )
+    REL . setT1       ( T1                                                   )
+    REL . setT2       ( "Album"                                              )
+    REL . setRelation ( "Subordination"                                      )
+    REL . Joins       ( DB , TABLE , UUIDs                                   )
     ##########################################################################
     return
   ############################################################################
