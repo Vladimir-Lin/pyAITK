@@ -104,7 +104,7 @@ class LanguageListings             ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 480 , 640 )                       )
   ############################################################################
   def FocusIn             ( self                                           ) :
     ##########################################################################
@@ -495,6 +495,13 @@ class LanguageListings             ( TreeDock                              ) :
     mm     . setFont                ( self    . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
+    ##########################################################################
+    if                              ( self   . RunAmountIndexMenu ( )      ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
+      return
     ##########################################################################
     if                              ( self . RunDocking   ( mm , aa )      ) :
       return True
