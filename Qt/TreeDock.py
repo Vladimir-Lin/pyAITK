@@ -136,7 +136,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return UUIDs
   ############################################################################
-  def ObtainsItemUuids                ( self , DB                          ) :
+  def ObtainsItemUuids                    ( self , DB                      ) :
     return self . DefaultObtainsItemUuids ( DB                               )
   ############################################################################
   def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
