@@ -66,7 +66,9 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 28
+    self . Amount             = 35
+    self . Active             = True
+    self . Usage              = 1
     self . SortOrder          = "asc"
     self . Method             = "Original"
     self . SearchLine         = None
@@ -80,8 +82,12 @@ class CelestialListings            ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 5                                       )
+    self . setColumnCount          ( 9                                       )
+    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnHidden         ( 3 , True                                )
     self . setColumnHidden         ( 4 , True                                )
+    self . setColumnHidden         ( 7 , True                                )
+    self . setColumnHidden         ( 8 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -96,14 +102,14 @@ class CelestialListings            ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( False                                   )
+    self . setAcceptDrops          ( True                                    )
     self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragOnly            )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 480 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 800 , 640 )                       )
   ############################################################################
   def FocusIn             ( self                                           ) :
     ##########################################################################
@@ -150,15 +156,15 @@ class CelestialListings            ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 1 , 2 , 3 ]              ) :
+    if                          ( column not in [ 1 , 2 , 3 , 5 , 6 ]      ) :
       return
     ##########################################################################
-    if                          ( column     in [ 1         ]              ) :
+    if                          ( column     in [     2             ]      ) :
       ########################################################################
       ########################################################################
       return
     ##########################################################################
-    if                          ( column     in [     2     ]              ) :
+    if                          ( column     in [ 1 ,         5 , 6 ]      ) :
       ########################################################################
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
@@ -168,47 +174,56 @@ class CelestialListings            ( TreeDock                              ) :
       ########################################################################
       return
     ##########################################################################
-    if                          ( column     in [         3 ]              ) :
+    if                          ( column     in [         3         ]      ) :
       ########################################################################
       ########################################################################
       return
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , JSON                             ) :
+  def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
-    USAGE  = self . Translations [ self . CKEY ] [ "Usage"                   ]
-    UUID   = JSON                [ "Uuid"                                    ]
-    ID     = JSON                [ "Id"                                      ]
-    USED   = JSON                [ "Used"                                    ]
-    PREFER = JSON                [ "Prefer"                                  ]
-    NAME   = JSON                [ "Name"                                    ]
-    UXID   = str                 ( JSON [ "Uuid" ]                           )
+    USAGE   = self . Translations [ self . CKEY ] [ "Used"                   ]
+    UUID    = JSON                [ "Uuid"                                   ]
+    ID      = JSON                [ "Id"                                     ]
+    USED    = JSON                [ "Used"                                   ]
+    TYPE    = JSON                [ "Type"                                   ]
+    PARENT  = JSON                [ "Parent"                                 ]
+    PNAME   = JSON                [ "PName"                                  ]
+    ENGLISH = JSON                [ "English"                                ]
+    COMMENT = JSON                [ "Comment"                                ]
+    NAME    = JSON                [ "Name"                                   ]
+    UXID    = str                 ( JSON [ "Uuid" ]                          )
     ##########################################################################
-    IT     = QTreeWidgetItem     (                                           )
+    IT      = QTreeWidgetItem     (                                          )
     ##########################################################################
-    IT     . setText             ( 0 , str ( ID )                            )
-    IT     . setToolTip          ( 0 , UXID                                  )
-    IT     . setData             ( 0 , Qt . UserRole , UXID                  )
-    IT     . setTextAlignment    ( 0 , Qt.AlignRight                         )
+    IT      . setText             ( 0 , str ( ID )                           )
+    IT      . setToolTip          ( 0 , UXID                                 )
+    IT      . setData             ( 0 , Qt . UserRole , UXID                 )
+    IT      . setTextAlignment    ( 0 , Qt.AlignRight                        )
     ##########################################################################
-    IT     . setText             ( 1 , USAGE [ str ( USED ) ]                )
-    IT     . setToolTip          ( 1 , UXID                                  )
+    IT      . setText             ( 1 , NAME                                 )
+    IT      . setToolTip          ( 1 , UXID                                 )
     ##########################################################################
-    IT     . setText             ( 2 , NAME                                  )
-    IT     . setToolTip          ( 2 , UXID                                  )
+    IT      . setText             ( 2 , USAGE [ str ( USED ) ]               )
+    IT      . setToolTip          ( 2 , UXID                                 )
     ##########################################################################
-    IT     . setText             ( 3 , str ( PREFER )                        )
-    IT     . setTextAlignment    ( 3 , Qt.AlignRight                         )
+    IT      . setText             ( 3 , str ( TYPE )                         )
+    IT      . setTextAlignment    ( 3 , Qt.AlignRight                        )
     ##########################################################################
-    IT     . setData             ( 4 , Qt . UserRole , JSON                  )
+    IT      . setText             ( 4 , PNAME                                )
+    ##########################################################################
+    IT      . setText             ( 5 , ENGLISH                              )
+    IT      . setText             ( 6 , COMMENT                              )
+    ##########################################################################
+    IT      . setData             ( 8 , Qt . UserRole , JSON                 )
     ##########################################################################
     return IT
   ############################################################################
   @pyqtSlot                  (                                               )
   def RenameItem             ( self                                        ) :
     ##########################################################################
-    self . defaultRenameItem ( [ 1 , 2 , 3                                 ] )
+    self . defaultRenameItem ( [ 1 , 2 , 3 , 5 , 6                         ] )
     ##########################################################################
     return
   ############################################################################
@@ -233,7 +248,7 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     self   . removeParked        (                                           )
     self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
+                                   ( item , uuid , column , msg , )          )
     ##########################################################################
     return
   ############################################################################
@@ -286,24 +301,34 @@ class CelestialListings            ( TreeDock                              ) :
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
-    LAGTAB  = self . Tables           [ "Languages"                          ]
+    CLTTAB  = self . Tables           [ "Celestials"                         ]
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      QQ    = f"""select `id`,`used`,`prefer` from {LAGTAB}
+      QQ    = f"""select
+                  `id`,`used`,`type`,`parent`,`name`,`comment`
+                  from {CLTTAB}
                   where ( `uuid` = {UUID} ) ;"""
       QQ    = " " . join              ( QQ . split ( )                       )
       DB    . Query                   ( QQ                                   )
       RR    = DB . FetchOne           (                                      )
       ########################################################################
-      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 3 ) )          :
+      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 6 ) )          :
         ######################################################################
-        J              =              {                                      }
-        J [ "Uuid"   ] = int          ( UUID                                 )
-        J [ "Id"     ] = int          ( RR [ 0 ]                             )
-        J [ "Used"   ] = int          ( RR [ 1 ]                             )
-        J [ "Prefer" ] = int          ( RR [ 2 ]                             )
-        J [ "Name"   ] = NAMEs        [ UUID                                 ]
+        J               =             {                                      }
+        J   [ "Uuid"    ] = int       ( UUID                                 )
+        J   [ "Id"      ] = int       ( RR [ 0 ]                             )
+        J   [ "Used"    ] = int       ( RR [ 1 ]                             )
+        J   [ "Type"    ] = int       ( RR [ 2 ]                             )
+        J   [ "Parent"  ] = int       ( RR [ 3 ]                             )
+        J   [ "English" ] = self . assureString ( RR [ 4 ]                   )
+        J   [ "Comment" ] = self . assureString ( RR [ 5 ]                   )
+        J   [ "Name"    ] = NAMEs     [ UUID                                 ]
+        J   [ "PName"   ] = ""
+        ######################################################################
+        if                            ( J [ "Parent" ] in NAMEs            ) :
+          J [ "PName"   ] = NAMEs     [ J [ "Parent" ]                       ]
+        ######################################################################
         LISTs          . append       ( J                                    )
     ##########################################################################
     self    . setVacancy              (                                      )
@@ -331,9 +356,15 @@ class CelestialListings            ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids        ( self , DB                                    ) :
     ##########################################################################
-    LAGTAB = self . Tables  [ "Languages"                                    ]
+    USAGE  = self . Usage
+    CLTTAB = self . Tables  [ "Celestials"                                   ]
     ##########################################################################
-    QQ     = f"""select `uuid` from {LAGTAB}
+    if                      ( self . Active                                ) :
+      QQ   = f"""select `uuid` from {CLTTAB}
+                 where ( `used` = {USAGE} )
+                 order by `id` asc ;"""
+    else                                                                     :
+      QQ   = f"""select `uuid` from {CLTTAB}
                  where ( `used` = 1 )
                  order by `id` asc ;"""
     ##########################################################################
@@ -358,10 +389,14 @@ class CelestialListings            ( TreeDock                              ) :
   def ObtainsInformation   ( self , DB                                     ) :
     ##########################################################################
     self   . Total = 0
+    USAGE  = self . Usage
     ##########################################################################
-    LAGTAB = self . Tables [ "Languages"                                     ]
+    CLTTAB = self . Tables [ "Celestials"                                    ]
     ##########################################################################
-    QQ     = f"select count(*) from {LAGTAB} ;"
+    if                     ( self . Active                                 ) :
+      QQ   = f"select count(*) from {CLTTAB} where ( `used` = {USAGE} ) ;"
+    else                                                                     :
+      QQ   = f"select count(*) from {CLTTAB} ;"
     DB     . Query                   ( QQ                                    )
     RR     = DB . FetchOne (                                                 )
     ##########################################################################
@@ -374,20 +409,27 @@ class CelestialListings            ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    LAGTAB = self . Tables          [ "Languages"                            ]
+    CLTTAB = self . Tables          [ "Celestials"                           ]
     STID   = self . StartId
     AMOUNT = self . Amount
+    USAGE  = self . Usage
     ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ     = f"""select `uuid` from {LAGTAB}
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    if                              ( self . Active                        ) :
+      QQ   = f"""select `uuid` from {CLTTAB}
+                 where ( `used` = {USAGE} )
+                 order by `id` {ORDER}
+                 limit {STID} , {AMOUNT} ;"""
+    else                                                                     :
+      QQ   = f"""select `uuid` from {CLTTAB}
+                 order by `id` {ORDER}
+                 limit {STID} , {AMOUNT} ;"""
     ##########################################################################
     return " " . join               ( QQ . split ( )                         )
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "language/uuids"
+    mtype   = "celestial/uuids"
     message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , 0 , mtype , message                )
@@ -400,7 +442,7 @@ class CelestialListings            ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . CKEY , 4                                  )
+    self . defaultPrepare ( self . CKEY , 7                                  )
     ##########################################################################
     return
   ############################################################################
@@ -434,7 +476,7 @@ class CelestialListings            ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9000 ) and ( at <= 9004 )         :
+    if                             ( at >= 9000 ) and ( at <= 9007 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -443,6 +485,53 @@ class CelestialListings            ( TreeDock                              ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def FiltersMenu                ( self , mm                               ) :
+    ##########################################################################
+    IBASE = 1782101
+    BASE  = 1782110
+    ##########################################################################
+    msg   = self . getMenuItem   ( "FilterUsage"                             )
+    COL   = mm   . addMenu       ( msg                                       )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "ActiveFilters"                           )
+    mm    . addActionFromMenu    ( COL , IBASE , msg , True , self . Active  )
+    mm    . addSeparatorFromMenu ( COL                                       )
+    ##########################################################################
+    ITEMs = self  . Translations [ self . CKEY ] [ "Used"                    ]
+    KEYs  = ITEMs . keys         (                                           )
+    ##########################################################################
+    for i in KEYs                                                            :
+      ########################################################################
+      v   = int                  ( i                                         )
+      msg = ITEMs                [ i                                         ]
+      hid =                      ( v == self . Usage                         )
+      mm  . addActionFromMenu    ( COL , BASE + v , msg , True , hid         )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunFiltersMenu   ( self , at                                         ) :
+    ##########################################################################
+    if                 ( at == 1782101                                     ) :
+      ########################################################################
+      if               ( self . Active                                     ) :
+        self . Active = False
+      else                                                                   :
+        self . Active = True
+      ########################################################################
+      return True
+    ##########################################################################
+    BASE = 1782110
+    if                 ( at < BASE                                         ) :
+      return False
+    ##########################################################################
+    if                 ( at > ( BASE + 10 )                                ) :
+      return False
+    ##########################################################################
+    ID           = int ( at - BASE                                           )
+    self . Usage = ID
+    ##########################################################################
+    return True
   ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
@@ -486,6 +575,7 @@ class CelestialListings            ( TreeDock                              ) :
     mm     . addAction              ( 3001 ,  TRX [ "UI::TranslateAll"     ] )
     mm     . addSeparator           (                                        )
     ##########################################################################
+    mm     = self . FiltersMenu     ( mm                                     )
     mm     = self . ColumnsMenu     ( mm                                     )
     mm     = self . SortingMenu     ( mm                                     )
     mm     = self . LocalityMenu    ( mm                                     )
@@ -513,6 +603,13 @@ class CelestialListings            ( TreeDock                              ) :
       return True
     ##########################################################################
     if                              ( self . RunSortingMenu     ( at )     ) :
+      ########################################################################
+      self . clear                  (                                        )
+      self . startup                (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( self . RunFiltersMenu     ( at )     ) :
       ########################################################################
       self . clear                  (                                        )
       self . startup                (                                        )
