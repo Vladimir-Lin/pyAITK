@@ -61,12 +61,13 @@ class StellarObjectListings        ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . CKEY               = "CelestialListings"
+    self . CKEY               = "StellarObjectListings"
+    self . BaseUuid           = 4310000000000000000
     self . EditAllNames       = None
     ##########################################################################
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 28
+    self . Amount             = 35
     self . SortOrder          = "asc"
     self . Method             = "Original"
     self . SearchLine         = None
@@ -80,8 +81,8 @@ class StellarObjectListings        ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 5                                       )
-    self . setColumnHidden         ( 4 , True                                )
+    self . setColumnCount          ( 2                                       )
+    self . setColumnHidden         ( 1 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -96,14 +97,14 @@ class StellarObjectListings        ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( False                                   )
+    self . setAcceptDrops          ( True                                    )
     self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragOnly            )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 480 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
   def FocusIn             ( self                                           ) :
     ##########################################################################
@@ -113,6 +114,7 @@ class StellarObjectListings        ( TreeDock                              ) :
     self . setActionLabel ( "Label"      , self . windowTitle ( )            )
     self . LinkAction     ( "Refresh"    , self . startup                    )
     ##########################################################################
+    self . LinkAction     ( "Insert"     , self . InsertItem                 )
     self . LinkAction     ( "Rename"     , self . RenameItem                 )
     self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
     self . LinkAction     ( "Home"       , self . PageHome                   )
@@ -128,6 +130,7 @@ class StellarObjectListings        ( TreeDock                              ) :
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
     self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
     self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
     self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
     self . LinkAction      ( "Home"       , self . PageHome        , False   )
@@ -150,15 +153,10 @@ class StellarObjectListings        ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 1 , 2 , 3 ]              ) :
+    if                          ( column not in [ 0 ]                      ) :
       return
     ##########################################################################
-    if                          ( column     in [ 1         ]              ) :
-      ########################################################################
-      ########################################################################
-      return
-    ##########################################################################
-    if                          ( column     in [     2     ]              ) :
+    if                          ( column     in [ 0 ]                      ) :
       ########################################################################
       line = self . setLineEdit ( item                                     , \
                                   column                                   , \
@@ -168,47 +166,28 @@ class StellarObjectListings        ( TreeDock                              ) :
       ########################################################################
       return
     ##########################################################################
-    if                          ( column     in [         3 ]              ) :
-      ########################################################################
-      ########################################################################
-      return
-    ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , JSON                             ) :
+  def PrepareItem          ( self , JSON                                   ) :
     ##########################################################################
-    USAGE  = self . Translations [ self . CKEY ] [ "Usage"                   ]
-    UUID   = JSON                [ "Uuid"                                    ]
-    ID     = JSON                [ "Id"                                      ]
-    USED   = JSON                [ "Used"                                    ]
-    PREFER = JSON                [ "Prefer"                                  ]
-    NAME   = JSON                [ "Name"                                    ]
-    UXID   = str                 ( JSON [ "Uuid" ]                           )
+    UUID = JSON            [ "Uuid"                                          ]
+    NAME = JSON            [ "Name"                                          ]
+    UXID = str             ( UUID                                            )
     ##########################################################################
-    IT     = QTreeWidgetItem     (                                           )
+    IT   = QTreeWidgetItem (                                                 )
     ##########################################################################
-    IT     . setText             ( 0 , str ( ID )                            )
-    IT     . setToolTip          ( 0 , UXID                                  )
-    IT     . setData             ( 0 , Qt . UserRole , UXID                  )
-    IT     . setTextAlignment    ( 0 , Qt.AlignRight                         )
+    IT   . setText         ( 0 , NAME                                        )
+    IT   . setToolTip      ( 0 , UXID                                        )
+    IT   . setData         ( 0 , Qt . UserRole , UXID                        )
     ##########################################################################
-    IT     . setText             ( 1 , USAGE [ str ( USED ) ]                )
-    IT     . setToolTip          ( 1 , UXID                                  )
-    ##########################################################################
-    IT     . setText             ( 2 , NAME                                  )
-    IT     . setToolTip          ( 2 , UXID                                  )
-    ##########################################################################
-    IT     . setText             ( 3 , str ( PREFER )                        )
-    IT     . setTextAlignment    ( 3 , Qt.AlignRight                         )
-    ##########################################################################
-    IT     . setData             ( 4 , Qt . UserRole , JSON                  )
+    IT   . setData         ( 1 , Qt . UserRole , JSON                        )
     ##########################################################################
     return IT
   ############################################################################
   @pyqtSlot                  (                                               )
   def RenameItem             ( self                                        ) :
     ##########################################################################
-    self . defaultRenameItem ( [ 1 , 2 , 3                                 ] )
+    self . defaultRenameItem ( [ 0                                         ] )
     ##########################################################################
     return
   ############################################################################
@@ -286,25 +265,12 @@ class StellarObjectListings        ( TreeDock                              ) :
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
-    LAGTAB  = self . Tables           [ "Languages"                          ]
-    ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      QQ    = f"""select `id`,`used`,`prefer` from {LAGTAB}
-                  where ( `uuid` = {UUID} ) ;"""
-      QQ    = " " . join              ( QQ . split ( )                       )
-      DB    . Query                   ( QQ                                   )
-      RR    = DB . FetchOne           (                                      )
-      ########################################################################
-      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 3 ) )          :
-        ######################################################################
-        J              =              {                                      }
-        J [ "Uuid"   ] = int          ( UUID                                 )
-        J [ "Id"     ] = int          ( RR [ 0 ]                             )
-        J [ "Used"   ] = int          ( RR [ 1 ]                             )
-        J [ "Prefer" ] = int          ( RR [ 2 ]                             )
-        J [ "Name"   ] = NAMEs        [ UUID                                 ]
-        LISTs          . append       ( J                                    )
+      J            =                  {                                      }
+      J [ "Uuid" ] = int              ( UUID                                 )
+      J [ "Name" ] = NAMEs            [ UUID                                 ]
+      LISTs        . append           ( J                                    )
     ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax . emit          (                                      )
@@ -331,9 +297,9 @@ class StellarObjectListings        ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids        ( self , DB                                    ) :
     ##########################################################################
-    LAGTAB = self . Tables  [ "Languages"                                    ]
+    STOTAB = self . Tables  [ "StellarObjects"                               ]
     ##########################################################################
-    QQ     = f"""select `uuid` from {LAGTAB}
+    QQ     = f"""select `uuid` from {STOTAB}
                  where ( `used` = 1 )
                  order by `id` asc ;"""
     ##########################################################################
@@ -359,9 +325,9 @@ class StellarObjectListings        ( TreeDock                              ) :
     ##########################################################################
     self   . Total = 0
     ##########################################################################
-    LAGTAB = self . Tables [ "Languages"                                     ]
+    STOTAB = self . Tables [ "StellarObjects"                                ]
     ##########################################################################
-    QQ     = f"select count(*) from {LAGTAB} ;"
+    QQ     = f"select count(*) from {STOTAB} where ( `used` = 1 ) ;"
     DB     . Query                   ( QQ                                    )
     RR     = DB . FetchOne (                                                 )
     ##########################################################################
@@ -374,20 +340,21 @@ class StellarObjectListings        ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    LAGTAB = self . Tables          [ "Languages"                            ]
+    STOTAB = self . Tables          [ "StellarObjects"                       ]
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ     = f"""select `uuid` from {LAGTAB}
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ     = f"""select `uuid` from {STOTAB}
+                 where ( `used` = 1 )
+                 order by `id` {ORDER}
+                 limit {STID} , {AMOUNT} ;"""
     ##########################################################################
     return " " . join               ( QQ . split ( )                         )
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "language/uuids"
+    mtype   = "stellar/uuids"
     message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , 0 , mtype , message                )
@@ -400,7 +367,7 @@ class StellarObjectListings        ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . CKEY , 4                                  )
+    self . defaultPrepare ( self . CKEY , 1                                  )
     ##########################################################################
     return
   ############################################################################
@@ -410,16 +377,29 @@ class StellarObjectListings        ( TreeDock                              ) :
     if                        ( DB == None                                 ) :
       return
     ##########################################################################
+    STOTAB = self . Tables    [ "StellarObjects"                             ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ NAMTAB                                   ] )
+    DB     . LockWrites       ( [ STOTAB , NAMTAB                          ] )
     ##########################################################################
     uuid   = int              ( uuid                                         )
+    ##########################################################################
+    if                        ( uuid <= 0                                  ) :
+      uuid = DB . LastUuid    ( STOTAB , "uuid" , self . BaseUuid            )
+      DB   . AppendUuid       ( STOTAB ,  uuid                               )
+    ##########################################################################
     self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################
     item   . setData          ( 0 , Qt . UserRole , uuid                     )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                  (                                               )
+  def InsertItem             ( self                                        ) :
+    ##########################################################################
+    self . defaultInsertItem ( 0 , "editingFinished" , self . nameChanged    )
     ##########################################################################
     return
   ############################################################################
@@ -430,11 +410,11 @@ class StellarObjectListings        ( TreeDock                              ) :
     return
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 0                         )
+    return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9000 ) and ( at <= 9004 )         :
+    if                             ( at >= 9000 ) and ( at <= 9001 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -475,9 +455,11 @@ class StellarObjectListings        ( TreeDock                              ) :
       msg  = self . getMenuItem     ( "Original"                             )
       mm   . addAction              ( 1002 , msg                             )
     ##########################################################################
-    self   . AppendRenameAction     ( mm , 1101                              )
+    self   . AppendInsertAction     ( mm , 1101                              )
     ##########################################################################
     if                              ( atItem not in [ False , None ]       ) :
+      ########################################################################
+      self . AppendRenameAction     ( mm , 1102                              )
       ########################################################################
       if                            ( self . EditAllNames != None          ) :
         ######################################################################
@@ -537,6 +519,12 @@ class StellarObjectListings        ( TreeDock                              ) :
       return True
     ##########################################################################
     if                              ( at == 1101                           ) :
+      ########################################################################
+      self . InsertItem             (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 1102                           ) :
       ########################################################################
       self . RenameItem             (                                        )
       ########################################################################
