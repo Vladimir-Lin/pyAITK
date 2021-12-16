@@ -156,28 +156,46 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked             ( self , item , column                     ) :
+  def doubleClicked              ( self , item , column                    ) :
     ##########################################################################
-    if                          ( column not in [ 1 , 2 , 3 , 5 , 6 ]      ) :
+    if                           ( column not in [ 1 , 2 , 3 , 5 , 6 ]     ) :
       return
     ##########################################################################
-    if                          ( column     in [     2             ]      ) :
+    if                           ( column     in [     2             ]     ) :
       ########################################################################
+      LL   = self . Translations [ self . CKEY ] [ "Used"                    ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . usageChanged                       )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
+      cb   . showPopup           (                                           )
       ########################################################################
       return
     ##########################################################################
-    if                          ( column     in [ 1 ,         5 , 6 ]      ) :
+    if                           ( column     in [ 1 ,         5 , 6 ]     ) :
       ########################################################################
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
+      line = self . setLineEdit  ( item                                    , \
+                                   column                                  , \
+                                   "editingFinished"                       , \
+                                   self . nameChanged                        )
+      line . setFocus            ( Qt . TabFocusReason                       )
       ########################################################################
       return
     ##########################################################################
-    if                          ( column     in [         3         ]      ) :
+    if                           ( column     in [         3         ]     ) :
       ########################################################################
+      sb   = self . setSpinBox   ( item                                      ,
+                                   column                                    ,
+                                   0                                         ,
+                                   99                                        ,
+                                   "editingFinished"                         ,
+                                   self . typeChanged                        )
+      sb   . setAlignment        ( Qt . AlignRight                           )
+      sb   . setFocus            ( Qt . TabFocusReason                       )
       ########################################################################
       return
     ##########################################################################
@@ -209,9 +227,11 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     IT      . setText             ( 2 , USAGE [ str ( USED ) ]               )
     IT      . setToolTip          ( 2 , UXID                                 )
+    IT      . setData             ( 2 , Qt . UserRole , USED                 )
     ##########################################################################
     IT      . setText             ( 3 , str ( TYPE )                         )
     IT      . setTextAlignment    ( 3 , Qt.AlignRight                        )
+    IT      . setData             ( 3 , Qt . UserRole , TYPE                 )
     ##########################################################################
     IT      . setText             ( 4 , PNAME                                )
     ##########################################################################
@@ -259,6 +279,58 @@ class CelestialListings            ( TreeDock                              ) :
       ########################################################################
       self . Go                  ( self . UpdateColumnValue                , \
                                    ( item , uuid , column , msg , )          )
+    ##########################################################################
+    return
+  ############################################################################
+  def usageChanged               ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    uuid   = item . data         ( 0 , Qt . UserRole                         )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      LL   = self . Translations [ self . CKEY ] [ "Used"                    ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      self . Go                  ( self . UpdateColumnNumber               , \
+                                   ( item , uuid , "used" , value , )        )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def typeChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    sb     = self . CurrentItem [ "Widget"                                   ]
+    v      = self . CurrentItem [ "Value"                                    ]
+    v      = int                ( v                                          )
+    nv     = sb   . value       (                                            )
+    uuid   = item . data         ( 0 , Qt . UserRole                         )
+    ##########################################################################
+    if                          ( v != nv                                  ) :
+      ########################################################################
+      item . setText            ( column , str ( nv )                        )
+      ########################################################################
+      self . Go                 ( self . UpdateColumnNumber                , \
+                                  ( item , uuid , "type" , nv , )            )
+    ##########################################################################
+    self . removeParked         (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -523,18 +595,32 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving           ( self , source , mimeData , mousePos           ) :
+  def dropMoving               ( self , source , mimeData , mousePos       ) :
     ##########################################################################
-    if                     ( self . droppingAction                         ) :
+    if                         ( self . droppingAction                     ) :
       return False
     ##########################################################################
-    if                     ( source == self                                ) :
+    if                         ( source == self                            ) :
       return False
     ##########################################################################
-    atItem = self . itemAt ( mousePos                                        )
+    atItem = self . itemAt     ( mousePos                                    )
     ##########################################################################
-    if                     ( atItem in [ False , None ]                    ) :
+    if                         ( atItem in [ False , None ]                ) :
       return False
+    ##########################################################################
+    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
+    UUID   = int               ( UUID                                        )
+    ##########################################################################
+    if                         ( UUID <= 0                                 ) :
+      return True
+    ##########################################################################
+    mtype  = self . DropInJSON [ "Mime"                                      ]
+    UUIDs  = self . DropInJSON [ "UUIDs"                                     ]
+    ##########################################################################
+    if                         ( mtype in [ "celestial/uuids" ]            ) :
+      ########################################################################
+      if                       ( int ( UUID ) == int ( UUIDs [ 0 ] )       ) :
+        return False
     ##########################################################################
     return True
   ############################################################################
@@ -712,8 +798,27 @@ class CelestialListings            ( TreeDock                              ) :
                  set `{ITEM}` = %s
                  where ( `uuid` = {UUID} ) ;"""
     QQ     = " " . join       ( QQ . split ( )                               )
-    ##########################################################################
     DB     . QueryValues      ( QQ , ( name , )                              )
+    ##########################################################################
+    DB     . Close            (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateColumnNumber      ( self , item , uuid , column , value        ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    CLTTAB = self . Tables    [ "Celestials"                                 ]
+    ##########################################################################
+    DB     . LockWrites       ( [ NAMTAB                                   ] )
+    ##########################################################################
+    QQ     = f"""update {CLTTAB}
+                 set `{column}` = {value}
+                 where ( `uuid` = {UUID} ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    DB     . Query            ( QQ                                           )
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################
@@ -736,6 +841,11 @@ class CelestialListings            ( TreeDock                              ) :
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
       ########################################################################
+      if                           ( ( at == 9007 ) and ( hid )            ) :
+        ######################################################################
+        self . clear               (                                         )
+        self . startup             (                                         )
+        ######################################################################
       return True
     ##########################################################################
     return False
