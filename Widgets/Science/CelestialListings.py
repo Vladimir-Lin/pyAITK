@@ -700,6 +700,7 @@ class CelestialListings            ( TreeDock                              ) :
     NAME   = self . GetName          ( DB , NAMTAB , PARENT                  )
     ##########################################################################
     DB     . Close                   (                                       )
+    self   . Notify                  ( 5                                     )
     self   . ShowStatus              ( ""                                    )
     ##########################################################################
     IT     = self . uuidAtItem       ( UUID , 0                              )
@@ -710,39 +711,42 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AppendingStellars         ( self , UUID , UUIDs                      ) :
+  def AppendingStellars              ( self , UUID , UUIDs                 ) :
     ##########################################################################
-    COUNT  = len                ( UUIDs                                      )
-    if                          ( COUNT <= 0                               ) :
+    COUNT  = len                     ( UUIDs                                 )
+    if                               ( COUNT <= 0                          ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( DB == None                               ) :
+    DB     = self . ConnectDB        (                                       )
+    if                               ( DB == None                          ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit     (                                            )
-    self   . setBustle          (                                            )
-    FMT    = self . getMenuItem ( "JoinStars"                                )
-    MSG    = FMT  . format      ( COUNT                                      )
-    self   . ShowStatus         ( MSG                                        )
-    self   . TtsTalk            ( MSG , 1002                                 )
+    self   . OnBusy  . emit          (                                       )
+    self   . setBustle               (                                       )
+    FMT    = self . getMenuItem      ( "JoinStars"                           )
+    MSG    = FMT  . format           ( COUNT                                 )
+    self   . ShowStatus              ( MSG                                   )
+    self   . TtsTalk                 ( MSG , 1002                            )
     ##########################################################################
-    RELTAB = self . Tables      [ "RelationStars"                            ]
-    DB     . LockWrites         ( [ RELTAB                                 ] )
+    RELTAB = self . Tables           [ "RelationStars"                       ]
+    DB     . LockWrites              ( [ RELTAB                            ] )
     ##########################################################################
-    REL    = Relation           (                                            )
-    REL    . set                ( "first" , UUID                             )
-    REL    . setT1              ( "Celestial"                                )
-    REL    . setT2              ( "Star"                                     )
-    REL    . setRelation        ( "Subordination"                            )
-    REL    . Joins              ( DB , RELTAB , UUIDs                        )
+    REL    = Relation                (                                       )
+    REL    . set                     ( "first" , UUID                        )
+    REL    . setT1                   ( "Celestial"                           )
+    REL    . setT2                   ( "Star"                                )
+    REL    . setRelation             ( "Subordination"                       )
+    REL    . Joins                   ( DB , RELTAB , UUIDs                   )
+    TOTAL  = REL . CountSecond       ( DB , RELTAB                           )
     ##########################################################################
-    DB     . UnlockTables       (                                            )
+    DB     . UnlockTables            (                                       )
     ##########################################################################
-    self   . setVacancy         (                                            )
-    self   . GoRelax . emit     (                                            )
-    DB     . Close              (                                            )
-    self   . loading            (                                            )
+    self   . setVacancy              (                                       )
+    self   . GoRelax . emit          (                                       )
+    DB     . Close                   (                                       )
+    ##########################################################################
+    self   . emitAssignColumn . emit ( IT , 7 , str ( TOTAL )                )
+    self   . Notify                  ( 5                                     )
     ##########################################################################
     return
   ############################################################################
