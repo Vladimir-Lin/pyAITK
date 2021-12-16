@@ -572,9 +572,6 @@ class CelestialListings            ( TreeDock                              ) :
                                        mimeData                            , \
                                        mousePos                            ) :
     ##########################################################################
-    if                               ( self == sourceWidget                ) :
-      return False
-    ##########################################################################
     RDN    = self . RegularDropNew   ( mimeData                              )
     if                               ( not RDN                             ) :
       return False
@@ -598,9 +595,6 @@ class CelestialListings            ( TreeDock                              ) :
   def dropMoving               ( self , source , mimeData , mousePos       ) :
     ##########################################################################
     if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( source == self                            ) :
       return False
     ##########################################################################
     atItem = self . itemAt     ( mousePos                                    )
@@ -786,7 +780,7 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     CLTTAB = self . Tables    [ "Celestials"                                 ]
     ##########################################################################
-    DB     . LockWrites       ( [ NAMTAB                                   ] )
+    DB     . LockWrites       ( [ CLTTAB                                   ] )
     ##########################################################################
     ITEM   = ""
     if                        ( column == 5                                ) :
@@ -796,7 +790,7 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     QQ     = f"""update {CLTTAB}
                  set `{ITEM}` = %s
-                 where ( `uuid` = {UUID} ) ;"""
+                 where ( `uuid` = {uuid} ) ;"""
     QQ     = " " . join       ( QQ . split ( )                               )
     DB     . QueryValues      ( QQ , ( name , )                              )
     ##########################################################################
@@ -812,11 +806,11 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     CLTTAB = self . Tables    [ "Celestials"                                 ]
     ##########################################################################
-    DB     . LockWrites       ( [ NAMTAB                                   ] )
+    DB     . LockWrites       ( [ CLTTAB                                   ] )
     ##########################################################################
     QQ     = f"""update {CLTTAB}
                  set `{column}` = {value}
-                 where ( `uuid` = {UUID} ) ;"""
+                 where ( `uuid` = {uuid} ) ;"""
     QQ     = " " . join       ( QQ . split ( )                               )
     DB     . Query            ( QQ                                           )
     ##########################################################################
