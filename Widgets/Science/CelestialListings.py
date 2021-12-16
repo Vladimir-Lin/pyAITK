@@ -745,6 +745,10 @@ class CelestialListings            ( TreeDock                              ) :
     self   . GoRelax . emit          (                                       )
     DB     . Close                   (                                       )
     ##########################################################################
+    IT     = self . uuidAtItem       ( UUID , 0                              )
+    if                               ( IT in [ False , None ]              ) :
+      return
+    ##########################################################################
     self   . emitAssignColumn . emit ( IT , 7 , str ( TOTAL )                )
     self   . Notify                  ( 5                                     )
     ##########################################################################
