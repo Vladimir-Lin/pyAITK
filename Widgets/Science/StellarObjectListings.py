@@ -97,9 +97,9 @@ class StellarObjectListings        ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
+    self . setAcceptDrops          ( False                                   )
     self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setDragDropMode         ( QAbstractItemView . DragOnly            )
     ##########################################################################
     return
   ############################################################################
