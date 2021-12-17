@@ -249,13 +249,13 @@ class OrganizationGroupView       ( IconDock                               ) :
   def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
     return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
   ############################################################################
-  def dropOrganizationGroups ( self                                        ) :
+  def acceptOrganizationGroupsDrop ( self                                  ) :
     return True
   ############################################################################
-  def dropOrganizations      ( self                                        ) :
+  def acceptOrganizationsDrop      ( self                                  ) :
     return True
   ############################################################################
-  def acceptPictureDrop      ( self                                        ) :
+  def acceptPictureDrop            ( self                                  ) :
     return True
   ############################################################################
   def dropOrganizationGroups        ( self , source , pos , JSON           ) :
