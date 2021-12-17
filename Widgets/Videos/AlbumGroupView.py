@@ -215,30 +215,36 @@ class AlbumGroupView              ( IconDock                               ) :
                                       mimeData                             , \
                                       mousePos                             ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
-      return False
-    ##########################################################################
     RDN     = self . RegularDropNew ( mimeData                               )
     if                              ( not RDN                              ) :
       return False
     ##########################################################################
     mtype   = self . DropInJSON     [ "Mime"                                 ]
     UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    atItem  = self . itemAt         ( mousePos                               )
+    CNT     = len                   ( UUIDs                                  )
+    title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    if                              ( mtype in [ "picture/uuids"         ] ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
+      self  . ShowMenuItemMessage   ( "AssignTagIcon"                        )
     ##########################################################################
-    elif                            ( mtype in [ "tag/uuids" ]             ) :
+    elif                            ( mtype in [ "album/uuids" ]           ) :
       ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個分類"
+      if                            ( self . isTagging ( )                 ) :
+        return False
       ########################################################################
-      self  . ShowStatus            ( MSG                                    )
+      if                            ( atItem in [ False , None ]           ) :
+        return False
+      ########################################################################
+      self  . ShowMenuItemTitleStatus ( "JoinAlbums"  , title , CNT          )
+    ##########################################################################
+    elif                            ( mtype in [ "albumgroup/uuids" ]      ) :
+      ########################################################################
+      if                            ( self == sourceWidget                 ) :
+        self . ShowMenuItemCountStatus ( "MoveCatalogues" ,         CNT      )
+      else                                                                   :
+        self . ShowMenuItemTitleStatus ( "JoinCatalogues" , title , CNT      )
     ##########################################################################
     return RDN
   ############################################################################
