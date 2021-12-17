@@ -1204,7 +1204,7 @@ class IconDock                      ( ListDock                             ) :
     REL    = Relation           (                                            )
     REL    . set                ( "first" , atUuid                           )
     REL    . setT1              ( T1                                         )
-    REL    . setT2              ( "Organizations"                            )
+    REL    . setT2              ( "Organization"                             )
     REL    . setRelation        ( "Subordination"                            )
     REL    . Joins              ( DB , RELTAB , UUIDs                        )
     ##########################################################################
