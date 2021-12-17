@@ -1176,6 +1176,47 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return True
   ############################################################################
+  def AppendingOrganizationIntoT1 ( self                                   , \
+                                    atUuid                                 , \
+                                    NAME                                   , \
+                                    JSON                                   , \
+                                    table                                  , \
+                                    T1                                     ) :
+    ##########################################################################
+    UUIDs  = JSON               [ "UUIDs"                                    ]
+    if                          ( len ( UUIDs ) <= 0                       ) :
+      return False
+    ##########################################################################
+    if                          ( self . PrivateGroup                      ) :
+      DB   = self . ConnectHost ( self . GroupDB                             )
+    else                                                                     :
+      DB   = self . ConnectDB   (                                            )
+    if                          ( DB == None                               ) :
+      return False
+    ##########################################################################
+    self   . OnBusy  . emit     (                                            )
+    self   . setBustle          (                                            )
+    ##########################################################################
+    RELTAB = self . Tables      [ table                                      ]
+    ##########################################################################
+    DB     . LockWrites         ( [ RELTAB                                 ] )
+    ##########################################################################
+    REL    = Relation           (                                            )
+    REL    . set                ( "first" , atUuid                           )
+    REL    . setT1              ( T1                                         )
+    REL    . setT2              ( "Organizations"                            )
+    REL    . setRelation        ( "Subordination"                            )
+    REL    . Joins              ( DB , RELTAB , UUIDs                        )
+    ##########################################################################
+    DB     . UnlockTables       (                                            )
+    self   . setVacancy         (                                            )
+    self   . GoRelax . emit     (                                            )
+    DB     . Close              (                                            )
+    ##########################################################################
+    self   . Notify              ( 5                                         )
+    ##########################################################################
+    return True
+  ############################################################################
   def AppendingAlbumIntoT1      ( self , atUuid , NAME , JSON , table , T1 ) :
     ##########################################################################
     UUIDs  = JSON               [ "UUIDs"                                    ]

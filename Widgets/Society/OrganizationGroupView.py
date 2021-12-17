@@ -356,16 +356,20 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def OrganizationAppending            ( self , atUuid , NAME , JSON       ) :
+  def OrganizationAppending ( self , atUuid , NAME , JSON                  ) :
     ##########################################################################
-    T1  = "Subgroup"
-    TAB = "RelationPeople"
+    T1   = "Subgroup"
+    TAB  = "RelationPeople"
     ##########################################################################
-    ## OK  = self . AppendingPeopleIntoT1 ( atUuid , NAME , JSON , TAB , T1     )
-    ## if                                 ( not OK                            ) :
-    ##   return
+    OK   = self . AppendingOrganizationIntoT1 ( atUuid                     , \
+                                                NAME                       , \
+                                                JSON                       , \
+                                                TAB                        , \
+                                                T1                           )
+    if                      ( not OK                                       ) :
+      return
     ##########################################################################
-    self   . loading                   (                                     )
+    self . loading          (                                                )
     ##########################################################################
     return
   ############################################################################
