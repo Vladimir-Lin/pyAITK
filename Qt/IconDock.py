@@ -59,6 +59,7 @@ from   AITK  . Essentials . Relation  import Relation    as Relation
 from   AITK  . Calendars  . StarDate  import StarDate    as StarDate
 from   AITK  . Calendars  . Periode   import Periode     as Periode
 from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
+from   AITK  . Videos     . Album     import Album       as AlbumItem
 from   AITK  . People     . People    import People      as PeopleItem
 ##############################################################################
 class IconDock                      ( ListDock                             ) :
@@ -1165,6 +1166,37 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     DB     . LockWrites         ( [ RELTAB                                 ] )
     PEOM   . ConnectToPeople    ( DB , RELTAB , atUuid , T1 , UUIDs          )
+    ##########################################################################
+    DB     . UnlockTables       (                                            )
+    self   . setVacancy         (                                            )
+    self   . GoRelax . emit     (                                            )
+    DB     . Close              (                                            )
+    ##########################################################################
+    self   . Notify              ( 5                                         )
+    ##########################################################################
+    return True
+  ############################################################################
+  def AppendingAlbumIntoT1      ( self , atUuid , NAME , JSON , table , T1 ) :
+    ##########################################################################
+    UUIDs  = JSON               [ "UUIDs"                                    ]
+    if                          ( len ( UUIDs ) <= 0                       ) :
+      return False
+    ##########################################################################
+    if                          ( self . PrivateGroup                      ) :
+      DB   = self . ConnectHost ( self . GroupDB                             )
+    else                                                                     :
+      DB   = self . ConnectDB   (                                            )
+    if                          ( DB == None                               ) :
+      return False
+    ##########################################################################
+    self   . OnBusy  . emit     (                                            )
+    self   . setBustle          (                                            )
+    ##########################################################################
+    RELTAB = self . Tables      [ table                                      ]
+    ABUM   = AlbumItem          (                                            )
+    ##########################################################################
+    DB     . LockWrites         ( [ RELTAB                                 ] )
+    ABUM   . ConnectToAlbums    ( DB , RELTAB , atUuid , T1 , UUIDs          )
     ##########################################################################
     DB     . UnlockTables       (                                            )
     self   . setVacancy         (                                            )

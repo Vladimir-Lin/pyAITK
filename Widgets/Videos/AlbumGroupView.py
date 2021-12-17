@@ -352,16 +352,16 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def AlbumAppending                   ( self , atUuid , NAME , JSON       ) :
+  def AlbumAppending                  ( self , atUuid , NAME , JSON        ) :
     ##########################################################################
     T1  = "Subgroup"
-    TAB = "RelationPeople"
+    TAB = "RelationVideos"
     ##########################################################################
-    OK  = self . AppendingPeopleIntoT1 ( atUuid , NAME , JSON , TAB , T1     )
-    if                                 ( not OK                            ) :
+    OK  = self . AppendingAlbumIntoT1 ( atUuid , NAME , JSON , TAB , T1      )
+    if                                ( not OK                             ) :
       return
     ##########################################################################
-    self   . loading                   (                                     )
+    self   . loading                  (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -486,6 +486,7 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     self     . PrepareItemContent        ( item , uuid , name                )
     self     . assignToolTip             ( item , str ( uuid )               )
+    self     . Notify                    ( 5                                 )
     ##########################################################################
     return
   ############################################################################
@@ -593,11 +594,12 @@ class AlbumGroupView              ( IconDock                               ) :
         mm . addAction              ( 2002 , mg                              )
       mm   . addSeparator           (                                        )
     ##########################################################################
-    mm     . addAction              ( 1001 , TRX [ "UI::Refresh" ]           )
-    mm     . addAction              ( 1101 , TRX [ "UI::Insert"  ]           )
-    mm     . addAction              ( 1102 , TRX [ "UI::Rename"  ]           )
+    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    mm     = self . AppendInsertAction  ( mm , 1101                          )
+    mm     = self . AppendRenameAction  ( mm , 1102                          )
     mm     . addSeparator           (                                        )
-    if                              ( atItem != None                       ) :
+    ##########################################################################
+    if                              ( atItem not in [ False , None ]       ) :
       if                            ( self . EditAllNames != None          ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
         mm . addSeparator           (                                        )
@@ -606,8 +608,8 @@ class AlbumGroupView              ( IconDock                               ) :
     mm     = self . LocalityMenu    ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    mm     . setFont                ( self    . font ( )                     )
-    aa     = mm . exec_             ( QCursor . pos  ( )                     )
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
     if                              ( self . RunDocking   ( mm , aa )      ) :
@@ -652,15 +654,11 @@ class AlbumGroupView              ( IconDock                               ) :
       return True
     ##########################################################################
     if                              ( at == 2001                           ) :
-      title = atItem . text         (                                        )
-      tid   = self . Relation . get ( "t2"                                   )
-      self  . AlbumSubgroup . emit  ( title , tid , str ( uuid )             )
+      self . OpenItemSubgroup       ( atItem                                 )
       return True
     ##########################################################################
     if                              ( at == 2002                           ) :
-      title = atItem . text         (                                        )
-      tid   = self . Relation . get ( "t2"                                   )
-      self  . AlbumGroup    . emit  ( title , tid , str ( uuid )             )
+      self . OpenItemAlbum          ( atItem                                 )
       return True
     ##########################################################################
     return True
