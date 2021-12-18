@@ -43,6 +43,18 @@ class Gallery     (                                                        ) :
     ##########################################################################
     return GUID
   ############################################################################
+  def AssureIcon         ( self , DB , TABLE , UUID , T1 , PUID            ) :
+    ##########################################################################
+    REL = Relation       (                                                   )
+    REL . set            ( "first"  , UUID                                   )
+    REL . set            ( "second" , PUID                                   )
+    REL . setT1          ( T1                                                )
+    REL . setT2          ( "Picture"                                         )
+    REL . setRelation    ( "Using"                                           )
+    REL . Assure         ( DB , TABLE                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def ConnectToPictures  ( self , DB , TABLE , UUID , T1 , UUIDs           ) :
     ##########################################################################
     REL = Relation       (                                                   )
@@ -65,8 +77,76 @@ class Gallery     (                                                        ) :
     ##########################################################################
     return
   ############################################################################
+  def PicturesFromWebPage  ( self , DB , TABLE , WPID                      ) :
+    ##########################################################################
+    REL = Relation         (                                                 )
+    REL . set              ( "second" , WPID                                 )
+    REL . setT1            ( "Picture"                                       )
+    REL . setT2            ( "WebPage"                                       )
+    REL . setRelation      ( "Subordination"                                 )
+    return REL . GetOwners ( DB , TABLE                                      )
   ############################################################################
+  def PictureRelateWebPage ( self , DB , TABLE , PCID , WPID               ) :
+    ##########################################################################
+    REL = Relation         (                                                 )
+    REL . set              ( "first"  , PCID                                 )
+    REL . set              ( "second" , WPID                                 )
+    REL . setT1            ( "Picture"                                       )
+    REL . setT2            ( "WebPage"                                       )
+    REL . setRelation      ( "Subordination"                                 )
+    REL . Join             ( DB , TABLE                                      )
+    ##########################################################################
+    return
   ############################################################################
+  def GetLastestPosition     ( self , DB , TABLE , REL                     ) :
+    ##########################################################################
+    ITEM   = "`position`"
+    OPTS   = f"order by {ITEM} desc"
+    LMTS   = "limit 0 , 1"
+    ##########################################################################
+    WS     = REL . FirstItem ( OPTS , LMTS                                   )
+    QQ     = f"select {ITEM} from {TABLE} {WS} ;"
+    DB     . Query           ( QQ                                            )
+    RR     = DB . FetchOne   (                                               )
+    ##########################################################################
+    if                       ( RR in [ False , None ]                      ) :
+      return 0
+    ##########################################################################
+    if                       ( len ( RR ) != 1                             ) :
+      return 0
+    ##########################################################################
+    return int               ( RR [ 0 ]                                      )
+  ############################################################################
+  def CreateRepositionSQL     ( self , SQLs , TABLE , REL , START , UUIDs  ) :
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      REL   . set             ( "second" , UUID                              )
+      WS    = REL . ExactItem (                                              )
+      QQ    = f"update {TABLE} set `position` = {START} {WS} ;"
+      START = START + 1
+      SQLs  . append          ( QQ                                           )
+    ##########################################################################
+    return SQLs
+  ############################################################################
+  def RepositionGallery                ( self , DB , TABLE , UUID , UUIDs  ) :
+    ##########################################################################
+    REL   = Relation                   (                                     )
+    REL   . set                        ( "first"  , UUID                     )
+    REL   . setT1                      ( "Gallery"                           )
+    REL   . setT2                      ( "Picture"                           )
+    REL   . setRelation                ( "Subordination"                     )
+    ##########################################################################
+    LAST  = self . GetLastestPosition  ( DB , TABLE , REL                    )
+    L     = LAST + 1000
+    SQLs  =                            [                                     ]
+    SQLs  = self . CreateRepositionSQL ( SQLs , TABLE , REL , L , UUIDs      )
+    SQLs  = self . CreateRepositionSQL ( SQLs , TABLE , REL , 0 , UUIDs      )
+    ##########################################################################
+    for QQ in SQLs                                                           :
+      DB  . Query                      ( QQ                                  )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
