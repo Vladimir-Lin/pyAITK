@@ -97,10 +97,17 @@ class TelegramRobot (                                                      ) :
     BEAU    = JSON [ "Beau"                                                  ]
     MSG     = JSON [ "Message"                                               ]
     CHATID  = int  ( ACCOUNT                                                 )
-    self . TelegramUpdater . bot . sendMessage ( chat_id = CHATID , text = MSG )
     ##########################################################################
-    MSG     = f"Sent {ACCOUNT} Message for {BEAU}"
-    self    . debug           ( MSG                                          )
+    try                                                                      :
+      ########################################################################
+      self  . TelegramUpdater . bot . sendMessage ( chat_id = CHATID , text = MSG )
+      MSG   = f"Sent {ACCOUNT} Message for {BEAU}"
+      self  . debug           ( MSG                                          )
+      ########################################################################
+    except                                                                   :
+      ########################################################################
+      MSG   = f"Failure to send {ACCOUNT} Message for {BEAU}"
+      self  . debug           ( MSG                                          )
     ##########################################################################
     return
   ############################################################################
