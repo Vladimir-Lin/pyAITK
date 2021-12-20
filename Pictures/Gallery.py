@@ -148,14 +148,14 @@ class Gallery     (                                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def GetSubgroupGalleries ( self , DB , TABLE , SUBGROUP                  ) :
+  def GetSubgroupGalleries     ( self , DB , TABLE , SUBGROUP              ) :
     ##########################################################################
-    REL = Relation         (                                                 )
-    REL . set              ( "first" , SUBGROUP                              )
-    REL . setT1            ( "Subgroup"                                      )
-    REL . setT2            ( "Gallery"                                       )
-    REL . setRelation      ( "Subordination"                                 )
-    return REL . GetOwners ( DB , TABLE                                      )
+    REL = Relation             (                                             )
+    REL . set                  ( "first" , SUBGROUP                          )
+    REL . setT1                ( "Subgroup"                                  )
+    REL . setT2                ( "Gallery"                                   )
+    REL . setRelation          ( "Subordination"                             )
+    return REL . Subordination ( DB , TABLE                                  )
   ############################################################################
   ############################################################################
 ##############################################################################
