@@ -100,7 +100,10 @@ class TelegramRobot (                                                      ) :
     ##########################################################################
     try                                                                      :
       ########################################################################
-      self  . TelegramUpdater . bot . sendMessage ( chat_id = CHATID , text = MSG )
+      self  . TelegramUpdater . bot . sendMessage                          ( \
+                                chat_id    = CHATID                        , \
+                                text       = MSG                           , \
+                                parse_mode = "html"                          )
       MSG   = f"Sent {ACCOUNT} Message for {BEAU}"
       self  . debug           ( MSG                                          )
       ########################################################################
