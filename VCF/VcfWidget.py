@@ -22,6 +22,7 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -61,6 +62,9 @@ class VcfWidget           ( QGraphicsView , VirtualGui , AttachDock        ) :
     self . VoiceJSON =  {                                                    }
     ##########################################################################
     return
+  ############################################################################
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
   ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
@@ -152,4 +156,10 @@ class VcfWidget           ( QGraphicsView , VirtualGui , AttachDock        ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def startup ( self                                                       ) :
+    ##########################################################################
+    print("VcfWidget")
+    ##########################################################################
+    return
 ##############################################################################
