@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## VcfWidget
+## ListWidget
 ##############################################################################
 import os
 import sys
@@ -11,14 +11,13 @@ import threading
 import gettext
 import json
 ##############################################################################
-import vtk
-##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
 from   PyQt5                          import QtWidgets
 ##############################################################################
 from   PyQt5 . QtCore                 import QObject
 from   PyQt5 . QtCore                 import pyqtSignal
+from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
@@ -28,37 +27,44 @@ from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import QGraphicsView
+from   PyQt5 . QtWidgets              import qApp
+from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QAction
+from   PyQt5 . QtWidgets              import QShortcut
+from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QListWidget
+from   PyQt5 . QtWidgets              import QListWidgetItem
+from   PyQt5 . QtWidgets              import QTreeWidget
+from   PyQt5 . QtWidgets              import QTreeWidgetItem
+from   PyQt5 . QtWidgets              import QLineEdit
+from   PyQt5 . QtWidgets              import QComboBox
+from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from   AITK  . Qt . VirtualGui        import VirtualGui as VirtualGui
-from   AITK  . Qt . AttachDock        import AttachDock as AttachDock
+from         . AttachDock             import AttachDock as AttachDock
+from         . ListWidget             import ListWidget as ListWidget
 ##############################################################################
-class VcfWidget           ( QGraphicsView , VirtualGui , AttachDock        ) :
+class ListDock               ( ListWidget , AttachDock                     ) :
   ############################################################################
-  attachNone = pyqtSignal ( QWidget                                          )
-  attachDock = pyqtSignal ( QWidget , str , int , int                        )
-  attachMdi  = pyqtSignal ( QWidget , int                                    )
+  attachNone    = pyqtSignal ( QWidget                                       )
+  attachDock    = pyqtSignal ( QWidget , str , int , int                     )
+  attachMdi     = pyqtSignal ( QWidget , int                                 )
   ############################################################################
-  def __init__            ( self , parent = None , plan = None             ) :
+  def __init__        ( self , parent = None , plan = None                 ) :
     ##########################################################################
-    super (                   ) . __init__ ( parent                          )
-    super ( VirtualGui , self ) . __init__ (                                 )
+    super (                   ) . __init__ ( parent , plan                   )
     super ( AttachDock , self ) . __init__ (                                 )
-    self . Initialize                      ( self                            )
-    self . setPlanFunction                 ( plan                            )
-    self . InitializeDock                  ( plan                            )
+    self . InitializeDock                  (          plan                   )
     ##########################################################################
     self . dockingOrientation = 0
-    self . dockingPlace       = Qt . BottomDockWidgetArea
+    self . dockingPlace       = Qt . RightDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setAttribute ( Qt . WA_InputMethodEnabled                         )
-    self . VoiceJSON =  {                                                    }
+    ## WidgetClass                                            ;
+    self . setFunction     ( self . FunctionDocking , True                   )
     ##########################################################################
     return
   ############################################################################
@@ -74,16 +80,12 @@ class VcfWidget           ( QGraphicsView , VirtualGui , AttachDock        ) :
     ##########################################################################
     return
   ############################################################################
-  def DockIn        ( self , shown                                         ) :
-    ##########################################################################
-    self . ShowDock (        shown                                           )
-    ##########################################################################
+  def Visible        ( self , visible                                      ) :
+    self . Visiblity (        visible                                        )
     return
   ############################################################################
-  def Visible        ( self , visible                                      ) :
-    ##########################################################################
-    self . Visiblity (        visible                                        )
-    ##########################################################################
+  def DockIn         ( self , shown                                        ) :
+    self . ShowDock  (        shown                                          )
     return
   ############################################################################
   def Docking            ( self , Main , title , area , areas              ) :
