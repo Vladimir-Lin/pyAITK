@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-from . VcfWidget import VcfWidget as VcfWidget
+from . VcfDisplay import VcfDisplay as VcfDisplay
+from . VcfWidget  import VcfWidget  as VcfWidget
 ##############################################################################
-__all__ = [ "VcfWidget"                                                      ]
+__all__ = [ "VcfDisplay"                                                     ,
+            "VcfWidget"                                                      ]
 ##############################################################################

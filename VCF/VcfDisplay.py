@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## VcfFont
+## VcfDisplay
 ##############################################################################
 import os
 import sys
@@ -39,7 +39,7 @@ from   PyQt5 . QtWidgets              import QGraphicsView
 from   AITK  . Qt . VirtualGui        import VirtualGui as VirtualGui
 from   AITK  . Qt . AttachDock        import AttachDock as AttachDock
 ##############################################################################
-class VcfFont         (                                                    ) :
+class VcfDisplay      (                                                    ) :
   ############################################################################
   def __init__        ( self                                               ) :
     ##########################################################################
@@ -54,153 +54,192 @@ class VcfFont         (                                                    ) :
   ############################################################################
   def Initialize              ( self                                       ) :
     ##########################################################################
-    self . Uuid      = 0
-    self . Size      = 0.40
-    self . Font      = QFont  (                                              )
-    self . Pen       = QPen   (                                              )
-    self . PenBrush  = QBrush (                                              )
-    self . Brush     = QBrush (                                              )
-    self . Selection = QBrush (                                              )
-    self . Changed   = False
+    ## self . Scene         = QGraphicsScene ( )
+    self . Scene         = None
+    self . Zooms         =    [                                              ]
+    self . Scene         = None
+    ## VcfOptions Options
+    self . Options       =    {                                              }
+    ## QMargins         Margins
+    ## self . Margins   = QMargins ( 0 , 0 , 3 , 3 )
+    self . Margins       = None
+    ## QTransform       Transform
+    self . Transform     = None
+    self . Transform     . reset ( )
+    ## QPointF          Origin
+    ## self . Origin     = QPointF ( 0 , 0 )
+    ## QRectF           View
+    self . View          = None
+    ## Screen           screen
+    ## self . screen        = False
+    self . MonitorFactor = 1.0
+    self . ZoomFactor    = 1.0
+    self . DPI           = 300
     ##########################################################################
     return
   ############################################################################
-  def Configuration ( self                                                 ) :
+  def Enlarge ( self                                                       ) :
     ##########################################################################
-    JSON = { }
+    self . ZoomFactor = self . FactorLevel ( self . ZoomFactor , True        )
     ##########################################################################
     return JSON
   ############################################################################
-  def setConfigure  ( self , JSON                                          ) :
-    return
-  ############################################################################
-  def setFont              ( painter , dpi                                 ) :
+  def Shrink  ( self                                                       ) :
     ##########################################################################
-    fs      = int          ( self . Size * float ( dpi ) * 100.0 / 254.0     )
-    ##########################################################################
-    F       = self . Font
-    F       . setPixelSize ( fs                                              )
-    ##########################################################################
-    PEN     = self . Pen
-    PBS     = self . PenBrush . style (                                      )
-    if                     ( PBS not in [ Qt . NoBrush ]                   ) :
-      PEN   . setBrush     ( self . PenBrush                                 )
-    ##########################################################################
-    painter . setPen       ( PEN                                             )
-    painter . setFont      ( F                                               )
+    self . ZoomFactor = self . FactorLevel ( self . ZoomFactor , False       )
     ##########################################################################
     return
   ############################################################################
-  def boundingRect         ( self , text , dpi                             ) :
+  def ZoomSpin ( self , parent , widget , method                           ) :
     ##########################################################################
-    fs  = int              ( self . Size * float ( dpi ) * 100.0 / 254.0     )
+    """
+  QDoubleSpinBox * ds = new QDoubleSpinBox(parent) ;
+  ds->setMinimum    (0.01000       )               ;
+  ds->setMaximum    (1000000       )               ;
+  ds->setValue      (ZoomFactor*100)               ;
+  ds->setSingleStep (1.00          )               ;
+  ds->setSuffix     ("%")                          ;
+  ds->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
+  QObject::connect(ds,SIGNAL(valueChanged(double)) ,
+                   widget,method                )  ;
+  return ds                                        ;
+    """
     ##########################################################################
-    F   = self . Font
-    F   . setPixelSize     ( fs                                              )
-    ##########################################################################
-    FMF = QFontMetricsF    ( F                                               )
-    ##########################################################################
-    return FMF . boundingRect ( text                                         )
+    return
   ############################################################################
-  def assign ( self , font                                                 ) :
+  def ZoomSpinChanged         ( self , value                               ) :
     ##########################################################################
-    self . Font = font
-    self . Size = font . CM
+    self . ZoomFactor = float ( value / 100                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def available ( self , size                                              ) :
+    ##########################################################################
+    """
+  return QSize                                                        (
+           size . width  () - Margins . left () - Margins . right  () ,
+           size . height () - Margins . top  () - Margins . bottom ()
+         )                                                            ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def centimeter ( self , size                                             ) :
+    ##########################################################################
+    """
+  double w = size.width () ;
+  double h = size.height() ;
+  w *= screen.WidthLength  ;
+  w /= screen.WidthPixels  ;
+  w /= 10                  ;
+  h *= screen.HeightLength ;
+  h /= screen.HeightPixels ;
+  h /= 10                  ;
+  return QSizeF(w,h)       ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def toPaper ( self , cm                                             ) :
+    ##########################################################################
+    """
+  double x = cm.width () ; x *= DPI ; x *= 100 ; x /= 254 ;
+  double y = cm.height() ; y *= DPI ; y *= 100 ; y /= 254 ;
+  return QSizeF(x,y)                                      ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def asPaper ( self , size                                             ) :
+    ##########################################################################
+    """
+  QSizeF S = size                      ;
+  QSizeF P = toPaper(centimeter(size)) ;
+  Transform.reset ()                   ;
+  double sx = S.width  () / P.width () ;
+  double sy = S.height () / P.height() ;
+  sx *= ZoomFactor                     ;
+  sy *= ZoomFactor                     ;
+  Transform.scale (sx,sy)              ;
+  QTransform I = Transform.inverted()  ;
+  QPointF Z(S.width(),S.height())      ;
+  Z = I.map(Z)                         ;
+  return QRectF(0,0,Z.x(),Z.y())       ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def Percentage ( self                                                ) :
+    ##########################################################################
+    """
+  char P[1024]                        ;
+  sprintf(P,"%4.2f",(ZoomFactor*100)) ;
+  return QString("%1%").arg(P)        ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def FactorLevel ( self , factor , enlarge                                ) :
+    ##########################################################################
+    """
+  qreal f = factor;
+  int   F = (int)(f * 100);
+  bool  B = false;
+  for (int i=1;!B && i<Zooms.count();i++) {
+    if (Zooms[i-1]==F) {
+      if (enlarge) {
+        F = Zooms[i];
+        B = true;
+      } else {
+        if (i>1) F = Zooms[i-2]; else F = Zooms[0];
+        B = true;
+      };
+    } else
+    if (Zooms[i]==F) {
+      if (enlarge) {
+        F = Zooms[i+1];
+        B = true;
+      } else {
+        if (i>0) F = Zooms[i-1]; else F = Zooms[0];
+        B = true;
+      };
+    } else
+    if (Zooms[i-1]<F && F<Zooms[i]) {
+      if (enlarge) {
+        F = Zooms[i+1];
+        B = true;
+      } else {
+        if (i>0) F = Zooms[i-1]; else F = Zooms[0];
+        B = true;
+      };
+    };
+  };
+  f = F; f /= 100;
+  return f;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def setDefaultZoom ( self                                                ) :
+    ##########################################################################
+    self . Zooms =   [    1 ,    2 ,    3 ,    4 ,    5 ,                    \
+                          6 ,    7 ,    8 ,    9 ,   10 ,                    \
+                         15 ,   20 ,   25 ,   30 ,   35 ,                    \
+                         40 ,   45 ,   50 ,   55 ,   60 ,                    \
+                         65 ,   70 ,   75 ,   80 ,   85 ,                    \
+                         90 ,   95 ,  100 ,  110 ,  120 ,                    \
+                        130 ,  140 ,  150 ,  160 ,  170 ,                    \
+                        180 ,  190 ,  200 ,  300 ,  400 ,                    \
+                        500 ,  600 ,  700 ,  800 ,  900 ,                    \
+                       1000 , 1100 , 1200 , 1300 , 1400 ,                    \
+                       1500 , 1600 , 1700 , 1800 , 1900 ,                    \
+                       2000 , 2100 , 2200 , 2300 , 2400 ,                    \
+                       2500 , 2600 , 2700 , 2800 , 2900 ,                    \
+                       3000 , 3100 , 3200 , 3300 , 3400 ,                    \
+                       3500 , 3600 , 3700 , 3800 , 3900 ,                    \
+                       4000 , 4100 , 4200 , 4300 , 4400 ,                    \
+                       4500 , 4600 , 4700 , 4800 , 4900 ,                    \
+                       5000                                                  ]
     ##########################################################################
     return
 ##############################################################################
-"""
-QByteArray N::VcfFont::Configuration(void)
-{
-  VcfFontConfiguration VF                                  ;
-  QByteArray FontConf                                      ;
-  FontConf.resize(sizeof(VcfFontConfiguration))            ;
-  QString family = font.family()                           ;
-  memset(&VF,0,sizeof(VcfFontConfiguration))               ;
-  strcpy(VF.Family,family.toUtf8().data())                 ;
-  QColor C                                                 ;
-  VF.Size            = size                                ;
-  VF.Stretch         = font . stretch    ()                ;
-  VF.Weight          = font . weight     ()                ;
-  VF.FixedPitch      = font . fixedPitch () ? 1 : 0        ;
-  VF.Bold            = font . bold       () ? 1 : 0        ;
-  VF.Italic          = font . italic     () ? 1 : 0        ;
-  VF.Kerning         = font . kerning    () ? 1 : 0        ;
-  VF.Overline        = font . overline   () ? 1 : 0        ;
-  VF.StrikeOut       = font . strikeOut  () ? 1 : 0        ;
-  VF.Underline       = font . underline  () ? 1 : 0        ;
-  VF.Pen.Style       = pen  . style      ()                ;
-  C                  = pen  . color      ()                ;
-  VF.Pen.R           = C    . red        ()                ;
-  VF.Pen.G           = C    . green      ()                ;
-  VF.Pen.B           = C    . blue       ()                ;
-  VF.Pen.A           = C    . alpha      ()                ;
-  VF.Pen.CapStyle    = pen  . capStyle   ()                ;
-  VF.Pen.Cosmetics   = pen  . isCosmetic ()                ;
-  VF.Pen.Width       = pen  . widthF     ()                ;
-  VF.PenBrush.Style  = penBrush . style  ()                ;
-  C                  = penBrush . color  ()                ;
-  VF.PenBrush.R      = C    . red        ()                ;
-  VF.PenBrush.G      = C    . green      ()                ;
-  VF.PenBrush.B      = C    . blue       ()                ;
-  VF.PenBrush.A      = C    . alpha      ()                ;
-  VF.Brush.Style     = brush. style      ()                ;
-  C                  = brush. color      ()                ;
-  VF.Brush.R         = C    . red        ()                ;
-  VF.Brush.G         = C    . green      ()                ;
-  VF.Brush.B         = C    . blue       ()                ;
-  VF.Brush.A         = C    . alpha      ()                ;
-  VF.Selection.Style = selection . style ()                ;
-  C                  = selection . color ()                ;
-  VF.Selection.R     = C    . red        ()                ;
-  VF.Selection.G     = C    . green      ()                ;
-  VF.Selection.B     = C    . blue       ()                ;
-  VF.Selection.A     = C    . alpha      ()                ;
-  memcpy(FontConf.data(),&VF,sizeof(VcfFontConfiguration)) ;
-  return FontConf                                          ;
-}
-
-void N::VcfFont::Set(QByteArray Conf)
-{
-  VcfFontConfiguration * VF = (VcfFontConfiguration *)Conf.data() ;
-  QColor C                                                        ;
-  font.setFamily(QString::fromUtf8(VF->Family))                   ;
-  size = VF->Size                                                 ;
-  font . setStretch    (VF->Stretch      )                        ;
-  font . setWeight     (VF->Weight       )                        ;
-  font . setBold       (VF->Bold      ==1)                        ;
-  font . setFixedPitch (VF->FixedPitch==1)                        ;
-  font . setItalic     (VF->Italic    ==1)                        ;
-  font . setKerning    (VF->Kerning   ==1)                        ;
-  font . setOverline   (VF->Overline  ==1)                        ;
-  font . setStrikeOut  (VF->StrikeOut ==1)                        ;
-  font . setUnderline  (VF->Underline ==1)                        ;
-  C.setRed   (VF->Pen.R)                                          ;
-  C.setGreen (VF->Pen.G)                                          ;
-  C.setBlue  (VF->Pen.B)                                          ;
-  C.setAlpha (VF->Pen.A)                                          ;
-  pen.setColor   (C                   )                           ;
-  pen.setStyle   ((Qt::PenStyle)VF->Pen.Style)                    ;
-  pen.setCapStyle((Qt::PenCapStyle)VF->Pen.CapStyle)              ;
-  pen.setCosmetic(VF->Pen.Cosmetics==1)                           ;
-  pen.setWidthF  (VF->Pen.Width       )                           ;
-  C.setRed   (VF->PenBrush.R)                                     ;
-  C.setGreen (VF->PenBrush.G)                                     ;
-  C.setBlue  (VF->PenBrush.B)                                     ;
-  C.setAlpha (VF->PenBrush.A)                                     ;
-  penBrush.setColor(C)                                            ;
-  penBrush.setStyle((Qt::BrushStyle)VF->PenBrush.Style)           ;
-  C.setRed   (VF->Brush.R)                                        ;
-  C.setGreen (VF->Brush.G)                                        ;
-  C.setBlue  (VF->Brush.B)                                        ;
-  C.setAlpha (VF->Brush.A)                                        ;
-  brush.setColor(C)                                               ;
-  brush.setStyle((Qt::BrushStyle)VF->Brush.Style)                 ;
-  C.setRed   (VF->Selection.R)                                    ;
-  C.setGreen (VF->Selection.G)                                    ;
-  C.setBlue  (VF->Selection.B)                                    ;
-  C.setAlpha (VF->Selection.A)                                    ;
-  selection.setColor(C)                                           ;
-  selection.setStyle((Qt::BrushStyle)VF->Selection.Style)         ;
-}
-"""

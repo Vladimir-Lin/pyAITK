@@ -182,7 +182,7 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
     PIX   = self . toPixmap ( self . Image                                   )
     ##########################################################################
     label = QLabel          (                                                )
-    lable . setAlignment    ( Qt . AlignCenter                               )
+    label . setAlignment    ( Qt . AlignCenter                               )
     label . setPixmap       ( PIX                                            )
     self  . setWidget       ( label                                          )
     ##########################################################################
