@@ -88,20 +88,21 @@ class WssHttpRequest       ( BaseHTTPRequestHandler                        ) :
     ##########################################################################
     return
 ##############################################################################
-class wssClient                            (                               ) :
+class wssClient                               (                            ) :
   ############################################################################
-  def __init__                             ( self , Hostname               ) :
+  def __init__                                ( self , Hostname            ) :
     ##########################################################################
-    self . Logger    = logging . getLogger (                                 )
+    self . Logger       = logging . getLogger (                              )
     ##########################################################################
-    self . Running   = False
-    self . Working   = False
-    self . Connected = False
-    self . Thread    = None
-    self . Wss       = None
-    self . URL       = Hostname
+    self . Running      = False
+    self . Working      = False
+    self . Connected    = False
+    self . Thread       = None
+    self . Wss          = None
+    self . URL          = Hostname
+    self . Translations =                     {                              }
     ##########################################################################
-    self . onInitialize                    (                                 )
+    self . onInitialize                       (                              )
     ##########################################################################
     return
   ############################################################################
@@ -264,6 +265,7 @@ class wssAccepter (                                                        ) :
     self . Server         = server
     self . Socket         = sock
     self . Address        = address
+    self . Translations   = {                                                }
     ##########################################################################
     self . Name           = ""
     self . Owner          = ""
@@ -294,6 +296,7 @@ class wssAccepter (                                                        ) :
     self . maxheader      = WSS_MAXHEADER
     self . maxpayload     = WSS_MAXPAYLOAD
     self . onInitialize     (                                                )
+    ##########################################################################
     return
   ############################################################################
   def __del__               ( self                                         ) :
@@ -879,7 +882,7 @@ class WSS                   (                                              ) :
                               SslKey           = ""                          ,
                               SslProtocol      = ssl . PROTOCOL_SSLv23     ) :
     ##########################################################################
-    self . Logger      = logging . getLogger (                               )
+    self . Logger        = logging . getLogger (                             )
     ##########################################################################
     self . Running       = False
     self . Working       = False
@@ -893,6 +896,8 @@ class WSS                   (                                              ) :
     self . SslCert       = SslCert
     self . SslKey        = SslKey
     self . SslProtocol   = SslProtocol
+    ##########################################################################
+    self . Translations  =  {                                                }
     ##########################################################################
     self . Prepared      = self . PrepareSSL (                               )
     self . Locker        = threading . Lock  (                               )
@@ -1139,6 +1144,7 @@ class WSS                   (                                              ) :
       newsock        . setblocking            ( 0                            )
       fileno         = newsock . fileno       (                              )
       WS             = self . CreateClient    ( newsock , address            )
+      WS . Translations = self . Translations
       if                                      ( WS != None                 ) :
         self . Connections [ fileno ] = WS
         self . Listeners . append             ( fileno                       )

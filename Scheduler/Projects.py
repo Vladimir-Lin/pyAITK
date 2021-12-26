@@ -15,11 +15,49 @@ from   AITK . Database  . Query       import Query
 from   AITK . Database  . Connection  import Connection
 from   AITK . Database  . Columns     import Columns
 ##############################################################################
+from   AITK . Calendars . StarDate   import StarDate as StarDate
+from   AITK . Calendars . Periode    import Periode  as Periode
+##############################################################################
+from                    . Project    import Project  as Project
+from                    . Event      import Event    as Event
+from                    . Events     import Events   as Events
+from                    . Task       import Task     as Task
+from                    . Tasks      import Tasks    as Tasks
+##############################################################################
 class Projects                (                                            ) :
   ############################################################################
   def __init__                ( self                                       ) :
+    ##########################################################################
+    self . Listings     =     {                                              }
+    self . Translations =     {                                              }
+    self . Tables       =     {                                              }
+    ##########################################################################
     return
   ############################################################################
   def __del__                 ( self                                       ) :
+    return
+  ############################################################################
+  def ObtainsAll            ( self , DB                                    ) :
+    ##########################################################################
+    PRJTAB = self . Tables  [ "Projects"                                     ]
+    QQ     = f"select `uuid` from {PRJTAB} order by `id` asc ;"
+    return DB . ObtainUuids ( QQ                                             )
+  ############################################################################
+  def load                      ( self , DB , UUIDs                        ) :
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      if                        ( UUID in self . Listings                  ) :
+        self . Listings [ UUID ] . reload ( DB                               )
+      else                                                                   :
+        ######################################################################
+        P    = Project          (                                            )
+        P    . Uuid         = UUID
+        P    . Tables       = self . Tables
+        P    . Translations = self . Translations
+        P    . load             ( DB                                         )
+        ######################################################################
+        self . Listings [ UUID ] = P
+    ##########################################################################
     return
 ##############################################################################
