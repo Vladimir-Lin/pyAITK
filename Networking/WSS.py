@@ -205,7 +205,7 @@ class wssClient                               (                            ) :
     while                      ( self . Running                            ) :
       ########################################################################
       self . Wss = websocket . WebSocketApp                                ( \
-                               self . URL                                  , \
+                               self       . URL                            , \
                                on_open    = self . onPrivateConnected      , \
                                on_message = self . onMessage               , \
                                on_data    = self . onBinary                , \
