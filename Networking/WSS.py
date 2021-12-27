@@ -287,6 +287,8 @@ class wssAccepter (                                                        ) :
     self . Address        = address
     self . Connected      = True
     self . Translations   = {                                                }
+    self . Locker         = threading . Lock  (                              )
+    self . senderLock     = threading . Lock  (                              )
     ##########################################################################
     self . Name           = ""
     self . Owner          = ""
@@ -317,6 +319,7 @@ class wssAccepter (                                                        ) :
     self . maxheader      = WSS_MAXHEADER
     self . maxpayload     = WSS_MAXPAYLOAD
     self . onInitialize     (                                                )
+    ##########################################################################
     return
   ############################################################################
   def __del__               ( self                                         ) :
@@ -332,6 +335,22 @@ class wssAccepter (                                                        ) :
     elif                    ( way == "info"                                ) :
       self . Logger . info  ( message                                        )
     ##########################################################################
+    return
+  ############################################################################
+  def Lock                  ( self                                         ) :
+    self . Locker . acquire (                                                )
+    return
+  ############################################################################
+  def Unlock                ( self                                         ) :
+    self . Locker . release (                                                )
+    return
+  ############################################################################
+  def LockSender                ( self                                     ) :
+    self . senderLock . acquire (                                            )
+    return
+  ############################################################################
+  def UnlockSender              ( self                                     ) :
+    self . senderLock . release (                                            )
     return
   ############################################################################
   def isUnicode             ( self , val                                   ) :
@@ -401,10 +420,14 @@ class wssAccepter (                                                        ) :
     self   . Feeding   = False
     self   . Connected = False
     ##########################################################################
+    self   . Lock           (                                                )
+    ##########################################################################
     try                                                                      :
       self . Socket . close (                                                )
     except                                                                   :
       pass
+    ##########################################################################
+    self   . Unlock         (                                                )
     ##########################################################################
     if                      ( self . handshaked                            ) :
       self . onDisconnected (                                                )
@@ -433,7 +456,7 @@ class wssAccepter (                                                        ) :
     ##########################################################################
     return True
   ############################################################################
-  def flushBuffer             ( self , buff , send_all = False             ) :
+  def DoFlushBuffer           ( self , buff , send_all = False             ) :
     ##########################################################################
     if                        ( not self . Connected                       ) :
       return None
@@ -474,6 +497,14 @@ class wssAccepter (                                                        ) :
     ##########################################################################
     return None
   ############################################################################
+  def flushBuffer               ( self , buff , send_all = False           ) :
+    ##########################################################################
+    self . LockSender           (                                            )
+    R    = self . DoFlushBuffer (        buff , send_all                     )
+    self . UnlockSender         (                                            )
+    ##########################################################################
+    return R
+  ############################################################################
   def sendFragmentStart       ( self , data                                ) :
     ##########################################################################
     opcode      = WSS_BINARY
@@ -497,6 +528,8 @@ class wssAccepter (                                                        ) :
     return self . sendMessage ( json . dumps ( jsox )                        )
   ############################################################################
   def postMessage             ( self , fin , opcode , data                 ) :
+    ##########################################################################
+    self    . LockSender      (                                              )
     ##########################################################################
     payload = bytearray       (                                              )
     b1      = 0
@@ -528,7 +561,9 @@ class wssAccepter (                                                        ) :
     if                        ( length > 0                                 ) :
       payload . extend        ( data                                         )
     ##########################################################################
-    self . sendq . append     ( ( opcode , payload )                         )
+    self    . sendq . append  ( ( opcode , payload )                         )
+    ##########################################################################
+    self    . UnlockSender    (                                              )
     ##########################################################################
     return True
   ############################################################################
@@ -595,7 +630,11 @@ class wssAccepter (                                                        ) :
   ############################################################################
   def ImportData                    ( self                                 ) :
     ##########################################################################
-    fileno = self . Socket . fileno (                                        )
+    try                                                                      :
+      fileno = self . Socket . fileno (                                      )
+    except                                                                   :
+      return False
+    ##########################################################################
     if                              ( fileno < 0                           ) :
       return False
     ##########################################################################
@@ -632,8 +671,13 @@ class wssAccepter (                                                        ) :
     self . data        = bytearray (                                         )
     ##########################################################################
     rsv                = b & 0x70
+    ##########################################################################
     if                             ( rsv != 0                              ) :
-      self . Debug ( "{0} RSV bit must be 0, but now - {1}" . format ( self . Socket . fileno ( ) , rsv ) )
+      ########################################################################
+      FMT  = "{0} RSV bit must be 0, but now - {1}"
+      MSG  = FMT . format          ( self . Socket . fileno ( ) , rsv        )
+      self . Debug                 ( MSG                                     )
+      ########################################################################
       return False
     ##########################################################################
     return True
@@ -718,9 +762,10 @@ class wssAccepter (                                                        ) :
     ##########################################################################
     ## we have no mask and some payload
     ##########################################################################
-    #self.index = 0
+    ## self.index = 0
     self . data  = bytearray       (                                         )
     self . state = WSS_PAYLOAD
+    ##########################################################################
     return True
   ############################################################################
   def DoLong                       ( self , b                              ) :
@@ -771,11 +816,13 @@ class wssAccepter (                                                        ) :
     ## if there is no mask and no payload we are done
     ##########################################################################
     if                            ( self . length <= 0                     ) :
+      ########################################################################
       try                                                                    :
         self . processPacket      (                                          )
       finally                                                                :
         self . state = WSS_HEADERB1
         self . data  = bytearray  (                                          )
+      ########################################################################
       return True
     ##########################################################################
     ## we have mask and some payload
@@ -796,7 +843,11 @@ class wssAccepter (                                                        ) :
     ## if length exceeds allowable size then we except and remove the connection
     ##########################################################################
     if ( len ( self . data ) >= self . maxpayload )                          :
-      self . Debug ( "{0} payload exceeded allowable size" . format ( self . Socket . fileno ( ) ) )
+      ########################################################################
+      FMT  = "{0} payload exceeded allowable size"
+      MSG  = FMT . format         ( self . Socket . fileno ( )               )
+      self . Debug                ( MSG                                      )
+      ########################################################################
       return False
     ##########################################################################
     ## check if we have processed length bytes; if so we are done
@@ -832,10 +883,10 @@ class wssAccepter (                                                        ) :
           reason = reason . decode  ( 'utf8' , errors ='strict'              )
         except                                                               :
           status = 1002
-    elif ( length == 1 )                                                     :
+    elif                            ( length == 1                          ) :
       status     = 1002
     ##########################################################################
-    self . CloseFrame ( status , reason )
+    self . CloseFrame               ( status , reason                        )
     ##########################################################################
     return True
   ############################################################################
@@ -1151,24 +1202,25 @@ class WSS                   (                                              ) :
     ##########################################################################
     return self . ClientWrapper ( self, sock, address                        )
   ############################################################################
-  def DispatchClient              ( self , sockno                          ) :
+  def DispatchClient                ( self , sockno                        ) :
     ##########################################################################
-    if                            ( sockno not in self . Connections       ) :
+    if                              ( sockno not in self . Connections     ) :
       False
     ##########################################################################
-    GOT      = False
+    GOT        = False
     ##########################################################################
-    self     . Lock               (                                          )
+    self       . Lock               (                                        )
     ##########################################################################
     try                                                                      :
-      client = self . Connections [ sockno                                   ]
-      GOT    = True
+      if                            ( sockno in self . Connections         ) :
+        client = self . Connections [ sockno                                 ]
+        GOT    = True
     except                                                                   :
       pass
     ##########################################################################
-    self     . Unlock             (                                          )
+    self       . Unlock             (                                        )
     ##########################################################################
-    if                            ( not GOT                                ) :
+    if                              ( not GOT                              ) :
       return False
     ##########################################################################
     try                                                                      :
@@ -1202,43 +1254,59 @@ class WSS                   (                                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def HandleClient                ( self , sockno                          ) :
+  def HandleClient                  ( self , sockno                        ) :
     ##########################################################################
-    if                            ( sockno not in self . Connections       ) :
+    if                              ( sockno not in self . Connections     ) :
       return False
+    ##########################################################################
+    WRONG      = False
+    self       . Lock               (                                        )
     ##########################################################################
     try                                                                      :
       ########################################################################
-      client = self . Connections [ sockno                                   ]
-      client . ReadData           (                                          )
+      if                            ( sockno in self . Connections         ) :
+        ######################################################################
+        client = self . Connections [ sockno                                 ]
+        client . ReadData           (                                        )
       ########################################################################
     except Exception as ex                                                   :
+      WRONG    = True
+    ##########################################################################
+    self       . Unlock             (                                        )
+    ##########################################################################
+    if                              ( WRONG                                ) :
       ########################################################################
-      self . Debug ( "Client Exception : {0}" . format ( str ( ex ) )        )
-      self . RemoveClient         ( sockno                                   )
+      FMT      = "Client Exception : {0}"
+      MSG      = FMT . format       ( str ( ex )                             )
       ########################################################################
+      self     . Debug              ( MSG                                    )
+      self     . RemoveClient       ( sockno                                 )
+      ########################################################################
+      return False
+    ##########################################################################
     return True
   ############################################################################
   def RemoveClient                ( self , sockno                          ) :
     ##########################################################################
-    if                            ( sockno not in self . Connections       ) :
+    if                              ( sockno not in self . Connections     ) :
       return False
     ##########################################################################
-    self . Lock                   (                                          )
+    self       . Lock               (                                        )
     ##########################################################################
     try                                                                      :
       ########################################################################
-      client = self . Connections [ sockno                                   ]
-      client . doClose            (                                          )
-      del self . Connections      [ sockno                                   ]
+      if                            ( sockno in self . Connections         ) :
+        client = self . Connections [ sockno                                 ]
+        client . doClose            (                                        )
+        del self . Connections      [ sockno                                 ]
       ########################################################################
-      if                          ( sockno in self . Listeners             ) :
-        self . Listeners . remove ( sockno                                   )
+      if                            ( sockno in self . Listeners           ) :
+        self   . Listeners . remove ( sockno                                 )
       ########################################################################
     except                                                                   :
       pass
     ##########################################################################
-    self . Unlock                 (                                          )
+    self       . Unlock             (                                        )
     ##########################################################################
     return True
   ############################################################################
@@ -1249,30 +1317,59 @@ class WSS                   (                                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def FindClient                     ( self , Name , Owner                 ) :
+  def DoFindClient                    ( self , Name , Owner                ) :
     ##########################################################################
-    Keys = self . Connections . keys (                                       )
+    Keys = self . Connections . keys  (                                      )
     ##########################################################################
-    for K in Keys                                                            :
-      client = self . Connections    [ K                                     ]
-      if ( ( client . Name == Name ) and ( client . Owner == Owner ) )       :
-        return client
+    try                                                                      :
+      for K in Keys                                                          :
+        ######################################################################
+        if                            ( K in self . Connections            ) :
+          ####################################################################
+          client = self . Connections [ K                                    ]
+          ####################################################################
+          if ( ( client . Name == Name ) and ( client . Owner == Owner ) )   :
+            return client
+    ##########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return None
   ############################################################################
-  def FindClients                        ( self , Name , Owner             ) :
+  def FindClient                 ( self , Name , Owner                     ) :
+    ##########################################################################
+    self   . Lock                (                                           )
+    CLIENT = self . DoFindClient (        Name , Owner                       )
+    self   . Unlock              (                                           )
+    ##########################################################################
+    return CLIENT
+  ############################################################################
+  def DoFindClients                      ( self , Name , Owner             ) :
     ##########################################################################
     Clients  =                           [                                   ]
     Keys     = self . Connections . keys (                                   )
     ##########################################################################
-    for K in Keys                                                            :
-      client = self . Connections        [ K                                 ]
-      if ( client . Name == Name ) and ( client . Owner == Owner )           :
-        Clients . append                 ( client                            )
+    try                                                                      :
+      ########################################################################
+      for K in Keys                                                          :
+        client = self . Connections      [ K                                 ]
+        if ( client . Name == Name ) and ( client . Owner == Owner )         :
+          Clients . append               ( client                            )
+      ########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return Clients
   ############################################################################
-  def FindClientsByName                  ( self , Name                     ) :
+  def FindClients                  ( self , Name , Owner                   ) :
+    ##########################################################################
+    self    . Lock                 (                                         )
+    CLIENTS = self . DoFindClients (        Name , Owner                     )
+    self    . Unlock               (                                         )
+    ##########################################################################
+    return CLIENTS
+  ############################################################################
+  def DoFindClientsByName                ( self , Name                     ) :
     ##########################################################################
     Clients  =                           [                                   ]
     Keys     = self . Connections . keys (                                   )
@@ -1284,6 +1381,14 @@ class WSS                   (                                              ) :
         Clients . append                 ( client                            )
     ##########################################################################
     return Clients
+  ############################################################################
+  def FindClientsByName                  ( self , Name                     ) :
+    ##########################################################################
+    self    . Lock                       (                                   )
+    CLIENTS = self . DoFindClientsByName (        Name                       )
+    self    . Unlock                     (                                   )
+    ##########################################################################
+    return CLIENTS
   ############################################################################
   def NewClient             ( self                                         ) :
     ##########################################################################
