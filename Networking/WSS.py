@@ -81,10 +81,15 @@ class WssHttpRequest       ( BaseHTTPRequestHandler                        ) :
   ############################################################################
   def __init__             ( self , request_text                           ) :
     ##########################################################################
-    self . rfile           = BytesIO                 ( request_text          )
-    self . raw_requestline = self . rfile . readline (                       )
-    self . error_code      = self . error_message = None
-    self . parse_request   (                                                 )
+    try                                                                      :
+      ########################################################################
+      self . rfile           = BytesIO                 ( request_text        )
+      self . raw_requestline = self . rfile . readline (                     )
+      self . error_code      = self . error_message = None
+      self . parse_request (                                                 )
+      ########################################################################
+    except                                                                   :
+      pass
     ##########################################################################
     return
 ##############################################################################
