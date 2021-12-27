@@ -160,6 +160,20 @@ class Periode            ( Columns                                         ) :
              "creation"                                                      ,
              "modified"                                                      ]
   ############################################################################
+  def toJson            ( self                                             ) :
+    return              { "Id"       : self . Id                           , \
+                          "Uuid"     : self . Uuid                         , \
+                          "Type"     : self . Type                         , \
+                          "Used"     : self . Used                         , \
+                          "Start"    : self . Start                        , \
+                          "End"      : self . End                          , \
+                          "Realm"    : self . Realm                        , \
+                          "Role"     : self . Role                         , \
+                          "Item"     : self . Item                         , \
+                          "States"   : self . States                       , \
+                          "Creation" : self . Creation                     , \
+                          "Modified" : self . Modified                       }
+  ############################################################################
   def toString          ( self                                             ) :
     return "prd9%08d" % ( self . Uuid % 100000000                            )
   ############################################################################
