@@ -30,18 +30,21 @@ import telegram
 from   telegram                            import Update
 from   telegram                            import InputTextMessageContent
 from   telegram                            import InlineQueryResultArticle
+from   telegram                            import InlineKeyboardButton
+from   telegram                            import InlineKeyboardMarkup
 from   telegram . ext                      import Updater
 from   telegram . ext                      import CallbackContext
+from   telegram . ext                      import CallbackQueryHandler
 from   telegram . ext                      import CommandHandler
 from   telegram . ext                      import MessageHandler
 from   telegram . ext                      import Filters
 ##############################################################################
 class TelegramRobot (                                                      ) :
   ############################################################################
-  def __init__   ( self                                                      ,
-                   Account  = ""                                             ,
-                   Token    = ""                                             ,
-                   Options  = { }                                          ) :
+  def __init__      ( self                                                 , \
+                      Account  = ""                                        , \
+                      Token    = ""                                        , \
+                      Options  = { }                                       ) :
     ##########################################################################
     self . TelegramLocker     = threading . Lock (                           )
     self . DebugLogger        = None
@@ -50,7 +53,7 @@ class TelegramRobot (                                                      ) :
     self . TelegramUpdater    = None
     self . TelegramDispatcher = None
     self . Reply              = None
-    self . SetOptions ( Options )
+    self . SetOptions                            ( Options                   )
     ##########################################################################
     return
   ############################################################################
@@ -119,10 +122,50 @@ class TelegramRobot (                                                      ) :
     if               ( self . Reply in [ False , None ]                    ) :
       return
     ##########################################################################
-    Account = update.effective_chat.id
+    Account = update . effective_chat . id
     Account = f"{Account}"
     Message = update . message . text
     self . Reply     ( Account , "Reply" , Message                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def MenuItem                  ( self , text , pattern                    ) :
+    return InlineKeyboardButton ( text , callback_data = pattern             )
+  ############################################################################
+  def MarkupMenu                ( self , MENUs                             ) :
+    return InlineKeyboardMarkup ( MENUs                                      )
+  ############################################################################
+  def addMenuItems                    ( self , JSON                        ) :
+    ##########################################################################
+    if                                ( isinstance ( JSON , list )         ) :
+      ########################################################################
+      MENUs     =                     [                                      ]
+      ########################################################################
+      for ITEM in JSON                                                       :
+        ######################################################################
+        SUBMENU = self . addMenuItems ( ITEM                                 )
+        if                            ( SUBMENU != None                    ) :
+          MENUs . append              ( SUBMENU                              )
+      ########################################################################
+      return MENUs
+    ##########################################################################
+    if ( ( "Menu" in JSON ) and ( "Pattern" in JSON ) )                      :
+      ITEM      = self . MenuItem     ( JSON [ "Menu" ] , JSON [ "Pattern" ] )
+      return ITEM
+    ##########################################################################
+    return None
+  ############################################################################
+  def addMarkupMenu             ( self , JSON                              ) :
+    MENUs = self . addMenuItems (        JSON                                )
+    return MarkupMenu           ( self , MENUs                             ) :
+  ############################################################################
+  def addMenuHandler ( self , func , entry                                 ) :
+    ##########################################################################
+    if               ( self . TelegramDispatcher in [ False , None ]       ) :
+      return
+    ##########################################################################
+    CQH  = CallbackQueryHandler             ( func , pattern = entry         )
+    self . TelegramDispatcher . add_handler ( CQH                            )
     ##########################################################################
     return
   ############################################################################
@@ -131,7 +174,7 @@ class TelegramRobot (                                                      ) :
     if               ( self . TelegramUpdater in [ False , None ]          ) :
       return
     ##########################################################################
-    self . TelegramUpdater . stop (                                           )
+    self . TelegramUpdater . stop (                                          )
     self . TelegramUpdater = None
     ##########################################################################
     return
