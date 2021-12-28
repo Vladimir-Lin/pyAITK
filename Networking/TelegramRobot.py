@@ -143,6 +143,7 @@ class TelegramRobot (                                                      ) :
       ########################################################################
       for ITEM in JSON                                                       :
         ######################################################################
+        print(ITEM)
         SUBMENU = self . addMenuItems ( ITEM                                 )
         if                            ( SUBMENU != None                    ) :
           MENUs . append              ( SUBMENU                              )
@@ -150,6 +151,7 @@ class TelegramRobot (                                                      ) :
       return MENUs
     ##########################################################################
     if ( ( "Menu" in JSON ) and ( "Pattern" in JSON ) )                      :
+      print(JSON)
       ITEM      = self . MenuItem     ( JSON [ "Menu" ] , JSON [ "Pattern" ] )
       return ITEM
     ##########################################################################
