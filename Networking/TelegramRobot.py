@@ -157,9 +157,9 @@ class TelegramRobot (                                                      ) :
   ############################################################################
   def addMarkupMenu             ( self , JSON                              ) :
     MENUs = self . addMenuItems (        JSON                                )
-    return MarkupMenu           ( self , MENUs                             ) :
+    return self  . MarkupMenu   ( self , MENUs                             ) :
   ############################################################################
-  def addMenuHandler ( self , func , entry                                 ) :
+  def addMenuHandler ( self , entry , func                                 ) :
     ##########################################################################
     if               ( self . TelegramDispatcher in [ False , None ]       ) :
       return
