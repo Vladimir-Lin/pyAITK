@@ -474,8 +474,8 @@ class wssAccepter (                                                        ) :
         sent = self . Socket . send ( buff [ already_sent : ]                )
         if                    ( sent == 0                                  ) :
           ####################################################################
-          FMT = "{0} socket connection broken"
-          MSG = FMT . format  ( self . Socket . fileno ( )                   )
+          FMT  = "{0} socket connection broken"
+          MSG  = FMT . format ( self . Socket . fileno ( )                   )
           ####################################################################
           self . Debug        ( MSG                                          )
           ####################################################################
@@ -591,7 +591,7 @@ class wssAccepter (                                                        ) :
     ##########################################################################
     ## Indicates end of HTTP header
     ##########################################################################
-    if                               ( b'\r\n\r\n' in self . headerbuffer  ) :
+    if                        ( b'\r\n\r\n' in self . headerbuffer         ) :
       self   . request = WssHttpRequest ( self . headerbuffer                )
     ##########################################################################
     ## handshake rfc 6455
@@ -604,15 +604,15 @@ class wssAccepter (                                                        ) :
       hStr   = WSS_HANDSHAKE % { 'acceptstr' : k_s                           }
       self   . sendq . append ( ( WSS_BINARY , hStr . encode ( 'ascii' ) )   )
       self   . handshaked = True
-      self   . onConnected           (                                       )
+      self   . onConnected    (                                              )
       ########################################################################
     except Exception as e                                                    :
       ########################################################################
       hStr   = WSS_FAILED_HANDSHAKE
-      self   . flushBuffer           ( hStr . encode ( 'ascii' ) , True      )
+      self   . flushBuffer    ( hStr . encode ( 'ascii' ) , True             )
       ########################################################################
       try                                                                    :
-        self . Socket . close        (                                       )
+        self . Socket . close (                                              )
       except                                                                 :
         pass
       ########################################################################
@@ -1027,7 +1027,7 @@ class WSS                   (                                              ) :
                               SslKey           = ""                          ,
                               SslProtocol      = ssl . PROTOCOL_SSLv23     ) :
     ##########################################################################
-    self . Logger      = logging . getLogger (                               )
+    self . Logger        = logging . getLogger (                             )
     ##########################################################################
     self . Running       = False
     self . Working       = False
@@ -1075,8 +1075,8 @@ class WSS                   (                                              ) :
     self . Locker . release (                                                )
     return
   ############################################################################
-  def supportSSL            ( self                                         ) :
-    return ( self . Prepared ) and ( self . UseSSL )
+  def supportSSL ( self                                                    ) :
+    return       ( ( self . Prepared ) and ( self . UseSSL )                 )
   ############################################################################
   def WrapSocket                             ( self , sock                 ) :
     ##########################################################################
@@ -1087,8 +1087,8 @@ class WSS                   (                                              ) :
   ############################################################################
   def PrepareSSL            ( self                                         ) :
     ##########################################################################
-    self . Channel    = "ws"
-    self . SslContext = None
+    self   . Channel    = "ws"
+    self   . SslContext = None
     ##########################################################################
     if                      ( not self . UseSSL                            ) :
       return True
@@ -1105,10 +1105,11 @@ class WSS                   (                                              ) :
       self . SslContext . load_cert_chain  ( self . SslCert , self . SslKey  )
       self . Channel    = "wss"
       ########################################################################
-    except Exception as e                                                    :
+    except Exception as ex                                                   :
       ########################################################################
-      msg               = "failed to use ssl: {0}" . format ( e )
-      self . Debug          ( msg                                            )
+      FMT  = "failed to use ssl: {0}"
+      MSG  = FMT . format   ( str ( ex )                                     )
+      self . Debug          ( MSG                                            )
       ########################################################################
       return False
     ##########################################################################
@@ -1124,8 +1125,9 @@ class WSS                   (                                              ) :
     ##########################################################################
     try                                                                      :
       ########################################################################
-      msg = "Try binding WSS to {0}:{1}" . format ( Host , self . Port )
-      self . Debug          ( msg                                            )
+      FMT  = "Try binding WSS to {0}:{1}"
+      MSG  = FMT . format   ( Host , self . Port                             )
+      self . Debug          ( MSG                                            )
       ########################################################################
       hostInfo    = socket . getaddrinfo                                     (
                       Host                                                   ,
@@ -1146,15 +1148,17 @@ class WSS                   (                                              ) :
       self . Connections =            {                                      }
       self . Listeners   =            [ self . Socket                        ]
       ########################################################################
-    except Exception as e                                                    :
+    except Exception as ex                                                   :
       ########################################################################
-      msg               = "Failed to Bind WSS : {0}" . format ( e )
-      self . Debug          ( msg                                            )
+      FMT  = "Failed to Bind WSS : {0}"
+      MSG  = FMT . format   ( str ( ex )                                     )
+      self . Debug          ( MSG                                            )
       ########################################################################
       return False
     ##########################################################################
-    msg = "WSS is binded to {0}:{1}" . format ( Host , self . Port )
-    self . Debug          ( msg                                              )
+    FMT    = "WSS is binded to {0}:{1}"
+    MSG    = FMT . format   ( Host , self . Port                             )
+    self   . Debug          ( MSG                                            )
     ##########################################################################
     return True
   ############################################################################
@@ -1174,9 +1178,9 @@ class WSS                   (                                              ) :
     ##########################################################################
     if                        ( not Binded                                 ) :
       ########################################################################
-      self   . Debug          ( "Failure to Bind WSS"                        )
-      self   . Running = False
-      self   . Working = False
+      MSG    = "Failure to Bind WSS"
+      self   . Debug          ( MSG                                          )
+      ########################################################################
       return False
     ##########################################################################
     return True
@@ -1184,9 +1188,12 @@ class WSS                   (                                              ) :
   def CloseWss                 ( self                                      ) :
     ##########################################################################
     try                                                                      :
-      self . Socket . close    (                                             )
+      self   . Socket . close  (                                             )
     except Exception as ex                                                   :
-      self . Debug ( "WSS Closing Exception : {0}" . format ( str ( ex ) )   )
+      ########################################################################
+      FMT    = "WSS Closing Exception : {0}"
+      MSG    = FMT . format    ( str ( ex )                                  )
+      self   . Debug           ( MSG                                         )
     ##########################################################################
     for desc , client in self . Connections . items (                      ) :
       ########################################################################
@@ -1239,7 +1246,9 @@ class WSS                   (                                              ) :
           ####################################################################
           if opcode == WSS_CLOSE                                             :
             ##################################################################
-            self   . Debug ( "{0} received client close" . format ( sockno ) )
+            FMT    = "{0} received client close"
+            MSG    = FMT . format ( sockno                                   )
+            self   . Debug        ( MSG                                      )
             client . onClose      (                                          )
             self   . RemoveClient ( sockno                                   )
             ##################################################################
@@ -1247,8 +1256,10 @@ class WSS                   (                                              ) :
       ########################################################################
     except Exception as ex                                                   :
       ########################################################################
-      ## self . Debug ( "DispatchClient Exception : {0}" . format ( str ( ex ) ) )
-      self   . RemoveClient       ( sockno                                   )
+      FMT  = "DispatchClient Exception : {0}"
+      MSG  = FMT . format         ( str ( ex )                               )
+      self . Debug                ( MSG                                      )
+      self . RemoveClient         ( sockno                                   )
       ########################################################################
       return False
     ##########################################################################
@@ -1260,29 +1271,32 @@ class WSS                   (                                              ) :
       return False
     ##########################################################################
     WRONG      = False
+    CLIENT     = None
+    MSG        = "No client was found within HandleClient"
+    ##########################################################################
     self       . Lock               (                                        )
     ##########################################################################
     try                                                                      :
       ########################################################################
       if                            ( sockno in self . Connections         ) :
         ######################################################################
-        client = self . Connections [ sockno                                 ]
-        client . ReadData           (                                        )
+        CLIENT = self . Connections [ sockno                                 ]
       ########################################################################
     except Exception as ex                                                   :
+      FMT      = "HandleClient Exception : {0}"
+      MSG      = FMT . format       ( str ( ex )                             )
       WRONG    = True
     ##########################################################################
     self       . Unlock             (                                        )
     ##########################################################################
-    if                              ( WRONG                                ) :
-      ########################################################################
-      FMT      = "Client Exception : {0}"
-      MSG      = FMT . format       ( str ( ex )                             )
+    if ( ( CLIENT in [ False , None ] ) or ( WRONG ) )                       :
       ########################################################################
       self     . Debug              ( MSG                                    )
       self     . RemoveClient       ( sockno                                 )
       ########################################################################
       return False
+    ##########################################################################
+    CLIENT     . ReadData           (                                        )
     ##########################################################################
     return True
   ############################################################################
@@ -1310,10 +1324,10 @@ class WSS                   (                                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def WaitAndRemoveClient       ( self , sockno , timeout                  ) :
+  def WaitAndRemoveClient ( self , sockno , timeout                        ) :
     ##########################################################################
-    time . sleep                ( timeout                                    )
-    self . RemoveClient         ( sockno                                     )
+    time . sleep          ( timeout                                          )
+    self . RemoveClient   ( sockno                                           )
     ##########################################################################
     return True
   ############################################################################
@@ -1352,7 +1366,9 @@ class WSS                   (                                              ) :
     try                                                                      :
       ########################################################################
       for K in Keys                                                          :
+        ######################################################################
         client = self . Connections      [ K                                 ]
+        ######################################################################
         if ( client . Name == Name ) and ( client . Owner == Owner )         :
           Clients . append               ( client                            )
       ########################################################################
@@ -1369,16 +1385,17 @@ class WSS                   (                                              ) :
     ##########################################################################
     return CLIENTS
   ############################################################################
-  def DoFindClientsByName                ( self , Name                     ) :
+  def DoFindClientsByName                   ( self , Name                  ) :
     ##########################################################################
-    Clients  =                           [                                   ]
-    Keys     = self . Connections . keys (                                   )
+    Clients     =                           [                                ]
+    Keys        = self . Connections . keys (                                )
     ##########################################################################
     for K in Keys                                                            :
       ########################################################################
-      client = self . Connections        [ K                                 ]
-      if                                 ( client . Name == Name           ) :
-        Clients . append                 ( client                            )
+      client    = self . Connections        [ K                              ]
+      ########################################################################
+      if                                    ( client . Name == Name        ) :
+        Clients . append                    ( client                         )
     ##########################################################################
     return Clients
   ############################################################################
@@ -1419,96 +1436,119 @@ class WSS                   (                                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def dispatcher            ( self                                         ) :
+  def dispatcher              ( self                                       ) :
     ##########################################################################
-    self . Lock             (                                                )
-    writers =               [                                                ]
+    self . Lock               (                                              )
+    writers =                 [                                              ]
     ##########################################################################
     for fileno in self . Listeners                                           :
-      if                    ( not self . Running                           ) :
+      ########################################################################
+      if                      ( not self . Running                         ) :
         continue
-      if                    ( fileno == self . Socket                      ) :
+      if                      ( fileno == self . Socket                    ) :
         continue
-      if                    ( fileno in self . Connections                 ) :
+      ########################################################################
+      if                      ( fileno in self . Connections               ) :
         client = self . Connections [ fileno                                 ]
         if client . sendq                                                    :
-          writers . append  ( fileno                                         )
+          writers . append    ( fileno                                       )
     ##########################################################################
     rList , wList , xList = select ( self . Listeners                        ,
                                      writers                                 ,
                                      self . Listeners                        ,
                                      self . Interval                         )
     ##########################################################################
-    self . Unlock           (                                                )
+    self . Unlock             (                                              )
     ##########################################################################
     for ready in wList                                                       :
-      self . DispatchClient ( ready                                          )
+      self . DispatchClient   ( ready                                        )
     ##########################################################################
     for ready in rList                                                       :
-      if                    ( not self . Running                           ) :
+      ########################################################################
+      if                      ( not self . Running                         ) :
         continue
-      if                    ( ready == self . Socket                       ) :
-        self . NewClient    (                                                )
+      ########################################################################
+      if                      ( ready == self . Socket                     ) :
+        self   . NewClient    (                                              )
       else                                                                   :
-        self . HandleClient ( ready                                          )
+        self   . HandleClient ( ready                                        )
     ##########################################################################
     for failed in xList                                                      :
       ########################################################################
-      if                    ( not self . Running                           ) :
+      if                      ( not self . Running                         ) :
         continue
       ########################################################################
-      if                    ( failed == self . Socket                      ) :
+      if                      ( failed == self . Socket                    ) :
         ######################################################################
-        self . CloseWss     (                                                )
+        self   . CloseWss     (                                              )
         ######################################################################
-        while               ( self . Running                               ) :
-          self . TryBindWss ( 60.0                                           )
+        while                 ( self . Running                             ) :
+          self . TryBindWss   ( 60.0                                         )
         ######################################################################
         return True
       else                                                                   :
         ######################################################################
-        self . RemoveClient ( failed                                         )
+        self   . RemoveClient ( failed                                       )
     ##########################################################################
     return True
   ############################################################################
   def monitor               ( self                                         ) :
     ##########################################################################
-    self . Running = True
-    self . Working = True
+    self     . Running = True
+    self     . Working = True
     ##########################################################################
-    self . Debug            ( "Start Moniting Websocket SSL channel"         )
+    MSG      = "Start Moniting Websocket SSL Channel"
+    self     . Debug        ( MSG                                            )
     ##########################################################################
-    if                      ( not self . TryBindWss ( 300.0 )              ) :
-      return
+    BWSS     = False
+    while                   ( ( not BWSS ) and ( self . Running )          ) :
+      ########################################################################
+      if                    ( self . TryBindWss ( 300.0 )                  ) :
+        ######################################################################
+        BWSS = True
+        MSG  = "Bind Websocket SSL Channel Success"
+        self . Debug        ( MSG                                            )
     ##########################################################################
-    while self . Running                                                     :
-      self . dispatcher     (                                                )
+    while                   ( self . Running                               ) :
+      self   . dispatcher   (                                                )
     ##########################################################################
-    self . CloseWss         (                                                )
-    self . Debug            ( "Stop Moniting Websocket SSL channel"          )
-    self . Working = False
+    self     . CloseWss     (                                                )
+    MSG      = "Stop Moniting Websocket SSL Channel"
+    self     . Debug        ( MSG                                            )
+    self     . Working = False
     ##########################################################################
     return
   ############################################################################
-  def stop                  ( self , waiting = False                       ) :
+  def stop         ( self , waiting = False                                ) :
+    ##########################################################################
     self . Running = False
-    if                      ( not waiting                                  ) :
+    ##########################################################################
+    if             ( not waiting                                           ) :
       return
-    while self . Working                                                     :
-      time . sleep          ( 0.01                                           )
+    ##########################################################################
+    while          ( self . Working                                        ) :
+      time . sleep ( 0.01                                                    )
+    ##########################################################################
     return
   ############################################################################
-  def start                 ( self                                         ) :
+  def start                            ( self                              ) :
     ##########################################################################
-    if                      ( self . Working                               ) :
-      self . Debug          ( "WSS is still working now"                     )
+    if                                 ( self . Working                    ) :
+      ########################################################################
+      MSG  = "WSS is still working now"
+      self . Debug                     ( MSG                                 )
+      ########################################################################
       return False
-    if                      ( not self . Prepared                          ) :
-      self . Debug          ( "SSL channel is not prepared"                  )
+    ##########################################################################
+    if                                 ( not self . Prepared               ) :
+      ########################################################################
+      MSG  = "SSL channel is not prepared"
+      self . Debug                     ( MSG                                 )
+      ########################################################################
       return False
     ##########################################################################
     self . Thread = threading . Thread ( target = self . monitor             )
-    self . Thread . start   (                                                )
+    self . Thread . start              (                                     )
     ##########################################################################
     return True
 ##############################################################################
