@@ -143,7 +143,6 @@ class TelegramRobot (                                                      ) :
       ########################################################################
       for ITEM in JSON                                                       :
         ######################################################################
-        print(ITEM)
         SUBMENU = self . addMenuItems ( ITEM                                 )
         if                            ( SUBMENU != None                    ) :
           MENUs . append              ( SUBMENU                              )
@@ -151,7 +150,6 @@ class TelegramRobot (                                                      ) :
       return MENUs
     ##########################################################################
     if ( ( "Menu" in JSON ) and ( "Pattern" in JSON ) )                      :
-      print(JSON)
       ITEM      = self . MenuItem     ( JSON [ "Menu" ] , JSON [ "Pattern" ] )
       return ITEM
     ##########################################################################
@@ -159,8 +157,28 @@ class TelegramRobot (                                                      ) :
   ############################################################################
   def addMarkupMenu             ( self , JSON                              ) :
     MENUs = self . addMenuItems (        JSON                                )
-    print(MENUs)
     return self  . MarkupMenu   ( MENUs                                      )
+  ############################################################################
+  def ReplyMarkupMenu             ( self , Update , JSON                   ) :
+    ##########################################################################
+    TITLE  = JSON                 [ "Title"                                  ]
+    MM     = self . addMarkupMenu ( JSON [ "Items" ]                         )
+    Update . message . reply_text ( TITLE , reply_markup = MM                )
+    ##########################################################################
+    return
+  ############################################################################
+  def ReplyMarkupWithinMenu       ( self , Update , JSON                   ) :
+    ##########################################################################
+    Query  = Update . callback_query
+    if                            ( Query in [ False , None ]              ) :
+      return
+    ##########################################################################
+    TITLE  = JSON                 [ "Title"                                  ]
+    MM     = self . addMarkupMenu ( JSON [ "Items" ]                         )
+    Query  . answer               (                                          )
+    Query  . edit_message_text    ( text = TITLE , reply_markup = MM         )
+    ##########################################################################
+    return
   ############################################################################
   def addMenuHandler ( self , entry , func                                 ) :
     ##########################################################################
