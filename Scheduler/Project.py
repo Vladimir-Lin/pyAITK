@@ -181,7 +181,6 @@ class Project            ( Columns                                         ) :
     self   . ObtainsByUuid           ( DB , PRJTAB                           )
     self   . FetchPeriod             ( DB                                    )
     self   . Tasks = self . GetTasks ( DB                                    )
-    print ( self . Uuid , self . Tasks )
     ##########################################################################
     return
 ##############################################################################
