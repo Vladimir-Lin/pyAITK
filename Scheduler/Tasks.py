@@ -11,15 +11,73 @@ import mysql . connector
 from   mysql . connector              import Error
 ##############################################################################
 import AITK
-from   AITK . Database  . Query       import Query
-from   AITK . Database  . Connection  import Connection
-from   AITK . Database  . Columns     import Columns
+from   AITK . Database   . Query      import Query
+from   AITK . Database   . Connection import Connection
+from   AITK . Database   . Columns    import Columns
+##############################################################################
+from   AITK . Essentials . Relation   import Relation as Relation
+from   AITK . Calendars  . StarDate   import StarDate as StarDate
+from   AITK . Calendars  . Periode    import Periode  as Periode
+##############################################################################
+from                     . Task       import Task     as Task
+from                     . Event      import Event    as Event
+from                     . Events     import Events   as Events
 ##############################################################################
 class Tasks                   (                                            ) :
   ############################################################################
   def __init__                ( self                                       ) :
+    ##########################################################################
+    self . Listings     =     {                                              }
+    self . Translations =     {                                              }
+    self . Tables       =     {                                              }
+    ##########################################################################
     return
   ############################################################################
   def __del__                 ( self                                       ) :
+    return
+  ############################################################################
+  def GetTask                ( self , UUID                                 ) :
+    ##########################################################################
+    if                       ( UUID in self . Listings                     ) :
+      return self . Listings [ UUID                                          ]
+    ##########################################################################
+    return None
+  ############################################################################
+  def GetAllEvents        ( self                                           ) :
+    ##########################################################################
+    EVENTS       =        [                                                  ]
+    ##########################################################################
+    for   UUID , task in self    . Listings . items ( )                      :
+      ########################################################################
+      for T           in task . Events                                       :
+        ######################################################################
+        if                ( T not in EVENTS                                ) :
+          ####################################################################
+          EVENTS . append ( T                                                )
+    ##########################################################################
+    return EVENTS
+  ############################################################################
+  def ObtainsAll            ( self , DB                                    ) :
+    ##########################################################################
+    TSKTAB = self . Tables  [ "Tasks"                                        ]
+    QQ     = f"select `uuid` from {TSKTAB} order by `id` asc ;"
+    return DB . ObtainUuids ( QQ                                             )
+  ############################################################################
+  def load                      ( self , DB , UUIDs                        ) :
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      if                        ( UUID in self . Listings                  ) :
+        self . Listings [ UUID ] . reload ( DB                               )
+      else                                                                   :
+        ######################################################################
+        T    = Task             (                                            )
+        T    . Uuid         = UUID
+        T    . Tables       = self . Tables
+        T    . Translations = self . Translations
+        T    . load             ( DB                                         )
+        ######################################################################
+        self . Listings [ UUID ] = T
+    ##########################################################################
     return
 ##############################################################################

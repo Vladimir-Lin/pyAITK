@@ -13,19 +13,24 @@ import mysql . connector
 from   mysql . connector             import Error
 ##############################################################################
 import AITK
-from   AITK . Database  . Query      import Query
-from   AITK . Database  . Connection import Connection
-from   AITK . Database  . Columns    import Columns
+from   AITK . Database   . Query          import Query
+from   AITK . Database   . Connection     import Connection
+from   AITK . Database   . Columns        import Columns
 ##############################################################################
-from   AITK . Calendars . StarDate   import StarDate as StarDate
-from   AITK . Calendars . Periode    import Periode  as Periode
+from   AITK . Documents  . Name           import Name           as NameItem
+from   AITK . Documents  . Name           import Naming         as Naming
+from   AITK . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 ##############################################################################
-from                    . Project    import Project  as Project
-from                    . Projects   import Projects as Projects
-from                    . Event      import Event    as Event
-from                    . Events     import Events   as Events
-from                    . Task       import Task     as Task
-from                    . Tasks      import Tasks    as Tasks
+from   AITK . Essentials . Relation       import Relation       as Relation
+from   AITK . Calendars  . StarDate       import StarDate       as StarDate
+from   AITK . Calendars  . Periode        import Periode        as Periode
+##############################################################################
+from                     . Project        import Project        as Project
+from                     . Projects       import Projects       as Projects
+from                     . Event          import Event          as Event
+from                     . Events         import Events         as Events
+from                     . Task           import Task           as Task
+from                     . Tasks          import Tasks          as Tasks
 ##############################################################################
 class Manager                 (                                            ) :
   ############################################################################
@@ -49,6 +54,9 @@ class Manager                 (                                            ) :
     self . ProjectUpdate = 0
     ##########################################################################
     self . Projects      = Projects          (                               )
+    self . Tasks         = Tasks             (                               )
+    self . Events        = Events            (                               )
+    self . Periods       =                   {                               }
     ##########################################################################
     self . Locker        = threading . Lock  (                               )
     ##########################################################################
@@ -205,7 +213,8 @@ class Manager                 (                                            ) :
     if                    ( DT < ( 60 * 60 )                               ) :
       return
     ##########################################################################
-    self . ReloadProjects (                                                  )
+    if                    ( not self . ReloadProjects ( )                  ) :
+      return
     ##########################################################################
     NOW  . Now            (                                                  )
     self . ProjectUpdate = NOW . Stardate
@@ -215,16 +224,54 @@ class Manager                 (                                            ) :
   ############################################################################
   ############################################################################
   ############################################################################
+  def LoadPeriods          ( self , DB , PUIDs                             ) :
+    ##########################################################################
+    PRDTAB = self . Tables [ "Periods"                                       ]
+    NAMTAB = self . Tables [ "Names"                                         ]
+    ##########################################################################
+    for PUID in PUIDs                                                        :
+      ########################################################################
+      if                   ( PUID in self . Periods                        ) :
+        ######################################################################
+        pass
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        P  = Periode       (                                                 )
+        P  . Uuid = PUID
+        P  . ObtainsByUuid ( DB , PRDTAB                                     )
+        ######################################################################
+        self . Periods [ PUID ] = P
+    ##########################################################################
+    return
   ############################################################################
   def ReloadProjects ( self                                                ) :
     ##########################################################################
+    if               ( self . DBP in [ False , None ]                      ) :
+      return False
+    ##########################################################################
     self  . Projects . Tables       = self . Tables
     self  . Projects . Translations = self . Translations
-    UUIDs = self . Projects . ObtainsAll ( self . DBP                        )
+    self  . Tasks    . Tables       = self . Tables
+    self  . Tasks    . Translations = self . Translations
+    self  . Events   . Tables       = self . Tables
+    self  . Events   . Translations = self . Translations
     ##########################################################################
-    self  . Projects . load              ( self . DBP , UUIDs                )
+    UUIDs = self . Projects . ObtainsAll    ( self . DBP                     )
+    self  . Projects . load                 ( self . DBP , UUIDs             )
+    TASKS = self . Projects . GetAllTasks   (                                )
     ##########################################################################
-    return
+    self  . Tasks    . load                 ( self . DBP , TASKS             )
+    EVTs  = self . Tasks    . GetAllEvents  (                                )
+    ##########################################################################
+    self  . Events   . load                 ( self . DBP , EVTs              )
+    PRDs  = self . Events   . GetAllPeriods (                                )
+    ##########################################################################
+    self  . LoadPeriods                     ( self . DBP , PRDs              )
+    ##########################################################################
+    self  . Events . Investigate            ( self . DBP , self . Periods    )
+    ##########################################################################
+    return True
   ############################################################################
   def monitor                  ( self                                      ) :
     ##########################################################################
