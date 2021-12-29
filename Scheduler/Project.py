@@ -11,17 +11,18 @@ import mysql . connector
 from   mysql . connector              import Error
 ##############################################################################
 import AITK
-from   AITK . Database  . Query       import Query
-from   AITK . Database  . Connection  import Connection
-from   AITK . Database  . Columns     import Columns
+from   AITK . Database   . Query      import Query
+from   AITK . Database   . Connection import Connection
+from   AITK . Database   . Columns    import Columns
 ##############################################################################
-from   AITK . Calendars . StarDate   import StarDate as StarDate
-from   AITK . Calendars . Periode    import Periode  as Periode
+from   AITK . Essentials . Relation   import Relation as Relation
+from   AITK . Calendars  . StarDate   import StarDate as StarDate
+from   AITK . Calendars  . Periode    import Periode  as Periode
 ##############################################################################
-from                    . Event      import Event    as Event
-from                    . Events     import Events   as Events
-from                    . Task       import Task     as Task
-from                    . Tasks      import Tasks    as Tasks
+from                     . Event      import Event    as Event
+from                     . Events     import Events   as Events
+from                     . Task       import Task     as Task
+from                     . Tasks      import Tasks    as Tasks
 ##############################################################################
 class Project            ( Columns                                         ) :
   ############################################################################
@@ -48,6 +49,7 @@ class Project            ( Columns                                         ) :
     self . Tables       =         {                                          }
     self . Translations =         {                                          }
     self . Period       = Periode (                                          )
+    self . Tasks        =         [                                          ]
     ##########################################################################
     return
   ############################################################################
@@ -129,6 +131,16 @@ class Project            ( Columns                                         ) :
   ############################################################################
   ############################################################################
   ############################################################################
+  def GetTasks                 ( self , DB                                 ) :
+    ##########################################################################
+    RELTAB = self . Tables     [ "Relation"                                  ]
+    REL    = Relation          (                                             )
+    REL    . set               ( "first" , self . Uuid                       )
+    REL    . setT1             ( "Project"                                   )
+    REL    . setT2             ( "Task"                                      )
+    REL    . setRelation       ( "Contains"                                  )
+    ##########################################################################
+    return REL . Subordination ( DB , RELTAB                                 )
   ############################################################################
   def FetchPeriod            ( self , DB                                   ) :
     ##########################################################################
@@ -163,11 +175,13 @@ class Project            ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def load                 ( self , DB                                     ) :
+  def load                           ( self , DB                           ) :
     ##########################################################################
-    PRJTAB = self . Tables [ "Projects"                                      ]
-    self   . ObtainsByUuid ( DB , PRJTAB                                     )
-    self   . FetchPeriod   ( DB                                              )
+    PRJTAB = self . Tables           [ "Projects"                            ]
+    self   . ObtainsByUuid           ( DB , PRJTAB                           )
+    self   . FetchPeriod             ( DB                                    )
+    self   . Tasks = self . GetTasks ( DB                                    )
+    print ( self . Uuid , self . Tasks )
     ##########################################################################
     return
 ##############################################################################
