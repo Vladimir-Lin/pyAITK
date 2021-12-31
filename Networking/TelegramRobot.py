@@ -129,6 +129,12 @@ class TelegramRobot (                                                      ) :
     ##########################################################################
     return
   ############################################################################
+  def ErrorHandler ( self , update: Update , context: CallbackContext      ) :
+    ##########################################################################
+    self . debug   ( context . error                                         )
+    ##########################################################################
+    return
+  ############################################################################
   def MenuItem                  ( self , text , pattern                    ) :
     return InlineKeyboardButton ( text , callback_data = pattern             )
   ############################################################################
@@ -216,6 +222,8 @@ class TelegramRobot (                                                      ) :
     Hand = MessageHandler ( Filters . text & (~Filters . command )         , \
                             self    . AcceptCall                             )
     self . TelegramDispatcher . add_handler ( Hand                           )
+    ##########################################################################
+    self . TelegramDispatcher . add_error_handler ( self . ErrorHandler      )
     ##########################################################################
     self . TelegramUpdater . start_polling  (                                )
     ##########################################################################
