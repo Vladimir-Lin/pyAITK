@@ -3,83 +3,27 @@
 ## Ownership
 ##############################################################################
 import os
-import sys
-import getopt
-import time
-import datetime
-import requests
-import threading
+from . Object import Object as Object
 ##############################################################################
-class Ownership          (                                                 ) :
+class Ownership           ( Object                                         ) :
   ############################################################################
-  def __init__           ( self                                            ) :
+  def __init__            ( self                                           ) :
     ##########################################################################
+    super ( ) . __init__  (                                                  )
+    self      . relation = 1
     ##########################################################################
     return
   ############################################################################
-  def __del__            ( self                                            ) :
+  def __del__             ( self                                           ) :
     return
+  ############################################################################
+  def Connexion           ( self                                           ) :
+    return int            ( self . relation                                  )
+  ############################################################################
+  def isConnexion         ( self , r                                       ) :
+    return                ( int ( self . relation ) == int ( r )             )
+  ############################################################################
+  def setConnexion        ( self , r                                       ) :
+    self . relation = int ( r                                                )
+    return            int ( self . relation                                  )
 ##############################################################################
-"""
-class Q_ESSENTIALS_EXPORT Ownership : public Object
-{
-  public:
-
-    int relation ;
-
-    explicit Ownership (SUID uuid                               ,
-                        int  type     = Types::None             ,
-                        int  relation = Groups::Subordination ) ;
-    explicit Ownership (void) ;
-             Ownership (const Object & object) ;
-             Ownership (      Object & object) ;
-    virtual ~Ownership (void) ;
-
-    int Connexion      (void) ;
-    int setConnexion   (int relation) ;
-
-  protected:
-
-  private:
-
-} ;
-
-N::Ownership:: Ownership ( SUID uuid , int type , int R )
-             : Object    (      uuid ,     type         )
-             , relation  (                            R )
-{
-}
-
-N::Ownership:: Ownership ( void                  )
-             : Object    ( 0 , Types::None       )
-             , relation  ( Groups::Subordination )
-{
-}
-
-N::Ownership:: Ownership ( const Object & object )
-             : Object    (                object )
-             , relation  ( Groups::Subordination )
-{
-}
-
-N::Ownership:: Ownership ( Object & object       )
-             : Object    (          object       )
-             , relation  ( Groups::Subordination )
-{
-}
-
-N::Ownership::~Ownership (void)
-{
-}
-
-int N::Ownership::Connexion(void)
-{
-  return relation ;
-}
-
-int N::Ownership::setConnexion(int R)
-{
-  relation = R    ;
-  return relation ;
-}
-"""
