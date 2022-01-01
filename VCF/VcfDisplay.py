@@ -11,8 +11,6 @@ import threading
 import gettext
 import json
 ##############################################################################
-import vtk
-##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
 from   PyQt5                          import QtWidgets
@@ -22,6 +20,9 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QRect
+from   PyQt5 . QtCore                 import QRectF
+from   PyQt5 . QtCore                 import QMargins
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -30,20 +31,19 @@ from   PyQt5 . QtGui                  import QFontMetricsF
 from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QTransform
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
+from   PyQt5 . QtWidgets              import QGraphicsScene
 ##############################################################################
-from   AITK  . Qt . VirtualGui        import VirtualGui as VirtualGui
-from   AITK  . Qt . AttachDock        import AttachDock as AttachDock
-##############################################################################
-class VcfDisplay      (                                                    ) :
+class VcfDisplay             (                                             ) :
   ############################################################################
-  def __init__        ( self                                               ) :
+  def __init__               ( self                                        ) :
     ##########################################################################
-    self . Initialize (                                                      )
+    self . InitializeDisplay (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -52,24 +52,19 @@ class VcfDisplay      (                                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def Initialize              ( self                                       ) :
+  def InitializeDisplay       ( self                                       ) :
     ##########################################################################
-    ## self . Scene         = QGraphicsScene ( )
-    self . Scene         = None
+    print("InitializeDisplay")
+    self . Scene         = QGraphicsScene (                                  )
     self . Zooms         =    [                                              ]
-    self . Scene         = None
     ## VcfOptions Options
     self . Options       =    {                                              }
-    ## QMargins         Margins
-    ## self . Margins   = QMargins ( 0 , 0 , 3 , 3 )
+    self . Margins       = QMargins ( 0 , 0 , 3 , 3 )
     self . Margins       = None
-    ## QTransform       Transform
-    self . Transform     = None
+    self . Transform     = QTransform ( )
     self . Transform     . reset ( )
-    ## QPointF          Origin
-    ## self . Origin     = QPointF ( 0 , 0 )
-    ## QRectF           View
-    self . View          = None
+    self . Origin        = QPointF ( 0 , 0 )
+    self . View          = QRectF ( )
     ## Screen           screen
     ## self . screen        = False
     self . MonitorFactor = 1.0

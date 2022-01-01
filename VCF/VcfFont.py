@@ -11,8 +11,6 @@ import threading
 import gettext
 import json
 ##############################################################################
-import vtk
-##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
 from   PyQt5                          import QtWidgets
@@ -35,9 +33,6 @@ from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
-##############################################################################
-from   AITK  . Qt . VirtualGui        import VirtualGui as VirtualGui
-from   AITK  . Qt . AttachDock        import AttachDock as AttachDock
 ##############################################################################
 class VcfFont         (                                                    ) :
   ############################################################################

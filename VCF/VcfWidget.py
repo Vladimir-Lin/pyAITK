@@ -36,7 +36,14 @@ from   PyQt5 . QtWidgets              import QGraphicsView
 from   AITK  . Qt . VirtualGui        import VirtualGui as VirtualGui
 from   AITK  . Qt . AttachDock        import AttachDock as AttachDock
 ##############################################################################
-class VcfWidget           ( QGraphicsView , VirtualGui , AttachDock        ) :
+from              . VcfFont           import VcfFont    as VcfFont
+from              . VcfDisplay        import VcfDisplay as VcfDisplay
+from              . VcfItem           import VcfItem    as VcfItem
+##############################################################################
+class VcfWidget           ( QGraphicsView                                  , \
+                            VirtualGui                                     , \
+                            AttachDock                                     , \
+                            VcfDisplay                                     ) :
   ############################################################################
   attachNone = pyqtSignal ( QWidget                                          )
   attachDock = pyqtSignal ( QWidget , str , int , int                        )
