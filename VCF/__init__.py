@@ -9,6 +9,8 @@ from . VcfFont         import VcfFont         as VcfFont
 from . VcfGrid         import VcfGrid         as VcfGrid
 from . VcfInterface    import VcfInterface    as VcfInterface
 from . VcfItem         import VcfItem         as VcfItem
+from . VcfLabel        import VcfLabel        as VcfLabel
+from . VcfLines        import VcfLines        as VcfLines
 from . VcfLinker       import VcfLinker       as VcfLinker
 from . VcfManager      import VcfManager      as VcfManager
 from . VcfNode         import VcfNode         as VcfNode
@@ -33,6 +35,8 @@ __all__ = [ "VcfBlock"                                                     , \
             "VcfGrid"                                                      , \
             "VcfInterface"                                                 , \
             "VcfItem"                                                      , \
+            "VcfLabel"                                                     , \
+            "VcfLines"                                                     , \
             "VcfLinker"                                                    , \
             "VcfManager"                                                   , \
             "VcfNode"                                                      , \

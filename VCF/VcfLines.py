@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## VcfFont
+## VcfLines
 ##############################################################################
 import os
 import sys
@@ -34,7 +34,7 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
-class VcfItem         (                                                    ) :
+class VcfLines        (                                                    ) :
   ############################################################################
   def __init__        ( self                                               ) :
     ##########################################################################
@@ -46,3 +46,78 @@ class VcfItem         (                                                    ) :
     ##########################################################################
     return
 ##############################################################################
+"""
+class Q_COMPONENTS_EXPORT VcfLines : public VcfPath
+{
+  Q_OBJECT
+  public:
+
+    Contour   contour ;
+    QPolygonF lines   ;
+
+    enum { Type = UserType + VCF::Lines };
+    virtual int type(void) const { return Type; }
+
+    explicit VcfLines            (QObject       * parent       ,
+                                  QGraphicsItem * item         ,
+                                  Plan          * plan = NULL) ;
+    virtual ~VcfLines            (void);
+
+  protected:
+
+  private:
+
+  public slots:
+
+    virtual void Paint          (QPainter * painter,QRectF Region,bool clip,bool color) ;
+
+    virtual void Prepare        (bool line = false,bool dot = false) ;
+    virtual void ShowLines      (bool line = false) ;
+
+  protected slots:
+
+  private slots:
+
+  signals:
+
+};
+
+N::VcfLines:: VcfLines (QObject * parent,QGraphicsItem * item,Plan * p)
+            : VcfPath  (          parent,                item,       p)
+{
+  setBrushColor ( 1 , QColor ( 224 , 224 , 224 ) ) ;
+  setBrushColor ( 2 , QColor ( 255 , 144 , 144 ) ) ;
+}
+
+N::VcfLines::~VcfLines (void)
+{
+}
+
+void N::VcfLines::Paint(QPainter * p,QRectF Region,bool,bool)
+{
+  PaintPath  ( p , 1        ) ;
+  PaintLines ( p , 3 ,lines ) ;
+  PaintPath  ( p , 2        ) ;
+}
+
+void N::VcfLines::Prepare(bool line,bool dot)
+{
+  setLines     ( 1 , contour ) ;
+  EnablePath   ( 1 , true    ) ;
+  ShowLines    ( line        ) ;
+  if (dot )                    {
+    setPoints  ( 2 , contour ) ;
+    EnablePath ( 2 , true    ) ;
+  } else                       {
+    EnablePath ( 2 , false   ) ;
+  }                            ;
+  MergePathes  ( 0           ) ;
+}
+
+void N::VcfLines::ShowLines(bool line)
+{
+  lines . clear              (                          ) ;
+  if (line) lines = Polyline ( contour , contour.closed ) ;
+  update                     (                          ) ;
+}
+"""
