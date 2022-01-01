@@ -322,9 +322,9 @@ class GalleriesView                ( IconDock                              ) :
     elif                            ( mtype in [ "gallery/uuids" ]         ) :
       ########################################################################
       if                            ( self == sourceWidget                 ) :
-        self . ShowMenuItemTitleStatus ( "MoveGalleries" , CNT               )
+        self . ShowMenuItemCountStatus ( "MoveGalleries" , CNT               )
       else                                                                   :
-        self . ShowMenuItemTitleStatus ( "JoinGalleries" , CNT               )
+        self . ShowMenuItemCountStatus ( "JoinGalleries" , CNT               )
     ##########################################################################
     return RDN
   ############################################################################
