@@ -176,7 +176,9 @@ class VcfWidget           ( QGraphicsView                                  , \
     self  . setScene ( self . Scene )
     self  . Scene . setSceneRect ( r )
     pen   = QPen ( QColor(255,0,0) )
-    rect  = QRectF ( 0 , 0 , 400 , 400 )
+    cm    = QRectF ( 0 , 0 , 5.0 , 5.0 )
+    rect  = self . Options . Region ( cm )
+    print(rect)
     ritem = self . Scene . addRect ( rect , pen )
     ##########################################################################
     return

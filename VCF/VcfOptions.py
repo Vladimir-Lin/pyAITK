@@ -58,8 +58,10 @@ class VcfOptions      (                                                    ) :
       return
     ##########################################################################
     s                 = screens                  [ 0                         ]
-    self . DPIX       = s . physicalDotsPerInchX (                           )
-    self . DPIY       = s . physicalDotsPerInchY (                           )
+    ## self . DPIX       = s . physicalDotsPerInchX (                           )
+    ## self . DPIY       = s . physicalDotsPerInchY (                           )
+    self . DPIX       = s . logicalDotsPerInchX  (                           )
+    self . DPIY       = s . logicalDotsPerInchY  (                           )
     ##########################################################################
     return
   ############################################################################
