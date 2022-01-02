@@ -242,7 +242,7 @@ class GalleryGroupView             ( IconDock                              ) :
       if                            ( self . isTagging ( )                 ) :
         return False
       ########################################################################
-      if                            ( atItem in [ False , None ]           ) :
+      if                            ( atItem not in [ False , None ]       ) :
         return False
       ########################################################################
       self  . ShowMenuItemTitleStatus  ( "JoinGalleries"  , title , CNT      )
