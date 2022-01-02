@@ -167,6 +167,10 @@ class VcfWidget           ( QGraphicsView                                  , \
   def startup ( self                                                       ) :
     ##########################################################################
     print("VcfWidget")
+    screens = qApp . screens ( )
+    s = screens [ 0 ]
+    print(s.logicalDotsPerInch(),s.logicalDotsPerInchX(),s.logicalDotsPerInchY())
+    print(s.physicalDotsPerInch(),s.physicalDotsPerInchX(),s.physicalDotsPerInchY())
     ##########################################################################
     return
 ##############################################################################

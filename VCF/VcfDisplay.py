@@ -58,15 +58,13 @@ class VcfDisplay             (                                             ) :
     ##########################################################################
     print("InitializeDisplay")
     self . Scene         = QGraphicsScene (                                  )
-    self . Zooms         =    [                                              ]
-    ## VcfOptions Options
-    self . Options       =    {                                              }
-    self . Margins       = QMargins ( 0 , 0 , 3 , 3 )
-    self . Margins       = None
-    self . Transform     = QTransform ( )
-    self . Transform     . reset ( )
-    self . Origin        = QPointF ( 0 , 0 )
-    self . View          = QRectF ( )
+    self . Zooms         =                [                                  ]
+    self . Options       = VcfOptions     (                                  )
+    self . Margins       = QMargins       ( 0 , 0 , 3 , 3                    )
+    self . Transform     = QTransform     (                                  )
+    self . Transform     . reset          (                                  )
+    self . Origin        = QPointF        ( 0 , 0                            )
+    self . View          = QRectF         (                                  )
     ## Screen           screen
     ## self . screen        = False
     self . MonitorFactor = 1.0
