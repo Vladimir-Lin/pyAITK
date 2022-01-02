@@ -23,10 +23,16 @@ from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
+from   PyQt5 . QtCore                 import QRect
+from   PyQt5 . QtCore                 import QRectF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QColor
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QPen
+from   PyQt5 . QtGui                  import QBrush
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
@@ -166,11 +172,12 @@ class VcfWidget           ( QGraphicsView                                  , \
   ############################################################################
   def startup ( self                                                       ) :
     ##########################################################################
-    print("VcfWidget")
-    screens = qApp . screens ( )
-    s = screens [ 0 ]
-    print(s.logicalDotsPerInch(),s.logicalDotsPerInchX(),s.logicalDotsPerInchY())
-    print(s.physicalDotsPerInch(),s.physicalDotsPerInchX(),s.physicalDotsPerInchY())
+    r     = self . sceneRect ( )
+    self  . setScene ( self . Scene )
+    self  . Scene . setSceneRect ( r )
+    pen   = QPen ( QColor(255,0,0) )
+    rect  = QRectF ( 0 , 0 , 400 , 400 )
+    ritem = self . Scene . addRect ( rect , pen )
     ##########################################################################
     return
 ##############################################################################
