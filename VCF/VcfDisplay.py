@@ -39,6 +39,8 @@ from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsScene
 ##############################################################################
+from         . VcfOptions             import VcfOptions
+##############################################################################
 class VcfDisplay             (                                             ) :
   ############################################################################
   def __init__               ( self                                        ) :
