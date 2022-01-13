@@ -43,17 +43,7 @@ from   PyQt5 . QtWidgets              import QSpinBox
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
 ##############################################################################
-from   AITK  . Essentials . Relation  import Relation
-from   AITK  . Calendars  . StarDate  import StarDate
-from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . Calendars  . Apple     import Apple       as DAV
-##############################################################################
-from   AITK  . Scheduler  . Project   import Project     as Project
-from   AITK  . Scheduler  . Projects  import Projects    as Projects
-from   AITK  . Scheduler  . Event     import Event       as Event
-from   AITK  . Scheduler  . Events    import Events      as Events
-from   AITK  . Scheduler  . Task      import Task        as Task
-from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
 ##############################################################################
 class AppleCalendar                ( TreeDock                              ) :
   ############################################################################
@@ -61,7 +51,6 @@ class AppleCalendar                ( TreeDock                              ) :
   ############################################################################
   emitNamesShow = pyqtSignal       (                                         )
   emitAllNames  = pyqtSignal       ( list                                    )
-  EventPeriods  = pyqtSignal       ( str , int , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -90,9 +79,9 @@ class AppleCalendar                ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
+    self . setAcceptDrops          ( False                                   )
     self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
     return
   ############################################################################
@@ -107,11 +96,7 @@ class AppleCalendar                ( TreeDock                              ) :
     self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
     self . LinkAction      ( "Refresh"    , self . startup                   )
     ##########################################################################
-    self . LinkAction      ( "Insert"     , self . InsertItem                )
-    self . LinkAction      ( "Delete"     , self . DeleteItems               )
-    self . LinkAction      ( "Rename"     , self . RenameItem                )
     self . LinkAction      ( "Copy"       , self . CopyToClipboard           )
-    ##########################################################################
     self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
     self . LinkAction      ( "SelectNone" , self . SelectNone                )
     ##########################################################################
@@ -127,9 +112,6 @@ class AppleCalendar                ( TreeDock                              ) :
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
     self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
-    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
-    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
     self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
     self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
     self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
@@ -147,19 +129,11 @@ class AppleCalendar                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked             ( self , item , column                     ) :
+  def doubleClicked ( self , item , column                                 ) :
     ##########################################################################
-    if                          ( column not in [ 0 ]                      ) :
+    if              ( column not in [ 0 ]                                  ) :
       return
     ##########################################################################
-    """
-    if                          ( column in [ 0 ]                          ) :
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
-    """
     ##########################################################################
     return
   ############################################################################
@@ -174,64 +148,6 @@ class AppleCalendar                ( TreeDock                              ) :
     IT      . setText         ( 1 , ID                                       )
     ##########################################################################
     return IT
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def InsertItem                 ( self                                    ) :
-    ##########################################################################
-    """
-    item = QTreeWidgetItem       (                                           )
-    item . setData               ( 0 , Qt . UserRole , 0                     )
-    self . addTopLevelItem       ( item                                      )
-    line = self . setLineEdit    ( item                                    , \
-                                   1                                       , \
-                                   "editingFinished"                       , \
-                                   self . nameChanged                        )
-    line . setFocus              ( Qt . TabFocusReason                       )
-    """
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def DeleteItems                ( self                                    ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
-    ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def nameChanged                ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isItemPicked ( )             ) :
-      return False
-    ##########################################################################
-    item   = self . CurrentItem  [ "Item"                                    ]
-    column = self . CurrentItem  [ "Column"                                  ]
-    line   = self . CurrentItem  [ "Widget"                                  ]
-    text   = self . CurrentItem  [ "Text"                                    ]
-    msg    = line . text         (                                           )
-    uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
-    ##########################################################################
-    item   . setText             ( column ,              msg                 )
-    ##########################################################################
-    self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
-    ##########################################################################
-    return
   ############################################################################
   @pyqtSlot                       (        list                              )
   def refresh                     ( self , CALENDARS                       ) :
@@ -294,8 +210,7 @@ class AppleCalendar                ( TreeDock                              ) :
   def Prepare                    ( self                                    ) :
     ##########################################################################
     self   . setColumnWidth      ( 0 , 120                                   )
-    self   . setColumnWidth      ( 1 , 120                                   )
-    self   . setColumnWidth      ( 3 ,   3                                   )
+    self   . setColumnWidth      ( 2 ,   3                                   )
     LABELs = self . Translations [ "AppleCalendar" ] [ "Labels"              ]
     self   . setCentralLabels    ( LABELs                                    )
     self   . setPrepared         ( True                                      )
@@ -334,10 +249,7 @@ class AppleCalendar                ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     = self . AppendDeleteAction  ( mm , 1102                          )
-    mm     = self . AppendRenameAction  ( mm , 1103                          )
+    self   . AppendRefreshAction   ( mm , 1001                               )
     mm     . addSeparator          (                                         )
     ##########################################################################
     mm     = self . ColumnsMenu    ( mm                                      )
@@ -355,18 +267,6 @@ class AppleCalendar                ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1001                            ) :
       self . startup               (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1101                            ) :
-      self . InsertItem            (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1102                            ) :
-      self . DeleteItems           (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1103                            ) :
-      self . RenameItem            (                                         )
       return True
     ##########################################################################
     return True
