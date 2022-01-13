@@ -5,10 +5,14 @@ from . ProjectsView    import ProjectsView    as ProjectsView
 from . TaskListings    import TaskListings    as TaskListings
 from . EventListings   import EventListings   as EventListings
 from . PeriodeListings import PeriodeListings as PeriodeListings
+from . AppleCalendar   import AppleCalendar   as AppleCalendar
+from . GoogleCalendar  import GoogleCalendar  as GoogleCalendar
 ##############################################################################
 __all__ = [ "ProjectListings"                                              , \
             "ProjectsView"                                                 , \
             "TaskListings"                                                 , \
             "EventListings"                                                , \
-            "PeriodeListings"                                                ]
+            "PeriodeListings"                                              , \
+            "AppleCalendar"                                                , \
+            "GoogleCalendar"                                                 ]
 ##############################################################################

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## EventListings
+## GoogleCalendar
 ##############################################################################
 import os
 import sys
@@ -54,7 +54,7 @@ from   AITK  . Scheduler  . Events    import Events      as Events
 from   AITK  . Scheduler  . Task      import Task        as Task
 from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
 ##############################################################################
-class EventListings                ( TreeDock                              ) :
+class GoogleCalendar               ( TreeDock                              ) :
   ############################################################################
   HavingMenu    = 1371434312
   ############################################################################
