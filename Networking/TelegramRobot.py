@@ -91,29 +91,57 @@ class TelegramRobot (                                                      ) :
   def isWorking         ( self                                             ) :
     return self . Working
   ############################################################################
-  def append       ( self , JSON                                           ) :
+  def append                  ( self , JSON                                ) :
     ##########################################################################
-    if             ( self . TelegramUpdater in [ False , None ]            ) :
+    if                        ( self . TelegramUpdater in [ False , None ] ) :
       return
     ##########################################################################
-    ACCOUNT = JSON [ "Account"                                               ]
-    BEAU    = JSON [ "Beau"                                                  ]
-    MSG     = JSON [ "Message"                                               ]
-    CHATID  = int  ( ACCOUNT                                                 )
+    ACCOUNT     = JSON        [ "Account"                                    ]
+    BEAU        = JSON        [ "Beau"                                       ]
+    MSG         = JSON        [ "Message"                                    ]
+    ParseMode   = "html"
+    Markups     = ""
+    DoMarkup    = False
+    ##########################################################################
+    try                                                                      :
+      CHATID    = int         ( ACCOUNT                                      )
+    except                                                                   :
+      ########################################################################
+      MSG       = f"Failure to send {ACCOUNT} Message for {BEAU}"
+      self      . debug       ( MSG                                          )
+      ########################################################################
+      return
+    ##########################################################################
+    if                        ( "ParseMode" in JSON                        ) :
+      ParseMode = JSON        [ "ParseMode"                                  ]
+    ##########################################################################
+    if                        ( "Markups"   in JSON                        ) :
+      Markups   = JSON        [ "Markups"                                    ]
+    ##########################################################################
+    if                        ( "Markup"    in JSON                        ) :
+      DoMarkup  = JSON        [ "Markup"                                     ]
     ##########################################################################
     try                                                                      :
       ########################################################################
-      self  . TelegramUpdater . bot . sendMessage                          ( \
+      if                      ( DoMarkup                                   ) :
+        self    . TelegramUpdater . bot . sendMessage                      ( \
+                                chat_id      = CHATID                      , \
+                                text         = MSG                         , \
+                                parse_mode   = ParseMode                   , \
+                                reply_markup = Markups                       )
+      else                                                                   :
+        self    . TelegramUpdater . bot . sendMessage                      ( \
                                 chat_id    = CHATID                        , \
                                 text       = MSG                           , \
-                                parse_mode = "html"                          )
-      MSG   = f"Sent {ACCOUNT} Message for {BEAU}"
-      self  . debug           ( MSG                                          )
+                                parse_mode = ParseMode                       )
+      ########################################################################
+      MSG       = f"Sent {ACCOUNT} Message for {BEAU}"
+      self      . debug       ( MSG                                          )
       ########################################################################
     except                                                                   :
       ########################################################################
-      MSG   = f"Failure to send {ACCOUNT} Message for {BEAU}"
-      self  . debug           ( MSG                                          )
+      MSG       = f"Failure to send {ACCOUNT} Message for {BEAU}"
+      self      . debug       ( MSG                                          )
     ##########################################################################
     return
   ############################################################################
