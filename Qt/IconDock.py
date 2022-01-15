@@ -31,6 +31,8 @@ from   PyQt5 . QtGui                  import QColor
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QPixmap
 from   PyQt5 . QtGui                  import QImage
+from   PyQt5 . QtGui                  import QFont
+from   PyQt5 . QtGui                  import QFontMetrics
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -200,6 +202,21 @@ class IconDock                      ( ListDock                             ) :
   def GetUuidIcon                     ( self , DB , Uuid                   ) :
     raise NotImplementedError         (                                      )
   ############################################################################
+  def defaultGetUuidIcon       ( self , DB , RELTAB , T1 , UUID            ) :
+    ##########################################################################
+    REL  = Relation            (                                             )
+    REL  . set                 ( "first" , UUID                              )
+    REL  . setT1               ( T1                                          )
+    REL  . setT2               ( "Picture"                                   )
+    REL  . setRelation         ( "Using"                                     )
+    ##########################################################################
+    PICS = REL . Subordination ( DB , RELTAB                                 )
+    ##########################################################################
+    if                         ( len ( PICS ) > 0                          ) :
+      return PICS              [ 0                                           ]
+    ##########################################################################
+    return 0
+  ############################################################################
   def setIconFont                     ( self , fnt                         ) :
     self . IconFont = fnt
     return self . IconFont
@@ -259,24 +276,39 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return IT
   ############################################################################
-  def setLineEdit        ( self , item , signal , method                   ) :
+  def setLineEdit                ( self , item , signal , method           ) :
     ##########################################################################
-    text = item . text   (                                                   )
-    LE   = LineEdit      ( self , self . PlanFunc                            )
-    LE   . setFont       ( self . iconFont ( )                               )
-    LE   . setText       ( text                                              )
+    rt   = self . visualItemRect ( item                                      )
+    text = item . text           (                                           )
+    fnt  = self . iconFont       (                                           )
+    LE   = LineEdit              ( self , self . PlanFunc                    )
+    LE   . setFont               ( fnt                                       )
+    LE   . setText               ( text                                      )
     ##########################################################################
     self . EditItem   = item
     self . EditWidget = LE
     ##########################################################################
     try                                                                      :
-      S  = getattr       ( LE, signal                                        )
-      S  . connect       ( method                                            )
+      S  = getattr               ( LE, signal                                )
+      S  . connect               ( method                                    )
     except AttributeError                                                    :
       pass
     ##########################################################################
-    self . setItemWidget ( item , LE                                         )
-    LE   . setFocus      ( Qt . TabFocusReason                               )
+    self . setItemWidget         ( item , LE                                 )
+    ##########################################################################
+    qApp . processEvents         (                                           )
+    ##########################################################################
+    FM   = QFontMetrics          ( fnt                                       )
+    IC   = self . iconSize       (                                           )
+    W    = IC   . width          (                                           )
+    dW   = int                   ( int ( rt . width ( ) - W ) / 2            )
+    S    = QSize                 ( W , FM . height ( ) + 4                   )
+    L    = dW + rt . left        (                                           )
+    T    = rt . top ( ) + IC . height (                                      )
+    LE   . move                  ( L , T                                     )
+    LE   . resize                ( S                                         )
+    ##########################################################################
+    LE   . setFocus              ( Qt . TabFocusReason                       )
     ##########################################################################
     return
   ############################################################################
@@ -467,6 +499,14 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return mm
   ############################################################################
+  def AppendEditNamesAction           ( self , mm , Id                     ) :
+    ##########################################################################
+    TRX  = self . Translations
+    msg  = TRX                        [ "UI::EditNames"                      ]
+    mm   . addAction                  ( Id , msg                             )
+    ##########################################################################
+    return mm
+  ############################################################################
   def AmountIndexMenu                   ( self , mm                        ) :
     ##########################################################################
     T      = int                        ( self . Total                       )
@@ -525,6 +565,20 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return   False
   ############################################################################
+  ## 選單當中抓取項目資訊
+  ############################################################################
+  def GetMenuDetails              ( self , pos                             ) :
+    ##########################################################################
+    items  = self . selectedItems (                                          )
+    atItem = self . itemAt        ( pos                                      )
+    uuid   = 0
+    ##########################################################################
+    if                            ( atItem not in [ False , None ]         ) :
+      uuid = atItem . data        ( Qt . UserRole                            )
+      uuid = int                  ( uuid                                     )
+    ##########################################################################
+    return items , atItem , uuid
+  ############################################################################
   def PageHome                     ( self                                  ) :
     ##########################################################################
     self . StartId  = 0
@@ -566,6 +620,9 @@ class IconDock                      ( ListDock                             ) :
     self . startup                 (                                         )
     ##########################################################################
     return
+  ############################################################################
+  def doEditAllNames ( self                                                ) :
+    return           ( self . EditAllNames not in [ False , None ]           )
   ############################################################################
   def Shutdown                ( self                                       ) :
     ##########################################################################

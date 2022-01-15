@@ -86,8 +86,11 @@ class ProjectsView            ( IconDock                                   ) :
     ##########################################################################
     super ( ) . __init__      (        parent        , plan                  )
     ##########################################################################
-    self . SortOrder    = "desc"
+    self . SortOrder    = "asc"
     self . dockingPlace = Qt . BottomDockWidgetArea
+    ##########################################################################
+    self . MountClicked       ( 1                                            )
+    self . MountClicked       ( 2                                            )
     ##########################################################################
     self . setFunction        ( self . HavingMenu , True                     )
     ##########################################################################
@@ -97,62 +100,84 @@ class ProjectsView            ( IconDock                                   ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                ( self                                       ) :
-    return QSize              ( 840 , 800                                    )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def FocusIn                 ( self                                       ) :
+  def FocusIn              ( self                                          ) :
     ##########################################################################
-    if                        ( not self . isPrepared ( )                  ) :
+    if                     ( not self . isPrepared ( )                     ) :
       return False
     ##########################################################################
-    self . setActionLabel     ( "Label"      , self . windowTitle ( )        )
-    self . LinkAction         ( "Refresh"    , self . startup                )
+    self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
+    self . LinkAction      ( "Refresh"    , self . startup                   )
     ##########################################################################
-    self . LinkAction         ( "Insert"     , self . InsertItem             )
-    self . LinkAction         ( "Copy"       , self . CopyToClipboard        )
+    self . LinkAction      ( "Insert"     , self . InsertItem                )
+    self . LinkAction      ( "Rename"     , self . RenameItem                )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard           )
     ##########################################################################
-    self . LinkAction         ( "SelectAll"  , self . SelectAll              )
-    self . LinkAction         ( "SelectNone" , self . SelectNone             )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
+    self . LinkAction      ( "SelectNone" , self . SelectNone                )
     ##########################################################################
-    self . LinkAction         ( "Rename"     , self . RenameItem             )
-    ##########################################################################
-    self . LinkVoice          ( self . CommandParser                         )
+    self . LinkVoice       ( self . CommandParser                            )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                ( self                                       ) :
+  def FocusOut             ( self                                          ) :
     ##########################################################################
-    if                        ( not self . isPrepared ( )                  ) :
+    if                     ( not self . isPrepared ( )                     ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def GetUuidIcon                ( self , DB , Uuid                        ) :
+  def closeEvent           ( self , event                                  ) :
     ##########################################################################
-    RELTAB = self . Tables       [ "Relation"                                ]
-    REL    = Relation            (                                           )
-    REL    . set                 ( "first" , Uuid                            )
-    REL    . setT1               ( "Project"                                 )
-    REL    . setT2               ( "Picture"                                 )
-    REL    . setRelation         ( "Using"                                   )
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkVoice       ( None                                            )
     ##########################################################################
-    PICS   = REL . Subordination ( DB , RELTAB                               )
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
     ##########################################################################
-    if                           ( len ( PICS ) > 0                        ) :
-      return PICS                [ 0                                         ]
-    ##########################################################################
-    return 0
+    return
   ############################################################################
-  def ObtainUuidsQuery         ( self                                      ) :
+  def ReportTotalProjects     ( self                                       ) :
+    ##########################################################################
+    FMT  = self . getMenuItem ( "Total"                                      )
+    MSG  = FMT  . format      ( self . count ( )                             )
+    self . setToolTip         ( MSG                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def GetUuidIcon                    ( self , DB , Uuid                    ) :
+    ##########################################################################
+    RELTAB = self . Tables           [ "RelationIcons"                       ]
+    ##########################################################################
+    return self . defaultGetUuidIcon ( DB , RELTAB , "Project" , Uuid        )
+  ############################################################################
+  def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
     ORDER  = self . SortOrder
-    PRJTAB = self . Tables     [ "Projects"                                  ]
+    PRJTAB = self . Tables [ "Projects"                                      ]
     QQ     = f"""select `uuid` from {PRJTAB}
                  where ( `used` = 1 )
                  order by `id` {ORDER} ;"""
     ##########################################################################
-    return " " . join          ( QQ . split ( )                              )
+    return " " . join      ( QQ . split ( )                                  )
   ############################################################################
+  def FetchIcons                    ( self , UUIDs                         ) :
+    ##########################################################################
+    if                              ( len ( UUIDs ) <= 0                   ) :
+      return
+    ##########################################################################
+    self      . ReportTotalProjects (                                        )
+    super ( ) . FetchIcons          ( UUIDs                                  )
+    ##########################################################################
+    return
+  """
   def FetchIcons                      ( self , UUIDs                       ) :
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
@@ -180,11 +205,12 @@ class ProjectsView            ( IconDock                                   ) :
     DB      . Close                   (                                      )
     ##########################################################################
     return
+  """
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
     mtype   = "project/uuids"
-    message = self . getMenuItem ( "ProjectsSelected" )
+    message = self . getMenuItem ( "ProjectsSelected"                        )
     ##########################################################################
     return self . CreateDragMime ( self , mtype , message                    )
   ############################################################################
@@ -194,11 +220,13 @@ class ProjectsView            ( IconDock                                   ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
+  def allowedMimeTypes     ( self , mime                                   ) :
     ##########################################################################
-    formats = "people/uuids"
+    FMTs    =              [ "picture/uuids"                               , \
+                             "task/uuids"                                    ]
+    formats = ";" . join   ( FMTs                                            )
     ##########################################################################
-    return self . MimeType    ( mime , formats                               )
+    return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
@@ -206,6 +234,12 @@ class ProjectsView            ( IconDock                                   ) :
       return False
     ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def acceptPictureDrop ( self                                             ) :
+    return True
+  ############################################################################
+  def acceptTasksDrop   ( self                                             ) :
+    return True
   ############################################################################
   def dropNew                       ( self                                 , \
                                       sourceWidget                         , \
@@ -222,14 +256,14 @@ class ProjectsView            ( IconDock                                   ) :
     mtype   = self . DropInJSON     [ "Mime"                                 ]
     UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    if                              ( mtype in [ "picture/uuids" ]          ) :
       ########################################################################
       title = sourceWidget . windowTitle ( )
       CNT   = len                   ( UUIDs                                  )
       MSG   = f"從「{title}」複製{CNT}個人物"
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
-    elif                            ( mtype in [ "tag/uuids" ]             ) :
+    elif                            ( mtype in [ "task/uuids" ]            ) :
       ########################################################################
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                   ( UUIDs                                  )
@@ -257,13 +291,20 @@ class ProjectsView            ( IconDock                                   ) :
     ##########################################################################
     return True
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
+  def dropPictures             ( self , source , pos , JSOX                ) :
     ##########################################################################
     atItem = self . itemAt ( pos )
-    print("CrowdView::dropPeople")
+    print("ProjectsView::dropPictures")
+    print(JSOX)
+    if ( atItem is not None ) :
+      print("TO:",atItem.text())
+    ##########################################################################
+    return True
+  ############################################################################
+  def dropTasks                ( self , source , pos , JSOX                ) :
+    ##########################################################################
+    atItem = self . itemAt ( pos )
+    print("ProjectsView::dropTasks")
     print(JSOX)
     if ( atItem is not None ) :
       print("TO:",atItem.text())
@@ -274,92 +315,6 @@ class ProjectsView            ( IconDock                                   ) :
     ##########################################################################
     self . assignSelectionMode ( "ContiguousSelection"                       )
     self . setPrepared         ( True                                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def LineEditorFinished                ( self                             ) :
-    ##########################################################################
-    if                                  ( self . EditItem   == None        ) :
-      return
-    ##########################################################################
-    if                                  ( self . EditWidget == None        ) :
-      return
-    ##########################################################################
-    IT                = self . EditItem
-    LE                = self . EditWidget
-    self . EditItem   = None
-    self . EditWidget = None
-    CORRECT           = True
-    ##########################################################################
-    JSON              = self . itemJson ( IT                                 )
-    TEXT              = LE   . text     (                                    )
-    NAME              = ""
-    UUID              = 0
-    self              . setItemWidget   ( IT , None                          )
-    ##########################################################################
-    if ( ( CORRECT ) and ( "Uuid" not in JSON ) )                            :
-      CORRECT         = False
-    else                                                                     :
-      UUID            = JSON            [ "Uuid"                             ]
-    ##########################################################################
-    if ( ( CORRECT ) and ( "Name" in JSON ) )                                :
-      NAME            = JSON            [ "Name"                             ]
-    ##########################################################################
-    if ( ( CORRECT ) and ( UUID == 0 ) and ( len ( TEXT ) <= 0 ) )           :
-      CORRECT         = False
-    ##########################################################################
-    if ( ( CORRECT ) and ( UUID >  0 ) and ( NAME == TEXT ) )                :
-      CORRECT         = False
-    ##########################################################################
-    if                                  ( not CORRECT                      ) :
-      if                                ( UUID <= 0                        ) :
-        self . takeItem                 ( self . row ( IT )                  )
-      return
-    ##########################################################################
-    if                                  ( UUID > 0                         ) :
-      ########################################################################
-      if                                ( self . UsingName                 ) :
-        ######################################################################
-        IT   . setText                  ( TEXT                               )
-        self . PrepareItemContent       ( IT , UUID , TEXT                   )
-        self . Go                       ( self . UpdateItemName            , \
-                                          ( IT , UUID , TEXT , )             )
-      ########################################################################
-      return
-    ##########################################################################
-    IT   . setText                      ( TEXT                               )
-    ##########################################################################
-    self . Go                           ( self . AppendItemName            , \
-                                          ( IT , TEXT , )                    )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                          (                                       )
-  def InsertItem                     ( self                                ) :
-    ##########################################################################
-    IT     = self . PrepareEmptyItem (                                       )
-    if                               ( self . SortOrder == "asc"           ) :
-      self . addItem                 (     IT                                )
-    else                                                                     :
-      self . insertItem              ( 0 , IT                                )
-    ##########################################################################
-    self   . setLineEdit             ( IT                                  , \
-                                       "editingFinished"                   , \
-                                       self . LineEditorFinished             )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                        (                                         )
-  def RenameItem                   ( self                                  ) :
-    ##########################################################################
-    IT   = self . currentItem      (                                         )
-    ##########################################################################
-    if                             ( IT == None                            ) :
-      return
-    ##########################################################################
-    self . setLineEdit             ( IT                                    , \
-                                     "editingFinished"                     , \
-                                     self . LineEditorFinished               )
     ##########################################################################
     return
   ############################################################################
@@ -376,94 +331,64 @@ class ProjectsView            ( IconDock                                   ) :
       ########################################################################
       S      = "\n" . join                 ( T                               )
       qApp   . clipboard ( ) . setText     ( S                               )
-      ########################################################################
-      """
-      mime   = self . dragMime             (                                 )
-      if                                   ( mime not in [ False , None ]  ) :
-        qApp . clipboard ( ) . setMimeData ( mime                            )
-      """
-    ##########################################################################
-    """
-    if                                     ( item not in [ False , None ]  ) :
-      ########################################################################
-      qApp   . clipboard ( ) . setText     ( item . text ( )                 )
-    """
     ##########################################################################
     return
   ############################################################################
-  def UpdateItemName                   ( self , item , uuid , name         ) :
+  def UpdateItemName                  ( self , item , uuid , name          ) :
     ##########################################################################
-    DB      = self . ConnectDB         (                                     )
-    if                                 ( DB == None                        ) :
+    DB     = self . ConnectDB         (                                      )
+    if                                ( DB == None                         ) :
       return
     ##########################################################################
-    NAMTAB  = self . Tables            [ "Names"                             ]
-    DB      . LockWrites               ( [ NAMTAB ]                          )
+    NAMTAB = self . Tables            [ "NamesLocal"                         ]
+    DB     . LockWrites               ( [ NAMTAB ]                           )
     ##########################################################################
-    self    . AssureUuidNameByLocality ( DB                                , \
-                                         NAMTAB                            , \
-                                         uuid                              , \
-                                         name                              , \
-                                         self . getLocality ( )              )
+    self   . AssureUuidNameByLocality ( DB                                 , \
+                                        NAMTAB                             , \
+                                        uuid                               , \
+                                        name                               , \
+                                        self . getLocality ( )               )
     ##########################################################################
-    DB      . UnlockTables             (                                     )
-    DB      . Close                    (                                     )
+    DB     . UnlockTables             (                                      )
+    DB     . Close                    (                                      )
+    self   . Notify                   ( 5                                    )
     ##########################################################################
     return
   ############################################################################
-  def AppendItemName                     ( self , item , name              ) :
+  def AppendItemName                  ( self , item , name                 ) :
     ##########################################################################
-    DB       = self . ConnectDB          (                                   )
-    if                                   ( DB == None                      ) :
+    DB     = self . ConnectDB         (                                      )
+    if                                ( DB == None                         ) :
       return
     ##########################################################################
-    PRJTAB   = self . Tables             [ "Projects"                        ]
-    PRDTAB   = self . Tables             [ "Periods"                         ]
-    NAMTAB   = self . Tables             [ "Names"                           ]
-    TABLES   =                           [ PRJTAB , PRDTAB , NAMTAB          ]
+    PRJS   = Projects                 (                                      )
+    PRJS   . Tables = self . Tables
     ##########################################################################
-    DB       . LockWrites                ( TABLES                            )
+    PRJTAB = self . Tables            [ "Projects"                           ]
+    PRDTAB = self . Tables            [ "Periods"                            ]
+    NAMTAB = self . Tables            [ "NamesLocal"                         ]
+    TABLES =                          [ PRJTAB , PRDTAB , NAMTAB             ]
     ##########################################################################
-    HEAD     = 5702000000000000000
-    uuid     = DB   . LastUuid           ( PRJTAB , "uuid" , HEAD            )
-    DB       . AddUuid                   ( PRJTAB ,  uuid  , 1               )
+    DB     . LockWrites               ( TABLES                               )
     ##########################################################################
-    NOW      = StarDate                  (                                   )
-    NOW      . Now                       (                                   )
-    CDT      = NOW . Stardate
+    uuid   = PRJS . AppendProject     ( DB                                   )
+    self   . AssureUuidNameByLocality ( DB                                 , \
+                                        NAMTAB                             , \
+                                        uuid                               , \
+                                        name                               , \
+                                        self . getLocality ( )               )
     ##########################################################################
-    PRD      = Periode                   (                                   )
-    PRID     = PRD  . GetUuid            ( DB , PRDTAB                       )
+    DB     . UnlockTables             (                                      )
+    DB     . Close                    (                                      )
     ##########################################################################
-    PRD      . Realm    = uuid
-    PRD      . Role     = 71
-    PRD      . Item     = 1
-    PRD      . States   = 0
-    PRD      . Creation = CDT
-    PRD      . Modified = CDT
-    Items    =                           [ "realm"                         , \
-                                           "role"                          , \
-                                           "item"                          , \
-                                           "states"                        , \
-                                           "creation"                      , \
-                                           "modified"                        ]
-    PRD      . UpdateItems               ( DB , PRDTAB , Items               )
+    self   . PrepareItemContent       ( item , uuid , name                   )
+    self   . assignToolTip            ( item , str ( uuid )                  )
+    self   . ReportTotalProjects      (                                      )
     ##########################################################################
-    self     . AssureUuidNameByLocality  ( DB                              , \
-                                           NAMTAB                          , \
-                                           uuid                            , \
-                                           name                            , \
-                                           self . getLocality ( )            )
+    ## 通知後台新增一個計畫
+    ## SendToBack ( uuid )
     ##########################################################################
-    DB       . UnlockTables              (                                   )
-    DB       . Close                     (                                   )
-    ##########################################################################
-    self     . PrepareItemContent        ( item , uuid , name                )
-    self     . assignToolTip             ( item , str ( uuid )               )
-    ##########################################################################
-    FMT      = self . getMenuItem        ( "Total"                           )
-    MSG      = FMT  . format             ( self . count ( )                  )
-    self     . setToolTip                ( MSG                               )
+    self   . Notify                   ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -503,8 +428,39 @@ class ProjectsView            ( IconDock                                   ) :
     ##########################################################################
     return
   ############################################################################
+  def DetailsMenu                ( self , mm , atItem                      ) :
+    ##########################################################################
+    LOM     = mm . addMenu       ( self . getMenuItem ( "Details" )          )
+    ##########################################################################
+    msg  = self . getMenuItem    ( "Tasks"                                   )
+    mm   . addActionFromMenu     ( LOM , 406301 , msg                        )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunDetailsMenu             ( self , atId , atItem                    ) :
+    ##########################################################################
+    if                           ( atId == 406301                          ) :
+      ########################################################################
+      name = atItem . text       (                                           )
+      uuid = atItem . data       ( Qt . UserRole                             )
+      uuid = int                 ( uuid                                      )
+      icon = atItem . icon       (                                           )
+      self . ProjectTasks . emit ( name , 71 , str ( uuid ) , icon           )
+      ########################################################################
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
+      return False
+    ##########################################################################
+    self   . Notify                ( 0                                       )
+    ##########################################################################
+    items , atItem , uuid = self . GetMenuDetails ( pos                      )
+    """
     items  = self . selectedItems  (                                         )
     atItem = self . itemAt         ( pos                                     )
     uuid   = 0
@@ -512,6 +468,7 @@ class ProjectsView            ( IconDock                                   ) :
     if                             ( atItem != None                        ) :
       uuid = atItem . data         ( Qt . UserRole                           )
       uuid = int                   ( uuid                                    )
+    """
     ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
@@ -519,21 +476,22 @@ class ProjectsView            ( IconDock                                   ) :
     ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
+    ##########################################################################
+    if                             ( atItem not in [ False , None ]        ) :
+      ########################################################################
+      self . AppendRenameAction    ( mm , 1102                               )
+      ########################################################################
+      if                           ( self . doEditAllNames ( )             ) :
+        ######################################################################
+        self . AppendEditNamesAction ( mm , 1601                             )
+    ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
       ########################################################################
-      self . AppendInsertAction    ( mm , 1102                               )
-      ########################################################################
       mm   . addAction             ( 1801 , "查詢" )
       ########################################################################
-      msg  = self . getMenuItem    ( "Tasks"                                 )
-      mm   . addAction             ( 1301 , msg                              )
-      ########################################################################
-      if                           ( self . EditAllNames != None           ) :
-        ######################################################################
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
+      self . DetailsMenu           ( mm , atItem                             )
     ##########################################################################
     mm     = self . SortingMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
@@ -551,6 +509,9 @@ class ProjectsView            ( IconDock                                   ) :
       self . clear                 (                                         )
       self . startup               (                                         )
       ########################################################################
+      return True
+    ##########################################################################
+    if                             ( self . RunDetailsMenu ( at , atItem ) ) :
       return True
     ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
@@ -576,14 +537,6 @@ class ProjectsView            ( IconDock                                   ) :
     if                             ( at == 1102                            ) :
       ########################################################################
       self . RenameItem            (                                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 1301                            ) :
-      ########################################################################
-      name = atItem . text         (                                         )
-      icon = atItem . icon         (                                         )
-      self . ProjectTasks . emit   ( name , 71 , str ( uuid ) , icon         )
       ########################################################################
       return True
     ##########################################################################
