@@ -35,38 +35,52 @@ class Periode            ( Columns                                         ) :
   def __del__           ( self                                             ) :
     return
   ############################################################################
-  def Clear             ( self                                             ) :
-    self . Columns   = [ ]
-    self . Id        = -1
-    self . Uuid      =  0
-    self . Type      =  0
-    self . Used      =  0
-    self . Start     =  0
-    self . End       =  0
-    self . Realm     =  0
-    self . Role      =  0
-    self . Item      =  0
-    self . States    =  0
-    self . Creation  =  0
-    self . Modified  =  0
-    self . ltime     =  0
+  def Clear                ( self                                          ) :
+    ##########################################################################
+    self . Columns       = [                                                 ]
+    self . Id            = -1
+    self . Uuid          =  0
+    self . Type          =  0
+    self . Used          =  0
+    self . Start         =  0
+    self . End           =  0
+    self . Realm         =  0
+    self . Role          =  0
+    self . Item          =  0
+    self . States        =  0
+    self . Creation      =  0
+    self . Modified      =  0
+    self . ltime         =  0
+    ##########################################################################
+    self . Events        = [                                                 ]
+    self . Properties    = {                                                 }
+    self . Prerequisites = {                                                 }
+    self . Successors    = {                                                 }
+    ##########################################################################
     return
   ############################################################################
   def assign            ( self , item                                      ) :
-    self . Columns   = item . Columns
-    self . Id        = item . Id
-    self . Uuid      = item . Uuid
-    self . Type      = item . Type
-    self . Used      = item . Used
-    self . Start     = item . Start
-    self . End       = item . End
-    self . Realm     = item . Realm
-    self . Role      = item . Role
-    self . Item      = item . Item
-    self . States    = item . States
-    self . Creation  = item . Creation
-    self . Modified  = item . Modified
-    self . ltime     = item . ltime
+    ##########################################################################
+    self . Columns       = item . Columns
+    self . Id            = item . Id
+    self . Uuid          = item . Uuid
+    self . Type          = item . Type
+    self . Used          = item . Used
+    self . Start         = item . Start
+    self . End           = item . End
+    self . Realm         = item . Realm
+    self . Role          = item . Role
+    self . Item          = item . Item
+    self . States        = item . States
+    self . Creation      = item . Creation
+    self . Modified      = item . Modified
+    self . ltime         = item . ltime
+    ##########################################################################
+    self . Events        = item . Events
+    self . Properties    = item . Properties
+    self . Prerequisites = item . Prerequisites
+    self . Successors    = item . Successors
+    ##########################################################################
     return
   ############################################################################
   def set               ( self , item , value                              ) :
@@ -233,6 +247,19 @@ class Periode            ( Columns                                         ) :
   ############################################################################
   def toDuration ( self                                                    ) :
     return int   ( self . End - self . Start                                 )
+  ############################################################################
+  def setProperties ( self , key , value                                   ) :
+    ##########################################################################
+    self . Properties [ key ] = value
+    ##########################################################################
+    return value
+  ############################################################################
+  def getProperty            ( self , key                                  ) :
+    ##########################################################################
+    if                       ( key not in self . Properties                ) :
+      return None
+    ##########################################################################
+    return self . Properties [ key                                           ]
   ############################################################################
   def isAllow ( self                                                       ) :
     ##########################################################################

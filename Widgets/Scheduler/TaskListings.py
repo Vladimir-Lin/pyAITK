@@ -47,12 +47,12 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
-from   AITK  . Scheduler  . Project   import Project     as Project
 from   AITK  . Scheduler  . Projects  import Projects    as Projects
-from   AITK  . Scheduler  . Event     import Event       as Event
-from   AITK  . Scheduler  . Events    import Events      as Events
-from   AITK  . Scheduler  . Task      import Task        as Task
+from   AITK  . Scheduler  . Project   import Project     as Project
 from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
+from   AITK  . Scheduler  . Task      import Task        as Task
+from   AITK  . Scheduler  . Events    import Events      as Events
+from   AITK  . Scheduler  . Event     import Event       as Event
 ##############################################################################
 class TaskListings                 ( TreeDock                              ) :
   ############################################################################
@@ -179,25 +179,45 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , JSON                             ) :
+  def PrepareItem                     ( self , JSON                        ) :
     ##########################################################################
-    UUID   = int                 ( JSON [ "Uuid" ]                           )
-    Id     = int                 ( UUID % 100000000                          )
-    UXID   = str                 ( UUID                                      )
-    Name   = JSON                [ "Name"                                    ]
+    TRX      = self . Translations    [ "TaskListings"                       ]
+    TZ       = self . Settings        [ "TimeZone"                           ]
+    NOW      = StarDate               (                                      )
+    UUID     = int                    ( JSON [ "Uuid" ]                      )
+    Id       = int                    ( UUID % 100000000                     )
+    UXID     = str                    ( UUID                                 )
+    Name     = self . assureString    ( JSON [ "Name" ]                      )
+    TASK     = JSON                   [ "Task"                               ]
+    STATES   = str                    ( TASK . Period . States               )
+    SNAME    = TRX                    [ "PeriodStates" ] [ STATES            ]
     ##########################################################################
-    try                                                                      :
-      Name = Name . decode       ( "utf-8"                                   )
-    except                                                                   :
-      pass
+    TOTAL    = ""
+    SDTIME   = ""
+    EDTIME   = ""
     ##########################################################################
-    IT     = QTreeWidgetItem     (                                           )
-    IT     . setText             ( 0 , str ( Id )                            )
-    IT     . setToolTip          ( 0 , UXID                                  )
-    IT     . setData             ( 0 , Qt . UserRole , UXID                  )
-    IT     . setTextAlignment    ( 0 , Qt.AlignRight                         )
+    if                                ( TASK . Period . isAllow ( )        ) :
+      ########################################################################
+      TOTAL  = len                    ( TASK . Events                        )
+      ########################################################################
+      NOW    . Stardate = TASK . Period . Start
+      SDTIME = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
+      ########################################################################
+      NOW    . Stardate = TASK . Period . End
+      EDTIME = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
     ##########################################################################
-    IT     . setText             ( 1 , Name                                  )
+    IT       = QTreeWidgetItem        (                                      )
+    IT       . setText                ( 0 , str ( Id )                       )
+    IT       . setToolTip             ( 0 , UXID                             )
+    IT       . setData                ( 0 , Qt . UserRole , UXID             )
+    IT       . setTextAlignment       ( 0 , Qt.AlignRight                    )
+    ##########################################################################
+    IT       . setText                ( 1 , Name                             )
+    IT       . setText                ( 2 , SNAME                            )
+    IT       . setText                ( 3 , SDTIME                           )
+    IT       . setText                ( 4 , EDTIME                           )
+    IT       . setText                ( 5 , str ( TOTAL )                    )
+    IT       . setTextAlignment       ( 5 , Qt.AlignRight                    )
     ##########################################################################
     return IT
   ############################################################################
@@ -321,9 +341,19 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     TASKS   =                         [                                      ]
     for U in UUIDs                                                           :
-      J     =                         { "Uuid" : U , "Name" : ""             }
+      ########################################################################
+      TASK  = Task                    (                                      )
+      TASK  . Tables       = self . Tables
+      TASK  . Translations = self . Translations
+      TASK  . Uuid = U
+      TASK  . load                    ( DB                                   )
+      ########################################################################
+      J     =                         { "Uuid" : U                         , \
+                                        "Name" : ""                        , \
+                                        "Task" : TASK                        }
       if                              ( U in NAMEs                         ) :
         J [ "Name" ] = NAMEs          [ U                                    ]
+      ########################################################################
       TASKS . append                  ( J                                    )
     ##########################################################################
     DB      . Close                   (                                      )
@@ -653,6 +683,30 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def RecalculatePeriods           ( self , uuid                           ) :
+    ##########################################################################
+    DB      = self . ConnectDB     (                                         )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    TASK    = Task                 (                                         )
+    TASK    . Tables = self . Tables
+    TASK    . Uuid   = uuid
+    TASK    . load                 ( DB                                      )
+    ##########################################################################
+    EVENTs  = Events               (                                         )
+    EVENTs  . Tables = self . Tables
+    EVENTs  . load                 ( DB , TASK . Events                      )
+    ##########################################################################
+    PRDTAB  = self . Tables        [ "Periods"                               ]
+    DB      . LockWrites           ( [ PRDTAB                              ] )
+    TASK    . Investigate          ( DB , EVENTs                             )
+    DB      . UnlockTables         (                                         )
+    ##########################################################################
+    DB      . Close                (                                         )
+    ##########################################################################
+    return
+  ############################################################################
   def ColumnsMenu                  ( self , mm                             ) :
     ##########################################################################
     TRX    = self . Translations
@@ -703,6 +757,7 @@ class TaskListings                 ( TreeDock                              ) :
       ########################################################################
       msg  = self . getMenuItem    ( "Events"                                )
       mm   . addAction             ( 1501 , msg                              )
+      mm   . addAction             ( 1502 , "重新計算任務時間區段" )
       ########################################################################
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
@@ -749,6 +804,11 @@ class TaskListings                 ( TreeDock                              ) :
       uuid = self . itemUuid       ( item , 0                                )
       name = item . text           ( 1                                       )
       self . TaskEvents . emit     ( name , 16 , str ( uuid )                )
+      return True
+    ##########################################################################
+    if                             ( at == 1502                            ) :
+      uuid = self . itemUuid       ( item , 0                                )
+      self . Go                    ( self . RecalculatePeriods , ( uuid , )  )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :

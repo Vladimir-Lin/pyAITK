@@ -181,15 +181,32 @@ class ProjectsView            ( IconDock                                   ) :
   ############################################################################
   def InvestigateProject         ( self , DB , uuid , item                 ) :
     ##########################################################################
+    TZ      = self . Settings    [ "TimeZone"                                ]
+    NOW     = StarDate           (                                           )
+    ##########################################################################
     PRJ     = Project            (                                           )
     PRJ     . Tables = self . Tables
     PRJ     . Uuid   = uuid
-    ##########################################################################
-    TASKS   = PRJ . GetTasks     ( DB                                        )
+    PRJ     . load               ( DB                                        )
     ##########################################################################
     TFMT    = self . getMenuItem ( "ProjectTasks"                            )
-    MTASKS  = TFMT . format      ( len ( TASKS )                             )
+    MTASKS  = TFMT . format      ( len ( PRJ . Tasks )                       )
+    ##########################################################################
     toolTip = f"{uuid}\n{MTASKS}"
+    ##########################################################################
+    if                           ( PRJ . Period . isAllow ( )              ) :
+      ########################################################################
+      NOW    . Stardate = PRJ . Period . Start
+      SDTIME = NOW  . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"  )
+      TFMT   = self . getMenuItem ( "ProjectStart"                           )
+      SDTIME = TFMT . format      ( SDTIME                                   )
+      ########################################################################
+      NOW    . Stardate = PRJ . Period . End
+      EDTIME = NOW  . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"  )
+      TFMT   = self . getMenuItem ( "ProjectFinish"                          )
+      EDTIME = TFMT . format      ( EDTIME                                   )
+      ########################################################################
+      toolTip = f"{toolTip}\n{SDTIME}\n{EDTIME}"
     ##########################################################################
     self    . assignToolTip      ( item , toolTip                            )
     ##########################################################################
@@ -461,9 +478,27 @@ class ProjectsView            ( IconDock                                   ) :
     ##########################################################################
     return
   ############################################################################
-  def RecalculatePeriods         ( self , UUID                             ) :
+  def RecalculatePeriods           ( self , uuid                           ) :
     ##########################################################################
-    print(UUID)
+    DB      = self . ConnectDB     (                                         )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    PRJ     = Project              (                                         )
+    PRJ     . Tables = self . Tables
+    PRJ     . Uuid   = uuid
+    PRJ     . load                 ( DB                                      )
+    ##########################################################################
+    TASKs   = Tasks                (                                         )
+    TASKs   . Tables = self . Tables
+    TASKs   . load                 ( DB , PRJ . Tasks                        )
+    ##########################################################################
+    PRDTAB  = self . Tables        [ "Periods"                               ]
+    DB      . LockWrites           ( [ PRDTAB                              ] )
+    PRJ     . Investigate          ( DB , TASKs                              )
+    DB      . UnlockTables         (                                         )
+    ##########################################################################
+    DB      . Close                (                                         )
     ##########################################################################
     return
   ############################################################################

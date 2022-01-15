@@ -34,36 +34,43 @@ class Task               ( Columns                                         ) :
   def __del__                 ( self                                       ) :
     return
   ############################################################################
-  def Clear                       ( self                                   ) :
+  def Clear                        ( self                                  ) :
     ##########################################################################
-    self . Columns      =         [                                          ]
-    self . Id           = -1
-    self . Uuid         =  0
-    self . Used         =  0
-    self . Type         =  0
-    self . States       =  0
-    self . ltime        =  0
+    self . Columns       =         [                                         ]
+    self . Id            = -1
+    self . Uuid          =  0
+    self . Used          =  0
+    self . Type          =  0
+    self . States        =  0
+    self . ltime         =  0
     ##########################################################################
-    self . Tables       =         {                                          }
-    self . Translations =         {                                          }
-    self . Period       = Periode (                                          )
-    self . Events       =         [                                          ]
+    self . Tables        =         {                                         }
+    self . Translations  =         {                                         }
+    self . Period        = Periode (                                         )
+    self . Events        =         [                                         ]
+    self . Projects      =         [                                         ]
+    self . Prerequisites =         {                                         }
+    self . Successors    =         {                                         }
     ##########################################################################
     return
   ############################################################################
   def assign            ( self , item                                      ) :
     ##########################################################################
-    self . Columns      = item . Columns
-    self . Id           = item . Id
-    self . Uuid         = item . Uuid
-    self . Used         = item . Used
-    self . Type         = item . Type
-    self . States       = item . States
-    self . ltime        = item . ltime
+    self . Columns       = item . Columns
+    self . Id            = item . Id
+    self . Uuid          = item . Uuid
+    self . Used          = item . Used
+    self . Type          = item . Type
+    self . States        = item . States
+    self . ltime         = item . ltime
     ##########################################################################
-    self . Tables       = item . Tables
-    self . Translations = item . Translations
-    self . Period       = item . Period
+    self . Tables        = item . Tables
+    self . Translations  = item . Translations
+    self . Period        = item . Period
+    self . Events        = item . Events
+    self . Projects      = item . Projects
+    self . Prerequisites = item . Prerequisites
+    self . Successors    = item . Successors
     ##########################################################################
     return
   ############################################################################
@@ -126,6 +133,57 @@ class Task               ( Columns                                         ) :
                "Used"   : self . Used                                        ,
                "Type"   : self . Type                                        ,
                "States" : self . States                                      }
+  ############################################################################
+  def Investigate                  ( self , DB , EVENTs                    ) :
+    ##########################################################################
+    if                             ( len ( self . Events ) <= 0            ) :
+      return
+    ##########################################################################
+    MAXV       = 9223372036854775807
+    START      = MAXV
+    ENDST      = 0
+    STATES     = 4
+    ##########################################################################
+    for EUID in self . Events                                                :
+      ########################################################################
+      EVT      = EVENTs . GetEvent ( EUID                                    )
+      if                           ( EVT in [ False , None ]               ) :
+        continue
+      ########################################################################
+      if                           ( not EVT . Period . isAllow ( )        ) :
+        continue
+      ########################################################################
+      S        = EVT . Period . Start
+      E        = EVT . Period . End
+      ########################################################################
+      if                           ( S < START                             ) :
+        START  = S
+      ########################################################################
+      if                           ( E > ENDST                             ) :
+        ENDST  = E
+      ########################################################################
+      if                           ( not EVT . Period . isCompleted ( )    ) :
+        STATES = 5
+    ##########################################################################
+    if                             ( START == MAXV                         ) :
+      return False
+    ##########################################################################
+    if                             ( ENDST == 0                            ) :
+      return False
+    ##########################################################################
+    if ( self . Period . isIdentical ( START , ENDST , STATES ) )            :
+      return True
+    ##########################################################################
+    self . Period . Type   = 4
+    self . Period . States = STATES
+    self . Period . Start  = START
+    self . Period . End    = ENDST
+    ##########################################################################
+    PRDTAB = self . Tables         [ "Periods"                               ]
+    ITEMs  =                       [ "type" , "states" , "start" , "end"     ]
+    self   . Period . UpdateItems  ( DB , PRDTAB , ITEMs                     )
+    ##########################################################################
+    return True
   ############################################################################
   def GetEvents                ( self , DB                                 ) :
     ##########################################################################

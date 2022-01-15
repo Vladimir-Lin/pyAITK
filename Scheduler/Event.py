@@ -31,36 +31,43 @@ class Event              ( Columns                                         ) :
   def __del__                 ( self                                       ) :
     return
   ############################################################################
-  def Clear                       ( self                                   ) :
+  def Clear                        ( self                                  ) :
     ##########################################################################
-    self . Columns      =         [                                          ]
-    self . Id           = -1
-    self . Uuid         =  0
-    self . Used         =  0
-    self . Type         =  0
-    self . States       =  0
-    self . ltime        =  0
+    self . Columns       =         [                                         ]
+    self . Id            = -1
+    self . Uuid          =  0
+    self . Used          =  0
+    self . Type          =  0
+    self . States        =  0
+    self . ltime         =  0
     ##########################################################################
-    self . Tables       =         {                                          }
-    self . Translations =         {                                          }
-    self . Period       = Periode (                                          )
-    self . Periods      =         [                                          ]
+    self . Tables        =         {                                         }
+    self . Translations  =         {                                         }
+    self . Period        = Periode (                                         )
+    self . Periods       =         [                                         ]
+    self . Tasks         =         [                                         ]
+    self . Prerequisites =         {                                         }
+    self . Successors    =         {                                         }
     ##########################################################################
     return
   ############################################################################
   def assign            ( self , item                                      ) :
     ##########################################################################
-    self . Columns      = item . Columns
-    self . Id           = item . Id
-    self . Uuid         = item . Uuid
-    self . Used         = item . Used
-    self . Type         = item . Type
-    self . States       = item . States
-    self . ltime        = item . ltime
+    self . Columns       = item . Columns
+    self . Id            = item . Id
+    self . Uuid          = item . Uuid
+    self . Used          = item . Used
+    self . Type          = item . Type
+    self . States        = item . States
+    self . ltime         = item . ltime
     ##########################################################################
-    self . Tables       = item . Tables
-    self . Translations = item . Translations
-    self . Period       = item . Period
+    self . Tables        = item . Tables
+    self . Translations  = item . Translations
+    self . Period        = item . Period
+    self . Periods       = item . Periods
+    self . Tasks         = item . Tasks
+    self . Prerequisites = item . Prerequisites
+    self . Successors    = item . Successors
     ##########################################################################
     return
   ############################################################################
@@ -151,7 +158,7 @@ class Event              ( Columns                                         ) :
     for PUID in self . Periods                                               :
       ########################################################################
       if                          ( PUID not in PERIODs                    ) :
-        return False
+        continue
       ########################################################################
       P        = PERIODs          [ PUID                                     ]
       if                          ( not P . isAllow ( )                    ) :
