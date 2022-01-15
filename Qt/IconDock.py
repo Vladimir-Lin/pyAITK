@@ -1511,7 +1511,12 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def catalogAssignTaggingIcon     ( self , atUuid , NAME , JSON , TABLE   ) :
+  def defaultAssignIcon            ( self                                  , \
+                                     atUuid                                , \
+                                     NAME                                  , \
+                                     JSON                                  , \
+                                     TABLE                                 , \
+                                     T1                                    ) :
     ##########################################################################
     UUIDs  = JSON                  [ "UUIDs"                                 ]
     if                             ( len ( UUIDs ) <= 0                    ) :
@@ -1527,11 +1532,10 @@ class IconDock                      ( ListDock                             ) :
     icon   = self . FetchIcon      ( DB , PUID                               )
     DB     . LockWrites            ( [ RELTAB                              ] )
     ##########################################################################
-    T2     = self . Relation . get ( "t2"                                    )
     REL    = Relation              (                                         )
     REL    . set                   ( "first"  , atUuid                       )
     REL    . set                   ( "second" , PUID                         )
-    REL    . set                   ( "t1"     , T2                           )
+    REL    . set                   ( "t1"     , T1                           )
     REL    . setT2                 ( "Picture"                               )
     REL    . setRelation           ( "Using"                                 )
     REL    . Assure                ( DB , RELTAB                             )
@@ -1548,6 +1552,13 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     item   = self . UuidItemMaps   [ atUuid                                  ]
     self   . emitAssignIcon . emit ( item , icon                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def catalogAssignTaggingIcon   ( self , atUuid , NAME , JSON , TABLE     ) :
+    ##########################################################################
+    T2   = self . Relation . get ( "t2"                                      )
+    self . defaultAssignIcon     ( atUuid , NAME , JSON , TABLE , T2         )
     ##########################################################################
     return
   ############################################################################
