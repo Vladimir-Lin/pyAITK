@@ -47,12 +47,12 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
-from   AITK  . Scheduler  . Project   import Project     as Project
 from   AITK  . Scheduler  . Projects  import Projects    as Projects
-from   AITK  . Scheduler  . Event     import Event       as Event
-from   AITK  . Scheduler  . Events    import Events      as Events
-from   AITK  . Scheduler  . Task      import Task        as Task
+from   AITK  . Scheduler  . Project   import Project     as Project
 from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
+from   AITK  . Scheduler  . Task      import Task        as Task
+from   AITK  . Scheduler  . Events    import Events      as Events
+from   AITK  . Scheduler  . Event     import Event       as Event
 ##############################################################################
 class EventListings                ( TreeDock                              ) :
   ############################################################################
@@ -88,8 +88,8 @@ class EventListings                ( TreeDock                              ) :
     self . Relation . setT2        ( "Schedule"                              )
     self . Relation . setRelation  ( "Contains"                              )
     ##########################################################################
-    self . setColumnCount          ( 6                                       )
-    self . setColumnHidden         ( 5 , True                                )
+    self . setColumnCount          ( 7                                       )
+    self . setColumnHidden         ( 6 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -179,25 +179,45 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , JSON                             ) :
+  def PrepareItem                     ( self , JSON                        ) :
     ##########################################################################
-    UUID   = int                 ( JSON [ "Uuid" ]                           )
-    Id     = int                 ( UUID % 100000000                          )
-    UXID   = str                 ( UUID                                      )
-    Name   = JSON                [ "Name"                                    ]
+    TRX      = self . Translations    [ "EventListings"                      ]
+    TZ       = self . Settings        [ "TimeZone"                           ]
+    NOW      = StarDate               (                                      )
+    UUID     = int                    ( JSON [ "Uuid" ]                      )
+    Id       = int                    ( UUID % 100000000                     )
+    UXID     = str                    ( UUID                                 )
+    Name     = self . assureString    ( JSON [ "Name" ]                      )
+    EVT      = JSON                   [ "Event"                              ]
+    STATES   = str                    ( EVT . Period . States                )
+    SNAME    = TRX                    [ "PeriodStates" ] [ STATES            ]
     ##########################################################################
-    try                                                                      :
-      Name = Name . decode       ( "utf-8"                                   )
-    except                                                                   :
-      pass
+    TOTAL    = ""
+    SDTIME   = ""
+    EDTIME   = ""
     ##########################################################################
-    IT     = QTreeWidgetItem     (                                           )
-    IT     . setText             ( 0 , str ( Id )                            )
-    IT     . setToolTip          ( 0 , UXID                                  )
-    IT     . setData             ( 0 , Qt . UserRole , UXID                  )
-    IT     . setTextAlignment    ( 0 , Qt.AlignRight                         )
+    if                                ( EVT . Period . isAllow ( )         ) :
+      ########################################################################
+      TOTAL  = len                    ( EVT . Periods                        )
+      ########################################################################
+      NOW    . Stardate = EVT . Period . Start
+      SDTIME = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
+      ########################################################################
+      NOW    . Stardate = EVT . Period . End
+      EDTIME = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
     ##########################################################################
-    IT     . setText             ( 1 , Name                                  )
+    IT       = QTreeWidgetItem        (                                      )
+    IT       . setText                ( 0 , str ( Id )                       )
+    IT       . setToolTip             ( 0 , UXID                             )
+    IT       . setData                ( 0 , Qt . UserRole , UXID             )
+    IT       . setTextAlignment       ( 0 , Qt.AlignRight                    )
+    ##########################################################################
+    IT       . setText                ( 1 , Name                             )
+    IT       . setText                ( 2 , SNAME                            )
+    IT       . setText                ( 3 , SDTIME                           )
+    IT       . setText                ( 4 , EDTIME                           )
+    IT       . setText                ( 5 , str ( TOTAL )                    )
+    IT       . setTextAlignment       ( 5 , Qt.AlignRight                    )
     ##########################################################################
     return IT
   ############################################################################
@@ -258,13 +278,13 @@ class EventListings                ( TreeDock                              ) :
     return
   ############################################################################
   @pyqtSlot                       (        list                              )
-  def refresh                     ( self , TASKS                           ) :
+  def refresh                     ( self , EVENTS                          ) :
     ##########################################################################
     self   . clear                (                                          )
     ##########################################################################
-    for T in TASKS                                                           :
+    for E in EVENTS                                                          :
       ########################################################################
-      IT   = self . PrepareItem   ( T                                        )
+      IT   = self . PrepareItem   ( E                                        )
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
@@ -319,20 +339,30 @@ class EventListings                ( TreeDock                              ) :
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
-    TASKS   =                         [                                      ]
+    EVENTS  =                         [                                      ]
     for U in UUIDs                                                           :
-      J     =                         { "Uuid" : U , "Name" : ""             }
+      ########################################################################
+      EVT   = Event                   (                                      )
+      EVT   . Tables       = self . Tables
+      EVT   . Translations = self . Translations
+      EVT   . Uuid = U
+      EVT   . load                    ( DB                                   )
+      ########################################################################
+      J     =                         { "Uuid"  : U                        , \
+                                        "Name"  : ""                       , \
+                                        "Event" : EVT                        }
       if                              ( U in NAMEs                         ) :
         J [ "Name" ] = NAMEs          [ U                                    ]
-      TASKS . append                  ( J                                    )
+      ########################################################################
+      EVENTS . append                 ( J                                    )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
-    if                                ( len ( TASKS ) <= 0                 ) :
+    if                                ( len ( EVENTS ) <= 0                ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
-    self   . emitAllNames . emit      ( TASKS                                )
+    self   . emitAllNames . emit      ( EVENTS                               )
     ##########################################################################
     return
   ############################################################################
@@ -540,14 +570,11 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def Prepare                    ( self                                    ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    self   . setColumnWidth      ( 0 , 120                                   )
-    self   . setColumnWidth      ( 1 , 320                                   )
-    self   . setColumnWidth      ( 5 ,   3                                   )
-    LABELs = self . Translations [ "EventListings" ] [ "Labels"              ]
-    self   . setCentralLabels    ( LABELs                                    )
-    self   . setPrepared         ( True                                      )
+    self . setColumnWidth ( 0 , 100                                          )
+    self . setColumnWidth ( 1 , 320                                          )
+    self . defaultPrepare ( "EventListings" , 6                              )
     ##########################################################################
     return
   ############################################################################
@@ -656,6 +683,26 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def RecalculatePeriods           ( self , uuid                           ) :
+    ##########################################################################
+    DB      = self . ConnectDB     (                                         )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    PRDTAB  = self . Tables        [ "Periods"                               ]
+    EVT     = Event                (                                         )
+    EVT     . Tables = self . Tables
+    EVT     . Uuid   = uuid
+    EVT     . load                 ( DB                                      )
+    PERIODs = EVT    . LoadPeriods ( DB , EVT . Periods                      )
+    DB      . LockWrites           ( [ PRDTAB                              ] )
+    EVT     . Investigate          ( DB , PERIODs                            )
+    DB      . UnlockTables         (                                         )
+    ##########################################################################
+    DB      . Close                (                                         )
+    ##########################################################################
+    return
+  ############################################################################
   def ColumnsMenu                  ( self , mm                             ) :
     ##########################################################################
     TRX    = self . Translations
@@ -699,17 +746,19 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     . addAction             ( 1102 ,  TRX [ "UI::Delete" ]            )
+    mm     = self . AppendDeleteAction  ( mm , 1102                          )
+    if                             ( item not in [ False , None ]          ) :
+      if                           ( self . doEditAllNames ( )             ) :
+        self . AppendEditNamesAction ( mm , 1601                             )
+    ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
     if                             ( item not in [ False , None ]          ) :
       ########################################################################
       msg  = self . getMenuItem    ( "Periods"                               )
       mm   . addAction             ( 1501 , msg                              )
-      ########################################################################
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
+      mm   . addAction             ( 1502 , "重新計算事件時間區段" )
+      mm   . addSeparator          (                                         )
     ##########################################################################
     mm     = self . SortingMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
@@ -752,6 +801,11 @@ class EventListings                ( TreeDock                              ) :
       uuid = self . itemUuid       ( item , 0                                )
       name = item . text           ( 1                                       )
       self . EventPeriods . emit   ( name , 15 , str ( uuid )                )
+      return True
+    ##########################################################################
+    if                             ( at == 1502                            ) :
+      uuid = self . itemUuid       ( item , 0                                )
+      self . Go                    ( self . RecalculatePeriods , ( uuid , )  )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :

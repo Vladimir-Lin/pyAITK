@@ -124,44 +124,62 @@ class Event              ( Columns                                         ) :
                "Type"   : self . Type                                        ,
                "States" : self . States                                      }
   ############################################################################
-  def Investigate               ( self , DB , PERIODs                      ) :
+  def LoadPeriods             ( self , DB , Periods                        ) :
     ##########################################################################
-    if                          ( len ( self . Periods ) <= 0              ) :
+    PERIODs   =               {                                              }
+    PRDTAB    = self . Tables [ "Periods"                                    ]
+    ##########################################################################
+    for P in Periods                                                         :
+      ########################################################################
+      PRD     = Periode       (                                              )
+      PRD     . Uuid = P
+      PRD     . ObtainsByUuid ( DB , PRDTAB                                  )
+      PERIODs [ P ] = PRD
+    ##########################################################################
+    return PERIODs
+  ############################################################################
+  def Investigate                 ( self , DB , PERIODs                    ) :
+    ##########################################################################
+    if                            ( len ( self . Periods ) <= 0            ) :
       return
     ##########################################################################
-    MAXV  = 9223372036854775807
-    START = MAXV
-    ENDST = 0
+    MAXV       = 9223372036854775807
+    START      = MAXV
+    ENDST      = 0
+    STATES     = 4
     ##########################################################################
     for PUID in self . Periods                                               :
       ########################################################################
-      if                        ( PUID not in PERIODs                      ) :
+      if                          ( PUID not in PERIODs                    ) :
         return False
       ########################################################################
-      P    = PERIODs            [ PUID                                       ]
-      if                        ( not P . isAllow ( )                      ) :
+      P        = PERIODs          [ PUID                                     ]
+      if                          ( not P . isAllow ( )                    ) :
         continue
       ########################################################################
-      S    = P . Start
-      E    = P . End
+      S        = P . Start
+      E        = P . End
       ########################################################################
-      if                        ( S < START                                ) :
-        START = S
+      if                          ( S < START                              ) :
+        START  = S
       ########################################################################
-      if                        ( E > ENDST                                ) :
-        ENDST = E
+      if                          ( E > ENDST                              ) :
+        ENDST  = E
+      ########################################################################
+      if                          ( not P . isCompleted ( )                ) :
+        STATES = 5
     ##########################################################################
-    if                          ( START == MAXV                            ) :
+    if                            ( START == MAXV                          ) :
       return False
     ##########################################################################
-    if                          ( ENDST == 0                               ) :
+    if                            ( ENDST == 0                             ) :
       return False
     ##########################################################################
-    if ( self . Period . isExact ( START , ENDST ) )                         :
+    if ( self . Period . isIdentical ( START , ENDST , STATES ) )            :
       return True
     ##########################################################################
     self . Period . Type   = 4
-    self . Period . States = 5
+    self . Period . States = STATES
     self . Period . Start  = START
     self . Period . End    = ENDST
     ##########################################################################

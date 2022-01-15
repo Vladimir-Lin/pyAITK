@@ -88,8 +88,8 @@ class TaskListings                 ( TreeDock                              ) :
     self . Relation . setT2        ( "Task"                                  )
     self . Relation . setRelation  ( "Contains"                              )
     ##########################################################################
-    self . setColumnCount          ( 6                                       )
-    self . setColumnHidden         ( 5 , True                                )
+    self . setColumnCount          ( 7                                       )
+    self . setColumnHidden         ( 6 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -540,14 +540,11 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def Prepare                    ( self                                    ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    self   . setColumnWidth      ( 0 , 120                                   )
-    self   . setColumnWidth      ( 1 , 320                                   )
-    self   . setColumnWidth      ( 5 ,   3                                   )
-    LABELs = self . Translations [ "TaskListings" ] [ "Labels"               ]
-    self   . setCentralLabels    ( LABELs                                    )
-    self   . setPrepared         ( True                                      )
+    self . setColumnWidth ( 0 , 100                                          )
+    self . setColumnWidth ( 1 , 320                                          )
+    self . defaultPrepare ( "TaskListings" , 6                               )
     ##########################################################################
     return
   ############################################################################
