@@ -68,9 +68,11 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
+    self . ClassTag           = "TaskListings"
+    self . DefaultType        = 196833
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 28
+    self . Amount             = 40
     self . SortOrder          = "desc"
     ##########################################################################
     self . Grouping           = "Original"
@@ -96,7 +98,6 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
-    self . MountClicked            ( 9                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
@@ -203,9 +204,9 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                     ( self , JSON                        ) :
+  def PrepareItemContent              ( self , IT , JSON                   ) :
     ##########################################################################
-    TRX      = self . Translations    [ "TaskListings"                       ]
+    TRX      = self . Translations    [ self . ClassTag                      ]
     TZ       = self . Settings        [ "TimeZone"                           ]
     NOW      = StarDate               (                                      )
     UUID     = int                    ( JSON [ "Uuid" ]                      )
@@ -235,7 +236,6 @@ class TaskListings                 ( TreeDock                              ) :
       NOW    . Stardate = TASK . Period . End
       EDTIME = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
     ##########################################################################
-    IT       = QTreeWidgetItem        (                                      )
     IT       . setText                ( 0 , str ( Id )                       )
     IT       . setToolTip             ( 0 , UXID                             )
     IT       . setData                ( 0 , Qt . UserRole , UXID             )
@@ -258,19 +258,31 @@ class TaskListings                 ( TreeDock                              ) :
     IT       . setData                ( 6 , Qt . UserRole , TOTAL            )
     IT       . setTextAlignment       ( 6 , Qt.AlignRight                    )
     ##########################################################################
+    return
+  ############################################################################
+  def PrepareItem             ( self , JSON                                ) :
+    ##########################################################################
+    IT   = QTreeWidgetItem    (                                              )
+    self . PrepareItemContent ( IT   , JSON                                  )
+    ##########################################################################
     return IT
   ############################################################################
   @pyqtSlot                      (                                           )
   def InsertItem                 ( self                                    ) :
     ##########################################################################
-    item = QTreeWidgetItem       (                                           )
-    item . setData               ( 0 , Qt . UserRole , 0                     )
-    self . addTopLevelItem       ( item                                      )
-    line = self . setLineEdit    ( item                                    , \
+    item   = QTreeWidgetItem     (                                           )
+    item   . setData             ( 0 , Qt . UserRole , 0                     )
+    ##########################################################################
+    if                           ( self . SortOrder == "asc"               ) :
+      self . addTopLevelItem     ( item                                      )
+    else                                                                     :
+      self . insertTopLevelItem  ( 0 , item                                  )
+    ##########################################################################
+    line   = self . setLineEdit  ( item                                    , \
                                    1                                       , \
                                    "editingFinished"                       , \
                                    self . nameChanged                        )
-    line . setFocus              ( Qt . TabFocusReason                       )
+    line   . setFocus            ( Qt . TabFocusReason                       )
     ##########################################################################
     return
   ############################################################################
@@ -682,9 +694,11 @@ class TaskListings                 ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . setColumnWidth ( 0 , 100                                          )
-    self . setColumnWidth ( 1 , 320                                          )
-    self . defaultPrepare ( "TaskListings" , 7                               )
+    self . setColumnWidth ( 0 ,  80                                          )
+    self . setColumnWidth ( 1 , 280                                          )
+    self . setColumnWidth ( 3 , 180                                          )
+    self . setColumnWidth ( 4 , 180                                          )
+    self . defaultPrepare ( self . ClassTag , 7                              )
     ##########################################################################
     return
   ############################################################################
@@ -694,6 +708,8 @@ class TaskListings                 ( TreeDock                              ) :
     if                            ( DB == None                             ) :
       return
     ##########################################################################
+    NEWONE   = False
+    JSON     =                    {                                          }
     TSKTAB   = self . Tables      [ "Tasks"                                  ]
     PRDTAB   = self . Tables      [ "Periods"                                ]
     RELTAB   = self . Tables      [ "RelationGroups"                         ]
@@ -704,8 +720,20 @@ class TaskListings                 ( TreeDock                              ) :
     if                            ( uuid <= 0                              ) :
       ########################################################################
       TASKS  = Tasks              (                                          )
-      TASKS  . Tables = self . Tables
+      TASKS  . Tables      = self . Tables
+      TASKS  . DefaultType = self . DefaultType
       uuid   = TASKS . AppendTask ( DB                                       )
+      ########################################################################
+      NEWONE = True
+      TASK   = Task               (                                          )
+      TASK   . Tables       = self . Tables
+      TASK   . Translations = self . Translations
+      TASK   . Uuid = uuid
+      TASK   . load               ( DB                                       )
+      ########################################################################
+      JSON   =                    { "Uuid" : uuid                          , \
+                                    "Name" : name                          , \
+                                    "Task" : TASK                            }
       ########################################################################
       if                          ( self . isSubordination ( )             ) :
         ######################################################################
@@ -722,6 +750,11 @@ class TaskListings                 ( TreeDock                              ) :
     DB       . Close              (                                          )
     ##########################################################################
     item     . setData            ( 0 , Qt . UserRole , uuid                 )
+    ##########################################################################
+    if                            ( NEWONE                                 ) :
+      ########################################################################
+      self   . PrepareItemContent ( item , JSON                              )
+      self   . emitAssignColumn . emit ( item , 1 , name                     )
     ##########################################################################
     ## 發送訊息給計畫管理後台
     ## SendWssBack
@@ -795,28 +828,30 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def RecalculatePeriods           ( self , uuid                           ) :
+  def RecalculatePeriods          ( self , uuid                            ) :
     ##########################################################################
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    DB     = self . ConnectDB     (                                          )
+    if                            ( DB in [ False , None ]                 ) :
       return
     ##########################################################################
-    TASK    = Task                 (                                         )
-    TASK    . Tables = self . Tables
-    TASK    . Uuid   = uuid
-    TASK    . load                 ( DB                                      )
+    TASK   = Task                 (                                          )
+    TASK   . Tables = self . Tables
+    TASK   . Uuid   = uuid
+    TASK   . load                 ( DB                                       )
     ##########################################################################
-    EVENTs  = Events               (                                         )
-    EVENTs  . Tables = self . Tables
-    EVENTs  . load                 ( DB , TASK . Events                      )
+    EVENTs = Events               (                                          )
+    EVENTs . Tables = self . Tables
+    EVENTs . load                 ( DB , TASK . Events                       )
     ##########################################################################
-    PRDTAB  = self . Tables        [ "Periods"                               ]
-    TSKTAB  = self . Tables        [ "Tasks"                                 ]
-    DB      . LockWrites           ( [ PRDTAB , TSKTAB                     ] )
-    TASK    . Investigate          ( DB , EVENTs                             )
-    DB      . UnlockTables         (                                         )
+    PRDTAB = self . Tables        [ "Periods"                                ]
+    TSKTAB = self . Tables        [ "Tasks"                                  ]
+    DB     . LockWrites           ( [ PRDTAB , TSKTAB                      ] )
+    TASK   . Investigate          ( DB , EVENTs                              )
+    DB     . UnlockTables         (                                          )
     ##########################################################################
-    DB      . Close                (                                         )
+    DB     . Close                (                                          )
+    ##########################################################################
+    self   . Notify               ( 5                                        )
     ##########################################################################
     return
   ############################################################################

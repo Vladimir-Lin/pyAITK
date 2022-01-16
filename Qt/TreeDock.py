@@ -63,6 +63,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     ## WidgetClass                                                       ;
     ##########################################################################
+    self . ClassTag      = ""
     self . Total         = 0
     self . StartId       = 0
     self . Amount        = 60

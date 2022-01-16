@@ -30,6 +30,7 @@ class Tasks                   (                                            ) :
     self . Listings     =     {                                              }
     self . Translations =     {                                              }
     self . Tables       =     {                                              }
+    self . DefaultType  = 196833
     ##########################################################################
     return
   ############################################################################
@@ -89,7 +90,7 @@ class Tasks                   (                                            ) :
     HEAD   = 7303000000000000000
     ##########################################################################
     uuid   = DB   . LastUuid ( TSKTAB , "uuid" , HEAD                        )
-    DB     . AddUuid         ( TSKTAB ,  uuid  , 196833                      )
+    DB     . AddUuid         ( TSKTAB ,  uuid  , self . DefaultType          )
     ##########################################################################
     NOW    = StarDate        (                                               )
     NOW    . Now             (                                               )
