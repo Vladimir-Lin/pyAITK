@@ -804,6 +804,8 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     if                          ( DB in [ False , None ]                   ) :
       return False
     ##########################################################################
+    DB       . LockWrites       ( [ TABLE                                  ] )
+    ##########################################################################
     if                          ( self . isSubordination ( )               ) :
       ########################################################################
       self   . Relation . Joins ( DB , TABLE , UUIDs                         )
@@ -815,6 +817,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
         self . Relation . set   ( "first" , UUID                             )
         self . Relation . Join  ( DB      , TABLE                            )
     ##########################################################################
+    DB       . UnlockTables     (                                            )
     DB       . Close            (                                            )
     ##########################################################################
     return True

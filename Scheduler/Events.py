@@ -96,7 +96,7 @@ class Events                  (                                            ) :
     HEAD   = 7302000000000000000
     ##########################################################################
     uuid   = DB   . LastUuid ( EVTTAB , "uuid" , HEAD                        )
-    DB     . AddUuid         ( TSKTAB ,  uuid  , self . DefaultType          )
+    DB     . AddUuid         ( EVTTAB ,  uuid  , self . DefaultType          )
     ##########################################################################
     NOW    = StarDate        (                                               )
     NOW    . Now             (                                               )

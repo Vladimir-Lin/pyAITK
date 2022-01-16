@@ -219,6 +219,17 @@ class Event              ( Columns                                         ) :
     ##########################################################################
     return REL . Subordination ( DB , RELTAB                                 )
   ############################################################################
+  def JoinPeriods     ( self , DB , TABLE , PERIODs                        ) :
+    ##########################################################################
+    REL = Relation    (                                                      )
+    REL . set         ( "first" , self . Uuid                                )
+    REL . setT1       ( "Schedule"                                           )
+    REL . setT2       ( "Period"                                             )
+    REL . setRelation ( "Contains"                                           )
+    REL . Joins       ( DB , TABLE , PERIODs                                 )
+    ##########################################################################
+    return
+  ############################################################################
   def FetchPeriod            ( self , DB                                   ) :
     ##########################################################################
     PRDTAB   = self . Tables [ "Periods"                                     ]
