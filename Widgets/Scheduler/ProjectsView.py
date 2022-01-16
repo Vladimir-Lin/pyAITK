@@ -320,7 +320,7 @@ class ProjectsView            ( IconDock                                   ) :
     FUNC = self . AssignProjectIcon
     return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
-  def dropTasks                         ( self , source , pos , JSOX       ) :
+  def dropTasks                         ( self , source , pos , JSON       ) :
     FUNC = self . AppendingTasks
     return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################

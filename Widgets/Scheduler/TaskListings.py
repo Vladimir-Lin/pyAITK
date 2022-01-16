@@ -575,7 +575,7 @@ class TaskListings                 ( TreeDock                              ) :
     mtype   = "task/uuids"
     message = self . getMenuItem    ( "TasksSelected"                        )
     ##########################################################################
-    return self    . CreateDragMime ( self , mtype , message                 )
+    return self    . CreateDragMime ( self , 0 , mtype , message             )
   ############################################################################
   def startDrag         ( self , dropActions                               ) :
     ##########################################################################
