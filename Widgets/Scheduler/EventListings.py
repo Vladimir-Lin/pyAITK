@@ -609,27 +609,48 @@ class EventListings                ( TreeDock                              ) :
   def acceptPeriodsDrop  ( self                                            ) :
     return True
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def dropNew                           ( self                             , \
+                                          sourceWidget                     , \
+                                          mimeData                         , \
+                                          mousePos                         ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
+    if                                  ( self == sourceWidget             ) :
       return False
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
+    RDN    = self . RegularDropNew      ( mimeData                           )
+    if                                  ( not RDN                          ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    mtype  = self . DropInJSON          [ "Mime"                             ]
+    UUIDs  = self . DropInJSON          [ "UUIDs"                            ]
+    title  = sourceWidget . windowTitle (                                    )
+    CNT    = len                        ( UUIDs                              )
+    atItem = self . itemAt              ( mousePos                           )
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    if                                  ( mtype in [ "people/uuids"      ] ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
+      if                                ( atItem in [ False , None ]       ) :
+        return False
+      ########################################################################
+      self . ShowMenuItemTitleStatus    ( "PeopleJoinEvent"  , title , CNT   )
+    ##########################################################################
+    elif                                ( mtype in [ "task/uuids"        ] ) :
+      ########################################################################
+      if                                ( atItem in [ False , None ]       ) :
+        return False
+      ########################################################################
+      title = atItem . text             ( 1                                  )
+      self . ShowMenuItemTitleStatus    ( "EventJoinTasks"   , title , CNT   )
+    ##########################################################################
+    elif                                ( mtype in [ "event/uuids"       ] ) :
+      self . ShowMenuItemTitleStatus    ( "JoinEvents"       , title , CNT   )
+    ##########################################################################
+    elif                                ( mtype in [ "period/uuids"      ] ) :
+      ########################################################################
+      if                                ( atItem in [ False , None ]       ) :
+        return False
+      ########################################################################
+      self . ShowMenuItemTitleStatus    ( "JoinPeriods"      , title , CNT   )
     ##########################################################################
     return RDN
   ############################################################################
@@ -638,42 +659,43 @@ class EventListings                ( TreeDock                              ) :
     if                         ( self . droppingAction                     ) :
       return False
     ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
+    if                         ( sourceWidget == self                      ) :
+      return False
     ##########################################################################
+    mtype  = self . DropInJSON [ "Mime"                                      ]
     atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
+    ##########################################################################
+    if                         ( mtype in [ "event/uuids"                ] ) :
+      return True
+    ##########################################################################
+    if                         ( atItem in [ False , None ]                ) :
       return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
     ##########################################################################
-    ##########################################################################
-    return True
+    return   True
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
+  def dropPeople                       ( self , source , pos , JSON        ) :
+    ##########################################################################
+    FUNC = self . PeopleJoinEvent
+    ##########################################################################
+    return self . defaultDropInObjects ( source , pos , JSON , 0 , FUNC      )
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
+  def dropTasks                ( self , source , pos , JSOX                ) :
     ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
-      return True
+    FUNC = self . EventJoinTasks
     ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return True
+    return self . defaultDropInObjects ( source , pos , JSON , 0 , FUNC      )
+  ############################################################################
+  def dropEvents                    ( self , source , pos , JSON           ) :
     ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem is None                            ) :
-      return True
+    FUNC = self . JoinEvents
     ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
+    return self . defaultDropInside ( self , source , JSON , FUNC            )
+  ############################################################################
+  def dropPeriods                      ( self , source , pos , JSON        ) :
     ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
+    FUNC = self . PeriodsJoinEvent
     ##########################################################################
-    ##########################################################################
-    return True
+    return self . defaultDropInObjects ( source , pos , JSON , 0 , FUNC      )
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
@@ -685,52 +707,156 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def PeopleJoinEvent             ( self , UUID , UUIDs                    ) :
     ##########################################################################
-    """
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB in [ False , None ]                 ) :
       return
     ##########################################################################
-    TSKTAB  = self . Tables        [ "Tasks"                                 ]
-    PRDTAB  = self . Tables        [ "Periods"                               ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
-    HEAD    = 5702000000000000000
     ##########################################################################
-    DB      . LockWrites           ( [ PRJTAB , PRDTAB , NAMTAB ]            )
+    DB       . Close              (                                          )
     ##########################################################################
-    if                             ( uuid <= 0                             ) :
+    self     . Notify             ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def EventJoinTasks              ( self , UUID , UUIDs                    ) :
+    ##########################################################################
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB in [ False , None ]                 ) :
+      return
+    ##########################################################################
+    ##########################################################################
+    DB       . Close              (                                          )
+    ##########################################################################
+    self     . Notify             ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def JoinEvents                  ( self , UUIDs                           ) :
+    ##########################################################################
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB in [ False , None ]                 ) :
+      return
+    ##########################################################################
+    ##########################################################################
+    DB       . Close              (                                          )
+    ##########################################################################
+    self     . Notify             ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def PeriodsJoinEvent            ( self , UUID , UUIDs                    ) :
+    ##########################################################################
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB in [ False , None ]                 ) :
+      return
+    ##########################################################################
+    ##########################################################################
+    DB       . Close              (                                          )
+    ##########################################################################
+    self     . Notify             ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssureUuidItem               ( self , item , uuid , name             ) :
+    ##########################################################################
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB in [ False , None ]                 ) :
+      return
+    ##########################################################################
+    NEWONE   = False
+    JSON     =                    {                                          }
+    EVTTAB   = self . Tables      [ "Events"                                 ]
+    PRDTAB   = self . Tables      [ "Periods"                                ]
+    RELTAB   = self . Tables      [ "RelationGroups"                         ]
+    NAMTAB   = self . Tables      [ "NamesLocal"                             ]
+    ##########################################################################
+    DB       . LockWrites         ( [ EVTTAB , PRDTAB , RELTAB , NAMTAB ]    )
+    ##########################################################################
+    if                            ( uuid <= 0                              ) :
       ########################################################################
-      uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
-      DB    . AddUuid              ( PRJTAB , uuid   , 1                     )
+      EVTS   = Events             (                                          )
+      EVTS   . Tables      = self . Tables
+      EVTS   . DefaultType = self . DefaultType
+      uuid   = EVTS . AppendEvent ( DB                                       )
       ########################################################################
-      NOW   = StarDate             (                                         )
-      NOW   . Now                  (                                         )
-      CDT   = NOW . Stardate
+      NEWONE = True
+      EVT    = Event              (                                          )
+      EVT    . Tables       = self . Tables
+      EVT    . Translations = self . Translations
+      EVT    . Uuid = uuid
+      EVT    . load               ( DB                                       )
       ########################################################################
-      PRD   = Periode              (                                         )
-      PRID  = PRD  . GetUuid       ( DB , PRDTAB                             )
+      JSON   =                    { "Uuid"  : uuid                         , \
+                                    "Name"  : name                         , \
+                                    "Event" : EVT                            }
       ########################################################################
-      PRD   . Realm    = uuid
-      PRD   . Role     = 71
-      PRD   . Item     = 1
-      PRD   . States   = 0
-      PRD   . Creation = CDT
-      PRD   . Modified = CDT
-      Items =                      [ "realm"                               , \
-                                     "role"                                , \
-                                     "item"                                , \
-                                     "states"                              , \
-                                     "creation"                            , \
-                                     "modified"                              ]
-      PRD   . UpdateItems          ( DB , PRDTAB , Items                     )
+      if                          ( self . isSubordination ( )             ) :
+        ######################################################################
+        self . Relation . set     ( "second" , uuid                          )
+        self . Relation . Join    ( DB , RELTAB                              )
+        ######################################################################
+      elif                        ( self . isReverse ( )                   ) :
+        ######################################################################
+        self . Relation . set     ( "first" , uuid                           )
+        self . Relation . Join    ( DB , RELTAB                              )
     ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    self     . AssureUuidName     ( DB , NAMTAB , uuid , name                )
     ##########################################################################
-    DB      . Close                (                                         )
+    DB       . Close              (                                          )
     ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
-    """
+    item     . setData            ( 0 , Qt . UserRole , uuid                 )
+    ##########################################################################
+    if                            ( NEWONE                                 ) :
+      ########################################################################
+      self   . PrepareItemContent ( item , JSON                              )
+      self   . emitAssignColumn . emit ( item , 1 , name                     )
+    ##########################################################################
+    ## 發送訊息給計畫管理後台
+    ## SendWssBack
+    ##########################################################################
+    self     . Notify             ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateTypeItemValue     ( self , uuid , item , value                 ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB in [ False , None ]                     ) :
+      return
+    ##########################################################################
+    EVTTAB = self . Tables    [ "Events"                                     ]
+    ##########################################################################
+    DB     . LockWrites       ( [ EVTTAB                                   ] )
+    ##########################################################################
+    uuid   = int              ( uuid                                         )
+    ##########################################################################
+    QQ     = f"""update {EVTTAB}
+                 set `{item}` = {value}
+                 where ( `uuid` = {uuid} ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    DB     . Query            ( QQ                                           )
+    ##########################################################################
+    DB     . Close            (                                              )
+    ##########################################################################
+    ## 發送訊息給計畫管理後台
+    ## SendWssBack
+    ##########################################################################
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def RemoveEvents              ( self , UUIDs                             ) :
+    ##########################################################################
+    OKAY = self . RemoveMembers (        UUIDs                               )
+    if                          ( not OKAY                                 ) :
+      return
+    ##########################################################################
+    ## 發送訊息給計畫管理後台
+    ## SendWssBack
+    ##########################################################################
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
@@ -781,7 +907,7 @@ class EventListings                ( TreeDock                              ) :
     msg  = self . getMenuItem ( "Details"                                    )
     LOM  = mm . addMenu       ( msg                                          )
     ##########################################################################
-    msg  = self . getMenuItem ( "Events"                                     )
+    msg  = self . getMenuItem ( "Periods"                                    )
     mm   . addActionFromMenu  ( LOM , 1501 , msg                             )
     ##########################################################################
     msg  = self . getMenuItem ( "Recalculate"                                )
@@ -789,20 +915,20 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu            ( self , at , item                          ) :
+  def RunGroupsMenu              ( self , at , item                        ) :
     ##########################################################################
-    if                         ( at == 1501                                ) :
+    if                           ( at == 1501                              ) :
       ########################################################################
-      uuid = self . itemUuid   ( item , 0                                    )
-      name = atItem . text     ( 1                                           )
-      self . TaskEvents . emit ( name , 16 , str ( uuid )                    )
+      uuid = self . itemUuid     ( item , 0                                  )
+      name = item . text         ( 1                                         )
+      self . EventPeriods . emit ( name , 15 , str ( uuid )                  )
       ########################################################################
       return True
     ##########################################################################
-    if                         ( at == 1502                                ) :
+    if                           ( at == 1502                              ) :
       ########################################################################
-      uuid = self . itemUuid   ( item , 0                                    )
-      self . Go                ( self . RecalculatePeriods , ( uuid , )      )
+      uuid = self . itemUuid     ( item , 0                                  )
+      self . Go                  ( self . RecalculatePeriods , ( uuid , )    )
       ########################################################################
       return True
     ##########################################################################
@@ -844,33 +970,26 @@ class EventListings                ( TreeDock                              ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
-      ########################################################################
-      msg  = self . getMenuItem    ( "Periods"                               )
-      mm   . addAction             ( 1501 , msg                              )
-      mm   . addAction             ( 1502 , "重新計算事件時間區段" )
-      mm   . addSeparator          (                                         )
+      self . GroupsMenu            ( mm , atItem                             )
     ##########################################################################
-    ## if                              ( atItem not in [ False , None ]       ) :
-    ##   self . GroupsMenu             ( mm , atItem                            )
-    ##########################################################################
-    self   . ColumnsMenu            ( mm                                     )
-    self   . SortingMenu            ( mm                                     )
-    self   . LocalityMenu           ( mm                                     )
-    self   . DockingMenu            ( mm                                     )
+    self   . ColumnsMenu           ( mm                                      )
+    self   . SortingMenu           ( mm                                      )
+    self   . LocalityMenu          ( mm                                      )
+    self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
-    if                              ( self . RunAmountIndexMenu ( )        ) :
-      self . restart                (                                        )
+    if                             ( self . RunAmountIndexMenu ( )         ) :
+      self . restart               (                                         )
       return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
-    ## if                              ( self . RunGroupsMenu ( at , atItem ) ) :
-    ##   return True
+    if                             ( self . RunGroupsMenu ( at , atItem )  ) :
+      return True
     ##########################################################################
     if                             ( self . RunColumnsMenu     ( at )      ) :
       return True
@@ -897,17 +1016,6 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1103                            ) :
       self . RenameItem            (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1501                            ) :
-      uuid = self . itemUuid       ( atItem , 0                              )
-      name = item . text           ( 1                                       )
-      self . EventPeriods . emit   ( name , 15 , str ( uuid )                )
-      return True
-    ##########################################################################
-    if                             ( at == 1502                            ) :
-      uuid = self . itemUuid       ( atItem , 0                              )
-      self . Go                    ( self . RecalculatePeriods , ( uuid , )  )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
