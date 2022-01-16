@@ -393,11 +393,7 @@ class ProjectsView            ( IconDock                                   ) :
     NAMTAB = self . Tables            [ "NamesLocal"                         ]
     DB     . LockWrites               ( [ NAMTAB ]                           )
     ##########################################################################
-    self   . AssureUuidNameByLocality ( DB                                 , \
-                                        NAMTAB                             , \
-                                        uuid                               , \
-                                        name                               , \
-                                        self . getLocality ( )               )
+    self   . AssureUuidName           ( DB , NAMTAB , uuid , name            )
     ##########################################################################
     DB     . UnlockTables             (                                      )
     DB     . Close                    (                                      )
@@ -422,11 +418,7 @@ class ProjectsView            ( IconDock                                   ) :
     DB     . LockWrites               ( TABLES                               )
     ##########################################################################
     uuid   = PRJS . AppendProject     ( DB                                   )
-    self   . AssureUuidNameByLocality ( DB                                 , \
-                                        NAMTAB                             , \
-                                        uuid                               , \
-                                        name                               , \
-                                        self . getLocality ( )               )
+    self   . AssureUuidName           ( DB , NAMTAB , uuid , name            )
     ##########################################################################
     DB     . UnlockTables             (                                      )
     DB     . Close                    (                                      )

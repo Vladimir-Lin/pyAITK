@@ -852,21 +852,21 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def DeleteItems             ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
-  def defaultDeleteItems             ( self , func                         ) :
+  def defaultDeleteItems                 ( self , func                     ) :
     ##########################################################################
-    UUIDs     =                      [                                       ]
+    UUIDs     =                          [                                   ]
     ##########################################################################
-    items     = self . selectedItems (                                       )
+    items     = self . selectedItems     (                                   )
     for item in items                                                        :
-      UUID    = self . itemUuid      ( item , column                         )
-      self    . pendingRemoveItem    ( item                                  )
-      if                             ( UUID not in UUIDs                   ) :
-        UUIDs . append               ( UUID                                  )
+      UUID    = self . itemUuid          ( item , column                     )
+      self    . pendingRemoveItem . emit ( item                              )
+      if                                 ( UUID not in UUIDs               ) :
+        UUIDs . append                   ( UUID                              )
     ##########################################################################
-    if                               ( len ( UUIDs ) <= 0                  ) :
+    if                                   ( len ( UUIDs ) <= 0              ) :
       return
     ##########################################################################
-    self      . Go                   ( func , ( UUIDs , )                    )
+    self      . Go                       ( func , ( UUIDs , )                )
     ##########################################################################
     return
   ############################################################################

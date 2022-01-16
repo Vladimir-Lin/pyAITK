@@ -171,7 +171,8 @@ class Task               ( Columns                                         ) :
     if                             ( ENDST == 0                            ) :
       return False
     ##########################################################################
-    if ( self . Period . isIdentical ( START , ENDST , STATES ) )            :
+    SAME       = self . Period . isIdentical ( START , ENDST , STATES        )
+    if                             ( SAME ) and ( STATES == self . States )  :
       return True
     ##########################################################################
     self . Period . Type   = 4
@@ -179,11 +180,22 @@ class Task               ( Columns                                         ) :
     self . Period . Start  = START
     self . Period . End    = ENDST
     ##########################################################################
+    self . States          = STATES
+    ##########################################################################
     PRDTAB = self . Tables         [ "Periods"                               ]
     ITEMs  =                       [ "type" , "states" , "start" , "end"     ]
     self   . Period . UpdateItems  ( DB , PRDTAB , ITEMs                     )
+    self   . UpdateStates          ( self , DB                               )
     ##########################################################################
     return True
+  ############################################################################
+  def UpdateStates         ( self , DB                                     ) :
+    ##########################################################################
+    TSKTAB = self . Tables [ "Tasks"                                         ]
+    ITEMs  =               [ "used" , "type" , "states"                      ]
+    self   . UpdateItems   ( DB , TSKTAB , ITEMs                             )
+    ##########################################################################
+    return
   ############################################################################
   def GetEvents                ( self , DB                                 ) :
     ##########################################################################
@@ -235,6 +247,11 @@ class Task               ( Columns                                         ) :
     self   . ObtainsByUuid             ( DB , TSKTAB                         )
     self   . FetchPeriod               ( DB                                  )
     self   . Events = self . GetEvents ( DB                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AppendTask ( self , DB ) :
+    ##########################################################################
     ##########################################################################
     return
 ##############################################################################
