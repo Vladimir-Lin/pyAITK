@@ -68,16 +68,19 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
+    self . ClassTag           = "EventListings"
+    self . DefaultType        = 196833
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 28
+    self . Amount             = 40
     self . SortOrder          = "desc"
     ##########################################################################
     self . Grouping           = "Original"
+    self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
     ##########################################################################
-    self . dockingOrientation = Qt . Horizontal
+    self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
@@ -88,14 +91,13 @@ class EventListings                ( TreeDock                              ) :
     self . Relation . setT2        ( "Schedule"                              )
     self . Relation . setRelation  ( "Contains"                              )
     ##########################################################################
-    self . setColumnCount          ( 7                                       )
-    self . setColumnHidden         ( 6 , True                                )
+    self . setColumnCount          ( 8                                       )
+    self . setColumnHidden         ( 7 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
-    self . MountClicked            ( 9                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
@@ -111,51 +113,58 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 640                              )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 1024 , 640 )                      )
   ############################################################################
-  def setGrouping                  ( self , group                          ) :
-    self . Grouping = group
-    return self . Grouping
-  ############################################################################
-  def getGrouping                  ( self                                  ) :
-    return self . Grouping
-  ############################################################################
-  def setGroupOrder                ( self , order                          ) :
-    self . SortOrder = order
-    return self . SortOrder
-  ############################################################################
-  def getGroupOrder                ( self                                  ) :
-    return self . SortOrder
-  ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn              ( self                                          ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                     ( not self . isPrepared ( )                     ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
+    self . LinkAction      ( "Refresh"    , self . startup                   )
     ##########################################################################
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
-    self . LinkAction              ( "Delete"     , self . DeleteItems       )
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
+    self . LinkAction      ( "Insert"     , self . InsertItem                )
+    self . LinkAction      ( "Delete"     , self . DeleteItems               )
+    self . LinkAction      ( "Rename"     , self . RenameItem                )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard           )
+    self . LinkAction      ( "Home"       , self . PageHome                  )
+    self . LinkAction      ( "End"        , self . PageEnd                   )
+    self . LinkAction      ( "PageUp"     , self . PageUp                    )
+    self . LinkAction      ( "PageDown"   , self . PageDown                  )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
+    self . LinkAction      ( "SelectNone" , self . SelectNone                )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    ##########################################################################
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    ##########################################################################
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    ##########################################################################
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked           ( self , item , column                       ) :
     ##########################################################################
@@ -167,7 +176,7 @@ class EventListings                ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 1 ]                      ) :
+    if                          ( column not in [ 1 , 5 ]                  ) :
       return
     ##########################################################################
     if                          ( column in [ 1 ]                          ) :
@@ -177,9 +186,25 @@ class EventListings                ( TreeDock                              ) :
                                   self . nameChanged                         )
       line . setFocus           ( Qt . TabFocusReason                        )
     ##########################################################################
+    if                          ( column in [ 5 ]                          ) :
+      ########################################################################
+      val  = item . data        ( column , Qt . UserRole                     )
+      val  = int                ( val                                        )
+      sb   = self . setSpinBox  ( item                                       ,
+                                  column                                     ,
+                                  0                                          ,
+                                  1000000000                                 ,
+                                  "editingFinished"                          ,
+                                  self . spinChanged                         )
+      sb   . setValue           ( val                                        )
+      sb   . setAlignment       ( Qt . AlignRight                            )
+      sb   . setFocus           ( Qt . TabFocusReason                        )
+      ########################################################################
+      return
+    ##########################################################################
     return
   ############################################################################
-  def PrepareItem                     ( self , JSON                        ) :
+  def PrepareItemContent              ( self , IT , JSON                   ) :
     ##########################################################################
     TRX      = self . Translations    [ "EventListings"                      ]
     TZ       = self . Settings        [ "TimeZone"                           ]
@@ -191,22 +216,26 @@ class EventListings                ( TreeDock                              ) :
     EVT      = JSON                   [ "Event"                              ]
     STATES   = str                    ( EVT . Period . States                )
     SNAME    = TRX                    [ "PeriodStates" ] [ STATES            ]
+    TYPE     = str                    ( EVT . Type                           )
+    TOTAL    = len                    ( EVT . Periods                        )
     ##########################################################################
-    TOTAL    = ""
     SDTIME   = ""
+    SDSTAM   = "0"
     EDTIME   = ""
+    EDSTAM   = "0"
     ##########################################################################
     if                                ( EVT . Period . isAllow ( )         ) :
       ########################################################################
-      TOTAL  = len                    ( EVT . Periods                        )
-      ########################################################################
+      SDSTAM = EVT . Period . Start
+      SDSTAM = f"{SDSTAM}"
       NOW    . Stardate = EVT . Period . Start
       SDTIME = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
       ########################################################################
+      EDSTAM = EVT . Period . End
+      EDSTAM = f"{EDSTAM}"
       NOW    . Stardate = EVT . Period . End
       EDTIME = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
     ##########################################################################
-    IT       = QTreeWidgetItem        (                                      )
     IT       . setText                ( 0 , str ( Id )                       )
     IT       . setToolTip             ( 0 , UXID                             )
     IT       . setData                ( 0 , Qt . UserRole , UXID             )
@@ -214,10 +243,26 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     IT       . setText                ( 1 , Name                             )
     IT       . setText                ( 2 , SNAME                            )
+    ##########################################################################
     IT       . setText                ( 3 , SDTIME                           )
+    IT       . setData                ( 3 , Qt . UserRole , SDSTAM           )
+    ##########################################################################
     IT       . setText                ( 4 , EDTIME                           )
-    IT       . setText                ( 5 , str ( TOTAL )                    )
+    IT       . setData                ( 4 , Qt . UserRole , EDSTAM           )
+    ##########################################################################
+    IT       . setText                ( 5 , TYPE                             )
+    IT       . setData                ( 5 , Qt . UserRole , EVT . Type       )
     IT       . setTextAlignment       ( 5 , Qt.AlignRight                    )
+    ##########################################################################
+    IT       . setText                ( 6 , str ( TOTAL )                    )
+    IT       . setTextAlignment       ( 6 , Qt.AlignRight                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareItem             ( self , JSON                                ) :
+    ##########################################################################
+    IT   = QTreeWidgetItem    (                                              )
+    self . PrepareItemContent ( IT   , JSON                                  )
     ##########################################################################
     return IT
   ############################################################################
@@ -226,7 +271,12 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     item = QTreeWidgetItem       (                                           )
     item . setData               ( 0 , Qt . UserRole , 0                     )
-    self . addTopLevelItem       ( item                                      )
+    ##########################################################################
+    if                           ( self . SortOrder == "asc"               ) :
+      self . addTopLevelItem     ( item                                      )
+    else                                                                     :
+      self . insertTopLevelItem  ( 0 , item                                  )
+    ##########################################################################
     line = self . setLineEdit    ( item                                    , \
                                    1                                       , \
                                    "editingFinished"                       , \
@@ -238,6 +288,10 @@ class EventListings                ( TreeDock                              ) :
   @pyqtSlot                      (                                           )
   def DeleteItems                ( self                                    ) :
     ##########################################################################
+    if                        ( not self . isGrouping ( )                  ) :
+      return
+    ##########################################################################
+    self . defaultDeleteItems ( self . RemoveEvents                          )
     ##########################################################################
     return
   ############################################################################
@@ -277,6 +331,33 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def spinChanged                ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    sb     = self . CurrentItem  [ "Widget"                                  ]
+    v      = item . data         ( column , Qt . UserRole                    )
+    v      = int                 ( v                                         )
+    nv     = sb   . value        (                                           )
+    uuid   = self . itemUuid     ( item , 0                                  )
+    ##########################################################################
+    if                           ( ( v == nv ) or ( column not in [ 5 ] ) )  :
+      item . setText             ( column , str ( v )                        )
+      self . removeParked        (                                           )
+      return
+    ##########################################################################
+    self . Go                    ( self . UpdateTypeItemValue              , \
+                                   ( uuid , "type" , nv , )                  )
+    ##########################################################################
+    item . setText               ( column , str ( nv )                       )
+    item . setData               ( column , Qt . UserRole , nv               )
+    self . removeParked          (                                           )
+    ##########################################################################
+    return
+  ############################################################################
   @pyqtSlot                       (        list                              )
   def refresh                     ( self , EVENTS                          ) :
     ##########################################################################
@@ -291,26 +372,27 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainSubgroupUuids      ( self , DB                                 ) :
+  def ObtainSubgroupUuids           ( self , DB                            ) :
     ##########################################################################
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder ( )
+    ORDER  = self . getSortingOrder (                                        )
     LMTS   = f"limit {SID} , {AMOUNT}"
     RELTAB = self . Tables [ "Relation" ]
     ##########################################################################
-    if                         ( self . Grouping == "Subordination"        ) :
+    if                              ( self . isSubordination ( )           ) :
       OPTS = f"order by `position` {ORDER}"
       return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
-    if                         ( self . Grouping == "Reverse"              ) :
+    ##########################################################################
+    if                              ( self . isReverse       ( )           ) :
       OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
       return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
     ##########################################################################
     return                     [                                             ]
   ############################################################################
-  def ObtainsItemUuids         ( self , DB                                 ) :
+  def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                         ( self . Grouping == "Original"             ) :
+    if                                      ( self . isOriginal ( )        ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
@@ -328,9 +410,17 @@ class EventListings                ( TreeDock                              ) :
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      self . emitNamesShow . emit     (                                      )
+    if                                ( DB in [ False , None ]             ) :
+      self  . emitNamesShow . emit    (                                      )
       return
+    ##########################################################################
+    self    . Notify                  ( 3                                    )
+    ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
@@ -356,41 +446,34 @@ class EventListings                ( TreeDock                              ) :
       ########################################################################
       EVENTS . append                 ( J                                    )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( EVENTS ) <= 0                ) :
-      self . emitNamesShow . emit     (                                      )
+      self  . emitNamesShow . emit    (                                      )
       return
     ##########################################################################
-    self   . emitAllNames . emit      ( EVENTS                               )
+    self    . emitAllNames  . emit    ( EVENTS                               )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot          (                                                       )
-  def startup        ( self                                                ) :
+  def ObtainAllUuids                ( self , DB                            ) :
     ##########################################################################
-    if               ( not self . isPrepared ( )                           ) :
-      self . Prepare (                                                       )
+    TABLE  = self . Tables          [ "Events"                               ]
+    STID   = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    self   . Go      ( self . loading                                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
-    ##########################################################################
-    TABLE   = self . Tables      [ "Events"                                  ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
-    ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
+    QQ     = f"""select `uuid` from {TABLE}
                   where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
+    QQ     = " " . join             ( QQ . split ( )                         )
     ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
+    return DB . ObtainUuids         ( QQ , 0                                 )
   ############################################################################
   def TranslateAll              ( self                                     ) :
     ##########################################################################
@@ -403,13 +486,6 @@ class EventListings                ( TreeDock                              ) :
     self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
     ##########################################################################
     DB    . Close               (                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
     ##########################################################################
     return
   ############################################################################
@@ -457,35 +533,35 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    TSKTAB  = self . Tables   [ "Events"                                     ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
+    EVTTAB = self . Tables          [ "Events"                               ]
+    STID   = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ      = f"""select `uuid` from {TSKTAB}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ     = f"""select `uuid` from {EVTTAB}
+                 where ( `used` > 0 )
+                 order by `id` {ORDER}
+                 limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join               ( QQ . split ( )                         )
   ############################################################################
-  def FetchSessionInformation         ( self , DB                          ) :
+  def FetchSessionInformation ( self , DB                                  ) :
     ##########################################################################
-    if                                ( self . Grouping == "Original"      ) :
+    if                        ( self . isOriginal      ( )                 ) :
       ########################################################################
       self . Total = self . FetchRegularDepotCount ( DB                      )
       ########################################################################
       return
     ##########################################################################
-    if                                ( self . Grouping == "Subordination" ) :
+    if                        ( self . isSubordination ( )                 ) :
       ########################################################################
       self . Total = self . FetchGroupMembersCount ( DB                      )
       ########################################################################
       return
     ##########################################################################
-    if                                ( self . Grouping == "Reverse"       ) :
+    if                        ( self . isReverse       ( )                 ) :
       ########################################################################
       self . Total = self . FetchGroupOwnersCount  ( DB                      )
       ########################################################################
@@ -493,9 +569,26 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
+  def dragMime                      ( self                                 ) :
+    ##########################################################################
+    mtype   = "event/uuids"
+    message = self . getMenuItem    ( "EventsSelected"                       )
+    ##########################################################################
+    return self    . CreateDragMime ( self , 0 , mtype , message             )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def allowedMimeTypes     ( self , mime                                   ) :
+    FMTs    =              [ "people/uuids"                                , \
+                             "task/uuids"                                  , \
+                             "event/uuids"                                 , \
+                             "period/uuids"                                  ]
+    formats = ";" . join   ( FMTs                                            )
+    return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
@@ -503,6 +596,18 @@ class EventListings                ( TreeDock                              ) :
       return False
     ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def acceptPeopleDrop   ( self                                            ) :
+    return True
+  ############################################################################
+  def acceptTasksDrop    ( self                                            ) :
+    return True
+  ############################################################################
+  def acceptEventsDrop   ( self                                            ) :
+    return True
+  ############################################################################
+  def acceptPeriodsDrop  ( self                                            ) :
+    return True
   ############################################################################
   def dropNew                       ( self                                 , \
                                       sourceWidget                         , \
@@ -572,51 +677,11 @@ class EventListings                ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . setColumnWidth ( 0 , 100                                          )
-    self . setColumnWidth ( 1 , 320                                          )
-    self . defaultPrepare ( "EventListings" , 6                              )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    self . setColumnWidth ( 0 ,  80                                          )
+    self . setColumnWidth ( 1 , 280                                          )
+    self . setColumnWidth ( 3 , 180                                          )
+    self . setColumnWidth ( 4 , 180                                          )
+    self . defaultPrepare ( self . ClassTag , 7                              )
     ##########################################################################
     return
   ############################################################################
@@ -669,20 +734,6 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
-    ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
-    ##########################################################################
-    return
-  ############################################################################
   def RecalculatePeriods           ( self , uuid                           ) :
     ##########################################################################
     DB      = self . ConnectDB     (                                         )
@@ -690,12 +741,13 @@ class EventListings                ( TreeDock                              ) :
       return
     ##########################################################################
     PRDTAB  = self . Tables        [ "Periods"                               ]
+    EVTTAB  = self . Tables        [ "Events"                                ]
     EVT     = Event                (                                         )
     EVT     . Tables = self . Tables
     EVT     . Uuid   = uuid
     EVT     . load                 ( DB                                      )
     PERIODs = EVT    . LoadPeriods ( DB , EVT . Periods                      )
-    DB      . LockWrites           ( [ PRDTAB                              ] )
+    DB      . LockWrites           ( [ EVTTAB , PRDTAB                     ] )
     EVT     . Investigate          ( DB , PERIODs                            )
     DB      . UnlockTables         (                                         )
     ##########################################################################
@@ -703,90 +755,136 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
-    msg    = TRX [ "UI::PeopleAmount" ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
+    return
+  ############################################################################
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 2                         )
+  ############################################################################
+  def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    if                             ( at >= 9002 ) and ( at <= 9007 )         :
+      ########################################################################
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def GroupsMenu              ( self , mm , item                           ) :
+    ##########################################################################
+    msg  = self . getMenuItem ( "Details"                                    )
+    LOM  = mm . addMenu       ( msg                                          )
+    ##########################################################################
+    msg  = self . getMenuItem ( "Events"                                     )
+    mm   . addActionFromMenu  ( LOM , 1501 , msg                             )
+    ##########################################################################
+    msg  = self . getMenuItem ( "Recalculate"                                )
+    mm   . addActionFromMenu  ( LOM , 1502 , msg                             )
     ##########################################################################
     return mm
   ############################################################################
-  @pyqtSlot                        (        int                              )
-  def GotoId                       ( self , Id                             ) :
+  def RunGroupsMenu            ( self , at , item                          ) :
     ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    if                         ( at == 1501                                ) :
+      ########################################################################
+      uuid = self . itemUuid   ( item , 0                                    )
+      name = atItem . text     ( 1                                           )
+      self . TaskEvents . emit ( name , 16 , str ( uuid )                    )
+      ########################################################################
+      return True
     ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
+    if                         ( at == 1502                                ) :
+      ########################################################################
+      uuid = self . itemUuid   ( item , 0                                    )
+      self . Go                ( self . RecalculatePeriods , ( uuid , )      )
+      ########################################################################
+      return True
     ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    item   = self . currentItem    (                                         )
+    doMenu = self . isFunction      ( self . HavingMenu                      )
+    if                              ( not doMenu                           ) :
+      return False
+    ##########################################################################
+    self   . Notify                 ( 0                                      )
+    ##########################################################################
+    items , atItem , uuid = self . GetMenuDetails ( 0                        )
+    ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
+    mm     = self . AmountIndexMenu ( mm                                     )
+    ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
+    ##########################################################################
+    if                              ( self . isSearching ( )               ) :
+      ########################################################################
+      msg  = self . getMenuItem     ( "Original"                             )
+      mm   . addAction              ( 1002 , msg                             )
+    ##########################################################################
     mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     = self . AppendDeleteAction  ( mm , 1102                          )
-    if                             ( item not in [ False , None ]          ) :
-      if                           ( self . doEditAllNames ( )             ) :
+    if                              ( len ( items ) > 0                    ) :
+      self . AppendDeleteAction     ( mm , 1102                              )
+    if                              ( atItem not in [ False , None ]       ) :
+      self . AppendRenameAction     ( mm , 1103                              )
+    ##########################################################################
+    if                              ( atItem not in [ False , None ]       ) :
+      if                            ( self . doEditAllNames ( )            ) :
         self . AppendEditNamesAction ( mm , 1601                             )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
-    if                             ( item not in [ False , None ]          ) :
+    if                             ( atItem not in [ False , None ]        ) :
       ########################################################################
       msg  = self . getMenuItem    ( "Periods"                               )
       mm   . addAction             ( 1501 , msg                              )
       mm   . addAction             ( 1502 , "重新計算事件時間區段" )
       mm   . addSeparator          (                                         )
     ##########################################################################
-    mm     = self . SortingMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    ## if                              ( atItem not in [ False , None ]       ) :
+    ##   self . GroupsMenu             ( mm , atItem                            )
     ##########################################################################
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    self   . ColumnsMenu            ( mm                                     )
+    self   . SortingMenu            ( mm                                     )
+    self   . LocalityMenu           ( mm                                     )
+    self   . DockingMenu            ( mm                                     )
+    ##########################################################################
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                              ( self . RunAmountIndexMenu ( )        ) :
+      self . restart                (                                        )
+      return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
+    ## if                              ( self . RunGroupsMenu ( at , atItem ) ) :
+    ##   return True
+    ##########################################################################
+    if                             ( self . RunColumnsMenu     ( at )      ) :
+      return True
+    ##########################################################################
     if                             ( self . RunSortingMenu     ( at )      ) :
-      ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
-      ########################################################################
+      self . restart               (                                         )
       return True
     ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
-      ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
-      ########################################################################
+      self . restart               (                                         )
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+      self . restart               (                                         )
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
@@ -797,20 +895,24 @@ class EventListings                ( TreeDock                              ) :
       self . DeleteItems           (                                         )
       return True
     ##########################################################################
+    if                             ( at == 1103                            ) :
+      self . RenameItem            (                                         )
+      return True
+    ##########################################################################
     if                             ( at == 1501                            ) :
-      uuid = self . itemUuid       ( item , 0                                )
+      uuid = self . itemUuid       ( atItem , 0                              )
       name = item . text           ( 1                                       )
       self . EventPeriods . emit   ( name , 15 , str ( uuid )                )
       return True
     ##########################################################################
     if                             ( at == 1502                            ) :
-      uuid = self . itemUuid       ( item , 0                                )
+      uuid = self . itemUuid       ( atItem , 0                              )
       self . Go                    ( self . RecalculatePeriods , ( uuid , )  )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( item , 0                                )
-      NAM  = self . Tables         [ "Names"                                 ]
+      uuid = self . itemUuid       ( atItem , 0                              )
+      NAM  = self . Tables         [ "NamesLocal"                            ]
       self . EditAllNames          ( self , "Events" , uuid , NAM            )
       return True
     ##########################################################################
