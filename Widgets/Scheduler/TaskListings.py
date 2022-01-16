@@ -927,7 +927,7 @@ class TaskListings                 ( TreeDock                              ) :
     if                         ( at == 1501                                ) :
       ########################################################################
       uuid = self . itemUuid   ( item , 0                                    )
-      name = atItem . text     ( 1                                           )
+      name = item . text       ( 1                                           )
       self . TaskEvents . emit ( name , 16 , str ( uuid )                    )
       ########################################################################
       return True

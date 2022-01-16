@@ -574,8 +574,8 @@ class ProjectsView            ( IconDock                                   ) :
     mm     = self . LocalityMenu     ( mm                                    )
     self   . DockingMenu             ( mm                                    )
     ##########################################################################
-    mm     . setFont                 ( self    . font ( )                    )
-    aa     = mm . exec_              ( QCursor . pos  ( )                    )
+    mm     . setFont                 ( self    . menuFont ( )                )
+    aa     = mm . exec_              ( QCursor . pos      ( )                )
     at     = mm . at                 ( aa                                    )
     ##########################################################################
     if                               ( self . RunDocking   ( mm , aa )     ) :
