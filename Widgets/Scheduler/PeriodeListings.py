@@ -48,19 +48,20 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
-from   AITK  . Scheduler  . Project   import Project     as Project
 from   AITK  . Scheduler  . Projects  import Projects    as Projects
-from   AITK  . Scheduler  . Event     import Event       as Event
+from   AITK  . Scheduler  . Project   import Project     as Project
 from   AITK  . Scheduler  . Events    import Events      as Events
-from   AITK  . Scheduler  . Task      import Task        as Task
+from   AITK  . Scheduler  . Event     import Event       as Event
 from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
+from   AITK  . Scheduler  . Task      import Task        as Task
 ##############################################################################
 class PeriodeListings              ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( list                                    )
+  PeriodDetails = pyqtSignal       ( str , str                               )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -200,6 +201,7 @@ class PeriodeListings              ( TreeDock                              ) :
                                   "editingFinished"                        , \
                                   self . nameChanged                         )
       line . setFocus           ( Qt . TabFocusReason                        )
+      return
     ##########################################################################
     return
   ############################################################################
@@ -393,10 +395,79 @@ class PeriodeListings              ( TreeDock                              ) :
     NAMEs   =                         {                                      }
     ##########################################################################
     if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
+      TABLE = self . Tables           [ "NamesLocal"                         ]
       NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
     ##########################################################################
     return NAMEs
+  ############################################################################
+  def ObtainPeriodDetail             ( self , DB , U                       ) :
+    ##########################################################################
+    NAMTAB = self . Tables           [ "NamesLocal"                          ]
+    PRDTAB = self . Tables           [ "Periods"                             ]
+    ##########################################################################
+    J      =                         { "Uuid"     : U                      , \
+                                       "Name"     : ""                     , \
+                                       "Type"     : 0                      , \
+                                       "TName"    : ""                     , \
+                                       "Used"     : 0                      , \
+                                       "Start"    : 0                      , \
+                                       "End"      : 0                      , \
+                                       "Realm"    : 0                      , \
+                                       "RName"    : ""                     , \
+                                       "Role"     : 0                      , \
+                                       "Item"     : 0                      , \
+                                       "States"   : 0                      , \
+                                       "Creation" : 0                      , \
+                                       "Modified" : 0                        }
+    ##########################################################################
+    if                               ( U in NAMEs                          ) :
+      J [ "Name" ] = self . assureString ( NAMEs [ U ]                       )
+    ##########################################################################
+    QQ     = f"""select
+                 `type`,`used`,
+                 `start`,`end`,
+                 `realm`,`role`,
+                 `item`,`states`,
+                 `creation`,`modified`
+                 from {PRDTAB}
+                 where ( `uuid` = {U} ) ;"""
+    QQ     = " " . join              ( QQ . split ( )                        )
+    DB     . Query                   ( QQ                                    )
+    RR     = DB . FetchOne           (                                       )
+    ##########################################################################
+    if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 10 ) )           :
+      ########################################################################
+      J [ "Type"     ] = int         ( RR [ 0 ]                              )
+      J [ "Used"     ] = int         ( RR [ 1 ]                              )
+      J [ "Start"    ] = int         ( RR [ 2 ]                              )
+      J [ "End"      ] = int         ( RR [ 3 ]                              )
+      J [ "Realm"    ] = int         ( RR [ 4 ]                              )
+      J [ "Role"     ] = int         ( RR [ 5 ]                              )
+      J [ "Item"     ] = int         ( RR [ 6 ]                              )
+      J [ "States"   ] = int         ( RR [ 7 ]                              )
+      J [ "Creation" ] = int         ( RR [ 8 ]                              )
+      J [ "Modified" ] = int         ( RR [ 9 ]                              )
+      ########################################################################
+      RU   = J                       [ "Realm"                               ]
+      if                             ( RU > 0                              ) :
+        N  = self . GetName          ( DB , NAMTAB , RU                      )
+        J [ "RName" ] = N
+      ########################################################################
+      TU   = J                       [ "Role"                                ]
+      TU   = 1100000000000000000 + TU
+      if                             ( TU > 0                              ) :
+        ######################################################################
+        QQ = f"select `name` from `types` where ( `uuid` = {TU} ) ;"
+        DB . Query                   ( QQ                                    )
+        RR = DB . FetchOne           (                                       )
+        N  = str                     ( J [ "Role" ]                          )
+        if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )        :
+          N   = self . assureString  ( RR [ 0 ]                              )
+        ## N = self . GetName          ( DB , NAMTAB , TU                     )
+        ####################################################################
+        J [ "TName" ] = N
+    ##########################################################################
+    return J
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
@@ -413,8 +484,6 @@ class PeriodeListings              ( TreeDock                              ) :
     self    . OnBusy  . emit          (                                      )
     self    . setBustle               (                                      )
     ##########################################################################
-    NAMTAB  = self . Tables           [ "Names"                              ]
-    PRDTAB  = self . Tables           [ "Periods"                            ]
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     NAMEs   =                         {                                      }
@@ -425,67 +494,7 @@ class PeriodeListings              ( TreeDock                              ) :
     PERIODS =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
-      J     =                         { "Uuid"     : U                     , \
-                                        "Name"     : ""                    , \
-                                        "Type"     : 0                     , \
-                                        "TName"    : ""                    , \
-                                        "Used"     : 0                     , \
-                                        "Start"    : 0                     , \
-                                        "End"      : 0                     , \
-                                        "Realm"    : 0                     , \
-                                        "RName"    : ""                    , \
-                                        "Role"     : 0                     , \
-                                        "Item"     : 0                     , \
-                                        "States"   : 0                     , \
-                                        "Creation" : 0                     , \
-                                        "Modified" : 0                       }
-      ########################################################################
-      if                              ( U in NAMEs                         ) :
-        J [ "Name" ] = self . assureString ( NAMEs [ U ]                     )
-      ########################################################################
-      QQ    = f"""select
-                  `type`,`used`,`start`,`end`,
-                  `realm`,`role`,
-                  `item`,`states`,
-                  `creation`,`modified`
-                  from {PRDTAB}
-                  where ( `uuid` = {U} ) ;"""
-      QQ    = " " . join              ( QQ . split ( )                       )
-      DB    . Query                   ( QQ                                   )
-      RR    = DB . FetchOne           (                                      )
-      ########################################################################
-      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 10 ) )         :
-        ######################################################################
-        J [ "Type"     ] = int        ( RR [ 0 ]                             )
-        J [ "Used"     ] = int        ( RR [ 1 ]                             )
-        J [ "Start"    ] = int        ( RR [ 2 ]                             )
-        J [ "End"      ] = int        ( RR [ 3 ]                             )
-        J [ "Realm"    ] = int        ( RR [ 4 ]                             )
-        J [ "Role"     ] = int        ( RR [ 5 ]                             )
-        J [ "Item"     ] = int        ( RR [ 6 ]                             )
-        J [ "States"   ] = int        ( RR [ 7 ]                             )
-        J [ "Creation" ] = int        ( RR [ 8 ]                             )
-        J [ "Modified" ] = int        ( RR [ 9 ]                             )
-        ######################################################################
-        RU  = J                       [ "Realm"                              ]
-        if                            ( RU > 0                             ) :
-          N = self . GetName          ( DB , NAMTAB , RU                     )
-          J [ "RName" ] = N
-        ######################################################################
-        TU  = J                       [ "Role"                               ]
-        TU  = 1100000000000000000 + TU
-        if                            ( TU > 0                             ) :
-          ####################################################################
-          QQ    = f"select `name` from `types` where ( `uuid` = {TU} ) ;"
-          DB    . Query               ( QQ                                   )
-          RR    = DB . FetchOne       (                                      )
-          N     = str                 ( J [ "Role" ]                         )
-          if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )      :
-            N   = self . assureString ( RR [ 0 ]                             )
-          ## N = self . GetName          ( DB , NAMTAB , TU                     )
-          ####################################################################
-          J [ "TName" ] = N
-      ########################################################################
+      J = self . ObtainPeriodDetail   ( DB , U                               )
       PERIODS . append                ( J                                    )
     ##########################################################################
     self    . setVacancy              (                                      )
@@ -638,27 +647,49 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def acceptPeopleDrop   ( self                                            ) :
+    return True
+  ############################################################################
+  def acceptEventsDrop   ( self                                            ) :
+    return True
+  ############################################################################
+  def acceptPeriodsDrop  ( self                                            ) :
+    return True
+  ############################################################################
+  def dropNew                           ( self                             , \
+                                          sourceWidget                     , \
+                                          mimeData                         , \
+                                          mousePos                         ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
+    if                                  ( self == sourceWidget             ) :
       return False
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
+    RDN    = self . RegularDropNew      ( mimeData                           )
+    if                                  ( not RDN                          ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    mtype  = self . DropInJSON          [ "Mime"                             ]
+    UUIDs  = self . DropInJSON          [ "UUIDs"                            ]
+    title  = sourceWidget . windowTitle (                                    )
+    CNT    = len                        ( UUIDs                              )
+    atItem = self . itemAt              ( mousePos                           )
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    if                                  ( mtype in [ "people/uuids"      ] ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
+      if                                ( atItem in [ False , None ]       ) :
+        return False
+      ########################################################################
+      self . ShowMenuItemTitleStatus    ( "PeopleJoinPeriod" , title , CNT   )
+    ##########################################################################
+    elif                                ( mtype in [ "event/uuids"       ] ) :
+      self . ShowMenuItemTitleStatus    ( "PeriodJoinEvents" , title , CNT   )
+    ##########################################################################
+    elif                                ( mtype in [ "period/uuids"      ] ) :
+      ########################################################################
+      if                                ( atItem in [ False , None ]       ) :
+        return False
+      ########################################################################
+      self . ShowMenuItemTitleStatus    ( "JoinPeriods"      , title , CNT   )
     ##########################################################################
     return RDN
   ############################################################################
@@ -667,97 +698,145 @@ class PeriodeListings              ( TreeDock                              ) :
     if                         ( self . droppingAction                     ) :
       return False
     ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
+    if                         ( sourceWidget == self                      ) :
+      return False
     ##########################################################################
+    mtype  = self . DropInJSON [ "Mime"                                      ]
     atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
+    ##########################################################################
+    if                         ( mtype in [ "period/uuids"               ] ) :
+      return True
+    ##########################################################################
+    if                         ( atItem in [ False , None ]                ) :
       return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
     ##########################################################################
-    ##########################################################################
-    return True
+    return   True
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
+  def dropPeople                       ( self , source , pos , JSON        ) :
+    ##########################################################################
+    FUNC = self . PeopleJoinPeriod
+    ##########################################################################
+    return self . defaultDropInObjects ( source , pos , JSON , 0 , FUNC      )
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
+  def dropEvents                    ( self , source , pos , JSON           ) :
     ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
-      return True
+    FUNC = self . PeriodJoinEvents
     ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return True
+    return self . defaultDropInside ( self , source , JSON , FUNC            )
+  ############################################################################
+  def dropPeriods                      ( self , source , pos , JSON        ) :
     ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem is None                            ) :
-      return True
+    FUNC = self . JoinPeriods
     ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
-    ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
-    ##########################################################################
-    ##########################################################################
-    return True
+    return self . defaultDropInObjects ( source , pos , JSON , 0 , FUNC      )
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . setColumnWidth (  0 , 120                                         )
-    self . setColumnWidth (  1 , 320                                         )
+    self . setColumnWidth (  1 , 280                                         )
+    self . setColumnWidth (  2 , 180                                         )
+    self . setColumnWidth (  3 , 180                                         )
     self . defaultPrepare ( self . ClassTag , 12                             )
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  def PeopleJoinPeriod            ( self , UUID , UUIDs                    ) :
+    ##########################################################################
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB in [ False , None ]                 ) :
+      return
+    ##########################################################################
+    ##########################################################################
+    DB       . Close              (                                          )
+    ##########################################################################
+    self     . Notify             ( 5                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def PeriodJoinEvents        ( self , UUID , UUIDs                        ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB in [ False , None ]                     ) :
+      return
+    ##########################################################################
+    RELTAB = self . Tables    [ "RelationGroups"                             ]
+    ##########################################################################
+    DB     . LockWrites       ( [ RELTAB                                   ] )
+    ##########################################################################
+    for EUID in UUIDs                                                        :
+      ########################################################################
+      EVT  = Event            (                                              )
+      EVT  . Uuid = TUID
+      EVT  . JoinPeriods      ( DB , RELTAB , [ UUID ]                       )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def JoinPeriods               ( self , UUIDs                             ) :
+    ##########################################################################
+    RELTAB = self . Tables      [ "RelationGroups"                           ]
+    OKAY   = self . JoinMembers ( RELTAB , UUIDs                             )
+    if                          ( not OKAY                                 ) :
+      return
+    ##########################################################################
+    self   . Notify             ( 5                                          )
     ##########################################################################
     return
   ############################################################################
   def AssureUuidItem               ( self , item , uuid , name             ) :
     ##########################################################################
-    """
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    DB       = self . ConnectDB    (                                         )
+    if                             ( DB in [ False , None ]                ) :
       return
     ##########################################################################
-    TSKTAB  = self . Tables        [ "Tasks"                                 ]
-    PRDTAB  = self . Tables        [ "Periods"                               ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
-    HEAD    = 5702000000000000000
+    NEWONE   = False
+    JSON     =                     {                                         }
+    PRDTAB   = self . Tables       [ "Periods"                               ]
+    RELTAB   = self . Tables       [ "RelationGroups"                        ]
+    NAMTAB   = self . Tables       [ "NamesLocal"                            ]
     ##########################################################################
-    DB      . LockWrites           ( [ PRJTAB , PRDTAB , NAMTAB ]            )
+    DB       . LockWrites          ( [ PRDTAB , RELTAB , NAMTAB ]            )
     ##########################################################################
     if                             ( uuid <= 0                             ) :
       ########################################################################
-      uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
-      DB    . AddUuid              ( PRJTAB , uuid   , 1                     )
+      EVTS   = Events              (                                         )
+      EVTS   . Tables      = self . Tables
+      EVTS   . DefaultType = self . DefaultType
+      uuid   = EVTS . AppendPeriod ( DB                                      )
       ########################################################################
-      NOW   = StarDate             (                                         )
-      NOW   . Now                  (                                         )
-      CDT   = NOW . Stardate
+      NEWONE = True
+      JSON   = self . ObtainPeriodDetail ( DB , uuid                         )
       ########################################################################
-      PRD   = Periode              (                                         )
-      PRID  = PRD  . GetUuid       ( DB , PRDTAB                             )
+      if                           ( self . isSubordination ( )            ) :
+        ######################################################################
+        self . Relation . set      ( "second" , uuid                         )
+        self . Relation . Join     ( DB , RELTAB                             )
+        ######################################################################
+      elif                         ( self . isReverse ( )                  ) :
+        ######################################################################
+        self . Relation . set      ( "first" , uuid                          )
+        self . Relation . Join     ( DB , RELTAB                             )
+    ##########################################################################
+    self     . AssureUuidName      ( DB , NAMTAB , uuid , name               )
+    ##########################################################################
+    DB       . Close               (                                         )
+    ##########################################################################
+    item     . setData             ( 0 , Qt . UserRole , uuid                )
+    ##########################################################################
+    if                            ( NEWONE                                 ) :
       ########################################################################
-      PRD   . Realm    = uuid
-      PRD   . Role     = 71
-      PRD   . Item     = 1
-      PRD   . States   = 0
-      PRD   . Creation = CDT
-      PRD   . Modified = CDT
-      Items =                      [ "realm"                               , \
-                                     "role"                                , \
-                                     "item"                                , \
-                                     "states"                              , \
-                                     "creation"                            , \
-                                     "modified"                              ]
-      PRD   . UpdateItems          ( DB , PRDTAB , Items                     )
+      self   . PrepareItemContent ( item , JSON                              )
+      self   . emitAssignColumn . emit ( item , 1 , name                     )
     ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    ## 發送訊息給計畫管理後台
+    ## SendWssBack
     ##########################################################################
-    DB      . Close                (                                         )
-    ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
-    """
+    self     . Notify              ( 5                                       )
     ##########################################################################
     return
   ############################################################################
@@ -796,89 +875,118 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                          ( self , pos                           ) :
+  def GroupsMenu              ( self , mm , item                           ) :
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                      )
-    if                              ( not doMenu                           ) :
+    msg  = self . getMenuItem ( "Details"                                    )
+    LOM  = mm . addMenu       ( msg                                          )
+    ##########################################################################
+    msg  = self . getMenuItem ( "Editor"                                     )
+    mm   . addActionFromMenu  ( LOM , 1501 , msg                             )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunGroupsMenu               ( self , at , item                       ) :
+    ##########################################################################
+    if                            ( at == 1501                             ) :
+      ########################################################################
+      uuid = self . itemUuid      ( item , 0                                 )
+      name = item . text          ( 1                                        )
+      self . PeriodDetails . emit ( name , str ( uuid )                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def Menu                           ( self , pos                          ) :
+    ##########################################################################
+    doMenu = self . isFunction       ( self . HavingMenu                     )
+    if                               ( not doMenu                          ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                      )
+    self   . Notify                  ( 0                                     )
     ##########################################################################
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
-    mm     = MenuManager            ( self                                   )
+    mm     = MenuManager             ( self                                  )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
+    mm     = self . AmountIndexMenu  ( mm                                    )
     ##########################################################################
-    mm     . addSeparator           (                                        )
+    self   . AppendRefreshAction     ( mm , 1001                             )
     ##########################################################################
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     = self . AppendDeleteAction  ( mm , 1102                          )
-    mm     . addSeparator           (                                        )
-    ##########################################################################
-    if                              ( len ( items ) == 1                   ) :
-      if                            ( self . EditAllNames != None          ) :
-        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
-        mm . addSeparator           (                                        )
-    ##########################################################################
-    mm     = self . ColumnsMenu     ( mm                                     )
-    mm     = self . SortingMenu     ( mm                                     )
-    mm     = self . LocalityMenu    ( mm                                     )
-    self   . DockingMenu            ( mm                                     )
-    ##########################################################################
-    mm     . setFont                ( self    . menuFont ( )                 )
-    aa     = mm . exec_             ( QCursor . pos      ( )                 )
-    at     = mm . at                ( aa                                     )
-    ##########################################################################
-    if                              ( self   . RunAmountIndexMenu ( )      ) :
+    if                               ( self . isSearching ( )              ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      msg  = self . getMenuItem      ( "Original"                            )
+      mm   . addAction               ( 1002 , msg                            )
+    ##########################################################################
+    self   . AppendInsertAction      ( mm , 1101                             )
+    if                               ( len ( items ) > 0                   ) :
+      self . AppendDeleteAction      ( mm , 1102                             )
+    if                               ( atItem not in [ False , None ]      ) :
+      self . AppendRenameAction      ( mm , 1103                             )
+    ##########################################################################
+    if                               ( atItem not in [ False , None ]      ) :
+      if                             ( self . doEditAllNames ( )           ) :
+        self . AppendEditNamesAction ( mm , 1601                             )
+    ##########################################################################
+    mm     . addSeparator            (                                       )
+    ##########################################################################
+    if                               ( atItem not in [ False , None ]      ) :
+      self . GroupsMenu              ( mm , atItem                           )
+    ##########################################################################
+    self   . ColumnsMenu             ( mm                                    )
+    self   . SortingMenu             ( mm                                    )
+    self   . LocalityMenu            ( mm                                    )
+    self   . DockingMenu             ( mm                                    )
+    ##########################################################################
+    mm     . setFont                 ( self    . menuFont ( )                )
+    aa     = mm . exec_              ( QCursor . pos      ( )                )
+    at     = mm . at                 ( aa                                    )
+    ##########################################################################
+    if                               ( self   . RunAmountIndexMenu ( )     ) :
+      ########################################################################
+      self . restart                 (                                       )
       ########################################################################
       return
     ##########################################################################
-    if                              ( self . RunDocking   ( mm , aa )      ) :
+    if                               ( self . RunDocking   ( mm , aa )     ) :
       return True
     ##########################################################################
-    if                              ( self . HandleLocalityMenu ( at )     ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
+    if                               ( self . RunGroupsMenu ( at,atItem )  ) :
       return True
     ##########################################################################
-    if                              ( self . RunColumnsMenu     ( at )     ) :
+    if                               ( self . HandleLocalityMenu ( at )    ) :
+      self . restart                 (                                       )
       return True
     ##########################################################################
-    if                              ( self . RunSortingMenu     ( at )     ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
+    if                               ( self . RunColumnsMenu     ( at )    ) :
       return True
     ##########################################################################
-    if                              ( at == 1001                           ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
+    if                               ( self . RunSortingMenu     ( at )    ) :
+      self . restart                 (                                       )
       return True
     ##########################################################################
-    if                              ( at == 1101                           ) :
-      self . InsertItem             (                                        )
+    if                               ( at == 1001                          ) :
+      self . restart                 (                                       )
       return True
     ##########################################################################
-    if                              ( at == 1102                           ) :
-      self . DeleteItems            (                                        )
+    if                               ( at == 1101                          ) :
+      self . InsertItem              (                                       )
       return True
     ##########################################################################
-    if                              ( at == 1601                           ) :
-      uuid = self . itemUuid        ( items [ 0 ] , 0                        )
-      NAM  = self . Tables          [ "Names"                                ]
-      self . EditAllNames           ( self , "Periode" , uuid , NAM          )
+    if                               ( at == 1102                          ) :
+      self . DeleteItems             (                                       )
+      return True
+    ##########################################################################
+    if                               ( at == 1103                          ) :
+      self . RenameItem              (                                       )
+      return True
+    ##########################################################################
+    if                               ( at == 1601                          ) :
+      uuid = self . itemUuid         ( atItem , 0                            )
+      NAM  = self . Tables           [ "NamesLocal"                          ]
+      self . EditAllNames            ( self , "Periode" , uuid , NAM         )
       return True
     ##########################################################################
     return True
