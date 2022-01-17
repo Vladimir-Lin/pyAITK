@@ -403,6 +403,7 @@ class PeriodeListings              ( TreeDock                              ) :
   def ObtainPeriodDetail             ( self , DB , NAMEs , U               ) :
     ##########################################################################
     NAMTAB = self . Tables           [ "NamesLocal"                          ]
+    GNATAB = self . Tables           [ "NamesPrivate"                        ]
     PRDTAB = self . Tables           [ "Periods"                             ]
     ##########################################################################
     J      =                         { "Uuid"     : U                      , \
@@ -450,7 +451,7 @@ class PeriodeListings              ( TreeDock                              ) :
       ########################################################################
       RU   = J                       [ "Realm"                               ]
       if                             ( RU > 0                              ) :
-        N  = self . GetName          ( DB , NAMTAB , RU                      )
+        N  = self . GetName          ( DB , GNATAB , RU                      )
         J [ "RName" ] = N
       ########################################################################
       TU   = J                       [ "Role"                                ]
@@ -463,7 +464,7 @@ class PeriodeListings              ( TreeDock                              ) :
         N  = str                     ( J [ "Role" ]                          )
         if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )        :
           N   = self . assureString  ( RR [ 0 ]                              )
-        ## N = self . GetName          ( DB , NAMTAB , TU                     )
+        ## N = self . GetName          ( DB , GNATAB , TU                     )
         ####################################################################
         J [ "TName" ] = N
     ##########################################################################
