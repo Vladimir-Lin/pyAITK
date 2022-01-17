@@ -400,7 +400,7 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  def ObtainPeriodDetail             ( self , DB , U                       ) :
+  def ObtainPeriodDetail             ( self , DB , NAMEs , U               ) :
     ##########################################################################
     NAMTAB = self . Tables           [ "NamesLocal"                          ]
     PRDTAB = self . Tables           [ "Periods"                             ]
@@ -494,7 +494,7 @@ class PeriodeListings              ( TreeDock                              ) :
     PERIODS =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
-      J = self . ObtainPeriodDetail   ( DB , U                               )
+      J = self . ObtainPeriodDetail   ( DB , NAMEs , U                       )
       PERIODS . append                ( J                                    )
     ##########################################################################
     self    . setVacancy              (                                      )
@@ -810,7 +810,8 @@ class PeriodeListings              ( TreeDock                              ) :
       uuid   = EVTS . AppendPeriod ( DB                                      )
       ########################################################################
       NEWONE = True
-      JSON   = self . ObtainPeriodDetail ( DB , uuid                         )
+      NAMEs  =                     { uuid : name                             }
+      JSON   = self . ObtainPeriodDetail ( DB , NAMEs , uuid                 )
       ########################################################################
       if                           ( self . isSubordination ( )            ) :
         ######################################################################
