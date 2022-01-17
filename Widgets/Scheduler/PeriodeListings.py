@@ -68,13 +68,16 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
+    self . ClassTag           = "PeriodeListings"
+    self . DefaultType        = 196833
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 28
+    self . Amount             = 40
     self . SortOrder          = "desc"
     self . Editable           = True
     ##########################################################################
     self . Grouping           = "Original"
+    self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
     ##########################################################################
@@ -98,7 +101,6 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
-    self . MountClicked            ( 9                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
@@ -123,41 +125,53 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def setGrouping                  ( self , group                          ) :
-    self . Grouping = group
-    return self . Grouping
-  ############################################################################
-  def getGrouping                  ( self                                  ) :
-    return self . Grouping
-  ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn              ( self                                          ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                     ( not self . isPrepared ( )                     ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
+    self . LinkAction      ( "Refresh"    , self . startup                   )
     ##########################################################################
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
-    self . LinkAction              ( "Delete"     , self . DeleteItems       )
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
+    self . LinkAction      ( "Insert"     , self . InsertItem                )
+    self . LinkAction      ( "Delete"     , self . DeleteItems               )
+    self . LinkAction      ( "Rename"     , self . RenameItem                )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard           )
+    self . LinkAction      ( "Home"       , self . PageHome                  )
+    self . LinkAction      ( "End"        , self . PageEnd                   )
+    self . LinkAction      ( "PageUp"     , self . PageUp                    )
+    self . LinkAction      ( "PageDown"   , self . PageDown                  )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
+    self . LinkAction      ( "SelectNone" , self . SelectNone                )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Home"       , self . PageHome        , False   )
+    self . LinkAction      ( "End"        , self . PageEnd         , False   )
+    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
+    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    ##########################################################################
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked           ( self , item , column                       ) :
     ##########################################################################
@@ -189,10 +203,10 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                  ( self , JSON                           ) :
+  def PrepareItemContent           ( self , IT , JSON                      ) :
     ##########################################################################
     TZ       = "Asia/Taipei"
-    TRX      = self . Translations [ "PeriodeListings"                       ]
+    TRX      = self . Translations [ self . ClassTag                         ]
     NOW      = StarDate            (                                         )
     ##########################################################################
     UUID     = int                 ( JSON [ "Uuid" ]                         )
@@ -212,7 +226,6 @@ class PeriodeListings              ( TreeDock                              ) :
     CREATION = JSON                [ "Creation"                              ]
     MODIFIED = JSON                [ "Modified"                              ]
     ##########################################################################
-    IT       = QTreeWidgetItem     (                                         )
     IT       . setText             (  0 , str ( Id )                         )
     IT       . setToolTip          (  0 , UXID                               )
     IT       . setData             (  0 , Qt . UserRole , UXID               )
@@ -262,6 +275,13 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     IT       . setData             ( 12 , Qt . UserRole , JSON               )
     ##########################################################################
+    return
+  ############################################################################
+  def PrepareItem             ( self , JSON                                ) :
+    ##########################################################################
+    IT   = QTreeWidgetItem    (                                              )
+    self . PrepareItemContent ( IT   , JSON                                  )
+    ##########################################################################
     return IT
   ############################################################################
   @pyqtSlot                      (                                           )
@@ -269,7 +289,12 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     item = QTreeWidgetItem       (                                           )
     item . setData               ( 0 , Qt . UserRole , 0                     )
-    self . addTopLevelItem       ( item                                      )
+    ##########################################################################
+    if                           ( self . SortOrder == "asc"               ) :
+      self . addTopLevelItem     ( item                                      )
+    else                                                                     :
+      self . insertTopLevelItem  ( 0 , item                                  )
+    ##########################################################################
     line = self . setLineEdit    ( item                                    , \
                                    1                                       , \
                                    "editingFinished"                       , \
@@ -281,6 +306,10 @@ class PeriodeListings              ( TreeDock                              ) :
   @pyqtSlot                      (                                           )
   def DeleteItems                ( self                                    ) :
     ##########################################################################
+    if                        ( not self . isGrouping ( )                  ) :
+      return
+    ##########################################################################
+    self . defaultDeleteItems ( self . RemovePeriods                         )
     ##########################################################################
     return
   ############################################################################
@@ -321,13 +350,13 @@ class PeriodeListings              ( TreeDock                              ) :
     return
   ############################################################################
   @pyqtSlot                       (        list                              )
-  def refresh                     ( self , TASKS                           ) :
+  def refresh                     ( self , PERIODs                         ) :
     ##########################################################################
     self   . clear                (                                          )
     ##########################################################################
-    for T in TASKS                                                           :
+    for P in PERIODs                                                         :
       ########################################################################
-      IT   = self . PrepareItem   ( T                                        )
+      IT   = self . PrepareItem   ( P                                        )
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
@@ -342,18 +371,19 @@ class PeriodeListings              ( TreeDock                              ) :
     LMTS   = f"limit {SID} , {AMOUNT}"
     RELTAB = self . Tables [ "Relation" ]
     ##########################################################################
-    if                         ( self . Grouping == "Subordination"        ) :
+    if                         ( self . isSubordination ( )                ) :
       OPTS = f"order by `position` {ORDER}"
       return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
-    if                         ( self . Grouping == "Reverse"              ) :
+    ##########################################################################
+    if                         ( self . isReverse       ( )                ) :
       OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
       return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
     ##########################################################################
     return                     [                                             ]
   ############################################################################
-  def ObtainsItemUuids         ( self , DB                                 ) :
+  def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                         ( self . Grouping == "Original"             ) :
+    if                                      ( self . isOriginal ( )        ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
@@ -374,6 +404,14 @@ class PeriodeListings              ( TreeDock                              ) :
     if                                ( DB == None                         ) :
       self . emitNamesShow . emit     (                                      )
       return
+    ##########################################################################
+    self    . Notify                  ( 3                                    )
+    ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     ##########################################################################
     NAMTAB  = self . Tables           [ "Names"                              ]
     PRDTAB  = self . Tables           [ "Periods"                            ]
@@ -450,41 +488,34 @@ class PeriodeListings              ( TreeDock                              ) :
       ########################################################################
       PERIODS . append                ( J                                    )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( PERIODS ) <= 0               ) :
-      self . emitNamesShow . emit     (                                      )
+      self  . emitNamesShow . emit    (                                      )
       return
     ##########################################################################
-    self   . emitAllNames . emit      ( PERIODS                              )
+    self    . emitAllNames  . emit    ( PERIODS                              )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot          (                                                       )
-  def startup        ( self                                                ) :
+  def ObtainAllUuids                ( self , DB                            ) :
     ##########################################################################
-    if               ( not self . isPrepared ( )                           ) :
-      self . Prepare (                                                       )
+    PRDTAB = self . Tables          [ "Periods"                              ]
+    STID   = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    self   . Go      ( self . loading                                        )
+    QQ     = f"""select `uuid` from {PRDTAB}
+                 where ( `used` > 0 )
+                 order by `id` {ORDER}
+                 limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return
-  ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
+    QQ     = " " . join             ( QQ . split ( )                         )
     ##########################################################################
-    TABLE   = self . Tables      [ "Periods"                                 ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
-    ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
-    ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
-    ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
+    return DB . ObtainUuids         ( QQ , 0                                 )
   ############################################################################
   def TranslateAll              ( self                                     ) :
     ##########################################################################
@@ -500,27 +531,20 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def ObtainsInformation   ( self , DB                                     ) :
     ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self   . Total = 0
     ##########################################################################
-    return
-  ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+    PRDTAB = self . Tables [ "Periods"                                       ]
     ##########################################################################
-    self    . Total = 0
-    ##########################################################################
-    TABLE   = self . Tables           [ "Periods"                            ]
-    ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
+    QQ     = f"select count(*) from {PRDTAB} where ( `used` > 0 ) ;"
+    DB     . Query         ( QQ                                              )
+    RR     = DB . FetchOne (                                                 )
     ##########################################################################
     if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    self   . Total = int   ( RR [ 0 ]                                        )
     ##########################################################################
     return
   ############################################################################
@@ -551,19 +575,19 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    TSKTAB  = self . Tables   [ "Periods"                                    ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
+    PRDTAB = self . Tables          [ "Periods"                              ]
+    STID   = self . StartId
+    AMOUNT = self . Amount
+    ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ      = f"""select `uuid` from {TSKTAB}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ     = f"""select `uuid` from {PRDTAB}
+                 where ( `used` > 0 )
+                 order by `id` {ORDER}
+                 limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join               ( QQ . split ( )                         )
   ############################################################################
   def FetchSessionInformation         ( self , DB                          ) :
     ##########################################################################
@@ -587,9 +611,25 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
+  def dragMime                      ( self                                 ) :
+    ##########################################################################
+    mtype   = "period/uuids"
+    message = self . getMenuItem    ( "PeriodsSelected"                      )
+    ##########################################################################
+    return self    . CreateDragMime ( self , 0 , mtype , message             )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def allowedMimeTypes     ( self , mime                                   ) :
+    FMTs    =              [ "people/uuids"                                , \
+                             "event/uuids"                                 , \
+                             "period/uuids"                                  ]
+    formats = ";" . join   ( FMTs                                            )
+    return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
@@ -664,56 +704,11 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def Prepare                    ( self                                    ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    self   . setColumnWidth      (  0 , 120                                  )
-    self   . setColumnWidth      (  1 , 320                                  )
-    self   . setColumnWidth      ( 12 ,   3                                  )
-    LABELs = self . Translations [ "PeriodeListings" ] [ "Labels"            ]
-    self   . setCentralLabels    ( LABELs                                    )
-    self   . setPrepared         ( True                                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    self . setColumnWidth (  0 , 120                                         )
+    self . setColumnWidth (  1 , 320                                         )
+    self . defaultPrepare ( self . ClassTag , 12                             )
     ##########################################################################
     return
   ############################################################################
@@ -766,17 +761,22 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def RemovePeriods             ( self , UUIDs                             ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
+    OKAY = self . RemoveMembers (        UUIDs                               )
+    if                          ( not OKAY                                 ) :
       return
     ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
+    ## 發送訊息給計畫管理後台
+    ## SendWssBack
     ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
+    self   . Notify           ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyToClipboard        ( self                                        ) :
+    ##########################################################################
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -792,30 +792,9 @@ class PeriodeListings              ( TreeDock                              ) :
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
       ########################################################################
-      ## if                           ( ( at == 9001 ) and ( hid )            ) :
-      ##   self . startup             (                                         )
-      ########################################################################
       return True
     ##########################################################################
     return False
-  ############################################################################
-  @pyqtSlot                        (        int                              )
-  def GotoId                       ( self , Id                             ) :
-    ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
   ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
@@ -825,13 +804,7 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     self   . Notify                 ( 0                                      )
     ##########################################################################
-    items  = self . selectedItems   (                                        )
-    atItem = self . currentItem     (                                        )
-    uuid   = 0
-    ##########################################################################
-    if                              ( atItem != None                       ) :
-      uuid = atItem . data          ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
+    items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
     mm     = MenuManager            ( self                                   )
     ##########################################################################
@@ -856,8 +829,8 @@ class PeriodeListings              ( TreeDock                              ) :
     mm     = self . LocalityMenu    ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    mm     . setFont                ( self    . font ( )                     )
-    aa     = mm . exec_             ( QCursor . pos  ( )                     )
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
     if                              ( self   . RunAmountIndexMenu ( )      ) :
