@@ -405,6 +405,7 @@ class PeriodeListings              ( TreeDock                              ) :
     NAMTAB = self . Tables           [ "NamesLocal"                          ]
     GNATAB = self . Tables           [ "NamesPrivate"                        ]
     PRDTAB = self . Tables           [ "Periods"                             ]
+    TYPTAB = self . Tables           [ "Types"                               ]
     ##########################################################################
     J      =                         { "Uuid"     : U                      , \
                                        "Name"     : ""                     , \
@@ -458,7 +459,7 @@ class PeriodeListings              ( TreeDock                              ) :
       TU   = 1100000000000000000 + TU
       if                             ( TU > 0                              ) :
         ######################################################################
-        QQ = f"select `name` from `types` where ( `uuid` = {TU} ) ;"
+        QQ = f"select `name` from {TYPTAB} where ( `uuid` = {TU} ) ;"
         DB . Query                   ( QQ                                    )
         RR = DB . FetchOne           (                                       )
         N  = str                     ( J [ "Role" ]                          )
@@ -800,8 +801,17 @@ class PeriodeListings              ( TreeDock                              ) :
     PRDTAB   = self . Tables       [ "Periods"                               ]
     RELTAB   = self . Tables       [ "RelationGroups"                        ]
     NAMTAB   = self . Tables       [ "NamesLocal"                            ]
+    GNATAB   = self . Tables       [ "NamesPrivate"                          ]
+    TYPTAB   = self . Tables       [ "Types"                                 ]
+    TABLES   =                     [ PRDTAB , NAMTAB                         ]
     ##########################################################################
-    DB       . LockWrites          ( [ PRDTAB , RELTAB , NAMTAB ]            )
+    if                             ( uuid <= 0                             ) :
+      ########################################################################
+      TABLES . append              ( RELTAB                                  )
+      TABLES . append              ( GNATAB                                  )
+      TABLES . append              ( TYPTAB                                  )
+    ##########################################################################
+    DB       . LockWrites          ( TABLES                                  )
     ##########################################################################
     if                             ( uuid <= 0                             ) :
       ########################################################################
