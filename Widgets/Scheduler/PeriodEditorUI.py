@@ -110,7 +110,7 @@ class Ui_PeriodEditorUI(object):
         self.TimeZoneBox.currentIndexChanged['int'].connect(PeriodEditorUI.TimeZoneChanged)
         self.StartTime.editingFinished.connect(PeriodEditorUI.StartTimeChanged)
         self.FinishTime.editingFinished.connect(PeriodEditorUI.FinishTimeChanged)
-        self.ItemSpin.valueChanged['int'].connect(PeriodEditorUI.ItemChanged)
+        self.ItemSpin.editingFinished.connect(PeriodEditorUI.ItemChanged)
         self.StatesBox.currentIndexChanged['int'].connect(PeriodEditorUI.StatesChanged)
         self.NoteEdit.textChanged.connect(PeriodEditorUI.NoteChanged)
         self.Append.clicked.connect(PeriodEditorUI.AppendPeriod)
