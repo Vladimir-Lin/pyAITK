@@ -43,7 +43,6 @@ from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . Widget            import Widget      as Widget
-from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
 ##############################################################################
 from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
@@ -55,6 +54,8 @@ from   AITK  . Scheduler  . Event     import Event       as Event
 from   AITK  . Scheduler  . Events    import Events      as Events
 from   AITK  . Scheduler  . Task      import Task        as Task
 from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
+##############################################################################
+from   AITK  . Calendars  . Apple     import Apple       as DAV
 ##############################################################################
 from   .       PeriodEditorUI         import Ui_PeriodEditorUI
 ##############################################################################
