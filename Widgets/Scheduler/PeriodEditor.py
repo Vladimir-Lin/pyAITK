@@ -110,7 +110,7 @@ class PeriodEditor                ( Widget                                 ) :
     ##########################################################################
     self   . Now  . Now             (                                        )
     TS     = self . Now . Timestamp (                                        )
-    DT     = QDateTime. fromSecsSinceEpoch ( TS                              )
+    DT     = QDateTime . fromSecsSinceEpoch ( TS                             )
     ##########################################################################
     TSON   =                        { "0" : "Asia/Taipei" , "1" : "UTC"      }
     ##########################################################################
@@ -268,14 +268,14 @@ class PeriodEditor                ( Widget                                 ) :
       ########################################################################
       self . Now . Stardate = self . Period . Start
       TS = self . Now . Timestamp            (                               )
-      DT = QDateTime. fromSecsSinceEpoch     ( TS                            )
+      DT = QDateTime . fromSecsSinceEpoch    ( TS                            )
       self . ui . StartTime  . setDateTime   ( DT                            )
     ##########################################################################
     if ( self . Period . End > 0 )                                         :
       ########################################################################
       self . Now . Stardate = self . Period . End
       TS = self . Now . Timestamp            (                               )
-      DT = QDateTime. fromSecsSinceEpoch     ( TS                            )
+      DT = QDateTime . fromSecsSinceEpoch    ( TS                            )
       self . ui . FinishTime . setDateTime   ( DT                            )
     ##########################################################################
     self . ui . NoteEdit   . blockSignals    ( True                          )
