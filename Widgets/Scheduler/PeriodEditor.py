@@ -531,7 +531,7 @@ class PeriodEditor                 ( Widget                                ) :
         ######################################################################
         elif                           ( K in [ "summary" ]                ) :
           ####################################################################
-          V     = self . assureString  ( value                               )
+          V     = self . assureString  ( str ( value )                       )
           N     = PERIOD . getProperty ( "Name"                              )
           if                           ( V != N                            ) :
             ##################################################################
@@ -540,8 +540,8 @@ class PeriodEditor                 ( Widget                                ) :
         ######################################################################
         elif                           ( K in [ "description" ]            ) :
           ####################################################################
-          V     = self . assureString  ( value                               )
-          N     = PERIOD . getProperty ( "Name"                              )
+          V     = self . assureString  ( str ( value )                       )
+          N     = PERIOD . getProperty ( "Description"                       )
           if                           ( V != N                            ) :
             ##################################################################
             PERIOD . setProperties     ( "Description" , V                   )
@@ -610,6 +610,7 @@ class PeriodEditor                 ( Widget                                ) :
     self . UpdatePeriodDetails        (                                      )
     ##########################################################################
     self . emitUpdate . emit          (                                      )
+    self . Notify                     ( 5                                    )
     ##########################################################################
     return
   ############################################################################
