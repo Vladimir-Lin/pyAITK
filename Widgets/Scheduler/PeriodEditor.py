@@ -127,22 +127,35 @@ class PeriodEditor                ( Widget                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def NameChanged                        ( self                            ) :
+  def NameChanged                         ( self                           ) :
     ##########################################################################
-    name = self . ui . NameEditor . text (                                   )
-    self . AssurePeriodName              ( name                              )
+    oname = self . Period . getProperty   ( "Name"                           )
+    name  = self . ui . NameEditor . text (                                  )
+    ##########################################################################
+    if                                    ( oname == name                  ) :
+      return
+    ##########################################################################
+    self  . AssurePeriodName              ( name                             )
     ##########################################################################
     return
   ############################################################################
   def TypeChanged                ( self   , typeIndex                      ) :
     ##########################################################################
-    self . UpdatePeriodItemValue ( "type" , typeIndex                        )
+    TYPE = int                   ( typeIndex                                 )
+    if                           ( TYPE == self . Period . Type            ) :
+      return
+    ##########################################################################
+    self . UpdatePeriodItemValue ( "type" , TYPE                             )
     ##########################################################################
     return
   ############################################################################
-  def UsageChanged               ( self   , usageIndex                     ) :
+  def UsageChanged                ( self   , usageIndex                    ) :
     ##########################################################################
-    self . UpdatePeriodItemValue ( "used" , usageIndex                       )
+    Usage = int                   ( usageIndex                               )
+    if                            ( Usage == self . Period . Used          ) :
+      return
+    ##########################################################################
+    self  . UpdatePeriodItemValue ( "used" , Usage                           )
     ##########################################################################
     return
   ############################################################################
@@ -156,7 +169,12 @@ class PeriodEditor                ( Widget                                 ) :
     ##########################################################################
     TS   = self . ui . StartTime . toSecsSinceEpoch (                        )
     self . Now . setTime         ( TS                                        )
-    self . UpdatePeriodItemValue ( "start" , self . Now . Stardate           )
+    SDT  = self . Now . Stardate
+    ##########################################################################
+    if                           ( SDT == self . Period . Start            ) :
+      return
+    ##########################################################################
+    self . UpdatePeriodItemValue ( "start" , SDT                             )
     ##########################################################################
     return
   ############################################################################
@@ -164,27 +182,44 @@ class PeriodEditor                ( Widget                                 ) :
     ##########################################################################
     TS   = self . ui . FinishTime . toSecsSinceEpoch (                       )
     self . Now . setTime         ( TS                                        )
-    self . UpdatePeriodItemValue ( "end"   , self . Now . Stardate           )
+    SDT  = self . Now . Stardate
+    ##########################################################################
+    if                           ( SDT == self . Period . End              ) :
+      return
+    ##########################################################################
+    self . UpdatePeriodItemValue ( "end"   , SDT                             )
     ##########################################################################
     return
   ############################################################################
   def ItemChanged                       ( self                             ) :
     ##########################################################################
     Item = self . ui . ItemSpin . value (                                    )
+    if                                  ( Item == self . Period . Item     ) :
+      return
+    ##########################################################################
     self . UpdatePeriodItemValue        ( "item" , Item                      )
     ##########################################################################
     return
   ############################################################################
-  def StatesChanged              ( self     , statesIndex                  ) :
+  def StatesChanged                ( self     , statesIndex                ) :
     ##########################################################################
-    self . UpdatePeriodItemValue ( "states" , statesIndex                    )
+    States = int                   ( statesIndex                             )
+    if                             ( States == self . Period . States      ) :
+      return
+    ##########################################################################
+    self   . UpdatePeriodItemValue ( "states" , statesIndex                  )
     ##########################################################################
     return
   ############################################################################
-  def NoteChanged                             ( self                       ) :
+  def NoteChanged                              ( self                      ) :
     ##########################################################################
-    note = self . ui . NoteEdit . toPlainText (                              )
-    self . AssurePeriodNote                   ( note                         )
+    onote = self . Period . getProperty        ( "Description"               )
+    note  = self . ui . NoteEdit . toPlainText (                             )
+    ##########################################################################
+    if                                         ( onote == note             ) :
+      return
+    ##########################################################################
+    self . AssurePeriodNote                    ( note                        )
     ##########################################################################
     return
   ############################################################################
@@ -229,48 +264,51 @@ class PeriodEditor                ( Widget                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def AssurePeriodName        ( self , name                                ) :
+  def AssurePeriodName              ( self , name                          ) :
     ##########################################################################
-    if                        ( self . Period . Uuid <= 0                  ) :
+    if                              ( self . Period . Uuid <= 0            ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB ( UsePure = True                               )
-    if                        ( DB in [ False , None ]                     ) :
+    DB     = self . ConnectDB       ( UsePure = True                         )
+    if                              ( DB in [ False , None ]               ) :
       return
     ##########################################################################
-    NAMTAB = self . Tables    [ "NamesLocal"                                 ]
-    DB     . LockWrites       ( [ NAMTAB                                   ] )
+    NAMTAB = self . Tables          [ "NamesLocal"                           ]
+    DB     . LockWrites             ( [ NAMTAB                             ] )
     ##########################################################################
-    self   . AssureUuidName   ( DB , NAMTAB , self . Period . Uuid , name    )
+    UUID   = self . Period . Uuid
+    self   . AssureUuidName         ( DB , NAMTAB , UUID , name              )
+    self   . Period . setProperties ( "Name"        , name                   )
     ##########################################################################
-    DB     . UnlockTables     (                                              )
-    DB     . Close            (                                              )
-    self   . Notify           ( 5                                            )
+    DB     . UnlockTables           (                                        )
+    DB     . Close                  (                                        )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
-  def AssurePeriodNote        ( self , note                                ) :
+  def AssurePeriodNote              ( self , note                          ) :
     ##########################################################################
-    if                        ( self . Period . Uuid <= 0                  ) :
+    if                              ( self . Period . Uuid <= 0            ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB ( UsePure = True                               )
-    if                        ( DB in [ False , None ]                     ) :
+    DB     = self . ConnectDB       ( UsePure = True                         )
+    if                              ( DB in [ False , None ]               ) :
       return
     ##########################################################################
-    NOXTAB = self . Tables    [ "Notes"                                      ]
+    NOXTAB = self . Tables          [ "Notes"                                ]
     ##########################################################################
-    NOTE   = Notes            (                                              )
+    NOTE   = Notes                  (                                        )
     NOTE   . Uuid   = self . Period . Uuid
     NOTE   . Name   = "Description"
     NOTE   . Prefer = 0
     NOTE   . Note   = note
     ##########################################################################
-    DB     . LockWrites       ( [ NOXTAB                                   ] )
-    NOTE   . assureNote       ( DB , NOXTAB                                  )
-    DB     . UnlockTables     (                                              )
-    DB     . Close            (                                              )
-    self   . Notify           ( 5                                            )
+    DB     . LockWrites             ( [ NOXTAB                             ] )
+    NOTE   . assureNote             ( DB , NOXTAB                            )
+    self   . Period . setProperties ( "Description" , note                   )
+    DB     . UnlockTables           (                                        )
+    DB     . Close                  (                                        )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
