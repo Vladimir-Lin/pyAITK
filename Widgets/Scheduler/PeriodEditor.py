@@ -59,33 +59,36 @@ from   AITK  . Scheduler  . Events         import Events         as Events
 from   AITK  . Scheduler  . Task           import Task           as Task
 from   AITK  . Scheduler  . Tasks          import Tasks          as Tasks
 ##############################################################################
+import icalendar
 from   AITK  . Calendars  . Apple          import Apple          as DAV
 ##############################################################################
 from         . PeriodEditorUI              import Ui_PeriodEditorUI
 ##############################################################################
-class PeriodEditor                ( Widget                                 ) :
+class PeriodEditor                 ( Widget                                ) :
   ############################################################################
-  emitShow   = pyqtSignal         (                                          )
-  emitApple  = pyqtSignal         (                                          )
-  emitUpdate = pyqtSignal         (                                          )
+  emitShow            = pyqtSignal (                                         )
+  emitApple           = pyqtSignal (                                         )
+  emitUpdate          = pyqtSignal (                                         )
+  emitShowAppleEvents = pyqtSignal ( list                                    )
   ############################################################################
-  def __init__                    ( self , parent = None , plan = None     ) :
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    super ( ) . __init__          (        parent        , plan              )
+    super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . ui = Ui_PeriodEditorUI (                                          )
-    self . ui . setupUi           ( self                                     )
+    self . ui = Ui_PeriodEditorUI  (                                         )
+    self . ui . setupUi            ( self                                    )
     ##########################################################################
     self . ClassTag  = "PeriodEditor"
-    self . VoiceJSON =            {                                          }
-    self . Period    = Periode    (                                          )
-    self . Now       = StarDate   (                                          )
+    self . VoiceJSON =             {                                         }
+    self . Period    = Periode     (                                         )
+    self . Now       = StarDate    (                                         )
     ##########################################################################
-    self . Calendars =            [                                          ]
+    self . Calendars =             [                                         ]
     ##########################################################################
-    self . emitShow   . connect   ( self . show                              )
-    self . emitApple  . connect   ( self . ShowAppleCalendars                )
-    self . emitUpdate . connect   ( self . UpdatePeriodValues                )
+    self . emitShow   . connect    ( self . show                             )
+    self . emitApple  . connect    ( self . ShowAppleCalendars               )
+    self . emitUpdate . connect    ( self . UpdatePeriodValues               )
+    self . emitShowAppleEvents . connect ( self . ShowAppleEvents            )
     ##########################################################################
     return
   ############################################################################
@@ -234,39 +237,81 @@ class PeriodEditor                ( Widget                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def GetCurrentCalendarId ( self                                          ) :
+    ##########################################################################
+    calendarIndex = self . ui . AppleCalendarBox . currentIndex (            )
+    if                     ( calendarIndex <= 0                            ) :
+      self . Notify        ( 1                                               )
+      return ""
+    ##########################################################################
+    CID           = self . ui . AppleCalendarBox . itemData ( calendarIndex  )
+    if                     ( len ( CID ) <= 0                              ) :
+      self . Notify        ( 1                                               )
+      return ""
+    ##########################################################################
+    return str             ( CID                                             )
+  ############################################################################
   def AppleCalendarChanged ( self , calendarIndex                          ) :
     ##########################################################################
-    print("AppleCalendarChanged",calendarIndex)
     ##########################################################################
     return
   ############################################################################
   def AppleEventCidChanged ( self                                          ) :
     ##########################################################################
-    print("AppleEventCidChanged")
     ##########################################################################
     return
   ############################################################################
-  def SyncToApple          ( self                                          ) :
+  def SyncToApple                           ( self                         ) :
+    ##########################################################################
+    CID = self . GetCurrentCalendarId       (                                )
+    if                                      ( len ( CID ) <= 0             ) :
+      return
+    ##########################################################################
+    EID = self . ui . AppleEventEdit . text (                                )
+    if                                      ( len ( EID ) <= 0             ) :
+      return
     ##########################################################################
     print("SyncToApple")
     ##########################################################################
     return
   ############################################################################
-  def SyncFromApple        ( self                                          ) :
+  def SyncFromApple                          ( self                        ) :
     ##########################################################################
-    print("SyncFromApple")
+    CID  = self . GetCurrentCalendarId       (                               )
+    if                                       ( len ( CID ) <= 0            ) :
+      return
+    ##########################################################################
+    EID  = self . ui . AppleEventEdit . text (                               )
+    if                                       ( len ( EID ) <= 0            ) :
+      return
+    ##########################################################################
+    VAL  =                                   ( CID , EID ,                   )
+    FUNC = self . SyncEventFromApple
+    self . Go                                ( FUNC , VAL                    )
     ##########################################################################
     return
   ############################################################################
-  def AssignAppleEvent     ( self , index                                  ) :
+  def AssignAppleEvent                          ( self , index             ) :
     ##########################################################################
-    print("AssignAppleEvent:",index)
+    EID  = self . ui . AppleEventBox . itemData ( index                      )
+    EID  = str                                  ( EID                        )
+    ##########################################################################
+    self . ui . AppleEventEdit . blockSignals   ( True                       )
+    self . ui . AppleEventEdit . setText        ( EID                        )
+    self . ui . AppleEventEdit . blockSignals   ( False                      )
     ##########################################################################
     return
   ############################################################################
-  def PullAppleEvents      ( self                                          ) :
+  def PullAppleEvents                  ( self                              ) :
     ##########################################################################
-    print("PullAppleEvents")
+    CID  = self . GetCurrentCalendarId (                                     )
+    if                                 ( len ( CID ) <= 0                  ) :
+      return
+    ##########################################################################
+    self . ui . AppleEventBox . blockSignals ( True                          )
+    self . ui . AppleEventBox . clear        (                               )
+    self . ui . AppleEventBox . blockSignals ( False                         )
+    self . Go                          ( self . GetAppleEvents , ( CID , )   )
     ##########################################################################
     return
   ############################################################################
@@ -343,6 +388,25 @@ class PeriodEditor                ( Widget                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def ShowAppleEvents                          ( self , EVENTs             ) :
+    ##########################################################################
+    self   . ui . AppleEventBox . blockSignals ( True                        )
+    self   . ui . AppleEventBox . clear        (                             )
+    ##########################################################################
+    msg    = self . getMenuItem                ( "Useless"                   )
+    self   . ui . AppleEventBox . addItem      ( msg , ""                    )
+    ##########################################################################
+    for E in EVENTs                                                          :
+      ########################################################################
+      Id   = E                                 [ "Id"                        ]
+      Name = E                                 [ "Name"                      ]
+      self . ui . AppleEventBox . addItem      ( Name , Id                   )
+    ##########################################################################
+    self   . ui . AppleEventBox . blockSignals ( False                       )
+    self   . Notify                            ( 5                           )
+    ##########################################################################
+    return
+  ############################################################################
   def ShowAppleCalendars                             ( self                ) :
     ##########################################################################
     CID    = self . Period . getProperty             ( "Calendar" , ""       )
@@ -352,7 +416,8 @@ class PeriodEditor                ( Widget                                 ) :
     ##########################################################################
     self   . ui . AppleCalendarBox . clear           (                       )
     ##########################################################################
-    self   . ui . AppleCalendarBox . addItem         ( "沒有使用" , "" )
+    msg    = self . getMenuItem                      ( "Useless"             )
+    self   . ui . AppleCalendarBox . addItem         ( msg , ""              )
     AT     = 0
     POS    = 1
     ##########################################################################
@@ -427,6 +492,153 @@ class PeriodEditor                ( Widget                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def GetEventFromApple             ( self , CalendarId , EventId          ) :
+    ##########################################################################
+    URL    = self . Settings        [ "Apple" ] [ "Calendar" ] [ "URL"       ]
+    DSID   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "DSID"      ]
+    USER   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "Username"  ]
+    PASS   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "Password"  ]
+    ##########################################################################
+    APPLE  = DAV                    ( URL , DSID , USER , PASS               )
+    OKAY   = APPLE . FetchCalendars (                                        )
+    ##########################################################################
+    if ( not OKAY ) or ( len ( APPLE . Calendars ) <= 0 )                    :
+      ########################################################################
+      return None
+    ##########################################################################
+    CAL    = APPLE . FindCalendar   ( CalendarId                             )
+    if                              ( CAL in [ False , None ]              ) :
+      return None
+    ##########################################################################
+    return APPLE . FindEvent        ( CAL , EventId                          )
+  ############################################################################
+  def InvestigateEvent                 ( self , PERIOD , EVENT             ) :
+    ##########################################################################
+    Changed = False
+    BEGIN   = False
+    ##########################################################################
+    for key , value in EVENT . property_items (                            ) :
+      ########################################################################
+      K         = key . lower          (                                     )
+      if                               ( BEGIN                             ) :
+        ######################################################################
+        if                             ( K in [ "end" ]                    ) :
+          V     = self . assureString  ( value                               )
+          V     = V . lower            (                                     )
+          ####################################################################
+          if                           ( V in [ "vevent" ]                 ) :
+            BEGIN = False
+        ######################################################################
+        elif                           ( K in [ "summary" ]                ) :
+          ####################################################################
+          V     = self . assureString  ( value                               )
+          N     = PERIOD . getProperty ( "Name"                              )
+          if                           ( V != N                            ) :
+            ##################################################################
+            PERIOD . setProperties     ( "Name"        , V                   )
+            Changed = True
+        ######################################################################
+        elif                           ( K in [ "description" ]            ) :
+          ####################################################################
+          V     = self . assureString  ( value                               )
+          N     = PERIOD . getProperty ( "Name"                              )
+          if                           ( V != N                            ) :
+            ##################################################################
+            PERIOD . setProperties     ( "Description" , V                   )
+            Changed = True
+        ######################################################################
+        elif                           ( K in [ "dtstart" ]                ) :
+          ####################################################################
+          self . Now . fromDateTime    ( value . dt                          )
+          SDT  = int                   ( self . Now . Stardate               )
+          if                           ( PERIOD . Start != SDT             ) :
+            PERIOD . Start = SDT
+            Changed = True
+        ######################################################################
+        elif                           ( K in [ "dtend"   ]                ) :
+          ####################################################################
+          self . Now . fromDateTime    ( value . dt                          )
+          SDT  = int                   ( self . Now . Stardate               )
+          if                           ( PERIOD . End != SDT               ) :
+            PERIOD . End = SDT
+            Changed = True
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        if                             ( K in [ "begin" ]                  ) :
+          ####################################################################
+          V     = self . assureString  ( value                               )
+          V     = V . lower            (                                     )
+          ####################################################################
+          if                           ( V in [ "vevent" ]                 ) :
+            BEGIN = True
+    ##########################################################################
+    if                                 ( Changed                           ) :
+      ########################################################################
+      if                               ( PERIOD . Start < PERIOD . End     ) :
+        ######################################################################
+        PERIOD . Type = 4
+      ########################################################################
+      self . Now . Now                 (                                     )
+      CDT  = int                       ( self . Now . Stardate               )
+      ########################################################################
+      if                               ( PERIOD . Start > CDT              ) :
+        PERIOD . States = 3
+      elif                             ( PERIOD . End   < CDT              ) :
+        PERIOD . States = 4
+      else                                                                   :
+        PERIOD . States = 5
+    ##########################################################################
+    return Changed
+  ############################################################################
+  def SyncEventFromApple              ( self , CalendarId , EventId        ) :
+    ##########################################################################
+    EVENT  = self . GetEventFromApple (        CalendarId , EventId          )
+    if ( type ( EVENT ) is not icalendar . cal . Calendar                  ) :
+      self . Notify                   ( 1                                    )
+      return
+    ##########################################################################
+    CHANGED = self . InvestigateEvent ( self . Period , EVENT                )
+    ##########################################################################
+    if                                ( not CHANGED                        ) :
+      self . Notify                   ( 5                                    )
+      return
+    ##########################################################################
+    self . Period . setProperties     ( "Calendar" , CalendarId              )
+    self . Period . setProperties     ( "Event"    , EventId                 )
+    ##########################################################################
+    self . UpdatePeriodDetails        (                                      )
+    ##########################################################################
+    self . emitUpdate . emit          (                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def GetAppleEvents                ( self , CalendarId                    ) :
+    ##########################################################################
+    URL    = self . Settings        [ "Apple" ] [ "Calendar" ] [ "URL"       ]
+    DSID   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "DSID"      ]
+    USER   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "Username"  ]
+    PASS   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "Password"  ]
+    ##########################################################################
+    APPLE  = DAV                    ( URL , DSID , USER , PASS               )
+    OKAY   = APPLE . FetchCalendars (                                        )
+    ##########################################################################
+    if ( not OKAY ) or ( len ( APPLE . Calendars ) <= 0 )                    :
+      ########################################################################
+      return
+    ##########################################################################
+    CAL    = APPLE . FindCalendar   ( CalendarId                             )
+    if                              ( CAL in [ False , None ]              ) :
+      return
+    ##########################################################################
+    EVENTs = APPLE . GetEvents      ( CAL                                    )
+    if                              ( len ( EVENTs ) <= 0                  ) :
+      return
+    ##########################################################################
+    self . emitShowAppleEvents . emit ( EVENTs                               )
+    ##########################################################################
+    return
+  ############################################################################
   def GetAppleCalendars            ( self                                  ) :
     ##########################################################################
     URL   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "URL"        ]
@@ -450,6 +662,60 @@ class PeriodEditor                ( Widget                                 ) :
       J     =                      { "Id"      : CID                       , \
                                      "Name"    : NAME                        }
       self  . Calendars . append   ( J                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdatePeriodDetails             ( self                               ) :
+    ##########################################################################
+    if                                ( self . Period . Uuid <= 0          ) :
+      return
+    ##########################################################################
+    DB       = self . ConnectDB       ( UsePure = True                       )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    UUID     = int                    ( self . Period . Uuid                 )
+    ##########################################################################
+    VITEM    = Variables              (                                      )
+    VITEM    . Uuid   = UUID
+    VITEM    . Type   = 196833
+    ##########################################################################
+    NOTE     = Notes                  (                                      )
+    NOTE     . Uuid   = UUID
+    NOTE     . Name   = "Description"
+    NOTE     . Prefer = 0
+    NOTE     . Note   = self . Period . getProperty ( "Description"          )
+    ##########################################################################
+    PRDTAB   = self . Tables          [ "Periods"                            ]
+    NOXTAB   = self . Tables          [ "Notes"                              ]
+    PAMTAB   = self . Tables          [ "Parameters"                         ]
+    VARTAB   = self . Tables          [ "Variables"                          ]
+    NAMTAB   = self . Tables          [ "NamesLocal"                         ]
+    ##########################################################################
+    DB       . LockWrites             ( [ PRDTAB                           , \
+                                          NOXTAB                           , \
+                                          PAMTAB                           , \
+                                          VARTAB                           , \
+                                          NAMTAB                           ] )
+    ##########################################################################
+    ITEMs    =                        [ "type" , "states" , "start" , "end"  ]
+    self     . Period . UpdateItems   ( DB , PRDTAB , ITEMs                  )
+    ##########################################################################
+    Name     = self . Period . getProperty ( "Name"                          )
+    self     . AssureUuidName         ( DB , NAMTAB , UUID , Name            )
+    ##########################################################################
+    NOTE     . assureNote             ( DB , NOXTAB                          )
+    ##########################################################################
+    VITEM    . Name  = "AppleCalendar"
+    VITEM    . Value = self . Period . getProperty ( "Calendar"              )
+    VITEM    . AssureValue            ( DB , VARTAB                          )
+    ##########################################################################
+    VITEM    . Name  = "AppleEvent"
+    VITEM    . Value = self . Period . getProperty ( "Event"                 )
+    VITEM    . AssureValue            ( DB , VARTAB                          )
+    ##########################################################################
+    DB       . UnlockTables           (                                      )
+    DB       . Close                  (                                      )
     ##########################################################################
     return
   ############################################################################
