@@ -100,8 +100,11 @@ class Ui_PeriodEditorUI(object):
         self.AppleEventEdit.setReadOnly(False)
         self.AppleEventEdit.setObjectName("AppleEventEdit")
         self.SyncApple = QtWidgets.QPushButton(PeriodEditorUI)
-        self.SyncApple.setGeometry(QtCore.QRect(500, 440, 120, 28))
+        self.SyncApple.setGeometry(QtCore.QRect(360, 440, 120, 28))
         self.SyncApple.setObjectName("SyncApple")
+        self.SyncFromApple = QtWidgets.QPushButton(PeriodEditorUI)
+        self.SyncFromApple.setGeometry(QtCore.QRect(500, 440, 120, 28))
+        self.SyncFromApple.setObjectName("SyncFromApple")
 
         self.retranslateUi(PeriodEditorUI)
         self.NameEditor.editingFinished.connect(PeriodEditorUI.NameChanged)
@@ -117,6 +120,7 @@ class Ui_PeriodEditorUI(object):
         self.AppleCalendarBox.currentIndexChanged['int'].connect(PeriodEditorUI.AppleCalendarChanged)
         self.AppleEventEdit.editingFinished.connect(PeriodEditorUI.AppleEventCidChanged)
         self.SyncApple.clicked.connect(PeriodEditorUI.SyncToApple)
+        self.SyncFromApple.clicked.connect(PeriodEditorUI.SyncFromApple)
         QtCore.QMetaObject.connectSlotsByName(PeriodEditorUI)
 
     def retranslateUi(self, PeriodEditorUI):
@@ -145,4 +149,5 @@ class Ui_PeriodEditorUI(object):
         self.Append.setText(_translate("PeriodEditorUI", "新增時段"))
         self.AppleLabel.setText(_translate("PeriodEditorUI", "蘋果行事曆："))
         self.EventLabel.setText(_translate("PeriodEditorUI", "事件編號："))
-        self.SyncApple.setText(_translate("PeriodEditorUI", "同步蘋果行事曆"))
+        self.SyncApple.setText(_translate("PeriodEditorUI", "同步到蘋果行事曆"))
+        self.SyncFromApple.setText(_translate("PeriodEditorUI", "從蘋果行事曆同步"))
