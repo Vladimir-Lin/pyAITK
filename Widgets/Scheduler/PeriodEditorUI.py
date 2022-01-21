@@ -91,6 +91,7 @@ class Ui_PeriodEditorUI(object):
         self.AppleLabel.setObjectName("AppleLabel")
         self.AppleCalendarBox = QtWidgets.QComboBox(PeriodEditorUI)
         self.AppleCalendarBox.setGeometry(QtCore.QRect(120, 360, 500, 28))
+        self.AppleCalendarBox.setMaxVisibleItems(30)
         self.AppleCalendarBox.setObjectName("AppleCalendarBox")
         self.EventLabel = QtWidgets.QLabel(PeriodEditorUI)
         self.EventLabel.setGeometry(QtCore.QRect(20, 400, 100, 28))
@@ -114,6 +115,12 @@ class Ui_PeriodEditorUI(object):
         self.PullAppleEvents = QtWidgets.QPushButton(PeriodEditorUI)
         self.PullAppleEvents.setGeometry(QtCore.QRect(460, 480, 160, 28))
         self.PullAppleEvents.setObjectName("PullAppleEvents")
+        self.SaveNote = QtWidgets.QPushButton(PeriodEditorUI)
+        self.SaveNote.setGeometry(QtCore.QRect(20, 220, 80, 28))
+        self.SaveNote.setObjectName("SaveNote")
+        self.ReportAll = QtWidgets.QPushButton(PeriodEditorUI)
+        self.ReportAll.setGeometry(QtCore.QRect(20, 260, 80, 28))
+        self.ReportAll.setObjectName("ReportAll")
 
         self.retranslateUi(PeriodEditorUI)
         self.NameEditor.editingFinished.connect(PeriodEditorUI.NameChanged)
@@ -124,7 +131,6 @@ class Ui_PeriodEditorUI(object):
         self.FinishTime.editingFinished.connect(PeriodEditorUI.FinishTimeChanged)
         self.ItemSpin.editingFinished.connect(PeriodEditorUI.ItemChanged)
         self.StatesBox.currentIndexChanged['int'].connect(PeriodEditorUI.StatesChanged)
-        self.NoteEdit.textChanged.connect(PeriodEditorUI.NoteChanged)
         self.Append.clicked.connect(PeriodEditorUI.AppendPeriod)
         self.AppleCalendarBox.currentIndexChanged['int'].connect(PeriodEditorUI.AppleCalendarChanged)
         self.AppleEventEdit.editingFinished.connect(PeriodEditorUI.AppleEventCidChanged)
@@ -132,6 +138,8 @@ class Ui_PeriodEditorUI(object):
         self.SyncFromApple.clicked.connect(PeriodEditorUI.SyncFromApple)
         self.AppleEventBox.currentIndexChanged['int'].connect(PeriodEditorUI.AssignAppleEvent)
         self.PullAppleEvents.clicked.connect(PeriodEditorUI.PullAppleEvents)
+        self.SaveNote.clicked.connect(PeriodEditorUI.NoteChanged)
+        self.ReportAll.clicked.connect(PeriodEditorUI.ReportAll)
         QtCore.QMetaObject.connectSlotsByName(PeriodEditorUI)
 
     def retranslateUi(self, PeriodEditorUI):
@@ -164,3 +172,5 @@ class Ui_PeriodEditorUI(object):
         self.SyncFromApple.setText(_translate("PeriodEditorUI", "從蘋果行事曆同步"))
         self.AppleEventLabel.setText(_translate("PeriodEditorUI", "蘋果事件列表："))
         self.PullAppleEvents.setText(_translate("PeriodEditorUI", "由蘋果拉取事件"))
+        self.SaveNote.setText(_translate("PeriodEditorUI", "儲存附記"))
+        self.ReportAll.setText(_translate("PeriodEditorUI", "報告"))
