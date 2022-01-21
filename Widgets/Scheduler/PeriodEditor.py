@@ -128,8 +128,7 @@ class PeriodEditor                 ( Widget                                ) :
     self   . ui . FinishTime . setDateTime ( DT                              )
     ##########################################################################
     if                              ( self . Period . Uuid > 0             ) :
-      ## self . ui . Append . hide     (                                        )
-      pass
+      self . ui . Append . hide     (                                        )
     ##########################################################################
     return
   ############################################################################
@@ -466,9 +465,9 @@ class PeriodEditor                 ( Widget                                ) :
     R      = APPLE . LocateEvent    ( CAL , EID                              )
     evt    = APPLE . EventFromICalData    ( R . data                         )
     evt    = APPLE . iCalUpdateFromPeriod ( evt , self . Period              )
-    print(evt.to_ical())
-    ## R      . data = evt . to_ical   (                                        )
-    ## R      . save                   (                                        )
+    R      . data = evt . to_ical   (                                        )
+    R      . save                   (                                        )
+    ##########################################################################
     self   . Notify                 ( 5                                      )
     ##########################################################################
     return

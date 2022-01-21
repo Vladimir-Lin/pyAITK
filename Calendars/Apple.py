@@ -229,35 +229,18 @@ class Apple              (                                                 ) :
     ##########################################################################
     return iCal
   ############################################################################
-  def iCalUpdateFromPeriod       ( self , iCal , PERIOD                    ) :
+  def iCalUpdateFromPeriod           ( self , iCal , PERIOD                ) :
     ##########################################################################
-    tzx   = pytz . timezone      ( self . TZ                                 )
-    NOW   = StarDate             (                                           )
+    NCAL     = self . iCalFromPeriod ( PERIOD                                )
     ##########################################################################
-    NOW   . Stardate = PERIOD . Start
-    DTS   = NOW . toDateTime     ( self . TZ                                 )
-    ##########################################################################
-    NOW   . Stardate = PERIOD . End
-    ETS   = NOW . toDateTime     ( self . TZ                                 )
-    ##########################################################################
-    NAME  = PERIOD . getProperty ( "Name"                                    )
-    DESC  = PERIOD . getProperty ( "Description"                             )
-    ##########################################################################
-    for e in iCal . walk         (                                         ) :
+    for c in iCal . subcomponents                                            :
       ########################################################################
-      n = e . name
-      n = n . lower              (                                           )
+      n      = c . name
+      n      = n . lower             (                                       )
       ########################################################################
-      if                         ( n in [ "vevent" ]                       ) :
+      if                             ( n not in [ "vevent" , "vcalendar" ] ) :
         ######################################################################
-        e   . add                ( "CLASS"   , PERIOD . Uuid                 )
-        e   . add                ( "SUMMARY" , NAME                          )
-        e   . add                ( "DTSTART" , DTS                           )
-        e   . add                ( "DTEND"   , ETS                           )
-        ######################################################################
-        if                       ( len ( DESC ) > 0                        ) :
-          ####################################################################
-          e . add                ( "DESCRIPTION" , DESC                      )
+        NCAL . add_component         ( c                                     )
     ##########################################################################
-    return iCal
+    return NCAL
 ##############################################################################
