@@ -906,6 +906,7 @@ class PeriodEditor                 ( Widget                                ) :
     ##########################################################################
     NITEM    . ObtainsAll             ( DB , NOXTAB                          )
     DESC     = self . assureString    ( NITEM . Note                         )
+    DESC     = f"{DESC}"
     self     . Period . setProperties ( "Description" , DESC                 )
     ##########################################################################
     DB       . Close                  (                                      )
