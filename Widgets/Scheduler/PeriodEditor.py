@@ -71,6 +71,7 @@ class PeriodEditor                 ( Widget                                ) :
   emitEventId         = pyqtSignal (                                         )
   emitUpdate          = pyqtSignal (                                         )
   emitShowAppleEvents = pyqtSignal ( list                                    )
+  emitOpenSmartNote   = pyqtSignal ( str                                     )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -128,7 +129,8 @@ class PeriodEditor                 ( Widget                                ) :
     self   . ui . FinishTime . setDateTime ( DT                              )
     ##########################################################################
     if                              ( self . Period . Uuid > 0             ) :
-      self . ui . Append . hide     (                                        )
+      ## self . ui . Append . hide     (                                        )
+      pass
     ##########################################################################
     return
   ############################################################################
@@ -256,6 +258,9 @@ class PeriodEditor                 ( Widget                                ) :
     if                                       ( len ( CID ) <= 0            ) :
       return
     ##########################################################################
+    VAL  =                                   ( CID ,                         )
+    FUNC = self . ReportCalendarDetails
+    self . Go                                ( FUNC , VAL                    )
     ##########################################################################
     return
   ############################################################################
@@ -414,13 +419,54 @@ class PeriodEditor                 ( Widget                                ) :
   ############################################################################
   def ReportEventDetails             ( self , CalendarId , EventId         ) :
     ##########################################################################
-    print(CalendarId , EventId)
     EVENT = self . GetEventFromApple (        CalendarId , EventId           )
     if ( type ( EVENT ) is not icalendar . cal . Calendar                  ) :
-      self . Notify                   ( 1                                    )
+      self . Notify                  ( 1                                     )
       return
     ##########################################################################
-    print(EVENT.to_ical())
+    BODY  = self . assureString      ( EVENT . to_ical ( )                   )
+    TEXT  = f"{CalendarId} {EventId}\n{BODY}"
+    ##########################################################################
+    self  . emitOpenSmartNote . emit ( TEXT                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def ReportCalendarDetails          ( self , CalendarId                   ) :
+    ##########################################################################
+    URL    = self . Settings        [ "Apple" ] [ "Calendar" ] [ "URL"       ]
+    DSID   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "DSID"      ]
+    USER   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "Username"  ]
+    PASS   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "Password"  ]
+    ##########################################################################
+    APPLE  = DAV                    ( URL , DSID , USER , PASS               )
+    OKAY   = APPLE . FetchCalendars (                                        )
+    ##########################################################################
+    if ( not OKAY ) or ( len ( APPLE . Calendars ) <= 0 )                    :
+      ########################################################################
+      return
+    ##########################################################################
+    CAL    = APPLE . FindCalendar   ( CalendarId                             )
+    if                              ( CAL in [ False , None ]              ) :
+      return
+    ##########################################################################
+    LISTS  =                        [                                        ]
+    ##########################################################################
+    for event in CAL . events              (                               ) :
+      ########################################################################
+      evt      = APPLE . EventFromICalData ( event . data                    )
+      J        = APPLE . GetEventBrief     ( evt                             )
+      ########################################################################
+      if                                   ( J not in [ False , None ]     ) :
+        ######################################################################
+        PUID   = J                         [ "Period"                        ]
+        ######################################################################
+        if                                 ( len ( PUID ) <= 0             ) :
+          ####################################################################
+          L    = json . dumps              ( J                               )
+          B    = self . assureString       ( event . data                    )
+          LISTS . append                   ( f"{L}\n{B}\n"                   )
+    ##########################################################################
+    self  . emitOpenSmartNote . emit       ( "\n" . join ( LISTS )           )
     ##########################################################################
     return
   ############################################################################
