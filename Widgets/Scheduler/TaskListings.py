@@ -292,7 +292,7 @@ class TaskListings                 ( TreeDock                              ) :
     if                        ( not self . isGrouping ( )                  ) :
       return
     ##########################################################################
-    self . defaultDeleteItems ( self . RemoveTasks                           )
+    self . defaultDeleteItems ( 0 , self . RemoveTasks                       )
     ##########################################################################
     return
   ############################################################################

@@ -291,7 +291,7 @@ class EventListings                ( TreeDock                              ) :
     if                        ( not self . isGrouping ( )                  ) :
       return
     ##########################################################################
-    self . defaultDeleteItems ( self . RemoveEvents                          )
+    self . defaultDeleteItems ( 0 , self . RemoveEvents                      )
     ##########################################################################
     return
   ############################################################################

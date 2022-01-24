@@ -865,7 +865,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def DeleteItems             ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
-  def defaultDeleteItems                 ( self , func                     ) :
+  def defaultDeleteItems                 ( self , column , func            ) :
     ##########################################################################
     UUIDs     =                          [                                   ]
     ##########################################################################
