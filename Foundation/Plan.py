@@ -53,6 +53,7 @@ class Plan                    ( PurePlan                                   ) :
     self . Ratio            = None
     self . VoiceWidget      = None
     self . progressManager  = None
+    self . Pad              = None
     self . Indicator        = None
     self . IndicatorCreator = None
     self . MyFunc           = None
@@ -388,10 +389,26 @@ class Plan                    ( PurePlan                                   ) :
     self . Indicator = None
     ##########################################################################
     return
+  ############################################################################
+  def DetachControl     ( self , widget                                    ) :
+    ##########################################################################
+    if                  ( self . Pad in [ False , None ]                   ) :
+      return
+    ##########################################################################
+    self . Pad . Detach (        widget                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def addControl            ( self , name , widget , parent                ) :
+    ##########################################################################
+    if                      ( self . Pad in [ False , None ]               ) :
+      return
+    ##########################################################################
+    self . Pad . addControl (        name , widget , parent                  )
+    ##########################################################################
+    return
 ##############################################################################
-
 """
-
 class Q_COMPONENTS_EXPORT Plan : public PurePlan
 {
   public:
@@ -1110,24 +1127,6 @@ QIcon N::Plan::Icon(int ObjectType,int ObjectId,int State,QIcon defaultIcon)
   return icon               ;
 }
 
-void N::Plan::DetachControl(QWidget * widget)
-{
-  if (IsNull(pad)) return  ;
-  pad -> Detach ( widget ) ;
-}
-
-void N::Plan::addControl(QString name,QWidget * widget,QWidget * parent)
-{
-  if (IsNull(pad)) return                      ;
-  pad -> addControl ( name , widget , parent ) ;
-}
-
-void N::Plan::addControl(QString name,QWidget * widget,QObject * parent)
-{
-  if (IsNull(pad)) return                      ;
-  pad -> addControl ( name , widget , parent ) ;
-}
-
 bool N::Plan::setManipulator(QString key,int size)
 {
   if ( Manipulators . contains ( key ) ) return true ;
@@ -1194,5 +1193,4 @@ bool N::Plan::Profiling(void)
   profiler -> startup ( )                                          ;
   return true                                                      ;
 }
-
 """
