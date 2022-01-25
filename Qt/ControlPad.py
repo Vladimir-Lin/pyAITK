@@ -21,6 +21,8 @@ from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -66,7 +68,7 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 280 , 640 )                       )
   ############################################################################
   def Prepare                           ( self                             ) :
     ##########################################################################
