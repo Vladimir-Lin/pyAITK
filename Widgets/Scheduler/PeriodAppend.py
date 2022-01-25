@@ -414,7 +414,7 @@ class PeriodAppend                  ( Widget                               ) :
     self     . Notify             ( 0                                        )
     ##########################################################################
     if                            ( OPEN                                   ) :
-      self  . OpenEditor  . emit  ( Name , str ( uuid )                      )
+      self  . OpenEditor  . emit  ( NAME , str ( uuid )                      )
       time  . sleep               ( 1.0                                      )
     ##########################################################################
     self    . CloseMyself . emit  ( self                                     )
