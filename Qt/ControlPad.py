@@ -288,17 +288,17 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     self   . ViewStack . addWidget        ( widget                           )
     self   . ViewStack . setCurrentWidget ( widget                           )
     ##########################################################################
-    self   . Parents   [ widget  ] = parent
-    self   . WidgetId  [ widget  ] = Lastest
-    self   . WidgetMap [ Lastest ] = widget
-    self   . Titles    [ Lastest ] = name
+    self   . Parents   [ widget         ] = parent
+    self   . WidgetId  [ widget         ] = self . Lastest
+    self   . WidgetMap [ self . Lastest ] = widget
+    self   . Titles    [ self . Lastest ] = name
     ##########################################################################
     index  = self . Tools . count         (                                  )
     ##########################################################################
     self   . Close . setEnabled           ( True                             )
     ##########################################################################
     self   . Tools . setEnabled           ( True                             )
-    self   . Tools . addItem              ( name , Lastest                   )
+    self   . Tools . addItem              ( name , self . Lastest            )
     self   . Tools . blockSignals         ( True                             )
     self   . Tools . setCurrentIndex      ( index                            )
     self   . Tools . blockSignals         ( False                            )
@@ -326,7 +326,7 @@ class ControlPad             ( Splitter , AttachDock                       ) :
       self . ViewStack . setCurrentWidget ( self . Empty                     )
       self . Close     . setEnabled       ( False                            )
       self . Tools     . setEnabled       ( False                            )
-      self . Notify                       ( 1                                )
+      self . Notify                       ( 4                                )
       ########################################################################
       return
     ##########################################################################

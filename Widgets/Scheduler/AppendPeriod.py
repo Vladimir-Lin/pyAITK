@@ -18,7 +18,6 @@ class Ui_AppendPeriod(object):
         self.Projects = QtWidgets.QComboBox(AppendPeriod)
         self.Projects.setGeometry(QtCore.QRect(10, 50, 260, 28))
         self.Projects.setEditable(True)
-        self.Projects.setPlaceholderText("")
         self.Projects.setObjectName("Projects")
         self.Tasks = QtWidgets.QComboBox(AppendPeriod)
         self.Tasks.setGeometry(QtCore.QRect(10, 78, 260, 28))
