@@ -326,7 +326,7 @@ class ControlPad             ( Splitter , AttachDock                       ) :
       self . ViewStack . setCurrentWidget ( self . Empty                     )
       self . Close     . setEnabled       ( False                            )
       self . Tools     . setEnabled       ( False                            )
-      self . Notify                       ( 4                                )
+      self . Notify                       ( 2                                )
       ########################################################################
       return
     ##########################################################################
