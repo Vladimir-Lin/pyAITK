@@ -116,14 +116,14 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     self . ButtonPad . setMaximumWidth  ( 56                                 )
     ##########################################################################
     msg  = self      . getMenuItem      ( "Close"                            )
-    ICON = QIcon                        ( ":/images/24x24/delete.png"        )
+    ICON = QIcon                        ( ":/images/close.png"               )
     self . Close     . setGeometry      (  0 ,  0 , 28 , 28                  )
     self . Close     . setAutoRaise     ( True                               )
     self . Close     . setIcon          ( ICON                               )
     self . Close     . setToolTip       ( msg                                )
     ##########################################################################
     msg  = self      . getMenuItem      ( "ChangeDocking"                    )
-    ICON = QIcon                        ( ":/images/24x24/Logout.png"        )
+    ICON = QIcon                        ( ":/images/hide.png"                )
     self . Position  . setGeometry      ( 28 ,  0 , 28 , 28                  )
     self . Position  . setAutoRaise     ( True                               )
     self . Position  . setIcon          ( ICON                               )
