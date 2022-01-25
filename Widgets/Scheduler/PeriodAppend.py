@@ -384,11 +384,13 @@ class PeriodAppend                  ( Widget                               ) :
     RELTAB   = self . Tables      [ "RelationPeriods"                        ]
     NAMTAB   = self . Tables      [ "NamesLocal"                             ]
     GNATAB   = self . Tables      [ "NamesPrivate"                           ]
+    NOXTAB   = self . Tables      [ "Notes"                                  ]
     TYPTAB   = self . Tables      [ "Types"                                  ]
     TABLES   =                    [ PRDTAB                                 , \
                                     NAMTAB                                 , \
                                     RELTAB                                 , \
                                     GNATAB                                 , \
+                                    NOXTAB                                 , \
                                     TYPTAB                                   ]
     ##########################################################################
     DB       . LockWrites         ( TABLES                                   )
@@ -404,6 +406,13 @@ class PeriodAppend                  ( Widget                               ) :
     EVT      . JoinPeriods        ( DB , RELTAB , [ uuid ]                   )
     ##########################################################################
     self     . AssureUuidName     ( DB , NAMTAB , uuid , NAME                )
+    ##########################################################################
+    NOX      = Notes              (                                          )
+    NOX      . Uuid   = uuid
+    NOX      . Name   = "Description"
+    NOX      . Prefer = 0
+    NOX      . Note   = NOTE
+    NOX      . assureNote         ( DB , NOXTAB                              )
     ##########################################################################
     self     . ShowStatus         ( ""                                       )
     self     . LoopRunning = True
