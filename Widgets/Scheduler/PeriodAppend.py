@@ -331,6 +331,8 @@ class PeriodAppend                  ( Widget                               ) :
     self   . Now . setTime                     ( EDT . toSecsSinceEpoch ( )  )
     EDTX   = self . Now . Stardate
     ##########################################################################
+    self   . ui . Append . setEnabled        ( False                         )
+    ##########################################################################
     JSON   = { "Event"  : EUID                                             , \
                "Name"   : NAME                                             , \
                "Note"   : NOTE                                             , \
