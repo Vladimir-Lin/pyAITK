@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## ListWidget
+## ControlPad
 ##############################################################################
 import os
 import sys
@@ -33,26 +33,26 @@ from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QListWidget
-from   PyQt5 . QtWidgets              import QListWidgetItem
-from   PyQt5 . QtWidgets              import QTreeWidget
-from   PyQt5 . QtWidgets              import QTreeWidgetItem
-from   PyQt5 . QtWidgets              import QLineEdit
+from   PyQt5 . QtWidgets              import QStackedWidget
+from   PyQt5 . QtWidgets              import QSplitter
+from   PyQt5 . QtWidgets              import QToolButton
 from   PyQt5 . QtWidgets              import QComboBox
-from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QLabel
 ##############################################################################
 from         . AttachDock             import AttachDock as AttachDock
-from         . ListWidget             import ListWidget as ListWidget
+from         . Splitter               import Splitter   as Splitter
 ##############################################################################
-class ListDock               ( ListWidget , AttachDock                     ) :
+class ControlPad             ( Splitter , AttachDock                       ) :
   ############################################################################
   attachNone    = pyqtSignal ( QWidget                                       )
   attachDock    = pyqtSignal ( QWidget , str , int , int                     )
   attachMdi     = pyqtSignal ( QWidget , int                                 )
+  SendAdd       = pyqtSignal ( str , QWidget , QObject                       )
+  SendLeave     = pyqtSignal ( QObject                                       )
   ############################################################################
-  def __init__        ( self , parent = None , plan = None                 ) :
+  def __init__               ( self , parent = None , plan = None          ) :
     ##########################################################################
-    super (                   ) . __init__ ( parent , plan                   )
+    super (                   ) . __init__ ( Qt . Vertical , parent , plan   )
     super ( AttachDock , self ) . __init__ (                                 )
     self . InitializeDock                  (          plan                   )
     ##########################################################################
@@ -63,29 +63,101 @@ class ListDock               ( ListWidget , AttachDock                     ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    ## WidgetClass                                            ;
-    self . setFunction     ( self . FunctionDocking , True                   )
-    ##########################################################################
     return
   ############################################################################
-  def PrepareMessages            ( self                                    ) :
+  def Prepare                           ( self                             ) :
     ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
+    sss  = "QStackedWidget { background: rgb(255,255,255) ; }"
     ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
+    self . ToolStack = None
+    self . ViewStack = None
+    self . Top       = None
+    self . ButtonPad = None
+    self . Close     = None
+    self . Position  = None
+    self . Tools     = None
+    self . Empty     = None
+    self . Lastest   = 1
+    self . Parents   =                  {                                    }
+    self . WidgetId  =                  {                                    }
+    self . WidgetMap =                  {                                    }
+    self . Titles    =                  {                                    }
     ##########################################################################
-    return
-  ############################################################################
-  def Visible        ( self , visible                                      ) :
-    self . Visiblity (        visible                                        )
-    return
-  ############################################################################
-  def DockIn         ( self , shown                                        ) :
-    self . ShowDock  (        shown                                          )
+    self . ToolStack = QStackedWidget   ( self                               )
+    self . ViewStack = QStackedWidget   ( self                               )
+    self . Top       = QSplitter        ( Qt . Horizontal , self . ToolStack )
+    self . ButtonPad = QWidget          ( self . Top                         )
+    self . Close     = QToolButton      ( self . ButtonPad                   )
+    self . Position  = QToolButton      ( self . ButtonPad                   )
+    self . Tools     = QComboBox        ( self . Top                         )
+    self . Empty     = QLabel           ( self . ViewStack                   )
+    ##########################################################################
+    self . ViewStack . setStyleSheet    ( sss                                )
+    ##########################################################################
+    self . ToolStack . setMinimumHeight ( 28                                 )
+    self . ToolStack . setMaximumHeight ( 28                                 )
+    self . addWidget                    ( self . ViewStack                   )
+    self . addWidget                    ( self . ToolStack                   )
+    self . ViewStack . addWidget        ( self . Empty                       )
+    ##########################################################################
+    self . Top       . setHandleWidth   ( 0                                  )
+    self . Top       . setMinimumHeight ( 28                                 )
+    self . Top       . setMaximumHeight ( 28                                 )
+    self . ToolStack . addWidget        ( self . Top                         )
+    ##########################################################################
+    self . Top       . addWidget        ( self . ButtonPad                   )
+    self . Top       . addWidget        ( self . Tools                       )
+    self . ButtonPad . setMinimumWidth  ( 56                                 )
+    self . ButtonPad . setMaximumWidth  ( 56                                 )
+    ##########################################################################
+    msg  = self      . getMenuItem      ( "Close"                            )
+    ICON = QIcon                        ( ":/images/24x24/delete.png"        )
+    self . Close     . setGeometry      (  0 ,  0 , 28 , 28                  )
+    self . Close     . setAutoRaise     ( True                               )
+    self . Close     . setIcon          ( ICON                               )
+    self . Close     . setToolTip       ( msg                                )
+    ##########################################################################
+    msg  = self      . getMenuItem      ( "ChangeDocking"                    )
+    ICON = QIcon                        ( ":/images/24x24/Logout.png"        )
+    self . Position  . setGeometry      ( 28 ,  0 , 28 , 28                  )
+    self . Position  . setAutoRaise     ( True                               )
+    self . Position  . setIcon          ( ICON                               )
+    self . Position  . setToolTip       ( msg                                )
+    ##########################################################################
+    self . setHandleWidth               (   1                                )
+    self . setMinimumWidth              ( 160                                )
+    self . setMinimumHeight             ( 160                                )
+    ##########################################################################
+    self . ToolStack . setCurrentWidget ( self . Top                         )
+    self . ViewStack . setCurrentWidget ( self . Empty                       )
+    ##########################################################################
+    self . Close     . setEnabled       ( False                              )
+    self . Tools     . setEnabled       ( False                              )
+    self . Tools     . setEditable      ( True                               )
+    ##########################################################################
+    msg  = self      . getMenuItem      ( "NoController"                     )
+    self . Empty     . setText          ( msg                                )
+    self . Empty     . setAlignment     ( Qt . AlignCenter                   )
+    ##########################################################################
+    self . ViewStack . setMouseTracking ( True                               )
+    self . ViewStack . setFocusPolicy   ( Qt . WheelFocus                    )
+    ##########################################################################
+    self . SendLeave             . connect ( self . ActualLeave              )
+    self . SendAdd               . connect ( self . ActualAdd                )
+    self . Tools     . activated . connect ( self . WidgetChanged            )
+    self . Close     . clicked   . connect ( self . CloseWidget              )
+    self . Position  . clicked   . connect ( self . ChangePosition           )
+    ##########################################################################
+    self . ToolStack . show             (                                    )
+    self . ViewStack . show             (                                    )
+    self . Top       . show             (                                    )
+    self . ButtonPad . show             (                                    )
+    self . Close     . show             (                                    )
+    self . Position  . show             (                                    )
+    self . Tools     . show             (                                    )
+    self . Empty     . show             (                                    )
+    ## self . plan      . setFont ( this )
+    ##########################################################################
     return
   ############################################################################
   def Docking            ( self , Main , title , area , areas              ) :
@@ -98,60 +170,223 @@ class ListDock               ( ListWidget , AttachDock                     ) :
     ##########################################################################
     return
   ############################################################################
-  def DockingMenu                    ( self , menu                         ) :
+  def Visible        ( self , visible                                      ) :
+    self . Visiblity (        visible                                        )
+    return
+  ############################################################################
+  def DockIn          ( self , shown                                       ) :
     ##########################################################################
-    canDock = self . isFunction      ( self . FunctionDocking                )
-    if                               ( not canDock                         ) :
-      return
-    ##########################################################################
-    p       = self . parentWidget    (                                       )
-    S       = False
-    D       = False
-    M       = False
-    ##########################################################################
-    if                               ( p == None                           ) :
-      S     = True
-    else                                                                     :
-      ########################################################################
-      if                             ( self . isDocking ( )                ) :
-        D   = True
-      else                                                                   :
-        M   = True
-    ##########################################################################
-    menu    . addSeparator           (                                       )
-    ##########################################################################
-    if                               (     S or D                          ) :
-      msg   = self . getLocalMessage ( self . AttachToMdi                    )
-      menu  . addAction              ( self . AttachToMdi  , msg             )
-    ##########################################################################
-    if                               (     S or M                          ) :
-      msg   = self . getLocalMessage ( self . AttachToDock                   )
-      menu  . addAction              ( self . AttachToDock , msg             )
-    ##########################################################################
-    if                               ( not S                               ) :
-      msg   = self . getLocalMessage ( self . AttachToNone                   )
-      menu  . addAction              ( self . AttachToNone , msg             )
+    self . Show       (        shown                                         )
+    self . Relocation (                                                      )
     ##########################################################################
     return
   ############################################################################
-  def RunDocking               ( self , menu , action                      ) :
+  def resizeEvent           ( self , event                                 ) :
     ##########################################################################
-    at = menu . at             ( action                                      )
+    super ( ) . resizeEvent (        event                                   )
+    self . Relocation       (                                                )
     ##########################################################################
-    if                         ( at == self . AttachToNone                 ) :
-      self . attachNone . emit ( self                                        )
-      return True
+    return
+  ############################################################################
+  def Relocation ( self                                                    ) :
+    return
+  ############################################################################
+  def Leave                 ( self , widget                                ) :
+    self . SendLeave . emit (        widget                                  )
+    return
+  ############################################################################
+  def Detach                ( self , widget                                ) :
     ##########################################################################
-    if                         ( at == self . AttachToMdi                  ) :
-      self . attachMdi  . emit ( self , self . dockingOrientation            )
-      return True
+    if                      ( widget not in self . WidgetId                ) :
+      return
     ##########################################################################
-    if                         ( at == self . AttachToDock                 ) :
-      self . attachDock . emit ( self                                      , \
-                                 self . windowTitle ( )                    , \
-                                 self . dockingPlace                       , \
-                                 self . dockingPlaces                        )
-      return True
+    index = self . WidgetId [ widget                                         ]
+    if                      ( index < 0                                    ) :
+      return
     ##########################################################################
-    return False
+    self . Delete           ( widget                                         )
+    self . FindCurrent      ( index                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def Delete                         ( self , widget                       ) :
+    ##########################################################################
+    if                               ( widget not in self . WidgetId       ) :
+      return
+    ##########################################################################
+    index  = self . WidgetId         [ widget                                ]
+    if                               ( index < 0                           ) :
+      return
+    ##########################################################################
+    del self . Parents               [ widget                                ]
+    del self . WidgetId              [ widget                                ]
+    del self . WidgetMap             [ index                                 ]
+    del self . Titles                [ index                                 ]
+    ##########################################################################
+    pos    = -1
+    ##########################################################################
+    for i in range                   ( 0 , self . Tools . count ( )        ) :
+      ########################################################################
+      v    = self . Tools . itemData ( i                                     )
+      v    = int                     ( v                                     )
+      if                             ( v == index                          ) :
+        pos = i
+    ##########################################################################
+    if                               ( pos < 0                             ) :
+      return
+    ##########################################################################
+    self   . Tools . removeItem      ( pos                                   )
+    widget . deleteLater             (                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def addControl               ( self , name , widget , parent             ) :
+    ##########################################################################
+    parent . Leave   . connect ( self . Leave                                )
+    self   . SendAdd . emit    (        name , widget , parent               )
+    ##########################################################################
+    return
+  ############################################################################
+  def ActualLeave                        ( self , object                   ) :
+    ##########################################################################
+    index  = self . Tools . currentIndex (                                   )
+    if                                   ( index < 0                       ) :
+      return
+    ##########################################################################
+    wid    = self . Tools . itemData     ( index                             )
+    wid    = int                         ( wid                               )
+    if                                   ( wid < 0                         ) :
+      return
+    ##########################################################################
+    Ws     = self . Parents . keys       (                                   )
+    Ds     =                             [                                   ]
+    ##########################################################################
+    for w in Ws                                                              :
+      if                                 ( object == self . Parents [ w ]  ) :
+        Ds . append                      ( w                                 )
+    ##########################################################################
+    if                                   ( len ( Ds ) <= 0                 ) :
+      return
+    ##########################################################################
+    for w in Ds                                                              :
+      self . Delete                      ( w                                 )
+    ##########################################################################
+    self   . FindCurrent                 ( wid                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def ActualAdd                           ( self , name , widget , parent  ) :
+    ##########################################################################
+    self . Lastest = self . Lastest + 1
+    ##########################################################################
+    widget . setParent                    ( self . ViewStack                 )
+    self   . ViewStack . addWidget        ( widget                           )
+    self   . ViewStack . setCurrentWidget ( widget                           )
+    ##########################################################################
+    self   . Parents   [ widget  ] = parent
+    self   . WidgetId  [ widget  ] = Lastest
+    self   . WidgetMap [ Lastest ] = widget
+    self   . Titles    [ Lastest ] = name
+    ##########################################################################
+    index  = self . Tools . count         (                                  )
+    ##########################################################################
+    self   . Close . setEnabled           ( True                             )
+    ##########################################################################
+    self   . Tools . setEnabled           ( True                             )
+    self   . Tools . addItem              ( name , Lastest                   )
+    self   . Tools . blockSignals         ( True                             )
+    self   . Tools . setCurrentIndex      ( index                            )
+    self   . Tools . blockSignals         ( False                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def ChangePosition ( self                                                ) :
+    ##########################################################################
+    """
+    QMdiSubWindow * mdi  = Casting(QMdiSubWindow,parent())      ;
+    QDockWidget   * dock = Casting(QDockWidget  ,parent())      ;
+    nIfSafe(dock) emit attachMdi  ( this , dockingOrientation ) ;
+    nIfSafe(mdi ) emit attachDock ( this                        ,
+                                    windowTitle ( )             ,
+                                    dockingPlace                ,
+                                    dockingPlaces             ) ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def FindCurrent                         ( self , index                   ) :
+    ##########################################################################
+    if                                    ( self . Tools . count ( ) <= 0  ) :
+      ########################################################################
+      self . ViewStack . setCurrentWidget ( self . Empty                     )
+      self . Close     . setEnabled       ( False                            )
+      self . Tools     . setEnabled       ( False                            )
+      self . Notify                       ( 1                                )
+      ########################################################################
+      return
+    ##########################################################################
+    index  = self . Tools . currentIndex  (                                  )
+    if                                    ( index < 0                      ) :
+      return
+    ##########################################################################
+    wid    = int                          ( self . Tools . itemData(index)   )
+    ##########################################################################
+    if                                    ( wid < 0                        ) :
+      return
+    ##########################################################################
+    if                                    ( wid not in self . WidgetMap    ) :
+      return
+    ##########################################################################
+    w      = self . WidgetMap             [ wid                              ]
+    self   . ViewStack . setCurrentWidget ( w                                )
+    self   . Notify                       ( 5                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def CloseWidget                       ( self                             ) :
+    ##########################################################################
+    index = self . Tools . currentIndex (                                    )
+    if                                  ( index < 0                        ) :
+      return
+    ##########################################################################
+    wid   = int                         ( self . Tools . itemData ( index )  )
+    if                                  ( wid < 0                          ) :
+      return
+    ##########################################################################
+    if                                  ( wid not in self . WidgetMap      ) :
+      return
+    ##########################################################################
+    w     = self . WidgetMap            [ wid                                ]
+    self  . Delete                      ( w                                  )
+    self  . FindCurrent                 ( wid                                )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                             (        int                         )
+  def WidgetChanged                     ( self , index                     ) :
+    ##########################################################################
+    wid = int                           ( self . Tools . itemData ( index )  )
+    if                                  ( wid <= 0                         ) :
+      return
+    ##########################################################################
+    self . ViewStack . setCurrentWidget ( self . WidgetMap [ wid ]           )
+    ##########################################################################
+    return
+  ############################################################################
+  def Find                        ( self , accessibleNameWidget            ) :
+    ##########################################################################
+    IDs = self . WidgetMap . keys (                                          )
+    if                            ( len ( IDs ) <= 0                       ) :
+      return None
+    ##########################################################################
+    for ID in IDs                                                            :
+      ########################################################################
+      w = self . WidgetMap        [ ID                                       ]
+      if                          ( w not in [ False , None ]              ) :
+        ######################################################################
+        anv = w . accessibleName  (                                          )
+        if                        ( anv == accessibleNameWidget            ) :
+          return w
+    ##########################################################################
+    return None
 ##############################################################################
