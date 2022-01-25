@@ -122,6 +122,40 @@ class Events                  (                                            ) :
     ##########################################################################
     return uuid
   ############################################################################
+  def NewPeriod              ( self , DB , TYPE , START , FINISH , STATES  ) :
+    ##########################################################################
+    PRDTAB = self . Tables   [ "Periods"                                     ]
+    ##########################################################################
+    NOW    = StarDate        (                                               )
+    NOW    . Now             (                                               )
+    CDT    = NOW . Stardate
+    ##########################################################################
+    PRD    = Periode         (                                               )
+    PRID   = PRD  . GetUuid  ( DB , PRDTAB                                   )
+    ##########################################################################
+    PRD    . Type     = TYPE
+    PRD    . Start    = START
+    PRD    . End      = FINISH
+    PRD    . Realm    = 0
+    PRD    . Role     = 0
+    PRD    . Item     = self . DefaultType
+    PRD    . States   = STATES
+    PRD    . Creation = CDT
+    PRD    . Modified = CDT
+    ##########################################################################
+    Items  =                 [ "type"                                      , \
+                               "start"                                     , \
+                               "end"                                       , \
+                               "realm"                                     , \
+                               "role"                                      , \
+                               "item"                                      , \
+                               "states"                                    , \
+                               "creation"                                  , \
+                               "modified"                                    ]
+    PRD    . UpdateItems     ( DB , PRDTAB , Items                           )
+    ##########################################################################
+    return PRID
+  ############################################################################
   def AppendPeriod           ( self , DB                                   ) :
     ##########################################################################
     PRDTAB = self . Tables   [ "Periods"                                     ]

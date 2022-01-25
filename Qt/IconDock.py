@@ -696,7 +696,8 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
     if                                ( DB == None                         ) :
-      self . emitIconsShow . emit     (                                      )
+      self  . emitIconsShow . emit    (                                      )
+      self  . LoopRunning = True
       return
     ##########################################################################
     self    . Notify                  ( 3                                    )
