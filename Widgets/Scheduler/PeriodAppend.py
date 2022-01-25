@@ -250,6 +250,8 @@ class PeriodAppend                  ( Widget                               ) :
     if                                       ( UUID > 0                    ) :
       VAL  =                                 ( UUID ,                        )
       self . Go                              ( self . LoadTasks , VAL        )
+    else                                                                     :
+      self . ui . setEnabled                 ( True                          )
     ##########################################################################
     return
   ############################################################################
@@ -267,6 +269,8 @@ class PeriodAppend                  ( Widget                               ) :
     if                                       ( UUID > 0                    ) :
       VAL  =                                 ( UUID ,                        )
       self . Go                              ( self . LoadEvents , VAL       )
+    else                                                                     :
+      self . ui . setEnabled                 ( True                          )
     ##########################################################################
     return
   ############################################################################
@@ -277,6 +281,7 @@ class PeriodAppend                  ( Widget                               ) :
     ##########################################################################
     if                                     ( UUID <= 0                     ) :
       self . ui . Append . setEnabled      ( False                           )
+      self . ui . setEnabled               ( True                            )
       return
     ##########################################################################
     self   . DetectValidPeriod             (                                 )
@@ -331,7 +336,7 @@ class PeriodAppend                  ( Widget                               ) :
     self   . Now . setTime                     ( EDT . toSecsSinceEpoch ( )  )
     EDTX   = self . Now . Stardate
     ##########################################################################
-    self   . ui . Append . setEnabled        ( False                         )
+    self   . ui . Append . setEnabled          ( False                       )
     ##########################################################################
     JSON   = { "Event"  : EUID                                             , \
                "Name"   : NAME                                             , \
