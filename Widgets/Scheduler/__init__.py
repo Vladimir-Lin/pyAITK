@@ -7,6 +7,7 @@ from . EventListings   import EventListings   as EventListings
 from . PeriodeListings import PeriodeListings as PeriodeListings
 from . SectionListings import SectionListings as SectionListings
 from . PeriodEditor    import PeriodEditor    as PeriodEditor
+from . PeriodAppend    import PeriodAppend    as PeriodAppend
 from . AppleCalendar   import AppleCalendar   as AppleCalendar
 from . GoogleCalendar  import GoogleCalendar  as GoogleCalendar
 ##############################################################################
@@ -17,6 +18,7 @@ __all__ = [ "ProjectListings"                                              , \
             "PeriodeListings"                                              , \
             "SectionListings"                                              , \
             "PeriodEditor"                                                 , \
+            "PeriodAppend"                                                 , \
             "AppleCalendar"                                                , \
             "GoogleCalendar"                                                 ]
 ##############################################################################
