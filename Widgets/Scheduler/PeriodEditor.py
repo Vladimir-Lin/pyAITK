@@ -294,6 +294,7 @@ class PeriodEditor                 ( Widget                                ) :
     TS   = self . Now . Timestamp         (                                  )
     DT   = QDateTime . fromSecsSinceEpoch ( TS                               )
     self . ui . StartTime  . setDateTime  ( DT                               )
+    self . StartTimeChanged               (                                  )
     ##########################################################################
     return
   ############################################################################
@@ -303,6 +304,7 @@ class PeriodEditor                 ( Widget                                ) :
     TS   = self . Now . Timestamp         (                                  )
     DT   = QDateTime . fromSecsSinceEpoch ( TS                               )
     self . ui . FinishTime . setDateTime  ( DT                               )
+    self . FinishTimeChanged              (                                  )
     ##########################################################################
     return
   ############################################################################
