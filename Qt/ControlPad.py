@@ -87,6 +87,7 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     self . WidgetId  =                  {                                    }
     self . WidgetMap =                  {                                    }
     self . Titles    =                  {                                    }
+    self . CtrlMutex = threading . Lock (                                    )
     ##########################################################################
     self . ToolStack = QStackedWidget   ( self                               )
     self . ViewStack = QStackedWidget   ( self                               )
@@ -165,6 +166,14 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     ##########################################################################
     return
   ############################################################################
+  def LockCtrl                 ( self                                      ) :
+    self . CtrlMutex . acquire (                                             )
+    return
+  ############################################################################
+  def UnlockCtrl               ( self                                      ) :
+    self . CtrlMutex . release (                                             )
+    return
+  ############################################################################
   def Docking            ( self , Main , title , area , areas              ) :
     ##########################################################################
     super ( )  . Docking (        Main , self ,  title , area , areas        )
@@ -200,6 +209,7 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     self . SendLeave . emit (        widget                                  )
     return
   ############################################################################
+  @pyqtSlot                 (        QWidget                                 )
   def Detach                ( self , widget                                ) :
     ##########################################################################
     if                      ( widget not in self . WidgetId                ) :
@@ -214,6 +224,7 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot                          (        QWidget                        )
   def Delete                         ( self , widget                       ) :
     ##########################################################################
     if                               ( widget not in self . WidgetId       ) :
@@ -222,6 +233,8 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     index  = self . WidgetId         [ widget                                ]
     if                               ( index < 0                           ) :
       return
+    ##########################################################################
+    self . LockCtrl                  (                                       )
     ##########################################################################
     del self . Parents               [ widget                                ]
     del self . WidgetId              [ widget                                ]
@@ -237,11 +250,15 @@ class ControlPad             ( Splitter , AttachDock                       ) :
       if                             ( v == index                          ) :
         pos = i
     ##########################################################################
+    self . UnlockCtrl                (                                       )
+    ##########################################################################
     if                               ( pos < 0                             ) :
+      self . DetectEmptyTools        (                                       )
       return
     ##########################################################################
     self   . Tools . removeItem      ( pos                                   )
     widget . deleteLater             (                                       )
+    self   . DetectEmptyTools        (                                       )
     ##########################################################################
     return
   ############################################################################
@@ -282,6 +299,8 @@ class ControlPad             ( Splitter , AttachDock                       ) :
   ############################################################################
   def ActualAdd                           ( self , name , widget , parent  ) :
     ##########################################################################
+    self . LockCtrl                       (                                  )
+    ##########################################################################
     self . Lastest = self . Lastest + 1
     ##########################################################################
     widget . setParent                    ( self . ViewStack                 )
@@ -303,31 +322,39 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     self   . Tools . setCurrentIndex      ( index                            )
     self   . Tools . blockSignals         ( False                            )
     ##########################################################################
+    self   . UnlockCtrl                   (                                  )
+    ##########################################################################
     return
   ############################################################################
-  def ChangePosition ( self                                                ) :
+  def ChangePosition           ( self                                      ) :
     ##########################################################################
-    """
-    QMdiSubWindow * mdi  = Casting(QMdiSubWindow,parent())      ;
-    QDockWidget   * dock = Casting(QDockWidget  ,parent())      ;
-    nIfSafe(dock) emit attachMdi  ( this , dockingOrientation ) ;
-    nIfSafe(mdi ) emit attachDock ( this                        ,
-                                    windowTitle ( )             ,
-                                    dockingPlace                ,
-                                    dockingPlaces             ) ;
-    """
+    cpt    = str               ( type ( self . parent ( ) )                  )
+    ##########################################################################
+    if                         ( "DockWidget"   in cpt                     ) :
+      self . attachMdi  . emit ( self , self . dockingOrientation            )
+    elif                       ( "MdiSubWindow" in cpt                     ) :
+      self . attachDock . emit ( self                                      , \
+                                 self . windowTitle ( )                    , \
+                                 self . dockingPlace                       , \
+                                 self . dockingPlaces                        )
     ##########################################################################
     return
+  ############################################################################
+  def DetectEmptyTools                  ( self                             ) :
+    ##########################################################################
+    if                                  ( self . Tools . count ( ) > 0     ) :
+      return False
+    ##########################################################################
+    self . ViewStack . setCurrentWidget ( self . Empty                       )
+    self . Close     . setEnabled       ( False                              )
+    self . Tools     . setEnabled       ( False                              )
+    self . Notify                       ( 2                                  )
+    ##########################################################################
+    return   True
   ############################################################################
   def FindCurrent                         ( self , index                   ) :
     ##########################################################################
-    if                                    ( self . Tools . count ( ) <= 0  ) :
-      ########################################################################
-      self . ViewStack . setCurrentWidget ( self . Empty                     )
-      self . Close     . setEnabled       ( False                            )
-      self . Tools     . setEnabled       ( False                            )
-      self . Notify                       ( 2                                )
-      ########################################################################
+    if                                    ( self . DetectEmptyTools ( )    ) :
       return
     ##########################################################################
     index  = self . Tools . currentIndex  (                                  )
@@ -348,6 +375,7 @@ class ControlPad             ( Splitter , AttachDock                       ) :
     ##########################################################################
     return
   ############################################################################
+  @pyqtSlot                             (                                    )
   def CloseWidget                       ( self                             ) :
     ##########################################################################
     index = self . Tools . currentIndex (                                    )
