@@ -122,6 +122,8 @@ class Apple              (                                                 ) :
     TITLE     = ""
     UID       = ""
     PUID      = ""
+    PLACE     = ""
+    LOC       = ""
     ##########################################################################
     for key , value in event . property_items (                            ) :
       ########################################################################
@@ -132,20 +134,26 @@ class Apple              (                                                 ) :
         UID   = self . assureString           ( str ( value                ) )
       elif                                    ( K in [ "class"           ] ) :
         PUID  = self . assureString           ( str ( value                ) )
-      elif                                    ( K in [ "comment"         ] ) :
+      elif                                    ( K in [ "location"        ] ) :
         ######################################################################
         TSON  = self . assureString           ( str ( value                ) )
         try                                                                  :
           J   = json . loads                  ( TSON                         )
-          if                                  ( "Period" in J              ) :
+          if                                  ( "Period"   in J            ) :
             PUID = J                          [ "Period"                     ]
+          if                                  ( "Place"    in J            ) :
+            PLACE = J                         [ "Place"                      ]
+          if                                  ( "Location" in J            ) :
+            LOC  = J                          [ "Location"                   ]
         except                                                               :
           pass
     ##########################################################################
     if                                        ( len ( UID ) > 0            ) :
-      return                                  { "Id"     : UID             , \
-                                                "Name"   : TITLE           , \
-                                                "Period" : PUID              }
+      return                                  { "Id"       : UID           , \
+                                                "Name"     : TITLE         , \
+                                                "Period"   : PUID          , \
+                                                "Place"    : PLACE         , \
+                                                "Location" : LOC             }
     ##########################################################################
     return None
   ############################################################################
@@ -169,6 +177,7 @@ class Apple              (                                                 ) :
     ##########################################################################
     try                                                                      :
       E   = calendar . event_by_url  ( URL                                   )
+      print(E.data)
       evt = self . EventFromICalData ( E . data                              )
       J   = self . GetEventBrief     ( evt                                   )
       ########################################################################
@@ -212,8 +221,13 @@ class Apple              (                                                 ) :
     DESC  = PERIOD . getProperty ( "Description"                             )
     CID   = PERIOD . getProperty ( "Calendar"                                )
     EID   = PERIOD . getProperty ( "Event"                                   )
+    PID   = PERIOD . getProperty ( "Place"                                   )
+    LOC   = PERIOD . getProperty ( "Location"                                )
     ##########################################################################
-    JSON  =                      { "Period" : PUID                           }
+    JSON  =                      { "Location" : LOC                        , \
+                                   "Period"   : PUID                       , \
+                                   "Place"    : PID                          }
+    ##########################################################################
     TSON  = json . dumps         ( JSON , ensure_ascii = False               )
     ##########################################################################
     iCal  = icalendar . Calendar (                                           )
@@ -222,12 +236,12 @@ class Apple              (                                                 ) :
     iCal  . add                  ( "CALSCALE"    , "GREGORIAN"               )
     ##########################################################################
     evt   = icalendar . Event    (                                           )
-    evt   . add                  ( "CLASS"       , f"{PUID}"                 )
+    ## evt   . add                  ( "CLASS"       , f"{PUID}"                 )
     evt   . add                  ( "SUMMARY"     , NAME                      )
     evt   . add                  ( "DTSTART"     , DTS                       )
     evt   . add                  ( "DTEND"       , ETS                       )
     evt   . add                  ( "STATUS"      , "CONFIRMED"               )
-    evt   . add                  ( "COMMENT"     , TSON                      )
+    evt   . add                  ( "LOCATION"    , TSON                      )
     ##########################################################################
     if                           ( len ( DESC ) > 0                        ) :
       ########################################################################
