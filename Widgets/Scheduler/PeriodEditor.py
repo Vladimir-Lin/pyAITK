@@ -514,7 +514,6 @@ class PeriodEditor                 ( Widget                                ) :
     if                              ( len ( EventId ) <= 0                 ) :
       ########################################################################
       E    = APPLE . iCalFromPeriod ( self . Period                          )
-      print(E.to_ical())
       try                                                                    :
         R  = CAL . add_event        ( ical = E . to_ical ( )                 )
       except                                                                 :
@@ -533,10 +532,10 @@ class PeriodEditor                 ( Widget                                ) :
     ##########################################################################
     ## 更新舊事件資料
     ##########################################################################
-    R      = APPLE . LocateEvent    ( CAL , EID                              )
+    R      = APPLE . LocateEvent    ( CAL , EventId                          )
     ##########################################################################
     if                              ( R in [ False , None ]                ) :
-      self   . Notify               ( 1                                      )
+      self . Notify                 ( 1                                      )
       return
     ##########################################################################
     evt    = APPLE . EventFromICalData    ( R . data                         )

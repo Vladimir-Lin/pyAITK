@@ -132,6 +132,15 @@ class Apple              (                                                 ) :
         UID   = self . assureString           ( str ( value                ) )
       elif                                    ( K in [ "class"           ] ) :
         PUID  = self . assureString           ( str ( value                ) )
+      elif                                    ( K in [ "comment"         ] ) :
+        ######################################################################
+        TSON  = self . assureString           ( str ( value                ) )
+        try                                                                  :
+          J   = json . loads                  ( TSON                         )
+          if                                  ( "Period" in J              ) :
+            PUID = J                          [ "Period"                     ]
+        except                                                               :
+          pass
     ##########################################################################
     if                                        ( len ( UID ) > 0            ) :
       return                                  { "Id"     : UID             , \
@@ -160,7 +169,6 @@ class Apple              (                                                 ) :
     ##########################################################################
     try                                                                      :
       E   = calendar . event_by_url  ( URL                                   )
-      print(E.data)
       evt = self . EventFromICalData ( E . data                              )
       J   = self . GetEventBrief     ( evt                                   )
       ########################################################################
@@ -205,6 +213,9 @@ class Apple              (                                                 ) :
     CID   = PERIOD . getProperty ( "Calendar"                                )
     EID   = PERIOD . getProperty ( "Event"                                   )
     ##########################################################################
+    JSON  =                      { "Period" : PUID                           }
+    TSON  = json . dumps         ( JSON , ensure_ascii = False               )
+    ##########################################################################
     iCal  = icalendar . Calendar (                                           )
     iCal  . add                  ( "PRODID"      , self . PRODID             )
     iCal  . add                  ( "VERSION"     , "1.0"                     )
@@ -216,6 +227,7 @@ class Apple              (                                                 ) :
     evt   . add                  ( "DTSTART"     , DTS                       )
     evt   . add                  ( "DTEND"       , ETS                       )
     evt   . add                  ( "STATUS"      , "CONFIRMED"               )
+    evt   . add                  ( "COMMENT"     , TSON                      )
     ##########################################################################
     if                           ( len ( DESC ) > 0                        ) :
       ########################################################################
@@ -224,8 +236,6 @@ class Apple              (                                                 ) :
     if                           ( len ( EID ) > 0                         ) :
       ########################################################################
       evt . add                  ( "UID" , EID                               )
-    ##########################################################################
-    iCal  . add_component        ( evt                                       )
     ##########################################################################
     ## 新增提醒
     ##########################################################################
@@ -236,7 +246,9 @@ class Apple              (                                                 ) :
       ALM . add                  ( "TRIGGER" , DT                            )
       ALM . add                  ( "ACTION"  , "DISPLAY"                     )
       ########################################################################
-      iCal . add_component       ( ALM                                       )
+      evt . add_component        ( ALM                                       )
+    ##########################################################################
+    iCal  . add_component        ( evt                                       )
     ##########################################################################
     return iCal
   ############################################################################
