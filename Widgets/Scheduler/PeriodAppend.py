@@ -81,6 +81,7 @@ class PeriodAppend                  ( Widget                               ) :
     self . Period       = Periode   (                                        )
     self . Now          = StarDate  (                                        )
     self . DefaultType  = 196833
+    self . TimeLength   = 0
     ##########################################################################
     self . emitProjects . connect   ( self . ListingProjects                 )
     self . emitTasks    . connect   ( self . ListingTasks                    )
@@ -294,15 +295,30 @@ class PeriodAppend                  ( Widget                               ) :
     ##########################################################################
     return
   ############################################################################
-  def StartTimeChanged       ( self , dt                                   ) :
+  def StartTimeChanged                    ( self , SDT                     ) :
     ##########################################################################
-    self . DetectValidPeriod (                                               )
+    DS   = self . TimeLength
+    if                                    ( DS < 0                         ) :
+      DS = 0
+    ##########################################################################
+    STS  = SDT . toSecsSinceEpoch         (                                  )
+    EDT  = QDateTime . fromSecsSinceEpoch ( STS + DS                         )
+    ##########################################################################
+    self . ui . FinishTime  . setDateTime ( EDT                              )
+    self . DetectValidPeriod              (                                  )
     ##########################################################################
     return
   ############################################################################
-  def FinishTimeChanged      ( self , dt                                   ) :
+  def FinishTimeChanged                      ( self , EDT                  ) :
     ##########################################################################
-    self . DetectValidPeriod (                                               )
+    SDT  = self . ui . StartTime  . dateTime (                               )
+    STS  = SDT  . toSecsSinceEpoch           (                               )
+    ETS  = EDT  . toSecsSinceEpoch           (                               )
+    self . TimeLength = int                  ( ETS - STS                     )
+    if                                       ( self . TimeLength < 0       ) :
+      self . TimeLength = 0
+    ##########################################################################
+    self . DetectValidPeriod                 (                               )
     ##########################################################################
     return
   ############################################################################
