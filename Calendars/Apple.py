@@ -216,6 +216,7 @@ class Apple              (                                                 ) :
     evt   . add                  ( "SUMMARY"     , NAME                      )
     evt   . add                  ( "DTSTART"     , DTS                       )
     evt   . add                  ( "DTEND"       , ETS                       )
+    evt   . add                  ( "STATUS"      , "CONFIRMED"               )
     ##########################################################################
     if                           ( len ( DESC ) > 0                        ) :
       ########################################################################
