@@ -67,6 +67,7 @@ class SectionListings              ( TreeDock                              ) :
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . EditAllNames       = None
+    self . ClassTag           = "SectionListings"
     ##########################################################################
     self . Total              = 0
     self . StartId            = 0
