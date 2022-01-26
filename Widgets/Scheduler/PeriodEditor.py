@@ -490,15 +490,10 @@ class PeriodEditor                 ( Widget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def SyncToAppleCalendar ( self , CalendarId , EventId                    ) :
+  def SyncToAppleCalendar           ( self , CalendarId , EventId          ) :
     ##########################################################################
-    CID   = self . GetCurrentCalendarId       (                              )
-    if                                        ( len ( CID ) <= 0           ) :
-      return
-    ##########################################################################
-    EID   = self . ui . AppleEventEdit . text (                              )
-    if                                        ( len ( EID ) <= 0           ) :
-      EID = ""
+    self   . Period . setProperties ( "Calendar" , CalendarId                )
+    self   . Period . setProperties ( "Event"    , EventId                   )
     ##########################################################################
     URL    = self . Settings        [ "Apple" ] [ "Calendar" ] [ "URL"       ]
     DSID   = self . Settings        [ "Apple" ] [ "Calendar" ] [ "DSID"      ]
@@ -512,13 +507,14 @@ class PeriodEditor                 ( Widget                                ) :
       ########################################################################
       return
     ##########################################################################
-    CAL    = APPLE . FindCalendar   ( CID                                    )
+    CAL    = APPLE . FindCalendar   ( CalendarId                             )
     if                              ( CAL in [ False , None ]              ) :
       return
     ##########################################################################
-    if                              ( len ( EID ) <= 0                     ) :
+    if                              ( len ( EventId ) <= 0                 ) :
       ########################################################################
       E    = APPLE . iCalFromPeriod ( self . Period                          )
+      print(E.to_ical())
       try                                                                    :
         R  = CAL . add_event        ( ical = E . to_ical ( )                 )
       except                                                                 :
@@ -529,7 +525,7 @@ class PeriodEditor                 ( Widget                                ) :
       J    = APPLE . GetEventBrief  ( evt                                    )
       EID  = J                      [ "Id"                                   ]
       ########################################################################
-      self . AssignAppleCalendarId  ( CID , EID                              )
+      self . AssignAppleCalendarId  ( CalendarId , EID                       )
       self . emitEventId . emit     (                                        )
       self . Notify                 ( 5                                      )
       ########################################################################
@@ -538,6 +534,11 @@ class PeriodEditor                 ( Widget                                ) :
     ## 更新舊事件資料
     ##########################################################################
     R      = APPLE . LocateEvent    ( CAL , EID                              )
+    ##########################################################################
+    if                              ( R in [ False , None ]                ) :
+      self   . Notify               ( 1                                      )
+      return
+    ##########################################################################
     evt    = APPLE . EventFromICalData    ( R . data                         )
     evt    = APPLE . iCalUpdateFromPeriod ( evt , self . Period              )
     R      . data = evt . to_ical   (                                        )

@@ -142,37 +142,34 @@ class Apple              (                                                 ) :
   ############################################################################
   def LocateEvent                    ( self , calendar , UID               ) :
     ##########################################################################
-    ## CID = self . CalendarId          ( calendar                              )
-    ## URL = self . GetEventURL         ( CID , UID                             )
-    ## try                                                                      :
-    ##   E = calendar . event_by_url    ( URL                                   )
-    ##   return E
-    ## except                                                                   :
-    ##   return None
-    for event in calendar . events   (                                     ) :
-      ########################################################################
-      evt = self . EventFromICalData ( event . data                          )
-      J   = self . GetEventBrief     ( evt                                   )
-      if                             ( J [ "Id" ] == UID                   ) :
-        return event
+    CID = self . CalendarId          ( calendar                              )
+    URL = self . GetEventURL         ( CID , UID                             )
+    ##########################################################################
+    try                                                                      :
+      E = calendar . event_by_url    ( URL                                   )
+      return E
+    except                                                                   :
+      return None
     ##########################################################################
     return None
   ############################################################################
   def FindEvent                      ( self , calendar , UID               ) :
     ##########################################################################
-    ## CID = self . CalendarId          ( calendar                              )
-    ## URL = self . GetEventURL         ( CID , UID                             )
-    ## try                                                                      :
-    ##   E = calendar . event_by_url    ( URL                                   )
-    ##   return E
-    ## except                                                                   :
-    ##   return None
-    for event in calendar . events   (                                     ) :
-      ########################################################################
-      evt = self . EventFromICalData ( event . data                          )
+    CID   = self . CalendarId        ( calendar                              )
+    URL   = self . GetEventURL       ( CID , UID                             )
+    ##########################################################################
+    try                                                                      :
+      E   = calendar . event_by_url  ( URL                                   )
+      print(E.data)
+      evt = self . EventFromICalData ( E . data                              )
       J   = self . GetEventBrief     ( evt                                   )
+      ########################################################################
       if                             ( J [ "Id" ] == UID                   ) :
         return evt
+      ########################################################################
+      return None
+    except                                                                   :
+      return None
     ##########################################################################
     return None
   ############################################################################
@@ -190,7 +187,7 @@ class Apple              (                                                 ) :
     ##########################################################################
     return EVENTs
   ############################################################################
-  def iCalFromPeriod             ( self , PERIOD                           ) :
+  def iCalFromPeriod             ( self , PERIOD , NOTICE = -3             ) :
     ##########################################################################
     tzx   = pytz . timezone      ( self . TZ                                 )
     NOW   = StarDate             (                                           )
@@ -200,6 +197,8 @@ class Apple              (                                                 ) :
     ##########################################################################
     NOW   . Stardate = PERIOD . End
     ETS   = NOW . toDateTime     ( self . TZ                                 )
+    ##########################################################################
+    PUID  = PERIOD . Uuid
     ##########################################################################
     NAME  = PERIOD . getProperty ( "Name"                                    )
     DESC  = PERIOD . getProperty ( "Description"                             )
@@ -212,7 +211,7 @@ class Apple              (                                                 ) :
     iCal  . add                  ( "CALSCALE"    , "GREGORIAN"               )
     ##########################################################################
     evt   = icalendar . Event    (                                           )
-    evt   . add                  ( "CLASS"       , PERIOD . Uuid             )
+    evt   . add                  ( "CLASS"       , f"{PUID}"                 )
     evt   . add                  ( "SUMMARY"     , NAME                      )
     evt   . add                  ( "DTSTART"     , DTS                       )
     evt   . add                  ( "DTEND"       , ETS                       )
@@ -228,11 +227,22 @@ class Apple              (                                                 ) :
     ##########################################################################
     iCal  . add_component        ( evt                                       )
     ##########################################################################
+    ## 新增提醒
+    ##########################################################################
+    if                           ( NOTICE < 0                              ) :
+      ########################################################################
+      DT  = datetime . timedelta ( minutes = NOTICE                          )
+      ALM = icalendar . Alarm    (                                           )
+      ALM . add                  ( "TRIGGER" , DT                            )
+      ALM . add                  ( "ACTION"  , "DISPLAY"                     )
+      ########################################################################
+      iCal . add_component       ( ALM                                       )
+    ##########################################################################
     return iCal
   ############################################################################
-  def iCalUpdateFromPeriod           ( self , iCal , PERIOD                ) :
+  def iCalUpdateFromPeriod           ( self , iCal , PERIOD , NOTICE = -3  ) :
     ##########################################################################
-    NCAL     = self . iCalFromPeriod ( PERIOD                                )
+    NCAL     = self . iCalFromPeriod ( PERIOD , NOTICE                       )
     ##########################################################################
     for c in iCal . subcomponents                                            :
       ########################################################################
