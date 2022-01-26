@@ -221,12 +221,12 @@ class Apple              (                                                 ) :
     DESC  = PERIOD . getProperty ( "Description"                             )
     CID   = PERIOD . getProperty ( "Calendar"                                )
     EID   = PERIOD . getProperty ( "Event"                                   )
-    PID   = PERIOD . getProperty ( "Place"                                   )
-    LOC   = PERIOD . getProperty ( "Location"                                )
+    PID   = PERIOD . getProperty ( "Place"    , ""                           )
+    LOC   = PERIOD . getProperty ( "Location" , ""                           )
     ##########################################################################
     JSON  =                      { "Location" : LOC                        , \
-                                   "Period"   : PUID                       , \
-                                   "Place"    : PID                          }
+                                   "Period"   : f"{PUID}"                  , \
+                                   "Place"    : f"{PID}"                     }
     ##########################################################################
     TSON  = json . dumps         ( JSON , ensure_ascii = False               )
     ##########################################################################
