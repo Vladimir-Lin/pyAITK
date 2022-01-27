@@ -792,10 +792,10 @@ class SectionListings              ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 3001                           ) :
       ########################################################################
-      if                            ( self . ResizeColumns                 ) :
-        self . ResizeColumns = False
+      if                            ( self . DoResizeColumns               ) :
+        self . DoResizeColumns = False
       else                                                                   :
-        self . ResizeColumns = True
+        self . DoResizeColumns = True
       ########################################################################
       return True
     ##########################################################################
