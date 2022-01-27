@@ -23,6 +23,7 @@ from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QDateTime
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -40,6 +41,7 @@ from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QDateTimeEdit
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
@@ -50,34 +52,36 @@ from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 from   AITK  . Scheduler  . Project   import Project     as Project
 from   AITK  . Scheduler  . Projects  import Projects    as Projects
-from   AITK  . Scheduler  . Event     import Event       as Event
-from   AITK  . Scheduler  . Events    import Events      as Events
 from   AITK  . Scheduler  . Task      import Task        as Task
 from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
+from   AITK  . Scheduler  . Event     import Event       as Event
+from   AITK  . Scheduler  . Events    import Events      as Events
 ##############################################################################
 class SectionListings              ( TreeDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( list                                    )
+  ProjectTasks  = pyqtSignal       ( str , int , str , QIcon                 )
+  TaskEvents    = pyqtSignal       ( str , int , str                         )
+  EventPeriods  = pyqtSignal       ( str , int , str                         )
+  PeriodDetails = pyqtSignal       ( str , str                               )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . EditAllNames       = None
+    self . StartTimeEditor    = None
+    self . FinishTimeEditor   = None
     self . ClassTag           = "SectionListings"
-    ##########################################################################
-    self . Total              = 0
-    self . StartId            = 0
-    self . Amount             = 28
-    self . SortOrder          = "desc"
-    self . Editable           = True
-    ##########################################################################
-    self . Grouping           = "Original"
-    ## self . Grouping           = "Subordination"
-    ## self . Grouping           = "Reverse"
+    self . SortOrder          = "asc"
+    self . FromTime           =  - ( 8 *  3600                               )
+    self . ToTime             =    ( 3 * 86400                               )
+    self . FromStarDate       = 0
+    self . ToStarDate         = 0
+    self . Icon               = QIcon ( ":/images/project.png"               )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -86,20 +90,15 @@ class SectionListings              ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Period"                                )
-    self . Relation . setRelation  ( "Contains"                              )
-    ##########################################################################
-    self . setColumnCount          ( 13                                      )
-    self . setColumnHidden         ( 10 , True                               )
-    self . setColumnHidden         ( 11 , True                               )
-    self . setColumnHidden         ( 12 , True                               )
+    self . setColumnCount          ( 9                                       )
+    self . setColumnHidden         ( 6 , True                                )
+    self . setColumnHidden         ( 7 , True                                )
+    self . setColumnHidden         ( 8 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
-    self . MountClicked            ( 9                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
@@ -109,91 +108,98 @@ class SectionListings              ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
+    self . setAcceptDrops          ( False                                   )
     self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setDragDropMode         ( QAbstractItemView . DragOnly            )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                     ( self                                  ) :
-    return self . SizeSuggestion   ( QSize ( 1024 , 640 )                    )
+    return self . SizeSuggestion   ( QSize ( 1024 , 480 )                    )
   ############################################################################
-  def setEditable                  ( self , edit                           ) :
+  def FocusIn              ( self                                          ) :
     ##########################################################################
-    self . Editable = edit
-    ##########################################################################
-    return
-  ############################################################################
-  def setGrouping                  ( self , group                          ) :
-    self . Grouping = group
-    return self . Grouping
-  ############################################################################
-  def getGrouping                  ( self                                  ) :
-    return self . Grouping
-  ############################################################################
-  def FocusIn                      ( self                                  ) :
-    ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                     ( not self . isPrepared ( )                     ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
     ##########################################################################
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
-    self . LinkAction              ( "Delete"     , self . DeleteItems       )
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
-    ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction      ( "Refresh"    , self . startup                   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard           )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
+    self . LinkAction      ( "SelectNone" , self . SelectNone                )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
   ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    ##########################################################################
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def singleClicked           ( self , item , column                       ) :
-    ##########################################################################
-    if                        ( not self . Editable                        ) :
-      return
-    ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
     ##########################################################################
     self     . Notify         ( 0                                            )
     ##########################################################################
     return
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
-    ##########################################################################
-    if                          ( not self . Editable                      ) :
-      return
-    ##########################################################################
-    if                          ( column not in [ 1 ]                      ) :
-      return
-    ##########################################################################
-    if                          ( column in [ 1 ]                          ) :
-      line = self . setLineEdit ( item                                     , \
-                                  column                                   , \
-                                  "editingFinished"                        , \
-                                  self . nameChanged                         )
-      line . setFocus           ( Qt . TabFocusReason                        )
-    ##########################################################################
     return
   ############################################################################
-  def PrepareItem                  ( self , JSON                           ) :
+  def DurationSTR              ( self , START , FINISH                     ) :
+    ##########################################################################
+    TRX  = self . Translations [ self . ClassTag ] [ "Units"                 ]
+    SFMT = TRX                 [ "Second"                                    ]
+    MFMT = TRX                 [ "Minute"                                    ]
+    HFMT = TRX                 [ "Hour"                                      ]
+    DFMT = TRX                 [ "Day"                                       ]
+    ##########################################################################
+    DT   = int                 ( FINISH - START                              )
+    RR   = int                 ( DT % 60                                     )
+    DT   = int                 ( DT / 60                                     )
+    SS   = SFMT . format       ( RR                                          )
+    ##########################################################################
+    if                         ( DT <= 0                                   ) :
+      return SS
+    ##########################################################################
+    RR   = int                 ( DT % 60                                     )
+    DT   = int                 ( DT / 60                                     )
+    MM   = MFMT . format       ( RR                                          )
+    SS   = f"{MM}{SS}"
+    ##########################################################################
+    if                         ( DT <= 0                                   ) :
+      return SS
+    ##########################################################################
+    RR   = int                 ( DT % 24                                     )
+    DT   = int                 ( DT / 24                                     )
+    HH   = HFMT . format       ( RR                                          )
+    SS   = f"{HH}{SS}"
+    ##########################################################################
+    if                         ( DT <= 0                                   ) :
+      return SS
+    ##########################################################################
+    DD   = DFMT . format       ( RR                                          )
+    SS   = f"{DD}{SS}"
+    ##########################################################################
+    return SS
+  ############################################################################
+  def PrepareItemContent           ( self , IT , JSON                      ) :
     ##########################################################################
     TZ       = "Asia/Taipei"
-    TRX      = self . Translations [ "PeriodeListings"                       ]
+    TRX      = self . Translations [ self . ClassTag                         ]
     NOW      = StarDate            (                                         )
     ##########################################################################
     UUID     = int                 ( JSON [ "Uuid" ]                         )
@@ -213,161 +219,164 @@ class SectionListings              ( TreeDock                              ) :
     CREATION = JSON                [ "Creation"                              ]
     MODIFIED = JSON                [ "Modified"                              ]
     ##########################################################################
-    IT       = QTreeWidgetItem     (                                         )
-    IT       . setText             (  0 , str ( Id )                         )
-    IT       . setToolTip          (  0 , UXID                               )
-    IT       . setData             (  0 , Qt . UserRole , UXID               )
-    IT       . setTextAlignment    (  0 , Qt . AlignRight                    )
+    DURATION = self . DurationSTR  ( START , ENDT                            )
     ##########################################################################
-    IT       . setText             (  1 , Name                               )
+    IT       . setText             ( 0 , str ( Id )                          )
+    IT       . setToolTip          ( 0 , UXID                                )
+    IT       . setData             ( 0 , Qt . UserRole , UXID                )
+    IT       . setTextAlignment    ( 0 , Qt . AlignRight                     )
+    ##########################################################################
+    IT       . setText             ( 1 , Name                                )
     ##########################################################################
     DTS      = ""
     if                             ( START    > 0                          ) :
       NOW    . Stardate = START
       DTS    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
-    IT       . setText             (  2 , DTS                                )
+    IT       . setText             ( 2 , DTS                                 )
     ##########################################################################
     DTS      = ""
     if                             ( ENDT     > 0                          ) :
       NOW    . Stardate = ENDT
       DTS    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
-    IT       . setText             (  3 , DTS                                )
+    IT       . setText             ( 3 , DTS                                 )
     ##########################################################################
-    IT       . setText             (  4 , TRX [ "Type" ] [ str ( TYPE  ) ]   )
-    ##########################################################################
-    IT       . setText             (  5 , TRX [ "Used" ] [ str ( USED  ) ]   )
-    ##########################################################################
-    IT       . setText             (  6 , str ( RNAME )                      )
-    IT       . setToolTip          (  6 , str ( REALM )                      )
-    ##########################################################################
-    IT       . setText             (  7 , str ( TNAME )                      )
-    IT       . setToolTip          (  7 , str ( ROLE  )                      )
-    ##########################################################################
-    IT       . setText             (  8 , str ( ITEM  )                      )
-    IT       . setTextAlignment    (  8 , Qt . AlignRight                    )
+    IT       . setText             ( 4 , DURATION                            )
     ##########################################################################
     TRXS     = TRX                 [ "States"                                ]
-    IT       . setText             (  9 , TRXS [ str ( STATES ) ]            )
+    IT       . setText             ( 5 , TRXS [ str ( STATES ) ]             )
     ##########################################################################
     DTS      = ""
     if                             ( CREATION > 0                          ) :
       NOW    . Stardate = CREATION
       DTS    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
-    IT       . setText             ( 10 , DTS                                )
+    IT       . setText             ( 6 , DTS                                 )
     ##########################################################################
     DTS      = ""
     if                             ( MODIFIED > 0                          ) :
       NOW    . Stardate = MODIFIED
       DTS    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
-    IT       . setText             ( 11 , DTS                                )
+    IT       . setText             ( 7 , DTS                                )
     ##########################################################################
-    IT       . setData             ( 12 , Qt . UserRole , JSON               )
+    IT       . setData             ( 8 , Qt . UserRole , JSON                )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareItem             ( self , JSON                                ) :
+    ##########################################################################
+    IT   = QTreeWidgetItem    (                                              )
+    self . PrepareItemContent ( IT   , JSON                                  )
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def InsertItem                 ( self                                    ) :
+  @pyqtSlot                          (        list                           )
+  def refresh                        ( self , PERIODs                      ) :
     ##########################################################################
-    item = QTreeWidgetItem       (                                           )
-    item . setData               ( 0 , Qt . UserRole , 0                     )
-    self . addTopLevelItem       ( item                                      )
-    line = self . setLineEdit    ( item                                    , \
-                                   1                                       , \
-                                   "editingFinished"                       , \
-                                   self . nameChanged                        )
-    line . setFocus              ( Qt . TabFocusReason                       )
+    self   . clear                   (                                       )
     ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def DeleteItems                ( self                                    ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
-    ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 1                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def nameChanged                ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isItemPicked ( )             ) :
-      return False
-    ##########################################################################
-    item   = self . CurrentItem  [ "Item"                                    ]
-    column = self . CurrentItem  [ "Column"                                  ]
-    line   = self . CurrentItem  [ "Widget"                                  ]
-    text   = self . CurrentItem  [ "Text"                                    ]
-    msg    = line . text         (                                           )
-    uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
-    ##########################################################################
-    item   . setText             ( column ,              msg                 )
-    ##########################################################################
-    self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                       (        list                              )
-  def refresh                     ( self , TASKS                           ) :
-    ##########################################################################
-    self   . clear                (                                          )
-    ##########################################################################
-    for T in TASKS                                                           :
+    for P in PERIODs                                                         :
       ########################################################################
-      IT   = self . PrepareItem   ( T                                        )
-      self . addTopLevelItem      ( IT                                       )
+      IT   = self . PrepareItem      ( P                                     )
+      self . addTopLevelItem         ( IT                                    )
     ##########################################################################
-    self   . emitNamesShow . emit (                                          )
+    self   . emitNamesShow . emit    (                                       )
+    self   . resizeColumnsToContents (                                       )
     ##########################################################################
     return
   ############################################################################
-  def ObtainSubgroupUuids      ( self , DB                                 ) :
-    ##########################################################################
-    SID    = self . StartId
-    AMOUNT = self . Amount
-    ORDER  = self . getSortingOrder ( )
-    LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables [ "Relation" ]
-    ##########################################################################
-    if                         ( self . Grouping == "Subordination"        ) :
-      OPTS = f"order by `position` {ORDER}"
-      return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
-    if                         ( self . Grouping == "Reverse"              ) :
-      OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
-      return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
-    ##########################################################################
-    return                     [                                             ]
+  def ObtainsItemUuids                    ( self , DB                      ) :
+    return self . DefaultObtainsItemUuids (        DB                        )
   ############################################################################
-  def ObtainsItemUuids         ( self , DB                                 ) :
+  def ObtainsUuidNames        ( self , DB , UUIDs                          ) :
     ##########################################################################
-    if                         ( self . Grouping == "Original"             ) :
-      return self . DefaultObtainsItemUuids ( DB                             )
+    NAMEs   =                 {                                              }
     ##########################################################################
-    return self   . ObtainSubgroupUuids     ( DB                             )
-  ############################################################################
-  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
-    ##########################################################################
-    NAMEs   =                         {                                      }
-    ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
+    if                        ( len ( UUIDs ) > 0                          ) :
+      TABLE = self . Tables   [ "NamesLocal"                                 ]
+      NAMEs = self . GetNames ( DB , TABLE , UUIDs                           )
     ##########################################################################
     return NAMEs
+  ############################################################################
+  def PrepareTimeRange        ( self                                       ) :
+    ##########################################################################
+    NOW  = StarDate           (                                              )
+    NOW  . Now                (                                              )
+    SDT  = NOW . Stardate
+    ##########################################################################
+    self . FromStarDate = int ( SDT + self . FromTime                        )
+    self . ToStarDate   = int ( SDT + self . ToTime                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainPeriodDetail             ( self , DB , NAMEs , U               ) :
+    ##########################################################################
+    NAMTAB = self . Tables           [ "NamesLocal"                          ]
+    GNATAB = self . Tables           [ "NamesPrivate"                        ]
+    PRDTAB = self . Tables           [ "Periods"                             ]
+    TYPTAB = self . Tables           [ "Types"                               ]
+    ##########################################################################
+    J      =                         { "Uuid"     : U                      , \
+                                       "Name"     : ""                     , \
+                                       "Type"     : 0                      , \
+                                       "TName"    : ""                     , \
+                                       "Used"     : 0                      , \
+                                       "Start"    : 0                      , \
+                                       "End"      : 0                      , \
+                                       "Realm"    : 0                      , \
+                                       "RName"    : ""                     , \
+                                       "Role"     : 0                      , \
+                                       "Item"     : 0                      , \
+                                       "States"   : 0                      , \
+                                       "Creation" : 0                      , \
+                                       "Modified" : 0                        }
+    ##########################################################################
+    if                               ( U in NAMEs                          ) :
+      J [ "Name" ] = self . assureString ( NAMEs [ U ]                       )
+    ##########################################################################
+    QQ     = f"""select
+                 `type`,`used`,
+                 `start`,`end`,
+                 `realm`,`role`,
+                 `item`,`states`,
+                 `creation`,`modified`
+                 from {PRDTAB}
+                 where ( `uuid` = {U} ) ;"""
+    QQ     = " " . join              ( QQ . split ( )                        )
+    DB     . Query                   ( QQ                                    )
+    RR     = DB . FetchOne           (                                       )
+    ##########################################################################
+    if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 10 ) )           :
+      ########################################################################
+      J [ "Type"     ] = int         ( RR [ 0 ]                              )
+      J [ "Used"     ] = int         ( RR [ 1 ]                              )
+      J [ "Start"    ] = int         ( RR [ 2 ]                              )
+      J [ "End"      ] = int         ( RR [ 3 ]                              )
+      J [ "Realm"    ] = int         ( RR [ 4 ]                              )
+      J [ "Role"     ] = int         ( RR [ 5 ]                              )
+      J [ "Item"     ] = int         ( RR [ 6 ]                              )
+      J [ "States"   ] = int         ( RR [ 7 ]                              )
+      J [ "Creation" ] = int         ( RR [ 8 ]                              )
+      J [ "Modified" ] = int         ( RR [ 9 ]                              )
+      ########################################################################
+      RU   = J                       [ "Realm"                               ]
+      if                             ( RU > 0                              ) :
+        N  = self . GetName          ( DB , GNATAB , RU                      )
+        J [ "RName" ] = N
+      ########################################################################
+      TU   = J                       [ "Role"                                ]
+      TU   = 1100000000000000000 + TU
+      if                             ( TU > 0                              ) :
+        ######################################################################
+        QQ = f"select `name` from {TYPTAB} where ( `uuid` = {TU} ) ;"
+        DB . Query                   ( QQ                                    )
+        RR = DB . FetchOne           (                                       )
+        N  = str                     ( J [ "Role" ]                          )
+        if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )        :
+          N   = self . assureString  ( RR [ 0 ]                              )
+        ## N = self . GetName          ( DB , GNATAB , TU                     )
+        ####################################################################
+        J [ "TName" ] = N
+    ##########################################################################
+    return J
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
@@ -376,9 +385,15 @@ class SectionListings              ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
-    NAMTAB  = self . Tables           [ "Names"                              ]
-    PRDTAB  = self . Tables           [ "Periods"                            ]
-    self    . ObtainsInformation      ( DB                                   )
+    self    . Notify                  ( 3                                    )
+    ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
+    ##########################################################################
+    self    . PrepareTimeRange        (                                      )
     ##########################################################################
     NAMEs   =                         {                                      }
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
@@ -388,69 +403,12 @@ class SectionListings              ( TreeDock                              ) :
     PERIODS =                         [                                      ]
     for U in UUIDs                                                           :
       ########################################################################
-      J     =                         { "Uuid"     : U                     , \
-                                        "Name"     : ""                    , \
-                                        "Type"     : 0                     , \
-                                        "TName"    : ""                    , \
-                                        "Used"     : 0                     , \
-                                        "Start"    : 0                     , \
-                                        "End"      : 0                     , \
-                                        "Realm"    : 0                     , \
-                                        "RName"    : ""                    , \
-                                        "Role"     : 0                     , \
-                                        "Item"     : 0                     , \
-                                        "States"   : 0                     , \
-                                        "Creation" : 0                     , \
-                                        "Modified" : 0                       }
-      ########################################################################
-      if                              ( U in NAMEs                         ) :
-        J [ "Name" ] = self . assureString ( NAMEs [ U ]                     )
-      ########################################################################
-      QQ    = f"""select
-                  `type`,`used`,`start`,`end`,
-                  `realm`,`role`,
-                  `item`,`states`,
-                  `creation`,`modified`
-                  from {PRDTAB}
-                  where ( `uuid` = {U} ) ;"""
-      QQ    = " " . join              ( QQ . split ( )                       )
-      DB    . Query                   ( QQ                                   )
-      RR    = DB . FetchOne           (                                      )
-      ########################################################################
-      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 10 ) )         :
-        ######################################################################
-        J [ "Type"     ] = int        ( RR [ 0 ]                             )
-        J [ "Used"     ] = int        ( RR [ 1 ]                             )
-        J [ "Start"    ] = int        ( RR [ 2 ]                             )
-        J [ "End"      ] = int        ( RR [ 3 ]                             )
-        J [ "Realm"    ] = int        ( RR [ 4 ]                             )
-        J [ "Role"     ] = int        ( RR [ 5 ]                             )
-        J [ "Item"     ] = int        ( RR [ 6 ]                             )
-        J [ "States"   ] = int        ( RR [ 7 ]                             )
-        J [ "Creation" ] = int        ( RR [ 8 ]                             )
-        J [ "Modified" ] = int        ( RR [ 9 ]                             )
-        ######################################################################
-        RU  = J                       [ "Realm"                              ]
-        if                            ( RU > 0                             ) :
-          N = self . GetName          ( DB , NAMTAB , RU                     )
-          J [ "RName" ] = N
-        ######################################################################
-        TU  = J                       [ "Role"                               ]
-        TU  = 1100000000000000000 + TU
-        if                            ( TU > 0                             ) :
-          ####################################################################
-          QQ    = f"select `name` from `types` where ( `uuid` = {TU} ) ;"
-          DB    . Query               ( QQ                                   )
-          RR    = DB . FetchOne       (                                      )
-          N     = str                 ( J [ "Role" ]                         )
-          if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )      :
-            N   = self . assureString ( RR [ 0 ]                             )
-          ## N = self . GetName          ( DB , NAMTAB , TU                     )
-          ####################################################################
-          J [ "TName" ] = N
-      ########################################################################
+      J = self . ObtainPeriodDetail   ( DB , NAMEs , U                       )
       PERIODS . append                ( J                                    )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( PERIODS ) <= 0               ) :
@@ -471,315 +429,279 @@ class SectionListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids             ( self , DB                               ) :
+  def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
-    TABLE   = self . Tables      [ "Periods"                                 ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
+    PRDTAB = self . Tables [ "Periods"                                       ]
+    ORDER  = self . SortOrder
+    FSD    = self . FromStarDate
+    TSD    = self . ToStarDate
     ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
+    QQ     = f"""select `uuid` from {PRDTAB}
+                 where ( `used` > 0 )
+                 and ( `item` = 196833 )
+                 and ( `type` = 4 )
+                 and ( ( ( `start` >= {FSD} ) and ( `start` <= {TSD} ) )
+                    or ( ( `end` >= {FSD} ) and ( `end` <= {TSD} ) )
+                    or ( ( `start` < {FSD} ) and ( `end` > {TSD} ) ) )
+                 order by `start` {ORDER} ;"""
     ##########################################################################
-    QQ    = " " . join           ( QQ . split ( )                            )
-    ##########################################################################
-    return DB . ObtainUuids      ( QQ , 0                                    )
+    return " " . join      ( QQ . split ( )                                  )
   ############################################################################
-  def TranslateAll              ( self                                     ) :
+  def OpenProjects ( self , UUID ) :
     ##########################################################################
-    DB    = self . ConnectDB    (                                            )
-    if                          ( DB == None                               ) :
+    DB      = self . ConnectDB       (                                       )
+    if                               ( DB == None                          ) :
       return
     ##########################################################################
-    TABLE = self . Tables       [ "Names"                                    ]
-    FMT   = self . Translations [ "UI::Translating"                          ]
-    self  . DoTranslateAll      ( DB , TABLE , FMT , 15.0                    )
+    GRPREL  = self . Tables          [ "RelationGroups"                      ]
+    PRDREL  = self . Tables          [ "RelationPeriods"                     ]
+    NAMTAB  = self . Tables          [ "NamesParent"                         ]
     ##########################################################################
-    DB    . Close               (                                            )
+    EVTS    = Events                 (                                       )
+    EVENTS  = EVTS . GetPeriodEvents ( DB , PRDREL , UUID                    )
+    ##########################################################################
+    TASKS   =                        [                                       ]
+    ##########################################################################
+    if                               ( len ( EVENTS ) > 0                  ) :
+      ########################################################################
+      TSKS  = Tasks                  (                                       )
+      ########################################################################
+      for EUID in EVENTS                                                     :
+        ######################################################################
+        T   = TSKS . GetEventTasks   ( DB , GRPREL , EUID                    )
+        for TUID in T                                                        :
+          if                         ( TUID not in TASKS                   ) :
+            TASKS . append           ( TUID                                  )
+    ##########################################################################
+    PRJS    =                        [                                       ]
+    ##########################################################################
+    if                               ( len ( TASKS ) > 0                   ) :
+      ########################################################################
+      PRJX  = Projects               (                                       )
+      ########################################################################
+      for TUID in TASKS                                                      :
+        ######################################################################
+        T   = PRJX . GetTaskProjects ( DB , GRPREL , TUID                    )
+        for PUID in T                                                        :
+          if                         ( PUID not in PRJS                    ) :
+            PRJS . append            ( PUID                                  )
+    ##########################################################################
+    NAMEs   = self . GetNames        ( DB , NAMTAB , PRJS                    )
+    ##########################################################################
+    DB      . Close                  (                                       )
+    ##########################################################################
+    for PUID in PRJS                                                         :
+      ########################################################################
+      NAME = NAMEs                   [ PUID                                  ]
+      self . ProjectTasks . emit     ( NAME , 71 , str (PUID) , self . Icon  )
     ##########################################################################
     return
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def OpenTasks                      ( self , UUID                         ) :
     ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    DB      = self . ConnectDB       (                                       )
+    if                               ( DB == None                          ) :
+      return
+    ##########################################################################
+    GRPREL  = self . Tables          [ "RelationGroups"                      ]
+    PRDREL  = self . Tables          [ "RelationPeriods"                     ]
+    NAMTAB  = self . Tables          [ "NamesParent"                         ]
+    ##########################################################################
+    EVTS    = Events                 (                                       )
+    EVENTS  = EVTS . GetPeriodEvents ( DB , PRDREL , UUID                    )
+    ##########################################################################
+    TASKS   =                        [                                       ]
+    ##########################################################################
+    if                               ( len ( EVENTS ) > 0                  ) :
+      ########################################################################
+      TSKS  = Tasks                  (                                       )
+      ########################################################################
+      for EUID in EVENTS                                                     :
+        ######################################################################
+        T   = TSKS . GetEventTasks   ( DB , GRPREL , EUID                    )
+        for TUID in T                                                        :
+          if                         ( TUID not in TASKS                   ) :
+            TASKS . append           ( TUID                                  )
+    ##########################################################################
+    NAMEs   = self . GetNames        ( DB , NAMTAB , TASKS                   )
+    ##########################################################################
+    DB      . Close                  (                                       )
+    ##########################################################################
+    for TUID in TASKS                                                        :
+      ########################################################################
+      NAME = NAMEs                   [ TUID                                  ]
+      self . TaskEvents . emit       ( NAME , 16 , str ( TUID )              )
     ##########################################################################
     return
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def OpenEvents                     ( self , UUID                         ) :
     ##########################################################################
-    self    . Total = 0
-    ##########################################################################
-    TABLE   = self . Tables           [ "Periods"                            ]
-    ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
-    ##########################################################################
-    if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
+    DB      = self . ConnectDB       (                                       )
+    if                               ( DB == None                          ) :
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    PRDREL  = self . Tables          [ "RelationPeriods"                     ]
+    NAMTAB  = self . Tables          [ "NamesParent"                         ]
+    ##########################################################################
+    EVTS    = Events                 (                                       )
+    EVENTS  = EVTS . GetPeriodEvents ( DB , PRDREL , UUID                    )
+    ##########################################################################
+    NAMEs   = self . GetNames        ( DB , NAMTAB , EVENTS                  )
+    ##########################################################################
+    DB      . Close                  (                                       )
+    ##########################################################################
+    for EUID in EVENTS                                                       :
+      ########################################################################
+      NAME = NAMEs                   [ EUID                                  ]
+      self . EventPeriods . emit     ( NAME , 15 , str ( EUID )              )
     ##########################################################################
     return
   ############################################################################
-  def FetchRegularDepotCount   ( self , DB                                 ) :
+  def dragMime                      ( self                                 ) :
     ##########################################################################
-    TABLE  = self . Tables     [ "Periods"                                   ]
-    QQ     = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
-    DB     . Query             ( QQ                                          )
-    ONE    = DB . FetchOne     (                                             )
+    mtype   = "period/uuids"
+    message = self . getMenuItem    ( "PeriodsSelected"                      )
     ##########################################################################
-    if                         ( ONE == None                               ) :
-      return 0
-    ##########################################################################
-    if                         ( len ( ONE ) <= 0                          ) :
-      return 0
-    ##########################################################################
-    return ONE                 [ 0                                           ]
+    return self    . CreateDragMime ( self , 0 , mtype , message             )
   ############################################################################
-  def FetchGroupMembersCount             ( self , DB                       ) :
+  def startDrag         ( self , dropActions                               ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
-    ##########################################################################
-    return self . Relation . CountSecond ( DB , RELTAB                       )
-  ############################################################################
-  def FetchGroupOwnersCount              ( self , DB                       ) :
-    ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
-    ##########################################################################
-    return self . Relation . CountFirst  ( DB , RELTAB                       )
-  ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
-    ##########################################################################
-    TSKTAB  = self . Tables   [ "Periods"                                    ]
-    STID    = self . StartId
-    AMOUNT  = self . Amount
-    ORDER   = self . SortOrder
-    ##########################################################################
-    QQ      = f"""select `uuid` from {TSKTAB}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
-    ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
-  ############################################################################
-  def FetchSessionInformation         ( self , DB                          ) :
-    ##########################################################################
-    if                                ( self . Grouping == "Original"      ) :
-      ########################################################################
-      self . Total = self . FetchRegularDepotCount ( DB                      )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                ( self . Grouping == "Subordination" ) :
-      ########################################################################
-      self . Total = self . FetchGroupMembersCount ( DB                      )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                ( self . Grouping == "Reverse"       ) :
-      ########################################################################
-      self . Total = self . FetchGroupOwnersCount  ( DB                      )
-      ########################################################################
-      return
+    self . StartingDrag (                                                    )
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
+  def Prepare             ( self                                           ) :
+    ##########################################################################
+    self . setColumnWidth (  0 , 120                                         )
+    self . setColumnWidth (  1 , 280                                         )
+    self . setColumnWidth (  2 , 180                                         )
+    self . setColumnWidth (  3 , 180                                         )
+    self . defaultPrepare ( self . ClassTag , 8                              )
+    ##########################################################################
+    return
   ############################################################################
-  def acceptDrop              ( self , sourceWidget , mimeData             ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
-    return self . dropHandler ( sourceWidget , self , mimeData               )
+    return
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def RangeMenu                         ( self , mm                        ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
+    NOW    = StarDate                   (                                    )
+    NOW    . Stardate = self . FromStarDate
+    STS    = NOW . Timestamp            (                                    )
+    NOW    . Stardate = self . ToStarDate
+    ETS    = NOW . Timestamp            (                                    )
+    ##########################################################################
+    SDTX   = QDateTime . fromSecsSinceEpoch ( STS                            )
+    EDTX   = QDateTime . fromSecsSinceEpoch ( ETS                            )
+    ##########################################################################
+    DTFMT  = self . getMenuItem         ( "TimeFormat"                       )
+    ## SSI    = self . getMenuItem         ( "StartTime:"                       )
+    ## SSA    = self . getMenuItem         ( "FinishTime:"                      )
+    ##########################################################################
+    self   . StartTimeEditor  = QDateTimeEdit    (                           )
+    self   . StartTimeEditor  . setDateTime      ( SDTX                      )
+    self   . StartTimeEditor  . setDisplayFormat ( DTFMT                     )
+    ## self   . StartTimeEditor  . setPrefix        ( SSI                       )
+    self   . StartTimeEditor  . setAlignment     ( Qt . AlignRight           )
+    mm     . addWidget                  ( 9999992 , self . StartTimeEditor   )
+    ##########################################################################
+    self   . FinishTimeEditor = QDateTimeEdit    (                           )
+    self   . FinishTimeEditor . setDateTime      ( EDTX                      )
+    self   . FinishTimeEditor . setDisplayFormat ( DTFMT                     )
+    ## self   . FinishTimeEditor . setPrefix        ( SSA                       )
+    self   . FinishTimeEditor . setAlignment     ( Qt . AlignRight           )
+    mm     . addWidget                  ( 9999993 , self . FinishTimeEditor  )
+    ##########################################################################
+    mm     . addSeparator               (                                    )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunRangeMenu                      ( self                             ) :
+    ##########################################################################
+    if                                  ( self . StartTimeEditor  == None  ) :
       return False
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
+    if                                  ( self . FinishTimeEditor == None  ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    SDTX   = self . StartTimeEditor  . dateTime (                            )
+    EDTX   = self . FinishTimeEditor . dateTime (                            )
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    NOW    = StarDate                   (                                    )
+    STS    = SDTX . toSecsSinceEpoch    (                                    )
+    ETS    = EDTX . toSecsSinceEpoch    (                                    )
+    ##########################################################################
+    NOW    . setTime                    ( STS                                )
+    SDT    = NOW . Stardate
+    NOW    . setTime                    ( ETS                                )
+    EDT    = NOW . Stardate
+    ##########################################################################
+    if ( ( SDT == self . FromStarDate ) and ( EDT == self . ToStarDate ) )   :
+      return False
+    ##########################################################################
+    NOW    . Now                        (                                    )
+    CDT    = NOW . Stardate
+    self   . FromTime     = int         ( SDT - CDT                          )
+    self   . ToTime       = int         ( EDT - CDT                          )
+    self   . FromStarDate = int         ( SDT                                )
+    self   . ToStarDate   = int         ( EDT                                )
+    ##########################################################################
+    return   True
+  ############################################################################
+  def GroupsMenu              ( self , mm                                  ) :
+    ##########################################################################
+    msg  = self . getMenuItem ( "Details"                                    )
+    LOM  = mm . addMenu       ( msg                                          )
+    ##########################################################################
+    msg  = self . getMenuItem ( "Project"                                    )
+    mm   . addActionFromMenu  ( LOM , 2001 , msg                             )
+    ##########################################################################
+    msg  = self . getMenuItem ( "Task"                                       )
+    mm   . addActionFromMenu  ( LOM , 2002 , msg                             )
+    ##########################################################################
+    msg  = self . getMenuItem ( "Event"                                      )
+    mm   . addActionFromMenu  ( LOM , 2003 , msg                             )
+    ##########################################################################
+    msg  = self . getMenuItem ( "Editor"                                     )
+    mm   . addActionFromMenu  ( LOM , 2004 , msg                             )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunGroupsMenu               ( self , at , item                       ) :
+    ##########################################################################
+    if                            ( at == 2001                             ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
-    ##########################################################################
-    return RDN
-  ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
+      uuid = self . itemUuid      ( item , 0                                 )
+      self . Go                   ( self . OpenProjects , ( uuid , )         )
+      ########################################################################
       return True
     ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    ##########################################################################
-    return True
-  ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
+    if                            ( at == 2002                             ) :
+      ########################################################################
+      uuid = self . itemUuid      ( item , 0                                 )
+      self . Go                   ( self . OpenTasks , ( uuid , )            )
+      ########################################################################
       return True
     ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
+    if                            ( at == 2003                             ) :
+      ########################################################################
+      uuid = self . itemUuid      ( item , 0                                 )
+      self . Go                   ( self . OpenEvents , ( uuid , )           )
+      ########################################################################
       return True
     ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem is None                            ) :
+    if                            ( at == 2004                             ) :
+      ########################################################################
+      uuid = self . itemUuid      ( item , 0                                 )
+      name = item . text          ( 1                                        )
+      self . PeriodDetails . emit ( name , str ( uuid )                      )
+      ########################################################################
       return True
     ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
-    ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
-    ##########################################################################
-    ##########################################################################
-    return True
-  ############################################################################
-  def Prepare                    ( self                                    ) :
-    ##########################################################################
-    self   . setColumnWidth      (  0 , 120                                  )
-    self   . setColumnWidth      (  1 , 320                                  )
-    self   . setColumnWidth      ( 12 ,   3                                  )
-    LABELs = self . Translations [ "PeriodeListings" ] [ "Labels"            ]
-    self   . setCentralLabels    ( LABELs                                    )
-    self   . setPrepared         ( True                                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
-    ##########################################################################
-    """
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
-      return
-    ##########################################################################
-    TSKTAB  = self . Tables        [ "Tasks"                                 ]
-    PRDTAB  = self . Tables        [ "Periods"                               ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
-    HEAD    = 5702000000000000000
-    ##########################################################################
-    DB      . LockWrites           ( [ PRJTAB , PRDTAB , NAMTAB ]            )
-    ##########################################################################
-    if                             ( uuid <= 0                             ) :
-      ########################################################################
-      uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
-      DB    . AddUuid              ( PRJTAB , uuid   , 1                     )
-      ########################################################################
-      NOW   = StarDate             (                                         )
-      NOW   . Now                  (                                         )
-      CDT   = NOW . Stardate
-      ########################################################################
-      PRD   = Periode              (                                         )
-      PRID  = PRD  . GetUuid       ( DB , PRDTAB                             )
-      ########################################################################
-      PRD   . Realm    = uuid
-      PRD   . Role     = 71
-      PRD   . Item     = 1
-      PRD   . States   = 0
-      PRD   . Creation = CDT
-      PRD   . Modified = CDT
-      Items =                      [ "realm"                               , \
-                                     "role"                                , \
-                                     "item"                                , \
-                                     "states"                              , \
-                                     "creation"                            , \
-                                     "modified"                              ]
-      PRD   . UpdateItems          ( DB , PRDTAB , Items                     )
-    ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
-    ##########################################################################
-    DB      . Close                (                                         )
-    ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
-    """
-    ##########################################################################
-    return
-  ############################################################################
-  def CopyToClipboard             ( self                                   ) :
-    ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
-    ##########################################################################
-    return
+    return False
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     ##########################################################################
@@ -787,36 +709,15 @@ class SectionListings              ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9004 ) and ( at <= 9012 )         :
+    if                             ( at >= 9004 ) and ( at <= 9008 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
       ########################################################################
-      ## if                           ( ( at == 9001 ) and ( hid )            ) :
-      ##   self . startup             (                                         )
-      ########################################################################
       return True
     ##########################################################################
     return False
-  ############################################################################
-  @pyqtSlot                        (        int                              )
-  def GotoId                       ( self , Id                             ) :
-    ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
   ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
@@ -826,45 +727,31 @@ class SectionListings              ( TreeDock                              ) :
     ##########################################################################
     self   . Notify                 ( 0                                      )
     ##########################################################################
-    items  = self . selectedItems   (                                        )
-    atItem = self . currentItem     (                                        )
-    uuid   = 0
-    ##########################################################################
-    if                              ( atItem != None                       ) :
-      uuid = atItem . data          ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
+    items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
     mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    ##########################################################################
-    mm     . addSeparator           (                                        )
-    ##########################################################################
+    mm     = self . RangeMenu       ( mm                                     )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     = self . AppendDeleteAction  ( mm , 1102                          )
+    ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
-    if                              ( len ( items ) == 1                   ) :
-      if                            ( self . EditAllNames != None          ) :
-        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
-        mm . addSeparator           (                                        )
-    ##########################################################################
+    if                              ( atItem not in [ False , None ]       ) :
+      mm   = self . GroupsMenu      ( mm                                     )
     mm     = self . ColumnsMenu     ( mm                                     )
     mm     = self . SortingMenu     ( mm                                     )
     mm     = self . LocalityMenu    ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    mm     . setFont                ( self    . font ( )                     )
-    aa     = mm . exec_             ( QCursor . pos  ( )                     )
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                              ( self   . RunAmountIndexMenu ( )      ) :
+    if                              ( self   . RunRangeMenu ( )            ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return
     ##########################################################################
@@ -873,9 +760,11 @@ class SectionListings              ( TreeDock                              ) :
     ##########################################################################
     if                              ( self . HandleLocalityMenu ( at )     ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
+      return True
+    ##########################################################################
+    if                              ( self . RunGroupsMenu ( at , atItem ) ) :
       return True
     ##########################################################################
     if                              ( self . RunColumnsMenu     ( at )     ) :
@@ -883,30 +772,14 @@ class SectionListings              ( TreeDock                              ) :
     ##########################################################################
     if                              ( self . RunSortingMenu     ( at )     ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 1101                           ) :
-      self . InsertItem             (                                        )
-      return True
-    ##########################################################################
-    if                              ( at == 1102                           ) :
-      self . DeleteItems            (                                        )
-      return True
-    ##########################################################################
-    if                              ( at == 1601                           ) :
-      uuid = self . itemUuid        ( items [ 0 ] , 0                        )
-      NAM  = self . Tables          [ "Names"                                ]
-      self . EditAllNames           ( self , "Periode" , uuid , NAM          )
       return True
     ##########################################################################
     return True

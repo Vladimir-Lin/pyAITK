@@ -11,18 +11,19 @@ import mysql . connector
 from   mysql . connector              import Error
 ##############################################################################
 import AITK
-from   AITK . Database  . Query       import Query
-from   AITK . Database  . Connection  import Connection
-from   AITK . Database  . Columns     import Columns
+from   AITK . Database   . Query      import Query
+from   AITK . Database   . Connection import Connection
+from   AITK . Database   . Columns    import Columns
 ##############################################################################
-from   AITK . Calendars . StarDate   import StarDate as StarDate
-from   AITK . Calendars . Periode    import Periode  as Periode
+from   AITK . Essentials . Relation   import Relation as Relation
+from   AITK . Calendars  . StarDate   import StarDate as StarDate
+from   AITK . Calendars  . Periode    import Periode  as Periode
 ##############################################################################
-from                    . Project    import Project  as Project
-from                    . Event      import Event    as Event
-from                    . Events     import Events   as Events
-from                    . Task       import Task     as Task
-from                    . Tasks      import Tasks    as Tasks
+from                     . Project    import Project  as Project
+from                     . Event      import Event    as Event
+from                     . Events     import Events   as Events
+from                     . Task       import Task     as Task
+from                     . Tasks      import Tasks    as Tasks
 ##############################################################################
 class Projects                (                                            ) :
   ############################################################################
@@ -115,4 +116,15 @@ class Projects                (                                            ) :
     PRD    . UpdateItems     ( DB , PRDTAB , Items                           )
     ##########################################################################
     return uuid
+  ############################################################################
+  def GetTaskProjects      ( self , DB , RELTAB , PUID                     ) :
+    ##########################################################################
+    REL = Relation         (                                                 )
+    REL . set              ( "second" , PUID                                 )
+    REL . setT1            ( "Project"                                       )
+    REL . setT2            ( "Task"                                          )
+    REL . setRelation      ( "Contains"                                      )
+    ##########################################################################
+    return REL . GetOwners ( DB , RELTAB                                     )
+  ############################################################################
 ##############################################################################
