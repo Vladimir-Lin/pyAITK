@@ -82,6 +82,7 @@ class SectionListings              ( TreeDock                              ) :
     self . FromStarDate       = 0
     self . ToStarDate         = 0
     self . Icon               = QIcon ( ":/images/project.png"               )
+    self . DoResizeColumns    = True
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -279,7 +280,8 @@ class SectionListings              ( TreeDock                              ) :
       self . addTopLevelItem         ( IT                                    )
     ##########################################################################
     self   . emitNamesShow . emit    (                                       )
-    self   . resizeColumnsToContents (                                       )
+    if                               ( self . DoResizeColumns              ) :
+      self . resizeColumnsToContents (                                       )
     ##########################################################################
     return
   ############################################################################
@@ -734,7 +736,13 @@ class SectionListings              ( TreeDock                              ) :
     TRX    = self . Translations
     ##########################################################################
     mm     = self . RangeMenu       ( mm                                     )
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    self   . AppendRefreshAction    ( mm , 1001                              )
+    ##########################################################################
+    msg    = self . getMenuItem     ( "ResizeColumns"                        )
+    mm     . addAction              ( 3001                                 , \
+                                      msg                                  , \
+                                      True                                 , \
+                                      self . ResizeColumns                   )
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
@@ -779,6 +787,15 @@ class SectionListings              ( TreeDock                              ) :
     if                              ( at == 1001                           ) :
       ########################################################################
       self . restart                (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 3001                           ) :
+      ########################################################################
+      if                            ( self . ResizeColumns                 ) :
+        self . ResizeColumns = False
+      else                                                                   :
+        self . ResizeColumns = True
       ########################################################################
       return True
     ##########################################################################
