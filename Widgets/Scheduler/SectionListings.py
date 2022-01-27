@@ -742,7 +742,7 @@ class SectionListings              ( TreeDock                              ) :
     mm     . addAction              ( 3001                                 , \
                                       msg                                  , \
                                       True                                 , \
-                                      self . ResizeColumns                   )
+                                      self . DoResizeColumns                 )
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
