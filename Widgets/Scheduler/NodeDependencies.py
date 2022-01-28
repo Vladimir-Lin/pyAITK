@@ -268,6 +268,16 @@ class NodeDependencies             ( TreeDock                              ) :
     TYPE     = JSON                [ "Type"                                  ]
     PERIOD   = JSON                [ "Period"                                ]
     ##########################################################################
+    KID      = ""
+    if                             ( TYPE == 71                            ) :
+      KID    = f"{Id}P"
+    elif                           ( TYPE == 16                            ) :
+      KID    = f"{Id}T"
+    elif                           ( TYPE == 15                            ) :
+      KID    = f"{Id}E"
+    elif                           ( TYPE == 92                            ) :
+      KID    = f"{Id}D"
+    ##########################################################################
     START    = PERIOD . Start
     ENDT     = PERIOD . End
     STATES   = PERIOD . States
@@ -286,7 +296,7 @@ class NodeDependencies             ( TreeDock                              ) :
     IT       . setToolTip          ( 0 , UXID                                )
     IT       . setData             ( 0 , Qt . UserRole , UXID                )
     ##########################################################################
-    IT       . setText             ( 1 , str ( Id )                          )
+    IT       . setText             ( 1 , KID                                 )
     IT       . setTextAlignment    ( 1 , Qt . AlignRight                     )
     ##########################################################################
     IT       . setText             ( 2 , Name                                )
