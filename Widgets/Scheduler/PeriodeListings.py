@@ -741,17 +741,17 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return self . defaultDropInObjects ( source , pos , JSON , 0 , FUNC      )
   ############################################################################
-  def dropEvents                    ( self , source , pos , JSON           ) :
+  def dropEvents                       ( self , source , pos , JSON        ) :
     ##########################################################################
     FUNC = self . PeriodJoinEvents
     ##########################################################################
-    return self . defaultDropInside ( self , source , JSON , FUNC            )
+    return self . defaultDropInObjects ( self , source , JSON , FUNC         )
   ############################################################################
-  def dropPeriods                      ( self , source , pos , JSON        ) :
+  def dropPeriods                   ( self , source , pos , JSON           ) :
     ##########################################################################
     FUNC = self . JoinPeriods
     ##########################################################################
-    return self . defaultDropInObjects ( source , pos , JSON , 0 , FUNC      )
+    return self . defaultDropInside ( source , pos , JSON , 0 , FUNC         )
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################

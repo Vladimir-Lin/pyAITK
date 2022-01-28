@@ -327,27 +327,27 @@ class Relation           ( Columns                                         ) :
     if ( "id"           == a ) :
       self . Id          = value
     if ( "first"        == a ) :
-      self . First       = value
+      self . First       = int ( value )
     if ( "t1"           == a ) :
-      self . T1          = value
+      self . T1          = int ( value )
     if ( "second"       == a ) :
-      self . Second      = value
+      self . Second      = int ( value )
     if ( "t2"           == a ) :
-      self . T2          = value
+      self . T2          = int ( value )
     if ( "relation"     == a ) :
-      self . Relation    = value
+      self . Relation    = int ( value )
     if ( "position"     == a ) :
-      self . Position    = value
+      self . Position    = int ( value )
     if ( "reverse"      == a ) :
-      self . Reverse     = value
+      self . Reverse     = int ( value )
     if ( "prefer"       == a ) :
-      self . Prefer      = value
+      self . Prefer      = int ( value )
     if ( "membership"   == a ) :
       self . Membership  = value
     if ( "description"  == a ) :
-      self . Description = value
+      self . Description = int ( value )
     if ( "operator"     == a ) :
-      self . Operator    = value
+      self . Operator    = int ( value )
     ##########################################################################
     return
   ############################################################################
@@ -409,221 +409,284 @@ class Relation           ( Columns                                         ) :
                    "description"                                             ]
                    ## "operator"                                             ]
   ############################################################################
-  def pair ( self , item ) :
-    v = self . get ( item )
+  def pair         ( self , item                                           ) :
+    v = self . get (        item                                             )
     return f"`{item}` = {v}"
   ############################################################################
-  def FullList ( self ) :
-    return [ "t1"       ,
-             "t2"       ,
-             "relation" ,
-             "first"    ,
-             "second"   ,
-             "position" ]
+  def FullList ( self                                                      ) :
+    return     [ "t1"                                                      , \
+                 "t2"                                                      , \
+                 "relation"                                                , \
+                 "first"                                                   , \
+                 "second"                                                  , \
+                 "position"                                                  ]
   ############################################################################
-  def ExactList ( self ) :
-    return [ "t1"       ,
-             "t2"       ,
-             "relation" ,
-             "first"    ,
-             "second"   ]
+  def ExactList ( self                                                     ) :
+    return      [ "t1"                                                     , \
+                  "t2"                                                     , \
+                  "relation"                                               , \
+                  "first"                                                  , \
+                  "second"                                                   ]
   ############################################################################
-  def FirstList ( self ) :
-    return [ "t1"       ,
-             "t2"       ,
-             "relation" ,
-             "first"    ]
+  def FirstList ( self                                                     ) :
+    return      [ "t1"                                                     , \
+                  "t2"                                                     , \
+                  "relation"                                               , \
+                  "first"                                                    ]
   ############################################################################
-  def SecondList ( self ) :
-    return [ "t1"       ,
-             "t2"       ,
-             "relation" ,
-             "second"   ]
+  def SecondList ( self                                                    ) :
+    return       [ "t1"                                                    , \
+                   "t2"                                                    , \
+                   "relation"                                              , \
+                   "second"                                                  ]
   ############################################################################
-  def isFirst ( self , F ) :
-    return ( F == self . First )
+  def isFirst  ( self , F                                                  ) :
+    return     ( F == self . First                                           )
   ############################################################################
-  def isSecond ( self , S ) :
-    return ( S == self . Second )
+  def isSecond ( self , S                                                  ) :
+    return     ( S == self . Second                                          )
   ############################################################################
-  def isType ( self , t1 , t2 ) :
-    if ( self . T1 != t1 ) :
+  def isType ( self , t1 , t2                                              ) :
+    ##########################################################################
+    if       ( self . T1 != t1                                             ) :
       return False
-    if ( self . T2 != t2 ) :
+    ##########################################################################
+    if       ( self . T2 != t2                                             ) :
       return False
+    ##########################################################################
     return True
   ############################################################################
-  def isT1 ( self , t1 ) :
-    return ( t1 == self . T1 )
+  def isT1 ( self , t1                                                     ) :
+    return ( t1 == self . T1                                                 )
   ############################################################################
-  def isT2 ( self , t2 ) :
-    return ( t2 == self . T2 )
+  def isT2 ( self , t2                                                     ) :
+    return ( t2 == self . T2                                                 )
   ############################################################################
-  def isRelation ( self , R ) :
-    return ( R == self . Relation )
+  def isRelation ( self , R                                                ) :
+    return       ( R == self . Relation                                      )
   ############################################################################
-  def setT1 ( self , N ) :
-    self . T1 = Types [ N ]
+  def setT1           ( self , N                                           ) :
+    ##########################################################################
+    self . T1 = Types [        N                                             ]
+    ##########################################################################
+    return
   ############################################################################
-  def setT2 ( self , N ) :
-    self . T2 = Types [ N ]
+  def setT2           ( self , N                                           ) :
+    ##########################################################################
+    self . T2 = Types [        N                                             ]
+    ##########################################################################
+    return
   ############################################################################
-  def setRelation ( self , N ) :
-    self . Relation = Relations [ N ]
+  def setRelation               ( self , N                                 ) :
+    ##########################################################################
+    self . Relation = Relations [        N                                   ]
+    ##########################################################################
+    return
   ############################################################################
-  def ExactItem ( self , Options = "" , Limits = "" ) :
-    L = self . ExactList  ( )
-    Q = self . QueryItems ( L , Options , Limits )
+  def ExactItem           ( self , Options = "" , Limits = ""              ) :
+    ##########################################################################
+    L = self . ExactList  (                                                  )
+    Q = self . QueryItems ( L , Options , Limits                             )
+    ##########################################################################
     return Q
   ############################################################################
-  def FirstItem ( self , Options = "" , Limits = "" ) :
-    L = self . FirstList  ( )
-    Q = self . QueryItems ( L , Options , Limits )
+  def FirstItem           ( self , Options = "" , Limits = ""              ) :
+    ##########################################################################
+    L = self . FirstList  (                                                  )
+    Q = self . QueryItems ( L , Options , Limits                             )
+    ##########################################################################
     return Q
   ############################################################################
-  def SecondItem ( self , Options = "" , Limits = "" ) :
-    L = self . SecondList ( )
-    Q = self . QueryItems ( L , Options , Limits )
+  def SecondItem          ( self , Options = "" , Limits = ""              ) :
+    ##########################################################################
+    L = self . SecondList (                                                  )
+    Q = self . QueryItems ( L , Options , Limits                             )
+    ##########################################################################
     return Q
   ############################################################################
-  def Last ( self , Table ) :
-    WS = self . FirstItem ( "order by `position` desc" , "limit 0,1" )
+  def Last                ( self , Table                                   ) :
+    WS = self . FirstItem ( "order by `position` desc" , "limit 0,1"         )
     return f"select `position` from {Table} {WS} ;"
   ############################################################################
-  def ExactColumn ( self , Table , Item , Options = "" , Limits = "" ) :
-    WS = self . ExactItem ( Options , Limits )
+  def ExactColumn ( self , Table , Item , Options = "" , Limits = ""       ) :
+    WS = self . ExactItem ( Options , Limits                                 )
     return f"select {Item} from {Table} {WS} ;"
   ############################################################################
-  def InsertItems ( self , Table , items ) :
-    JI = self . join   ( items , " , " )
-    VL = self . Values ( items )
+  def InsertItems      ( self , Table , items                              ) :
+    ##########################################################################
+    JI = self . join   ( items , " , "                                       )
+    VL = self . Values ( items                                               )
+    ##########################################################################
     return f"insert into {Table} ( {JI} ) values ( {VL} ) ;"
   ############################################################################
-  def Insert ( self , Table ) :
-    L = self . FullList ( )
-    return self . InsertItems ( Table , L )
+  def Insert                  ( self , Table                               ) :
+    L = self . FullList       (                                              )
+    return self . InsertItems ( Table , L                                    )
   ############################################################################
-  def DeleteItems ( self , Table , items ) :
-    QI = self . QueryItems ( items )
+  def DeleteItems          ( self , Table , items                          ) :
+    QI = self . QueryItems (                items                            )
     return f"delete from {Table} {QI} ;"
   ############################################################################
-  def Delete ( self , Table ) :
-    L = self . ExactList ( )
-    return self . DeleteItems ( Table , L )
+  def Delete                  ( self , Table                               ) :
+    L = self . ExactList      (                                              )
+    return self . DeleteItems (        Table , L                             )
   ############################################################################
-  def WipeOut ( self , Table ) :
-    L = self . FirstList ( )
-    return self . DeleteItems ( Table , L )
+  def WipeOut                 ( self , Table                               ) :
+    L = self . FirstList      (                                              )
+    return self . DeleteItems (        Table , L                             )
   ############################################################################
-  def obtain ( self , R ) :
-    List = self . tableItems ( )
-    CNT  = 0
-    for x in List :
-      self . set ( x , R [ CNT ] )
+  def obtain                   ( self , R                                  ) :
+    ##########################################################################
+    List   = self . tableItems (                                             )
+    CNT    = 0
+    ##########################################################################
+    for x in List                                                            :
+      self . set               ( x , R [ CNT ]                               )
       CNT += 1
+    ##########################################################################
     return True
   ############################################################################
-  def Subordination ( self , DB , Table , Options = "order by `position` asc" , Limits = "" ) :
-    W = self . FirstItem ( Options , Limits )
+  def Subordination         ( self                                         , \
+                              DB                                           , \
+                              Table                                        , \
+                              Options = "order by `position` asc"          , \
+                              Limits  = ""                                 ) :
+    W = self . FirstItem    ( Options , Limits                               )
     Q = f"select `second` from {Table} {W} ;"
-    return DB . ObtainUuids ( Q )
+    return DB . ObtainUuids ( Q                                              )
   ############################################################################
-  def GetOwners ( self , DB , Table , Options = "order by `id` asc" , Limits = "" ) :
-    W = self . SecondItem ( Options , Limits )
+  def GetOwners             ( self                                         , \
+                              DB                                           , \
+                              Table                                        , \
+                              Options = "order by `id` asc"                , \
+                              Limits  = ""                                 ) :
+    W = self . SecondItem   ( Options , Limits                               )
     Q = f"select `first` from {Table} {W} ;"
-    return DB . ObtainUuids ( Q )
+    return DB . ObtainUuids ( Q                                              )
   ############################################################################
-  def CountFirst ( self , DB , Table ) :
-    WW = self . SecondItem ( )
+  def CountFirst           ( self , DB , Table                             ) :
+    ##########################################################################
+    WW = self . SecondItem (                                                 )
     QQ = f"select count(*) from {Table} {WW} ;"
-    DB . Query ( QQ )
-    rr = DB . FetchOne ( )
+    DB . Query             ( QQ                                              )
+    rr = DB   . FetchOne   (                                                 )
+    ##########################################################################
     return rr [ 0 ]
   ############################################################################
-  def CountSecond ( self , DB , Table ) :
-    WW = self . FirstItem ( )
+  def CountSecond         ( self , DB , Table                              ) :
+    ##########################################################################
+    WW = self . FirstItem (                                                  )
     QQ = f"select count(*) from {Table} {WW} ;"
-    DB . Query ( QQ )
-    rr = DB . FetchOne ( )
-    return rr [ 0 ]
+    DB . Query            ( QQ                                               )
+    rr = DB . FetchOne    (                                                  )
+    ##########################################################################
+    return rr             [ 0                                                ]
   ############################################################################
-  def Assure ( self , DB , Table ) :
-    QQ = self . WipeOut ( Table )
-    DB . Query          ( QQ    )
-    QQ = self . Insert  ( Table )
-    DB . Query          ( QQ    )
+  def Assure            ( self , DB , Table                                ) :
+    ##########################################################################
+    QQ = self . WipeOut (             Table                                  )
+    DB . Query          ( QQ                                                 )
+    QQ = self . Insert  (             Table                                  )
+    DB . Query          ( QQ                                                 )
+    ##########################################################################
+    return
   ############################################################################
-  def Append ( self , DB , Table ) :
-    QQ = self . Insert ( Table )
-    return DB . Query  ( QQ    )
+  def Append           ( self , DB , Table                                 ) :
+    QQ = self . Insert (             Table                                   )
+    return DB . Query  ( QQ                                                  )
   ############################################################################
-  def Join ( self , DB , Table ) :
-    QQ = self . ExactColumn ( Table , "id" )
-    DB . Query ( QQ )
-    Lists = DB . FetchAll ( )
-    if ( not Lists ) or ( Lists == None ) or ( len ( Lists ) <= 0 ) :
+  def Join                     ( self , DB , Table                         ) :
+    ##########################################################################
+    QQ    = self . ExactColumn ( Table , "id"                                )
+    DB    . Query              ( QQ                                          )
+    Lists = DB . FetchAll      (                                             )
+    if ( not Lists ) or ( Lists == None ) or ( len ( Lists ) <= 0 )          :
       pass
-    else :
+    else                                                                     :
       return False
-    ID = -1
-    QQ = self . Last ( Table )
-    DB . Query ( QQ )
-    rr = DB . FetchOne ( )
-    if ( not rr ) :
+    ##########################################################################
+    ID    = -1
+    QQ    = self . Last        ( Table                                       )
+    DB    . Query              ( QQ                                          )
+    rr    = DB . FetchOne      (                                             )
+    if                         ( not rr                                    ) :
       pass
-    else :
-      ID = rr [ 0 ]
-    ID = ID + 1
+    else                                                                     :
+      ID  = rr                 [ 0                                           ]
+    ID    = ID + 1
+    ##########################################################################
     self . Position = ID
-    return self . Append ( DB , Table )
+    ##########################################################################
+    return self . Append       ( DB , Table                                  )
   ############################################################################
-  def Joins ( self , DB , Table , Lists ) :
-    for x in Lists :
-      self . set  ( "second" , x     )
-      self . Join ( DB       , Table )
+  def Joins       ( self , DB , Table , Lists                              ) :
+    ##########################################################################
+    for x in Lists                                                           :
+      self . set  ( "second" , x                                             )
+      self . Join ( DB       , Table                                         )
+    ##########################################################################
+    return
   ############################################################################
-  def PrefectOrder ( self , DB , Table ) :
-    IX  = [ ]
-    WH  = self . FirstItem ( "order by `position` asc" )
-    QQ  = f"select `id` from {Table} {WH} ;"
-    IX  = DB . ObtainUuids ( QQ )
-    pos = 0
-    for xx in IX :
-      QQ  = f"update {Table} set `position` = {pos} where `id` = {xx} ;"
-      DB  . Query ( QQ )
+  def PrefectOrder            ( self , DB , Table                          ) :
+    ##########################################################################
+    IX     =                  [                                              ]
+    WH     = self . FirstItem ( "order by `position` asc"                    )
+    QQ     = f"select `id` from {Table} {WH} ;"
+    IX     = DB . ObtainUuids ( QQ                                           )
+    pos    = 0
+    ##########################################################################
+    for xx in IX                                                             :
+      ########################################################################
+      QQ   = f"update {Table} set `position` = {pos} where `id` = {xx} ;"
+      DB   . Query            ( QQ                                           )
       pos += 1
+    ##########################################################################
+    return
   ############################################################################
-  def ObtainOwners ( self , DB , Table , Members , TMP ) :
-    for nsx in TMP :
-      self . set ( "second" , nsx )
-      CC   = self . GetOwners ( DB , Table )
-      Members . extend ( CC )
+  def ObtainOwners               ( self , DB , Table , Members , TMP       ) :
+    ##########################################################################
+    for nsx in TMP                                                           :
+      self    . set              ( "second" , nsx                            )
+      CC      = self . GetOwners ( DB , Table                                )
+      Members . extend           ( CC                                        )
+    ##########################################################################
     return Members
   ############################################################################
-  def Organize ( self , DB , Table ) :
-    WH = self . FirstItem ( "order by `position` asc" )
+  def Organize            ( self , DB , Table                              ) :
+    ##########################################################################
+    WH = self . FirstItem ( "order by `position` asc"                        )
     QQ = f"select `id` from {Table} {WH} ;"
-    IX = DB . ObtainUuids ( QQ )
-    if ( len ( IX ) <= 0 ) :
+    IX = DB . ObtainUuids ( QQ                                               )
+    if                    ( len ( IX ) <= 0                                ) :
       return False
+    ##########################################################################
     pos    = 0
-    DB     . LockWrites ( [ Table ] )
+    ##########################################################################
+    DB     . LockWrites   ( [ Table                                        ] )
+    ##########################################################################
     for iv in IX :
       QQ   = f"update {Table} set `position` = {pos} where `id` = {iv} ;"
-      DB   . Query ( QQ )
+      DB   . Query        ( QQ                                               )
       pos += 1
-    DB . UnlockTables ( )
+    ##########################################################################
+    DB . UnlockTables     (                                                  )
+    ##########################################################################
     return True
   ############################################################################
-  def Ordering ( self , DB , Table , UUIDs ) :
-    pos = 0
-    DB . LockWrite ( [ Table ] )
-    for xu in UUIDs :
-      self . set ( "second" , xu )
-      WH   = self . ExactItem ( )
+  def Ordering                ( self , DB , Table , UUIDs                  ) :
+    ##########################################################################
+    pos    = 0
+    DB     . LockWrite        ( [ Table                                    ] )
+    ##########################################################################
+    for xu in UUIDs                                                          :
+      ########################################################################
+      self . set              ( "second" , xu                                )
+      WH   = self . ExactItem (                                              )
       QQ   = f"update {Table} set `position` = {pos} {WH} ;"
-      DB   . Query ( QQ )
+      DB   . Query            ( QQ                                           )
       pos += 1
-    DB . UnlockTables ( )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    ##########################################################################
     return True
 ##############################################################################

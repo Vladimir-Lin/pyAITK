@@ -70,9 +70,8 @@ class NodeDependencies             ( TreeDock                              ) :
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . ClassTag           = "NodeDependencies"
-    self . SortOrder          = "asc"
     self . AssignedTitle      = ""
-    self . DoResizeColumns    = True
+    self . NodeTypes          =        {                                     }
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -253,6 +252,9 @@ class NodeDependencies             ( TreeDock                              ) :
     ##########################################################################
     return SS
   ############################################################################
+  def getItemJson    ( self , IT                                           ) :
+    return IT . data ( 7    , Qt . UserRole                                  )
+  ############################################################################
   def PrepareItemContent           ( self , IT , JSON                      ) :
     ##########################################################################
     TZ       = "Asia/Taipei"
@@ -264,57 +266,49 @@ class NodeDependencies             ( TreeDock                              ) :
     UXID     = str                 ( UUID                                    )
     Name     = JSON                [ "Name"                                  ]
     TYPE     = JSON                [ "Type"                                  ]
-    USED     = JSON                [ "Used"                                  ]
-    START    = JSON                [ "Start"                                 ]
-    ENDT     = JSON                [ "End"                                   ]
-    REALM    = JSON                [ "Realm"                                 ]
-    RNAME    = JSON                [ "RName"                                 ]
-    ROLE     = JSON                [ "Role"                                  ]
-    TNAME    = JSON                [ "TName"                                 ]
-    ITEM     = JSON                [ "Item"                                  ]
-    STATES   = JSON                [ "States"                                ]
-    CREATION = JSON                [ "Creation"                              ]
-    MODIFIED = JSON                [ "Modified"                              ]
+    PERIOD   = JSON                [ "Period"                                ]
     ##########################################################################
+    START    = PERIOD . Start
+    ENDT     = PERIOD . End
+    STATES   = PERIOD . States
+    ##########################################################################
+    J        =                     { "Uuid"   : UUID                       , \
+                                     "Name"   : Name                       , \
+                                     "Type"   : TYPE                       , \
+                                     "States" : STATES                     , \
+                                     "Start"  : START                      , \
+                                     "Finish" : ENDT                         }
+    ##########################################################################
+    TName    = TRX                 [ "ObjectTypes" ] [ str ( TYPE )          ]
     DURATION = self . DurationSTR  ( START , ENDT                            )
     ##########################################################################
-    IT       . setText             ( 0 , str ( Id )                          )
+    IT       . setText             ( 0 , TName                               )
     IT       . setToolTip          ( 0 , UXID                                )
     IT       . setData             ( 0 , Qt . UserRole , UXID                )
-    IT       . setTextAlignment    ( 0 , Qt . AlignRight                     )
     ##########################################################################
-    IT       . setText             ( 1 , Name                                )
+    IT       . setText             ( 1 , str ( Id )                          )
+    IT       . setTextAlignment    ( 1 , Qt . AlignRight                     )
+    ##########################################################################
+    IT       . setText             ( 2 , Name                                )
     ##########################################################################
     DTS      = ""
     if                             ( START    > 0                          ) :
       NOW    . Stardate = START
       DTS    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
-    IT       . setText             ( 2 , DTS                                 )
+    IT       . setText             ( 3 , DTS                                 )
     ##########################################################################
     DTS      = ""
     if                             ( ENDT     > 0                          ) :
       NOW    . Stardate = ENDT
       DTS    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
-    IT       . setText             ( 3 , DTS                                 )
+    IT       . setText             ( 4 , DTS                                 )
     ##########################################################################
-    IT       . setText             ( 4 , DURATION                            )
+    IT       . setText             ( 5 , DURATION                            )
     ##########################################################################
     TRXS     = TRX                 [ "States"                                ]
-    IT       . setText             ( 5 , TRXS [ str ( STATES ) ]             )
+    IT       . setText             ( 6 , TRXS [ str ( STATES ) ]             )
     ##########################################################################
-    DTS      = ""
-    if                             ( CREATION > 0                          ) :
-      NOW    . Stardate = CREATION
-      DTS    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
-    IT       . setText             ( 6 , DTS                                 )
-    ##########################################################################
-    DTS      = ""
-    if                             ( MODIFIED > 0                          ) :
-      NOW    . Stardate = MODIFIED
-      DTS    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
-    IT       . setText             ( 7 , DTS                                )
-    ##########################################################################
-    IT       . setData             ( 8 , Qt . UserRole , JSON                )
+    IT       . setData             ( 7 , Qt . UserRole , J                   )
     ##########################################################################
     return
   ############################################################################
@@ -325,145 +319,162 @@ class NodeDependencies             ( TreeDock                              ) :
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                          (        list                           )
-  def refresh                        ( self , PERIODs                      ) :
+  @pyqtSlot                       (        list                              )
+  def refresh                     ( self , ITEMs                           ) :
     ##########################################################################
-    self   . clear                   (                                       )
+    self   . clear                (                                          )
     ##########################################################################
-    for P in PERIODs                                                         :
+    for T in ITEMs                                                           :
       ########################################################################
-      IT   = self . PrepareItem      ( P                                     )
-      self . addTopLevelItem         ( IT                                    )
+      IT   = self . PrepareItem   ( T                                        )
+      self . addTopLevelItem      ( IT                                       )
     ##########################################################################
-    self   . emitNamesShow . emit    (                                       )
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
-  def ObtainsItemUuids                    ( self , DB                      ) :
-    return self . DefaultObtainsItemUuids (        DB                        )
-  ############################################################################
-  def ObtainsUuidNames        ( self , DB , UUIDs                          ) :
+  def LoadProjects            ( self , DB , LISTS                          ) :
     ##########################################################################
-    NAMEs   =                 {                                              }
+    NAMTAB   = self . Tables  [ "NamesParent"                                ]
+    RELTAB   = self . Tables  [ "RelationDepends"                            ]
     ##########################################################################
-    if                        ( len ( UUIDs ) > 0                          ) :
-      TABLE = self . Tables   [ "NamesLocal"                                 ]
-      NAMEs = self . GetNames ( DB , TABLE , UUIDs                           )
+    self            . Prerequisite . set           ( "t2" , 71               )
+    PROJECTS = self . Prerequisite . Subordination ( DB   , RELTAB           )
     ##########################################################################
-    return NAMEs
-  ############################################################################
-  def ObtainPeriodDetail             ( self , DB , NAMEs , U               ) :
-    ##########################################################################
-    NAMTAB = self . Tables           [ "NamesLocal"                          ]
-    GNATAB = self . Tables           [ "NamesPrivate"                        ]
-    PRDTAB = self . Tables           [ "Periods"                             ]
-    TYPTAB = self . Tables           [ "Types"                               ]
-    ##########################################################################
-    J      =                         { "Uuid"     : U                      , \
-                                       "Name"     : ""                     , \
-                                       "Type"     : 0                      , \
-                                       "TName"    : ""                     , \
-                                       "Used"     : 0                      , \
-                                       "Start"    : 0                      , \
-                                       "End"      : 0                      , \
-                                       "Realm"    : 0                      , \
-                                       "RName"    : ""                     , \
-                                       "Role"     : 0                      , \
-                                       "Item"     : 0                      , \
-                                       "States"   : 0                      , \
-                                       "Creation" : 0                      , \
-                                       "Modified" : 0                        }
-    ##########################################################################
-    if                               ( U in NAMEs                          ) :
-      J [ "Name" ] = self . assureString ( NAMEs [ U ]                       )
-    ##########################################################################
-    QQ     = f"""select
-                 `type`,`used`,
-                 `start`,`end`,
-                 `realm`,`role`,
-                 `item`,`states`,
-                 `creation`,`modified`
-                 from {PRDTAB}
-                 where ( `uuid` = {U} ) ;"""
-    QQ     = " " . join              ( QQ . split ( )                        )
-    DB     . Query                   ( QQ                                    )
-    RR     = DB . FetchOne           (                                       )
-    ##########################################################################
-    if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 10 ) )           :
+    for UUID in PROJECTS                                                     :
       ########################################################################
-      J [ "Type"     ] = int         ( RR [ 0 ]                              )
-      J [ "Used"     ] = int         ( RR [ 1 ]                              )
-      J [ "Start"    ] = int         ( RR [ 2 ]                              )
-      J [ "End"      ] = int         ( RR [ 3 ]                              )
-      J [ "Realm"    ] = int         ( RR [ 4 ]                              )
-      J [ "Role"     ] = int         ( RR [ 5 ]                              )
-      J [ "Item"     ] = int         ( RR [ 6 ]                              )
-      J [ "States"   ] = int         ( RR [ 7 ]                              )
-      J [ "Creation" ] = int         ( RR [ 8 ]                              )
-      J [ "Modified" ] = int         ( RR [ 9 ]                              )
+      self   . NodeTypes [ UUID ] = 71
       ########################################################################
-      RU   = J                       [ "Realm"                               ]
-      if                             ( RU > 0                              ) :
-        N  = self . GetName          ( DB , GNATAB , RU                      )
-        J [ "RName" ] = N
+      PRJ    = Project        (                                              )
+      PRJ    . Tables = self . Tables
+      PRJ    . Uuid   = UUID
+      PRJ    . LoadBriefs     ( DB                                           )
       ########################################################################
-      TU   = J                       [ "Role"                                ]
-      TU   = 1100000000000000000 + TU
-      if                             ( TU > 0                              ) :
-        ######################################################################
-        QQ = f"select `name` from {TYPTAB} where ( `uuid` = {TU} ) ;"
-        DB . Query                   ( QQ                                    )
-        RR = DB . FetchOne           (                                       )
-        N  = str                     ( J [ "Role" ]                          )
-        if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )        :
-          N   = self . assureString  ( RR [ 0 ]                              )
-        ## N = self . GetName          ( DB , GNATAB , TU                     )
-        ####################################################################
-        J [ "TName" ] = N
+      NAME   = self . GetName ( DB , NAMTAB , UUID                           )
+      ########################################################################
+      J      =                { "Uuid"    : UUID                           , \
+                                "Type"    : 71                             , \
+                                "Name"    : NAME                           , \
+                                "Period"  : PRJ . Period                   , \
+                                "Project" : PRJ                              }
+      LISTS  . append         ( J                                            )
     ##########################################################################
-    return J
+    return LISTS
   ############################################################################
-  def loading                         ( self                               ) :
+  def LoadTasks               ( self , DB , LISTS                          ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      self . emitNamesShow . emit     (                                      )
+    NAMTAB   = self . Tables  [ "NamesParent"                                ]
+    RELTAB   = self . Tables  [ "RelationDepends"                            ]
+    ##########################################################################
+    self     .        Prerequisite . set           ( "t2" , 16               )
+    TASKS    = self . Prerequisite . Subordination ( DB   , RELTAB           )
+    ##########################################################################
+    for UUID in TASKS                                                        :
+      ########################################################################
+      self   . NodeTypes [ UUID ] = 16
+      ########################################################################
+      TASK   = Task           (                                              )
+      TASK   . Tables = self . Tables
+      TASK   . Uuid   = UUID
+      TASK   . LoadBriefs     ( DB                                           )
+      ########################################################################
+      NAME   = self . GetName ( DB , NAMTAB , UUID                           )
+      ########################################################################
+      J      =                { "Uuid"   : UUID                            , \
+                                "Type"   : 16                              , \
+                                "Name"   : NAME                            , \
+                                "Period" : TASK . Period                   , \
+                                "Task"   : TASK                              }
+      LISTS  . append         ( J                                            )
+    ##########################################################################
+    return LISTS
+  ############################################################################
+  def LoadEvents              ( self , DB , LISTS                          ) :
+    ##########################################################################
+    NAMTAB   = self . Tables  [ "NamesParent"                                ]
+    RELTAB   = self . Tables  [ "RelationDepends"                            ]
+    ##########################################################################
+    self            . Prerequisite . set           ( "t2" , 15               )
+    EVENTS   = self . Prerequisite . Subordination ( DB   , RELTAB           )
+    ##########################################################################
+    for UUID in EVENTS                                                       :
+      ########################################################################
+      self   . NodeTypes [ UUID ] = 15
+      ########################################################################
+      EVENT  = Event          (                                              )
+      EVENT  . Tables = self . Tables
+      EVENT  . Uuid   = UUID
+      EVENT  . LoadBriefs     ( DB                                           )
+      ########################################################################
+      NAME   = self . GetName ( DB , NAMTAB , UUID                           )
+      ########################################################################
+      J      =                { "Uuid"   : UUID                            , \
+                                "Type"   : 15                              , \
+                                "Name"   : NAME                            , \
+                                "Period" : EVENT . Period                  , \
+                                "Event"  : EVENT                             }
+      LISTS  . append         ( J                                            )
+    ##########################################################################
+    return LISTS
+  ############################################################################
+  def LoadPeriods             ( self , DB , LISTS                          ) :
+    ##########################################################################
+    PRDTAB   = self . Tables  [ "Periods"                                    ]
+    NAMTAB   = self . Tables  [ "NamesLocal"                                 ]
+    RELTAB   = self . Tables  [ "RelationDepends"                            ]
+    ##########################################################################
+    self     . Prerequisite . set                  ( "t2" , 92               )
+    PERIODS  = self . Prerequisite . Subordination ( DB   , RELTAB           )
+    ##########################################################################
+    for UUID in PERIODS                                                      :
+      ########################################################################
+      self   . NodeTypes [ UUID ] = 92
+      ########################################################################
+      PERIOD = Periode        (                                              )
+      PERIOD . Uuid   = UUID
+      PERIOD . ObtainsByUuid  ( DB , PRDTAB                                  )
+      ########################################################################
+      NAME   = self . GetName ( DB , NAMTAB , UUID                           )
+      ########################################################################
+      J      =                { "Uuid"   : UUID                            , \
+                                "Type"   : 92                              , \
+                                "Name"   : NAME                            , \
+                                "Period" : PERIOD                            }
+      LISTS  . append         ( J                                            )
+    ##########################################################################
+    return LISTS
+  ############################################################################
+  def loading                     ( self                                   ) :
+    ##########################################################################
+    DB     = self . ConnectDB     (                                          )
+    if                            ( DB == None                             ) :
+      self . emitNamesShow . emit (                                          )
       return
     ##########################################################################
-    self    . Notify                  ( 3                                    )
+    self   . Notify               ( 3                                        )
     ##########################################################################
-    FMT     = self . Translations     [ "UI::StartLoading"                   ]
-    MSG     = FMT . format            ( self . windowTitle ( )               )
-    self    . ShowStatus              ( MSG                                  )
-    self    . OnBusy  . emit          (                                      )
-    self    . setBustle               (                                      )
+    FMT    = self . Translations  [ "UI::StartLoading"                       ]
+    MSG    = FMT . format         ( self . windowTitle ( )                   )
+    self   . ShowStatus           ( MSG                                      )
+    self   . OnBusy  . emit       (                                          )
+    self   . setBustle            (                                          )
     ##########################################################################
-    ITEMs   =                         [                                      ]
-    """
-    self    . PrepareTimeRange        (                                      )
+    ITEMs  =                      [                                          ]
+    ITEMs  = self . LoadProjects  ( DB , ITEMs                               )
+    ITEMs  = self . LoadTasks     ( DB , ITEMs                               )
+    ITEMs  = self . LoadEvents    ( DB , ITEMs                               )
+    ITEMs  = self . LoadPeriods   ( DB , ITEMs                               )
     ##########################################################################
-    NAMEs   =                         {                                      }
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+    self   . setVacancy           (                                          )
+    self   . GoRelax . emit       (                                          )
+    self   . ShowStatus           ( ""                                       )
+    DB     . Close                (                                          )
     ##########################################################################
-    PERIODS =                         [                                      ]
-    for U in UUIDs                                                           :
-      ########################################################################
-      J = self . ObtainPeriodDetail   ( DB , NAMEs , U                       )
-      PERIODS . append                ( J                                    )
-    """
-    ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . GoRelax . emit          (                                      )
-    self    . ShowStatus              ( ""                                   )
-    DB      . Close                   (                                      )
-    ##########################################################################
-    if                                ( len ( ITEMs ) <= 0                 ) :
-      self . emitNamesShow . emit     (                                      )
+    if                            ( len ( ITEMs ) <= 0                     ) :
+      self . emitNamesShow . emit (                                          )
       return
     ##########################################################################
-    self   . emitAllNames . emit      ( ITEMs                                )
+    self   . emitAllNames  . emit ( ITEMs                                    )
     ##########################################################################
     return
   ############################################################################
@@ -477,6 +488,157 @@ class NodeDependencies             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def allowedMimeTypes     ( self , mime                                   ) :
+    FMTs    =              [ "project/uuids"                               , \
+                             "task/uuids"                                  , \
+                             "event/uuids"                                 , \
+                             "period/uuids"                                  ]
+    formats = ";" . join   ( FMTs                                            )
+    return self . MimeType ( mime , formats                                  )
+  ############################################################################
+  def acceptDrop              ( self , sourceWidget , mimeData             ) :
+    ##########################################################################
+    if                        ( self == sourceWidget                       ) :
+      return False
+    ##########################################################################
+    return self . dropHandler ( sourceWidget , self , mimeData               )
+  ############################################################################
+  def acceptProjectsDrop ( self                                            ) :
+    return True
+  ############################################################################
+  def acceptTasksDrop    ( self                                            ) :
+    return True
+  ############################################################################
+  def acceptEventsDrop   ( self                                            ) :
+    return True
+  ############################################################################
+  def acceptPeriodsDrop  ( self                                            ) :
+    return True
+  ############################################################################
+  def dropNew                           ( self                             , \
+                                          sourceWidget                     , \
+                                          mimeData                         , \
+                                          mousePos                         ) :
+    ##########################################################################
+    if                                  ( self == sourceWidget             ) :
+      return False
+    ##########################################################################
+    RDN    = self . RegularDropNew      ( mimeData                           )
+    if                                  ( not RDN                          ) :
+      return False
+    ##########################################################################
+    mtype  = self . DropInJSON          [ "Mime"                             ]
+    LISTS  =                            [ "project/uuids"                  , \
+                                          "task/uuids"                     , \
+                                          "event/uuids"                    , \
+                                          "period/uuids"                     ]
+    ##########################################################################
+    if                                  ( mtype not in LISTS               ) :
+      return False
+    ##########################################################################
+    title  = sourceWidget . windowTitle (                                    )
+    UUIDs  = self . DropInJSON          [ "UUIDs"                            ]
+    CNT    = len                        ( UUIDs                              )
+    self   . ShowMenuItemTitleStatus    ( "JoinNodes" , title , CNT          )
+    ##########################################################################
+    return RDN
+  ############################################################################
+  def dropMoving              ( self , sourceWidget , mimeData , mousePos  ) :
+    ##########################################################################
+    if                        ( self . droppingAction                      ) :
+      return False
+    ##########################################################################
+    if                        ( sourceWidget == self                       ) :
+      return False
+    ##########################################################################
+    mtype = self . DropInJSON [ "Mime"                                       ]
+    LISTS =                   [ "project/uuids"                            , \
+                                "task/uuids"                               , \
+                                "event/uuids"                              , \
+                                "period/uuids"                               ]
+    ##########################################################################
+    if                        ( mtype not in LISTS                         ) :
+      return False
+    ##########################################################################
+    return   True
+  ############################################################################
+  def dropProjects                  ( self , source , pos , JSON           ) :
+    ##########################################################################
+    FUNC = self . ProjectsJoinCondition
+    ##########################################################################
+    return self . defaultDropInside ( self , source , JSON , FUNC            )
+  ############################################################################
+  def dropTasks                     ( self , source , pos , JSON           ) :
+    ##########################################################################
+    FUNC = self . TasksJoinCondition
+    ##########################################################################
+    return self . defaultDropInside ( self , source , JSON , FUNC            )
+  ############################################################################
+  def dropEvents                    ( self , source , pos , JSON           ) :
+    ##########################################################################
+    FUNC = self . EventsJoinCondition
+    ##########################################################################
+    return self . defaultDropInside ( self , source , JSON , FUNC            )
+  ############################################################################
+  def dropPeriods                   ( self , source , pos , JSON           ) :
+    ##########################################################################
+    FUNC = self . PeriodsJoinCondition
+    ##########################################################################
+    return self . defaultDropInside ( self , source , JSON , FUNC            )
+  ############################################################################
+  def ProjectsJoinCondition   ( self , UUIDs                               ) :
+    ##########################################################################
+    self . NodesJoinCondition ( 71   , UUIDs                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def TasksJoinCondition      ( self , UUIDs                               ) :
+    ##########################################################################
+    self . NodesJoinCondition ( 16   , UUIDs                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def EventsJoinCondition     ( self , UUIDs                               ) :
+    ##########################################################################
+    self . NodesJoinCondition ( 15   , UUIDs                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def PeriodsJoinCondition    ( self , UUIDs                               ) :
+    ##########################################################################
+    self . NodesJoinCondition ( 92   , UUIDs                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def NodesJoinCondition         ( self , TypeId , UUIDs                   ) :
+    ##########################################################################
+    DB     = self . ConnectDB    (                                           )
+    if                           ( DB in [ False , None ]                  ) :
+      return
+    ##########################################################################
+    RELTAB = self . Tables       [ "RelationDepends"                         ]
+    ##########################################################################
+    self   . Prerequisite . set  ( "t2" , TypeId                             )
+    self   . Successor    . set  ( "t1" , TypeId                             )
+    ##########################################################################
+    DB     . LockWrites          ( [ RELTAB                                ] )
+    ##########################################################################
+    for TUID in UUIDs                                                        :
+      ########################################################################
+      self . Prerequisite . set  ( "second" , TUID                           )
+      self . Prerequisite . Join ( DB       , RELTAB                         )
+      ########################################################################
+      self . Successor    . set  ( "first"  , TUID                           )
+      self . Successor    . Join ( DB       , RELTAB                         )
+    ##########################################################################
+    DB     . UnlockTables        (                                           )
+    DB     . Close               (                                           )
+    ##########################################################################
+    self   . Notify              ( 5                                         )
+    self   . loading             (                                           )
+    ##########################################################################
+    return
+  ############################################################################
   @pyqtSlot                   (                                              )
   def DeleteItems             ( self                                       ) :
     ##########################################################################
@@ -484,6 +646,36 @@ class NodeDependencies             ( TreeDock                              ) :
       return
     ##########################################################################
     self . defaultDeleteItems ( 0 , self . DetachConditions                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def DetachConditions           ( self , UUIDs                            ) :
+    ##########################################################################
+    DB     = self . ConnectDB    (                                           )
+    if                           ( DB in [ False , None ]                  ) :
+      return
+    ##########################################################################
+    RELTAB = self . Tables       [ "RelationDepends"                         ]
+    ##########################################################################
+    self   . Prerequisite . set  ( "t2" , TypeId                             )
+    self   . Successor    . set  ( "t1" , TypeId                             )
+    ##########################################################################
+    DB     . LockWrites          ( [ RELTAB                                ] )
+    ##########################################################################
+    for TUID in UUIDs                                                        :
+      ########################################################################
+      self . Prerequisite . set  ( "second" , TUID                           )
+      QQ   = self . Prerequisite . Delete ( RELTAB                           )
+      DB   . Query               ( QQ                                        )
+      ########################################################################
+      self . Successor    . set  ( "first"  , TUID                           )
+      QQ   = self . Successor    . Delete ( RELTAB                           )
+      DB   . Query               ( QQ                                        )
+    ##########################################################################
+    DB     . UnlockTables        (                                           )
+    DB     . Close               (                                           )
+    ##########################################################################
+    self   . Notify              ( 5                                         )
     ##########################################################################
     return
   ############################################################################
@@ -591,7 +783,6 @@ class NodeDependencies             ( TreeDock                              ) :
     ## if                              ( atItem not in [ False , None ]       ) :
     ##   mm   = self . GroupsMenu      ( mm                                     )
     mm     = self . ColumnsMenu     ( mm                                     )
-    mm     = self . SortingMenu     ( mm                                     )
     mm     = self . LocalityMenu    ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
@@ -612,12 +803,6 @@ class NodeDependencies             ( TreeDock                              ) :
       return True
     ##########################################################################
     if                              ( self . RunColumnsMenu     ( at )     ) :
-      return True
-    ##########################################################################
-    if                              ( self . RunSortingMenu     ( at )     ) :
-      ########################################################################
-      self . restart                (                                        )
-      ########################################################################
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :
