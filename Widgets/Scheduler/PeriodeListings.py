@@ -57,11 +57,12 @@ from   AITK  . Scheduler  . Task      import Task        as Task
 ##############################################################################
 class PeriodeListings              ( TreeDock                              ) :
   ############################################################################
-  HavingMenu    = 1371434312
+  HavingMenu     = 1371434312
   ############################################################################
-  emitNamesShow = pyqtSignal       (                                         )
-  emitAllNames  = pyqtSignal       ( list                                    )
-  PeriodDetails = pyqtSignal       ( str , str                               )
+  emitNamesShow  = pyqtSignal      (                                         )
+  emitAllNames   = pyqtSignal      ( list                                    )
+  PeriodDetails  = pyqtSignal      ( str , str                               )
+  NodeDependency = pyqtSignal      ( str , int , str , int                   )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -908,23 +909,49 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def GroupsMenu              ( self , mm , item                           ) :
+  def GroupsMenu                ( self , mm , item                         ) :
     ##########################################################################
-    msg  = self . getMenuItem ( "Details"                                    )
-    LOM  = mm . addMenu       ( msg                                          )
+    msg  = self . getMenuItem   ( "Details"                                  )
+    LOM  = mm . addMenu         ( msg                                        )
     ##########################################################################
-    msg  = self . getMenuItem ( "Editor"                                     )
-    mm   . addActionFromMenu  ( LOM , 1501 , msg                             )
+    msg  = self . getMenuItem   ( "Editor"                                   )
+    mm   . addActionFromMenu    ( LOM , 1501 , msg                           )
+    ##########################################################################
+    mm   . addSeparatorFromMenu ( LOM                                        )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Prerequisite"                             )
+    mm   . addActionFromMenu    ( LOM , 1502 , msg                           )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Successor"                                )
+    mm   . addActionFromMenu    ( LOM , 1503 , msg                           )
+    ##########################################################################
+    mm   . addSeparatorFromMenu ( LOM                                        )
     ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu               ( self , at , item                       ) :
+  def RunGroupsMenu                ( self , at , item                      ) :
     ##########################################################################
-    if                            ( at == 1501                             ) :
+    if                             ( at == 1501                            ) :
       ########################################################################
-      uuid = self . itemUuid      ( item , 0                                 )
-      name = item . text          ( 1                                        )
-      self . PeriodDetails . emit ( name , str ( uuid )                      )
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . PeriodDetails  . emit ( name , str ( uuid )                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1502                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . NodeDependency . emit ( name , 92 , str ( uuid ) , 31           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1503                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . NodeDependency . emit ( name , 92 , str ( uuid ) , 32           )
       ########################################################################
       return True
     ##########################################################################

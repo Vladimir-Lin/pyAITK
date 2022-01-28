@@ -63,25 +63,15 @@ class NodeDependencies             ( TreeDock                              ) :
   ############################################################################
   emitNamesShow = pyqtSignal       (                                         )
   emitAllNames  = pyqtSignal       ( list                                    )
-  ProjectTasks  = pyqtSignal       ( str , int , str , QIcon                 )
-  TaskEvents    = pyqtSignal       ( str , int , str                         )
-  EventPeriods  = pyqtSignal       ( str , int , str                         )
-  PeriodDetails = pyqtSignal       ( str , str                               )
+  updateTitle   = pyqtSignal       (                                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . EditAllNames       = None
-    self . StartTimeEditor    = None
-    self . FinishTimeEditor   = None
-    self . ClassTag           = "SectionListings"
+    self . ClassTag           = "NodeDependencies"
     self . SortOrder          = "asc"
-    self . FromTime           =  - ( 8 *  3600                               )
-    self . ToTime             =    ( 3 * 86400                               )
-    self . FromStarDate       = 0
-    self . ToStarDate         = 0
-    self . Icon               = QIcon ( ":/images/project.png"               )
+    self . AssignedTitle      = ""
     self . DoResizeColumns    = True
     ##########################################################################
     self . dockingOrientation = 0
@@ -91,10 +81,14 @@ class NodeDependencies             ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 9                                       )
-    self . setColumnHidden         ( 6 , True                                )
+    self . Prerequisite = Relation     (                                     )
+    self . Prerequisite . setRelation  ( "Prerequisite"                      )
+    ##########################################################################
+    self . Successor    = Relation     (                                     )
+    self . Successor    . setRelation  ( "Successor"                         )
+    ##########################################################################
+    self . setColumnCount          ( 8                                       )
     self . setColumnHidden         ( 7 , True                                )
-    self . setColumnHidden         ( 8 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -105,18 +99,78 @@ class NodeDependencies             ( TreeDock                              ) :
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitAllNames  . connect ( self . refresh                          )
+    self . updateTitle   . connect ( self . changeWindowTitle                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( False                                   )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragOnly            )
+    self . setAcceptDrops          ( True                                    )
+    self . setDragEnabled          ( False                                   )
+    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return self . SizeSuggestion   ( QSize ( 1024 , 480 )                    )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 800 , 400 )                       )
+  ############################################################################
+  def asPrerequisite                  ( self                               ) :
+    ##########################################################################
+    self . Prerequisite . setRelation ( "Prerequisite"                       )
+    self . Successor    . setRelation ( "Successor"                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def asSuccessor                     ( self                               ) :
+    ##########################################################################
+    self . Prerequisite . setRelation ( "Successor"                          )
+    self . Successor    . setRelation ( "Prerequisite"                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def setRequirement        ( self , require                               ) :
+    ##########################################################################
+    if                      ( require == 31                                ) :
+      self . asPrerequisite (                                                )
+    elif                    ( require == 32                                ) :
+      self . asSuccessor    (                                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def setOwner                ( self     , TypeId , Uuid                   ) :
+    ##########################################################################
+    self . Prerequisite . set ( "t1"     , TypeId                            )
+    self . Prerequisite . set ( "first"  , Uuid                              )
+    ##########################################################################
+    self . Successor    . set ( "t2"     , TypeId                            )
+    self . Successor    . set ( "second" , Uuid                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def assignWindowTitle      ( self , Title                                ) :
+    ##########################################################################
+    self . AssignedTitle = Title
+    self . changeWindowTitle (                                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def changeWindowTitle                 ( self                             ) :
+    ##########################################################################
+    REL     = self . Prerequisite . get ( "relation"                         )
+    REL     = int                       ( REL                                )
+    TFMT    = self . getMenuItem        ( "TitleFormat"                      )
+    ##########################################################################
+    if                                  ( REL == 31                        ) :
+      MSG   = self . getMenuItem        ( "Prerequisite"                     )
+      title = TFMT . format             ( self . AssignedTitle , MSG         )
+    elif                                ( REL == 32                        ) :
+      MSG   = self . getMenuItem        ( "Successor"                        )
+      title = TFMT . format             ( self . AssignedTitle , MSG         )
+    else                                                                     :
+      title = self . AssignedTitle
+    ##########################################################################
+    self    . setWindowTitle            ( title                              )
+    ##########################################################################
+    return
   ############################################################################
   def FocusIn              ( self                                          ) :
     ##########################################################################
@@ -126,6 +180,7 @@ class NodeDependencies             ( TreeDock                              ) :
     self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
     ##########################################################################
     self . LinkAction      ( "Refresh"    , self . startup                   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems               )
     self . LinkAction      ( "Copy"       , self . CopyToClipboard           )
     self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
     self . LinkAction      ( "SelectNone" , self . SelectNone                )
@@ -142,6 +197,7 @@ class NodeDependencies             ( TreeDock                              ) :
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
     self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
     self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
     self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
     self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
@@ -280,8 +336,6 @@ class NodeDependencies             ( TreeDock                              ) :
       self . addTopLevelItem         ( IT                                    )
     ##########################################################################
     self   . emitNamesShow . emit    (                                       )
-    if                               ( self . DoResizeColumns              ) :
-      self . resizeColumnsToContents (                                       )
     ##########################################################################
     return
   ############################################################################
@@ -297,17 +351,6 @@ class NodeDependencies             ( TreeDock                              ) :
       NAMEs = self . GetNames ( DB , TABLE , UUIDs                           )
     ##########################################################################
     return NAMEs
-  ############################################################################
-  def PrepareTimeRange        ( self                                       ) :
-    ##########################################################################
-    NOW  = StarDate           (                                              )
-    NOW  . Now                (                                              )
-    SDT  = NOW . Stardate
-    ##########################################################################
-    self . FromStarDate = int ( SDT + self . FromTime                        )
-    self . ToStarDate   = int ( SDT + self . ToTime                          )
-    ##########################################################################
-    return
   ############################################################################
   def ObtainPeriodDetail             ( self , DB , NAMEs , U               ) :
     ##########################################################################
@@ -395,6 +438,8 @@ class NodeDependencies             ( TreeDock                              ) :
     self    . OnBusy  . emit          (                                      )
     self    . setBustle               (                                      )
     ##########################################################################
+    ITEMs   =                         [                                      ]
+    """
     self    . PrepareTimeRange        (                                      )
     ##########################################################################
     NAMEs   =                         {                                      }
@@ -407,17 +452,18 @@ class NodeDependencies             ( TreeDock                              ) :
       ########################################################################
       J = self . ObtainPeriodDetail   ( DB , NAMEs , U                       )
       PERIODS . append                ( J                                    )
+    """
     ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax . emit          (                                      )
     self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
-    if                                ( len ( PERIODS ) <= 0               ) :
+    if                                ( len ( ITEMs ) <= 0                 ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
-    self   . emitAllNames . emit      ( PERIODS                              )
+    self   . emitAllNames . emit      ( ITEMs                                )
     ##########################################################################
     return
   ############################################################################
@@ -431,154 +477,22 @@ class NodeDependencies             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery     ( self                                          ) :
+  @pyqtSlot                   (                                              )
+  def DeleteItems             ( self                                       ) :
     ##########################################################################
-    PRDTAB = self . Tables [ "Periods"                                       ]
-    ORDER  = self . SortOrder
-    FSD    = self . FromStarDate
-    TSD    = self . ToStarDate
-    ##########################################################################
-    QQ     = f"""select `uuid` from {PRDTAB}
-                 where ( `used` > 0 )
-                 and ( `item` = 196833 )
-                 and ( `type` = 4 )
-                 and ( ( ( `start` >= {FSD} ) and ( `start` <= {TSD} ) )
-                    or ( ( `end` >= {FSD} ) and ( `end` <= {TSD} ) )
-                    or ( ( `start` < {FSD} ) and ( `end` > {TSD} ) ) )
-                 order by `start` {ORDER} ;"""
-    ##########################################################################
-    return " " . join      ( QQ . split ( )                                  )
-  ############################################################################
-  def OpenProjects ( self , UUID ) :
-    ##########################################################################
-    DB      = self . ConnectDB       (                                       )
-    if                               ( DB == None                          ) :
+    if                        ( not self . isGrouping ( )                  ) :
       return
     ##########################################################################
-    GRPREL  = self . Tables          [ "RelationGroups"                      ]
-    PRDREL  = self . Tables          [ "RelationPeriods"                     ]
-    NAMTAB  = self . Tables          [ "NamesParent"                         ]
-    ##########################################################################
-    EVTS    = Events                 (                                       )
-    EVENTS  = EVTS . GetPeriodEvents ( DB , PRDREL , UUID                    )
-    ##########################################################################
-    TASKS   =                        [                                       ]
-    ##########################################################################
-    if                               ( len ( EVENTS ) > 0                  ) :
-      ########################################################################
-      TSKS  = Tasks                  (                                       )
-      ########################################################################
-      for EUID in EVENTS                                                     :
-        ######################################################################
-        T   = TSKS . GetEventTasks   ( DB , GRPREL , EUID                    )
-        for TUID in T                                                        :
-          if                         ( TUID not in TASKS                   ) :
-            TASKS . append           ( TUID                                  )
-    ##########################################################################
-    PRJS    =                        [                                       ]
-    ##########################################################################
-    if                               ( len ( TASKS ) > 0                   ) :
-      ########################################################################
-      PRJX  = Projects               (                                       )
-      ########################################################################
-      for TUID in TASKS                                                      :
-        ######################################################################
-        T   = PRJX . GetTaskProjects ( DB , GRPREL , TUID                    )
-        for PUID in T                                                        :
-          if                         ( PUID not in PRJS                    ) :
-            PRJS . append            ( PUID                                  )
-    ##########################################################################
-    NAMEs   = self . GetNames        ( DB , NAMTAB , PRJS                    )
-    ##########################################################################
-    DB      . Close                  (                                       )
-    ##########################################################################
-    for PUID in PRJS                                                         :
-      ########################################################################
-      NAME = NAMEs                   [ PUID                                  ]
-      self . ProjectTasks . emit     ( NAME , 71 , str (PUID) , self . Icon  )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenTasks                      ( self , UUID                         ) :
-    ##########################################################################
-    DB      = self . ConnectDB       (                                       )
-    if                               ( DB == None                          ) :
-      return
-    ##########################################################################
-    GRPREL  = self . Tables          [ "RelationGroups"                      ]
-    PRDREL  = self . Tables          [ "RelationPeriods"                     ]
-    NAMTAB  = self . Tables          [ "NamesParent"                         ]
-    ##########################################################################
-    EVTS    = Events                 (                                       )
-    EVENTS  = EVTS . GetPeriodEvents ( DB , PRDREL , UUID                    )
-    ##########################################################################
-    TASKS   =                        [                                       ]
-    ##########################################################################
-    if                               ( len ( EVENTS ) > 0                  ) :
-      ########################################################################
-      TSKS  = Tasks                  (                                       )
-      ########################################################################
-      for EUID in EVENTS                                                     :
-        ######################################################################
-        T   = TSKS . GetEventTasks   ( DB , GRPREL , EUID                    )
-        for TUID in T                                                        :
-          if                         ( TUID not in TASKS                   ) :
-            TASKS . append           ( TUID                                  )
-    ##########################################################################
-    NAMEs   = self . GetNames        ( DB , NAMTAB , TASKS                   )
-    ##########################################################################
-    DB      . Close                  (                                       )
-    ##########################################################################
-    for TUID in TASKS                                                        :
-      ########################################################################
-      NAME = NAMEs                   [ TUID                                  ]
-      self . TaskEvents . emit       ( NAME , 16 , str ( TUID )              )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenEvents                     ( self , UUID                         ) :
-    ##########################################################################
-    DB      = self . ConnectDB       (                                       )
-    if                               ( DB == None                          ) :
-      return
-    ##########################################################################
-    PRDREL  = self . Tables          [ "RelationPeriods"                     ]
-    NAMTAB  = self . Tables          [ "NamesParent"                         ]
-    ##########################################################################
-    EVTS    = Events                 (                                       )
-    EVENTS  = EVTS . GetPeriodEvents ( DB , PRDREL , UUID                    )
-    ##########################################################################
-    NAMEs   = self . GetNames        ( DB , NAMTAB , EVENTS                  )
-    ##########################################################################
-    DB      . Close                  (                                       )
-    ##########################################################################
-    for EUID in EVENTS                                                       :
-      ########################################################################
-      NAME = NAMEs                   [ EUID                                  ]
-      self . EventPeriods . emit     ( NAME , 15 , str ( EUID )              )
-    ##########################################################################
-    return
-  ############################################################################
-  def dragMime                      ( self                                 ) :
-    ##########################################################################
-    mtype   = "period/uuids"
-    message = self . getMenuItem    ( "PeriodsSelected"                      )
-    ##########################################################################
-    return self    . CreateDragMime ( self , 0 , mtype , message             )
-  ############################################################################
-  def startDrag         ( self , dropActions                               ) :
-    ##########################################################################
-    self . StartingDrag (                                                    )
+    self . defaultDeleteItems ( 0 , self . DetachConditions                  )
     ##########################################################################
     return
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . setColumnWidth (  0 , 120                                         )
-    self . setColumnWidth (  1 , 280                                         )
-    self . setColumnWidth (  2 , 180                                         )
-    self . setColumnWidth (  3 , 180                                         )
-    self . defaultPrepare ( self . ClassTag , 8                              )
+    self . setColumnWidth (  0 ,  80                                         )
+    self . setColumnWidth (  1 , 120                                         )
+    self . setColumnWidth (  2 , 280                                         )
+    self . defaultPrepare ( self . ClassTag , 7                              )
     ##########################################################################
     return
   ############################################################################
@@ -587,71 +501,6 @@ class NodeDependencies             ( TreeDock                              ) :
     self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
-  ############################################################################
-  def RangeMenu                         ( self , mm                        ) :
-    ##########################################################################
-    NOW    = StarDate                   (                                    )
-    NOW    . Stardate = self . FromStarDate
-    STS    = NOW . Timestamp            (                                    )
-    NOW    . Stardate = self . ToStarDate
-    ETS    = NOW . Timestamp            (                                    )
-    ##########################################################################
-    SDTX   = QDateTime . fromSecsSinceEpoch ( STS                            )
-    EDTX   = QDateTime . fromSecsSinceEpoch ( ETS                            )
-    ##########################################################################
-    DTFMT  = self . getMenuItem         ( "TimeFormat"                       )
-    ## SSI    = self . getMenuItem         ( "StartTime:"                       )
-    ## SSA    = self . getMenuItem         ( "FinishTime:"                      )
-    ##########################################################################
-    self   . StartTimeEditor  = QDateTimeEdit    (                           )
-    self   . StartTimeEditor  . setDateTime      ( SDTX                      )
-    self   . StartTimeEditor  . setDisplayFormat ( DTFMT                     )
-    ## self   . StartTimeEditor  . setPrefix        ( SSI                       )
-    self   . StartTimeEditor  . setAlignment     ( Qt . AlignRight           )
-    mm     . addWidget                  ( 9999992 , self . StartTimeEditor   )
-    ##########################################################################
-    self   . FinishTimeEditor = QDateTimeEdit    (                           )
-    self   . FinishTimeEditor . setDateTime      ( EDTX                      )
-    self   . FinishTimeEditor . setDisplayFormat ( DTFMT                     )
-    ## self   . FinishTimeEditor . setPrefix        ( SSA                       )
-    self   . FinishTimeEditor . setAlignment     ( Qt . AlignRight           )
-    mm     . addWidget                  ( 9999993 , self . FinishTimeEditor  )
-    ##########################################################################
-    mm     . addSeparator               (                                    )
-    ##########################################################################
-    return mm
-  ############################################################################
-  def RunRangeMenu                      ( self                             ) :
-    ##########################################################################
-    if                                  ( self . StartTimeEditor  == None  ) :
-      return False
-    ##########################################################################
-    if                                  ( self . FinishTimeEditor == None  ) :
-      return False
-    ##########################################################################
-    SDTX   = self . StartTimeEditor  . dateTime (                            )
-    EDTX   = self . FinishTimeEditor . dateTime (                            )
-    ##########################################################################
-    NOW    = StarDate                   (                                    )
-    STS    = SDTX . toSecsSinceEpoch    (                                    )
-    ETS    = EDTX . toSecsSinceEpoch    (                                    )
-    ##########################################################################
-    NOW    . setTime                    ( STS                                )
-    SDT    = NOW . Stardate
-    NOW    . setTime                    ( ETS                                )
-    EDT    = NOW . Stardate
-    ##########################################################################
-    if ( ( SDT == self . FromStarDate ) and ( EDT == self . ToStarDate ) )   :
-      return False
-    ##########################################################################
-    NOW    . Now                        (                                    )
-    CDT    = NOW . Stardate
-    self   . FromTime     = int         ( SDT - CDT                          )
-    self   . ToTime       = int         ( EDT - CDT                          )
-    self   . FromStarDate = int         ( SDT                                )
-    self   . ToStarDate   = int         ( EDT                                )
-    ##########################################################################
-    return   True
   ############################################################################
   def GroupsMenu              ( self , mm                                  ) :
     ##########################################################################
@@ -707,11 +556,11 @@ class NodeDependencies             ( TreeDock                              ) :
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     ##########################################################################
-    return self . DefaultColumnsMenu (        mm , 4                         )
+    return self . DefaultColumnsMenu (        mm , 0                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9004 ) and ( at <= 9008 )         :
+    if                             ( at >= 9000 ) and ( at <= 9007 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -735,19 +584,12 @@ class NodeDependencies             ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . RangeMenu       ( mm                                     )
     self   . AppendRefreshAction    ( mm , 1001                              )
-    ##########################################################################
-    msg    = self . getMenuItem     ( "ResizeColumns"                        )
-    mm     . addAction              ( 3001                                 , \
-                                      msg                                  , \
-                                      True                                 , \
-                                      self . DoResizeColumns                 )
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
-    if                              ( atItem not in [ False , None ]       ) :
-      mm   = self . GroupsMenu      ( mm                                     )
+    ## if                              ( atItem not in [ False , None ]       ) :
+    ##   mm   = self . GroupsMenu      ( mm                                     )
     mm     = self . ColumnsMenu     ( mm                                     )
     mm     = self . SortingMenu     ( mm                                     )
     mm     = self . LocalityMenu    ( mm                                     )
@@ -756,12 +598,6 @@ class NodeDependencies             ( TreeDock                              ) :
     mm     . setFont                ( self    . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
-    ##########################################################################
-    if                              ( self   . RunRangeMenu ( )            ) :
-      ########################################################################
-      self . restart                (                                        )
-      ########################################################################
-      return
     ##########################################################################
     if                              ( self . RunDocking   ( mm , aa )      ) :
       return True
@@ -787,15 +623,6 @@ class NodeDependencies             ( TreeDock                              ) :
     if                              ( at == 1001                           ) :
       ########################################################################
       self . restart                (                                        )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 3001                           ) :
-      ########################################################################
-      if                            ( self . DoResizeColumns               ) :
-        self . DoResizeColumns = False
-      else                                                                   :
-        self . DoResizeColumns = True
       ########################################################################
       return True
     ##########################################################################

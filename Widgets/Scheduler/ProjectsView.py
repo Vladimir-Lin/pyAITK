@@ -78,9 +78,10 @@ def SendOnceWssJson    ( WSS , JSON                                        ) :
 ##############################################################################
 class ProjectsView            ( IconDock                                   ) :
   ############################################################################
-  HavingMenu   = 1371434312
+  HavingMenu     = 1371434312
   ############################################################################
-  ProjectTasks = pyqtSignal   ( str , int , str , QIcon                      )
+  ProjectTasks   = pyqtSignal ( str , int , str , QIcon                      )
+  NodeDependency = pyqtSignal ( str , int , str , int                        )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
@@ -502,40 +503,66 @@ class ProjectsView            ( IconDock                                   ) :
     msg  = self . getMenuItem    ( "Tasks"                                   )
     mm   . addActionFromMenu     ( LOM , 406301 , msg                        )
     ##########################################################################
-    msg  = self . getMenuItem    ( "Recalculate"                             )
+    mm   . addSeparatorFromMenu  ( LOM                                       )
+    ##########################################################################
+    msg  = self . getMenuItem    ( "Prerequisite"                            )
     mm   . addActionFromMenu     ( LOM , 406302 , msg                        )
+    ##########################################################################
+    msg  = self . getMenuItem    ( "Successor"                               )
+    mm   . addActionFromMenu     ( LOM , 406303 , msg                        )
+    ##########################################################################
+    mm   . addSeparatorFromMenu  ( LOM                                       )
+    ##########################################################################
+    msg  = self . getMenuItem    ( "Recalculate"                             )
+    mm   . addActionFromMenu     ( LOM , 406304 , msg                        )
     ##########################################################################
     mm   . addActionFromMenu     ( LOM , 401801 , "查詢" )
     ##########################################################################
     return mm
   ############################################################################
-  def RunDetailsMenu             ( self , atId , atItem                    ) :
+  def RunDetailsMenu               ( self , atId , atItem                  ) :
     ##########################################################################
-    if                           ( atId == 406301                          ) :
+    if                             ( atId == 406301                        ) :
       ########################################################################
-      name = atItem . text       (                                           )
-      uuid = atItem . data       ( Qt . UserRole                             )
-      uuid = int                 ( uuid                                      )
-      icon = atItem . icon       (                                           )
-      self . ProjectTasks . emit ( name , 71 , str ( uuid ) , icon           )
+      name = atItem . text         (                                         )
+      uuid = atItem . data         ( Qt . UserRole                           )
+      uuid = int                   ( uuid                                    )
+      icon = atItem . icon         (                                         )
+      self . ProjectTasks   . emit ( name , 71 , str ( uuid ) , icon         )
       ########################################################################
       return True
     ##########################################################################
-    if                           ( atId == 406302                          ) :
+    if                             ( atId == 406302                        ) :
       ########################################################################
-      uuid = atItem . data       ( Qt . UserRole                             )
-      uuid = int                 ( uuid                                      )
-      ########################################################################
-      VAL  =                     ( uuid ,                                    )
-      self . Go                  ( self . RecalculatePeriods , VAL           )
+      name = atItem . text         (                                         )
+      uuid = atItem . data         ( Qt . UserRole                           )
+      self . NodeDependency . emit ( name , 71 , str ( uuid ) , 31           )
       ########################################################################
       return True
     ##########################################################################
-    if                           ( atId == 401801                          ) :
+    if                             ( atId == 406303                        ) :
       ########################################################################
-      uuid = atItem . data       ( Qt . UserRole                             )
-      uuid = int                 ( uuid                                      )
-      self . SendToBack          ( uuid                                      )
+      name = atItem . text         (                                         )
+      uuid = atItem . data         ( Qt . UserRole                           )
+      self . NodeDependency . emit ( name , 71 , str ( uuid ) , 32           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( atId == 406304                        ) :
+      ########################################################################
+      uuid = atItem . data         ( Qt . UserRole                           )
+      uuid = int                   ( uuid                                    )
+      ########################################################################
+      VAL  =                       ( uuid ,                                  )
+      self . Go                    ( self . RecalculatePeriods , VAL         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( atId == 401801                        ) :
+      ########################################################################
+      uuid = atItem . data         ( Qt . UserRole                           )
+      uuid = int                   ( uuid                                    )
+      self . SendToBack            ( uuid                                    )
       ########################################################################
       return True
     ##########################################################################

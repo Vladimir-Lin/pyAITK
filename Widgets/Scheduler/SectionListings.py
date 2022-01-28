@@ -61,12 +61,13 @@ class SectionListings              ( TreeDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  emitNamesShow = pyqtSignal       (                                         )
-  emitAllNames  = pyqtSignal       ( list                                    )
-  ProjectTasks  = pyqtSignal       ( str , int , str , QIcon                 )
-  TaskEvents    = pyqtSignal       ( str , int , str                         )
-  EventPeriods  = pyqtSignal       ( str , int , str                         )
-  PeriodDetails = pyqtSignal       ( str , str                               )
+  emitNamesShow  = pyqtSignal      (                                         )
+  emitAllNames   = pyqtSignal      ( list                                    )
+  ProjectTasks   = pyqtSignal      ( str , int , str , QIcon                 )
+  TaskEvents     = pyqtSignal      ( str , int , str                         )
+  EventPeriods   = pyqtSignal      ( str , int , str                         )
+  PeriodDetails  = pyqtSignal      ( str , str                               )
+  NodeDependency = pyqtSignal      ( str , int , str , int                   )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -653,53 +654,77 @@ class SectionListings              ( TreeDock                              ) :
     ##########################################################################
     return   True
   ############################################################################
-  def GroupsMenu              ( self , mm                                  ) :
+  def GroupsMenu                ( self , mm                                ) :
     ##########################################################################
-    msg  = self . getMenuItem ( "Details"                                    )
-    LOM  = mm . addMenu       ( msg                                          )
+    msg  = self . getMenuItem   ( "Details"                                  )
+    LOM  = mm . addMenu         ( msg                                        )
     ##########################################################################
-    msg  = self . getMenuItem ( "Project"                                    )
-    mm   . addActionFromMenu  ( LOM , 2001 , msg                             )
+    msg  = self . getMenuItem   ( "Project"                                  )
+    mm   . addActionFromMenu    ( LOM , 2001 , msg                           )
     ##########################################################################
-    msg  = self . getMenuItem ( "Task"                                       )
-    mm   . addActionFromMenu  ( LOM , 2002 , msg                             )
+    msg  = self . getMenuItem   ( "Task"                                     )
+    mm   . addActionFromMenu    ( LOM , 2002 , msg                           )
     ##########################################################################
-    msg  = self . getMenuItem ( "Event"                                      )
-    mm   . addActionFromMenu  ( LOM , 2003 , msg                             )
+    msg  = self . getMenuItem   ( "Event"                                    )
+    mm   . addActionFromMenu    ( LOM , 2003 , msg                           )
     ##########################################################################
-    msg  = self . getMenuItem ( "Editor"                                     )
-    mm   . addActionFromMenu  ( LOM , 2004 , msg                             )
+    msg  = self . getMenuItem   ( "Editor"                                   )
+    mm   . addActionFromMenu    ( LOM , 2004 , msg                           )
+    ##########################################################################
+    mm   . addSeparatorFromMenu ( LOM                                        )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Prerequisite"                             )
+    mm   . addActionFromMenu    ( LOM , 2005 , msg                           )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Successor"                                )
+    mm   . addActionFromMenu    ( LOM , 2006 , msg                           )
     ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu               ( self , at , item                       ) :
+  def RunGroupsMenu                ( self , at , item                      ) :
     ##########################################################################
-    if                            ( at == 2001                             ) :
+    if                             ( at == 2001                            ) :
       ########################################################################
-      uuid = self . itemUuid      ( item , 0                                 )
-      self . Go                   ( self . OpenProjects , ( uuid , )         )
+      uuid = self . itemUuid       ( item , 0                                )
+      self . Go                    ( self . OpenProjects , ( uuid , )        )
       ########################################################################
       return True
     ##########################################################################
-    if                            ( at == 2002                             ) :
+    if                             ( at == 2002                            ) :
       ########################################################################
-      uuid = self . itemUuid      ( item , 0                                 )
-      self . Go                   ( self . OpenTasks , ( uuid , )            )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                            ( at == 2003                             ) :
-      ########################################################################
-      uuid = self . itemUuid      ( item , 0                                 )
-      self . Go                   ( self . OpenEvents , ( uuid , )           )
+      uuid = self . itemUuid       ( item , 0                                )
+      self . Go                    ( self . OpenTasks , ( uuid , )           )
       ########################################################################
       return True
     ##########################################################################
-    if                            ( at == 2004                             ) :
+    if                             ( at == 2003                            ) :
       ########################################################################
-      uuid = self . itemUuid      ( item , 0                                 )
-      name = item . text          ( 1                                        )
-      self . PeriodDetails . emit ( name , str ( uuid )                      )
+      uuid = self . itemUuid       ( item , 0                                )
+      self . Go                    ( self . OpenEvents , ( uuid , )          )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 2004                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . PeriodDetails  . emit ( name , str ( uuid )                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 2005                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . NodeDependency . emit ( name , 92 , str ( uuid ) , 31           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 2006                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . NodeDependency . emit ( name , 92 , str ( uuid ) , 32           )
       ########################################################################
       return True
     ##########################################################################

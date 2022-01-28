@@ -56,11 +56,12 @@ from   AITK  . Scheduler  . Event     import Event       as Event
 ##############################################################################
 class TaskListings                 ( TreeDock                              ) :
   ############################################################################
-  HavingMenu    = 1371434312
-  ############################################################################
-  emitNamesShow = pyqtSignal       (                                         )
-  emitAllNames  = pyqtSignal       ( list                                    )
-  TaskEvents    = pyqtSignal       ( str , int , str                         )
+  HavingMenu     = 1371434312
+  ############## ##############################################################
+  emitNamesShow  = pyqtSignal      (                                         )
+  emitAllNames   = pyqtSignal      ( list                                    )
+  TaskEvents     = pyqtSignal      ( str , int , str                         )
+  NodeDependency = pyqtSignal      ( str , int , str , int                   )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -893,33 +894,59 @@ class TaskListings                 ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def GroupsMenu              ( self , mm , item                           ) :
+  def GroupsMenu                ( self , mm , item                         ) :
     ##########################################################################
-    msg  = self . getMenuItem ( "Details"                                    )
-    LOM  = mm . addMenu       ( msg                                          )
+    msg  = self . getMenuItem   ( "Details"                                  )
+    LOM  = mm . addMenu         ( msg                                        )
     ##########################################################################
-    msg  = self . getMenuItem ( "Events"                                     )
-    mm   . addActionFromMenu  ( LOM , 1501 , msg                             )
+    msg  = self . getMenuItem   ( "Events"                                   )
+    mm   . addActionFromMenu    ( LOM , 1501 , msg                           )
     ##########################################################################
-    msg  = self . getMenuItem ( "Recalculate"                                )
-    mm   . addActionFromMenu  ( LOM , 1502 , msg                             )
+    mm   . addSeparatorFromMenu ( LOM                                        )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Prerequisite"                             )
+    mm   . addActionFromMenu    ( LOM , 1502 , msg                           )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Successor"                                )
+    mm   . addActionFromMenu    ( LOM , 1503 , msg                           )
+    ##########################################################################
+    mm   . addSeparatorFromMenu ( LOM                                        )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Recalculate"                              )
+    mm   . addActionFromMenu    ( LOM , 1504 , msg                           )
     ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu            ( self , at , item                          ) :
+  def RunGroupsMenu                ( self , at , item                      ) :
     ##########################################################################
-    if                         ( at == 1501                                ) :
+    if                             ( at == 1501                            ) :
       ########################################################################
-      uuid = self . itemUuid   ( item , 0                                    )
-      name = item . text       ( 1                                           )
-      self . TaskEvents . emit ( name , 16 , str ( uuid )                    )
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . TaskEvents . emit     ( name , 16 , str ( uuid )                )
       ########################################################################
       return True
     ##########################################################################
-    if                         ( at == 1502                                ) :
+    if                             ( at == 1502                            ) :
       ########################################################################
-      uuid = self . itemUuid   ( item , 0                                    )
-      self . Go                ( self . RecalculatePeriods , ( uuid , )      )
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . NodeDependency . emit ( name , 16 , str ( uuid ) , 31           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1503                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . NodeDependency . emit ( name , 16 , str ( uuid ) , 32           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1504                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      self . Go                    ( self . RecalculatePeriods , ( uuid , )  )
       ########################################################################
       return True
     ##########################################################################

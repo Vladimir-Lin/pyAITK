@@ -302,7 +302,7 @@ class Relation           ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def assign ( self , item ) :
+  def assign             ( self , item                                     ) :
     ##########################################################################
     self . Columns     = item . Columns
     self . Id          = item . Id
@@ -320,8 +320,10 @@ class Relation           ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def set ( self , item , value ) :
-    a = item . lower ( )
+  def set                ( self , item , value                             ) :
+    ##########################################################################
+    a = item . lower     (                                                   )
+    ##########################################################################
     if ( "id"           == a ) :
       self . Id          = value
     if ( "first"        == a ) :
@@ -346,9 +348,13 @@ class Relation           ( Columns                                         ) :
       self . Description = value
     if ( "operator"     == a ) :
       self . Operator    = value
+    ##########################################################################
+    return
   ############################################################################
-  def get ( self , item ) :
-    a = item.lower()
+  def get                ( self , item                                     ) :
+    ##########################################################################
+    a = item . lower     (                                                   )
+    ##########################################################################
     if ( "id"          == a ) :
       return self . Id
     if ( "first"       == a ) :
@@ -373,32 +379,35 @@ class Relation           ( Columns                                         ) :
       return self . Description
     if ( "operator"    == a ) :
       return self . Operator
+    ##########################################################################
     return ""
   ############################################################################
-  def Value ( self , item ) :
-    return self . get ( item )
+  def Value           ( self , item                                        ) :
+    return self . get (        item                                          )
   ############################################################################
-  def Values ( self , items ) :
-    I = [ ]
-    for x in items :
-      I . append ( str ( self . Value ( x ) ) )
-    return " , " . join ( I )
+  def Values            ( self , items                                     ) :
+    ##########################################################################
+    I   =               [                                                    ]
+    ##########################################################################
+    for x in items                                                           :
+      I . append        ( str ( self . Value ( x ) )                         )
+    ##########################################################################
+    return " , " . join ( I                                                  )
   ############################################################################
-  def tableItems ( self ) :
-    S = [ ]
-    S . append ( "id"          )
-    S . append ( "first"       )
-    S . append ( "t1"          )
-    S . append ( "second"      )
-    S . append ( "t2"          )
-    S . append ( "relation"    )
-    S . append ( "position"    )
-    S . append ( "reverse"     )
-    S . append ( "prefer"      )
-    S . append ( "membership"  )
-    S . append ( "description" )
-    S . append ( "operator"    )
-    return S
+  def tableItems ( self                                                    ) :
+    ##########################################################################
+    return       [ "id"                                                    , \
+                   "first"                                                 , \
+                   "t1"                                                    , \
+                   "second"                                                , \
+                   "t2"                                                    , \
+                   "relation"                                              , \
+                   "position"                                              , \
+                   "reverse"                                               , \
+                   "prefer"                                                , \
+                   "membership"                                            , \
+                   "description"                                             ]
+                   ## "operator"                                             ]
   ############################################################################
   def pair ( self , item ) :
     v = self . get ( item )
