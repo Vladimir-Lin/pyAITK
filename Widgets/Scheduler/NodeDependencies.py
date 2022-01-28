@@ -469,6 +469,7 @@ class NodeDependencies             ( TreeDock                              ) :
     self   . OnBusy  . emit       (                                          )
     self   . setBustle            (                                          )
     ##########################################################################
+    self   . NodeTypes =          {                                          }
     ITEMs  =                      [                                          ]
     ITEMs  = self . LoadProjects  ( DB , ITEMs                               )
     ITEMs  = self . LoadTasks     ( DB , ITEMs                               )
@@ -572,29 +573,29 @@ class NodeDependencies             ( TreeDock                              ) :
     ##########################################################################
     return   True
   ############################################################################
-  def dropProjects                  ( self , source , pos , JSON           ) :
+  def dropProjects                  ( self , source , pos  , JSON          ) :
     ##########################################################################
     FUNC = self . ProjectsJoinCondition
     ##########################################################################
-    return self . defaultDropInside ( self , source , JSON , FUNC            )
+    return self . defaultDropInside (        source , JSON , FUNC            )
   ############################################################################
-  def dropTasks                     ( self , source , pos , JSON           ) :
+  def dropTasks                     ( self , source , pos  , JSON          ) :
     ##########################################################################
     FUNC = self . TasksJoinCondition
     ##########################################################################
-    return self . defaultDropInside ( self , source , JSON , FUNC            )
+    return self . defaultDropInside (        source , JSON , FUNC            )
   ############################################################################
-  def dropEvents                    ( self , source , pos , JSON           ) :
+  def dropEvents                    ( self , source , pos  , JSON          ) :
     ##########################################################################
     FUNC = self . EventsJoinCondition
     ##########################################################################
-    return self . defaultDropInside ( self , source , JSON , FUNC            )
+    return self . defaultDropInside (        source , JSON , FUNC            )
   ############################################################################
-  def dropPeriods                   ( self , source , pos , JSON           ) :
+  def dropPeriods                   ( self , source , pos  , JSON          ) :
     ##########################################################################
     FUNC = self . PeriodsJoinCondition
     ##########################################################################
-    return self . defaultDropInside ( self , source , JSON , FUNC            )
+    return self . defaultDropInside (        source , JSON , FUNC            )
   ############################################################################
   def ProjectsJoinCondition   ( self , UUIDs                               ) :
     ##########################################################################
@@ -628,12 +629,21 @@ class NodeDependencies             ( TreeDock                              ) :
     ##########################################################################
     RELTAB = self . Tables       [ "RelationDepends"                         ]
     ##########################################################################
+    T1     = self . Prerequisite . get ( "t1"                                )
+    FIRST  = self . Prerequisite . get ( "first"                             )
+    ##########################################################################
+    T1     = int                 ( T1                                        )
+    FIRST  = int                 ( FIRST                                     )
+    ##########################################################################
     self   . Prerequisite . set  ( "t2" , TypeId                             )
     self   . Successor    . set  ( "t1" , TypeId                             )
     ##########################################################################
     DB     . LockWrites          ( [ RELTAB                                ] )
     ##########################################################################
     for TUID in UUIDs                                                        :
+      ########################################################################
+      if ( ( T1 == int ( TypeId ) ) and ( FIRST == int ( TUID ) ) )          :
+        continue
       ########################################################################
       self . Prerequisite . set  ( "second" , TUID                           )
       self . Prerequisite . Join ( DB       , RELTAB                         )
@@ -652,40 +662,41 @@ class NodeDependencies             ( TreeDock                              ) :
   @pyqtSlot                   (                                              )
   def DeleteItems             ( self                                       ) :
     ##########################################################################
-    if                        ( not self . isGrouping ( )                  ) :
-      return
-    ##########################################################################
     self . defaultDeleteItems ( 0 , self . DetachConditions                  )
     ##########################################################################
     return
   ############################################################################
-  def DetachConditions           ( self , UUIDs                            ) :
+  def DetachConditions            ( self , UUIDs                           ) :
     ##########################################################################
-    DB     = self . ConnectDB    (                                           )
-    if                           ( DB in [ False , None ]                  ) :
+    DB       = self . ConnectDB   (                                          )
+    if                            ( DB in [ False , None ]                 ) :
       return
     ##########################################################################
-    RELTAB = self . Tables       [ "RelationDepends"                         ]
+    RELTAB   = self . Tables      [ "RelationDepends"                        ]
     ##########################################################################
-    self   . Prerequisite . set  ( "t2" , TypeId                             )
-    self   . Successor    . set  ( "t1" , TypeId                             )
-    ##########################################################################
-    DB     . LockWrites          ( [ RELTAB                                ] )
+    DB       . LockWrites         ( [ RELTAB                               ] )
     ##########################################################################
     for TUID in UUIDs                                                        :
       ########################################################################
-      self . Prerequisite . set  ( "second" , TUID                           )
-      QQ   = self . Prerequisite . Delete ( RELTAB                           )
-      DB   . Query               ( QQ                                        )
+      if                          ( TUID not in self . NodeTypes           ) :
+        continue
       ########################################################################
-      self . Successor    . set  ( "first"  , TUID                           )
-      QQ   = self . Successor    . Delete ( RELTAB                           )
-      DB   . Query               ( QQ                                        )
+      TypeId = self . NodeTypes   [ TUID ]
+      ########################################################################
+      self   . Prerequisite . set ( "t2" , TypeId                            )
+      self   . Prerequisite . set ( "second" , TUID                          )
+      QQ     = self . Prerequisite . Delete ( RELTAB                         )
+      DB     . Query              ( QQ                                       )
+      ########################################################################
+      self   . Successor    . set ( "t1" , TypeId                            )
+      self   . Successor    . set ( "first"  , TUID                          )
+      QQ     = self . Successor    . Delete ( RELTAB                         )
+      DB     . Query              ( QQ                                       )
     ##########################################################################
-    DB     . UnlockTables        (                                           )
-    DB     . Close               (                                           )
+    DB       . UnlockTables       (                                          )
+    DB       . Close              (                                          )
     ##########################################################################
-    self   . Notify              ( 5                                         )
+    self     . Notify             ( 5                                        )
     ##########################################################################
     return
   ############################################################################
