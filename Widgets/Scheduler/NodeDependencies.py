@@ -715,27 +715,36 @@ class NodeDependencies             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def GroupsMenu              ( self , mm                                  ) :
+  def GroupsMenu               ( self , mm , item                          ) :
     ##########################################################################
-    msg  = self . getMenuItem ( "Details"                                    )
-    LOM  = mm . addMenu       ( msg                                          )
+    uuid  = self . itemUuid    ( item , 0                                    )
+    uuid  = int                ( uuid                                        )
+    tyid  = self . NodeTypes   [ uuid                                        ]
     ##########################################################################
-    msg  = self . getMenuItem ( "Project"                                    )
-    mm   . addActionFromMenu  ( LOM , 2001 , msg                             )
+    msg   = self . getMenuItem ( "Details"                                   )
+    LOM   = mm . addMenu       ( msg                                         )
     ##########################################################################
-    msg  = self . getMenuItem ( "Task"                                       )
-    mm   . addActionFromMenu  ( LOM , 2002 , msg                             )
+    if                         ( tyid == 71                                ) :
+      msg = self . getMenuItem ( "Projects"                                  )
+      mm  . addActionFromMenu  ( LOM , 2001 , msg                            )
     ##########################################################################
-    msg  = self . getMenuItem ( "Event"                                      )
-    mm   . addActionFromMenu  ( LOM , 2003 , msg                             )
+    if                         ( tyid == 16                                ) :
+      msg = self . getMenuItem ( "Tasks"                                     )
+      mm  . addActionFromMenu  ( LOM , 2002 , msg                            )
     ##########################################################################
-    msg  = self . getMenuItem ( "Editor"                                     )
-    mm   . addActionFromMenu  ( LOM , 2004 , msg                             )
+    if                         ( tyid == 15                                ) :
+      msg = self . getMenuItem ( "Events"                                    )
+      mm  . addActionFromMenu  ( LOM , 2003 , msg                            )
+    ##########################################################################
+    if                         ( tyid == 92                                ) :
+      msg = self . getMenuItem ( "Editor"                                    )
+      mm  . addActionFromMenu  ( LOM , 2004 , msg                            )
     ##########################################################################
     return mm
   ############################################################################
   def RunGroupsMenu               ( self , at , item                       ) :
     ##########################################################################
+    """
     if                            ( at == 2001                             ) :
       ########################################################################
       uuid = self . itemUuid      ( item , 0                                 )
@@ -764,6 +773,7 @@ class NodeDependencies             ( TreeDock                              ) :
       self . PeriodDetails . emit ( name , str ( uuid )                      )
       ########################################################################
       return True
+    """
     ##########################################################################
     return False
   ############################################################################
@@ -798,11 +808,12 @@ class NodeDependencies             ( TreeDock                              ) :
     TRX    = self . Translations
     ##########################################################################
     self   . AppendRefreshAction    ( mm , 1001                              )
+    self   . AppendDeleteAction     ( mm , 1002                              )
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
-    ## if                              ( atItem not in [ False , None ]       ) :
-    ##   mm   = self . GroupsMenu      ( mm                                     )
+    if                              ( atItem not in [ False , None ]       ) :
+      mm   = self . GroupsMenu      ( mm , atItem                            )
     mm     = self . ColumnsMenu     ( mm                                     )
     mm     = self . LocalityMenu    ( mm                                     )
     self   . DockingMenu            ( mm                                     )
@@ -829,6 +840,12 @@ class NodeDependencies             ( TreeDock                              ) :
     if                              ( at == 1001                           ) :
       ########################################################################
       self . restart                (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 1002                           ) :
+      ########################################################################
+      self . DeleteItems            (                                        )
       ########################################################################
       return True
     ##########################################################################
