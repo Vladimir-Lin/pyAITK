@@ -41,6 +41,7 @@ from   PyQt5 . QtWidgets                   import QTreeWidgetItem
 from   PyQt5 . QtWidgets                   import QLineEdit
 from   PyQt5 . QtWidgets                   import QComboBox
 from   PyQt5 . QtWidgets                   import QSpinBox
+from   PyQt5 . QtWidgets                   import QMessageBox
 ##############################################################################
 from   AITK  . Qt . MenuManager            import MenuManager    as MenuManager
 from   AITK  . Qt . Widget                 import Widget         as Widget
@@ -70,6 +71,7 @@ class PeriodEditor                 ( Widget                                ) :
   emitApple           = pyqtSignal (                                         )
   emitEventId         = pyqtSignal (                                         )
   emitUpdate          = pyqtSignal (                                         )
+  emitAskClose        = pyqtSignal (                                         )
   emitShowAppleEvents = pyqtSignal ( list                                    )
   emitOpenSmartNote   = pyqtSignal ( str                                     )
   ############################################################################
@@ -84,14 +86,46 @@ class PeriodEditor                 ( Widget                                ) :
     self . VoiceJSON =             {                                         }
     self . Period    = Periode     (                                         )
     self . Now       = StarDate    (                                         )
+    self . ContentChanged = False
     ##########################################################################
     self . Calendars =             [                                         ]
     ##########################################################################
-    self . emitShow    . connect   ( self . show                             )
-    self . emitApple   . connect   ( self . ShowAppleCalendars               )
-    self . emitEventId . connect   ( self . ShowAppleEventId                 )
-    self . emitUpdate  . connect   ( self . UpdatePeriodValues               )
+    self . emitShow     . connect  ( self . show                             )
+    self . emitApple    . connect  ( self . ShowAppleCalendars               )
+    self . emitEventId  . connect  ( self . ShowAppleEventId                 )
+    self . emitUpdate   . connect  ( self . UpdatePeriodValues               )
+    self . emitAskClose . connect  ( self . AskToClose                       )
     self . emitShowAppleEvents . connect ( self . ShowAppleEvents            )
+    ##########################################################################
+    self . ui . SaveNote . blockSignals  ( True                              )
+    self . ui . SaveNote . setEnabled    ( False                             )
+    self . ui . SaveNote . blockSignals  ( False                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def closeEvent                    ( self , event                         ) :
+    ##########################################################################
+    if                              ( self . ContentChanged                ) :
+      ########################################################################
+      event   . ignore              (                                        )
+      self    . emitAskClose . emit (                                        )
+      ########################################################################
+      return
+    ##########################################################################
+    super ( ) . closeEvent          ( event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AskToClose                  ( self                                   ) :
+    ##########################################################################
+    MSG  = self . getMenuItem     ( "ReallyQuit"                             )
+    OKAY = QMessageBox . question ( self , self . windowTitle ( ) , MSG      )
+    ##########################################################################
+    if                            ( OKAY != QMessageBox . Yes              ) :
+      return
+    ##########################################################################
+    self . ContentChanged = False
+    self . close                  (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -224,10 +258,25 @@ class PeriodEditor                 ( Widget                                ) :
     ##########################################################################
     return
   ############################################################################
+  def NoteModified                    ( self                               ) :
+    ##########################################################################
+    self . ContentChanged = True
+    self . ui . SaveNote . blockSignals  ( True                              )
+    self . ui . SaveNote . setEnabled    ( True                              )
+    self . ui . SaveNote . blockSignals  ( False                             )
+    ##########################################################################
+    return
+  ############################################################################
   def NoteChanged                              ( self                      ) :
     ##########################################################################
     onote = self . Period . getProperty        ( "Description"               )
     note  = self . ui . NoteEdit . toPlainText (                             )
+    ##########################################################################
+    self  . ContentChanged = False
+    ##########################################################################
+    self  . ui . SaveNote . blockSignals       ( True                        )
+    self  . ui . SaveNote . setEnabled         ( False                       )
+    self  . ui . SaveNote . blockSignals       ( False                       )
     ##########################################################################
     if                                         ( onote == note             ) :
       return
