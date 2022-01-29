@@ -709,9 +709,6 @@ class PeriodeListings              ( TreeDock                              ) :
     ##########################################################################
     elif                                ( mtype in [ "period/uuids"      ] ) :
       ########################################################################
-      if                                ( atItem in [ False , None ]       ) :
-        return False
-      ########################################################################
       self . ShowMenuItemTitleStatus    ( "JoinPeriods"      , title , CNT   )
     ##########################################################################
     return RDN
@@ -789,7 +786,7 @@ class PeriodeListings              ( TreeDock                              ) :
     for EUID in UUIDs                                                        :
       ########################################################################
       EVT  = Event            (                                              )
-      EVT  . Uuid = TUID
+      EVT  . Uuid = EUID
       EVT  . JoinPeriods      ( DB , RELTAB , [ UUID ]                       )
     ##########################################################################
     DB     . UnlockTables     (                                              )
