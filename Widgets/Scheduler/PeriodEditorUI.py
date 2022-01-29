@@ -148,6 +148,7 @@ class Ui_PeriodEditorUI(object):
         self.ReportAll.clicked.connect(PeriodEditorUI.ReportAll)
         self.SetStartNow.clicked.connect(PeriodEditorUI.AssignStartTimeNow)
         self.SetFinishNow.clicked.connect(PeriodEditorUI.AssignFinishTimeNow)
+        self.NoteEdit.textChanged.connect(PeriodEditorUI.NoteModified)
         QtCore.QMetaObject.connectSlotsByName(PeriodEditorUI)
 
     def retranslateUi(self, PeriodEditorUI):
