@@ -669,11 +669,11 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return self . defaultDropInObjects ( source , pos , JSON , 0 , FUNC      )
   ############################################################################
-  def dropEvents                    ( self , source , pos , JSON           ) :
+  def dropEvents                    ( self , source , pos  , JSON          ) :
     ##########################################################################
     FUNC = self . JoinEvents
     ##########################################################################
-    return self . defaultDropInside ( self , source , JSON , FUNC            )
+    return self . defaultDropInside (        source , JSON , FUNC            )
   ############################################################################
   def dropPeriods                      ( self , source , pos , JSON        ) :
     ##########################################################################
@@ -727,7 +727,7 @@ class EventListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def JoinEvents                  ( self , UUIDs                           ) :
+  def JoinEvents                ( self , UUIDs                             ) :
     ##########################################################################
     RELTAB = self . Tables      [ "RelationGroups"                           ]
     OKAY   = self . JoinMembers ( RELTAB , UUIDs                             )
@@ -735,6 +735,7 @@ class EventListings                ( TreeDock                              ) :
       return
     ##########################################################################
     self   . Notify             ( 5                                          )
+    self   . loading            (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -800,6 +801,8 @@ class EventListings                ( TreeDock                              ) :
         ######################################################################
         self . Relation . set     ( "first" , uuid                           )
         self . Relation . Join    ( DB , RELTAB                              )
+      ########################################################################
+      self . Total = self . Total + 1
     ##########################################################################
     self     . AssureUuidName     ( DB , NAMTAB , uuid , name                )
     ##########################################################################
