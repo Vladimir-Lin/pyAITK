@@ -68,6 +68,7 @@ class SectionListings              ( TreeDock                              ) :
   EventPeriods   = pyqtSignal      ( str , int , str                         )
   PeriodDetails  = pyqtSignal      ( str , str                               )
   NodeDependency = pyqtSignal      ( str , int , str , int                   )
+  OpenLogHistory = pyqtSignal      ( str , str , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -671,13 +672,16 @@ class SectionListings              ( TreeDock                              ) :
     msg  = self . getMenuItem   ( "Editor"                                   )
     mm   . addActionFromMenu    ( LOM , 2004 , msg                           )
     ##########################################################################
+    msg  = self . getMenuItem   ( "LogHistory"                               )
+    mm   . addActionFromMenu    ( LOM , 2005 , msg                           )
+    ##########################################################################
     mm   . addSeparatorFromMenu ( LOM                                        )
     ##########################################################################
     msg  = self . getMenuItem   ( "Prerequisite"                             )
-    mm   . addActionFromMenu    ( LOM , 2005 , msg                           )
+    mm   . addActionFromMenu    ( LOM , 2006 , msg                           )
     ##########################################################################
     msg  = self . getMenuItem   ( "Successor"                                )
-    mm   . addActionFromMenu    ( LOM , 2006 , msg                           )
+    mm   . addActionFromMenu    ( LOM , 2007 , msg                           )
     ##########################################################################
     return mm
   ############################################################################
@@ -716,11 +720,19 @@ class SectionListings              ( TreeDock                              ) :
       ########################################################################
       uuid = self . itemUuid       ( item , 0                                )
       name = item . text           ( 1                                       )
-      self . NodeDependency . emit ( name , 92 , str ( uuid ) , 31           )
+      self . OpenLogHistory . emit ( name , str ( uuid ) , "Description"     )
       ########################################################################
       return True
     ##########################################################################
     if                             ( at == 2006                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
+      self . NodeDependency . emit ( name , 92 , str ( uuid ) , 31           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 2007                            ) :
       ########################################################################
       uuid = self . itemUuid       ( item , 0                                )
       name = item . text           ( 1                                       )

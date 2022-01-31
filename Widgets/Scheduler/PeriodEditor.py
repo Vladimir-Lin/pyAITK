@@ -290,7 +290,7 @@ class PeriodEditor                 ( Widget                                ) :
     if                                         ( onote == note             ) :
       return
     ##########################################################################
-    self . AssurePeriodNote                    ( note                        )
+    self  . Go ( self . AssurePeriodNote , ( note , )                        )
     ##########################################################################
     return
   ############################################################################
@@ -462,11 +462,11 @@ class PeriodEditor                 ( Widget                                ) :
     NOTE   = Notes                  (                                        )
     NOTE   . Uuid   = self . Period . Uuid
     NOTE   . Name   = "Description"
-    NOTE   . Prefer = 0
+    NOTE   . ObtainsLastest         ( DB , NOXTAB                            )
     NOTE   . Note   = note
     ##########################################################################
     DB     . LockWrites             ( [ NOXTAB                             ] )
-    NOTE   . assureNote             ( DB , NOXTAB                            )
+    NOTE   . Editing                ( DB , NOXTAB                            )
     self   . Period . setProperties ( "Description" , note                   )
     DB     . UnlockTables           (                                        )
     DB     . Close                  (                                        )
@@ -959,7 +959,8 @@ class PeriodEditor                 ( Widget                                ) :
     NOTE     = Notes                  (                                      )
     NOTE     . Uuid   = UUID
     NOTE     . Name   = "Description"
-    NOTE     . Prefer = 0
+    NOTE     . ObtainsLastest         ( DB , NOXTAB                          )
+    ##########################################################################
     NOTE     . Note   = self . Period . getProperty ( "Description"          )
     ##########################################################################
     PRDTAB   = self . Tables          [ "Periods"                            ]
@@ -980,7 +981,7 @@ class PeriodEditor                 ( Widget                                ) :
     Name     = self . Period . getProperty ( "Name"                          )
     self     . AssureUuidName         ( DB , NAMTAB , UUID , Name            )
     ##########################################################################
-    NOTE     . assureNote             ( DB , NOXTAB                          )
+    NOTE     . Editing                ( DB , NOXTAB                          )
     ##########################################################################
     VITEM    . Name  = "AppleCalendar"
     VITEM    . Value = self . Period . getProperty ( "Calendar"              )

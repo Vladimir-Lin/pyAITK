@@ -243,12 +243,8 @@ class Notes  ( Columns )                                                     :
       IDs [ ID ] = NOTE
     return IDs
   ############################################################################
-  def assureNote            ( self , DB , TABLE                            ) :
-    self . Prefer = 0
-    DB   . Query            ( self . Delete ( TABLE , self . Prefer        ) )
-    return self . Insert    (        DB , TABLE                              )
-  ############################################################################
-  def appendNote            ( self , DB , TABLE                            ) :
+  def ObtainsLastest        ( self , DB , TABLE                            ) :
+    ##########################################################################
     self . Prefer = -1
     U    = self . Uuid
     N    = self . Name
@@ -256,10 +252,21 @@ class Notes  ( Columns )                                                     :
                where ( `uuid` = {U} )
                and ( `name` = '{N}' )
                order by `prefer` desc limit 0,1 ;"""
-    DB   . Query ( QQ )
+    QQ   = " " . join       ( QQ . split ( )                                 )
+    DB   . Query            ( QQ                                             )
     RR   = DB . FetchOne    (                                                )
-    if                      ( ( RR != None ) and ( len ( RR ) > 0 )        ) :
-      self . Prefer = RR [ 0 ]
+    if ( ( RR not in [ False ,  None ] ) and ( len ( RR ) > 0 ) )            :
+      self . Prefer = RR    [ 0                                              ]
+    ##########################################################################
+    return self . Prefer
+  ############################################################################
+  def assureNote            ( self , DB , TABLE                            ) :
+    self . Prefer = 0
+    DB   . Query            ( self . Delete ( TABLE , self . Prefer        ) )
+    return self . Insert    (        DB , TABLE                              )
+  ############################################################################
+  def appendNote            ( self , DB , TABLE                            ) :
+    self . ObtainsLastest   (        DB , TABLE                              )
     self . Prefer = self . Prefer + 1
     return self . Insert    ( DB , TABLE                                     )
   ############################################################################
@@ -287,5 +294,19 @@ class Notes  ( Columns )                                                     :
   def Organize              ( self , DB , TABLE                            ) :
     IDs  = self . ObtainIDs (        DB , TABLE                              )
     self . Ordering         (        DB , TABLE , IDs                        )
+    return
+  ############################################################################
+  def RemovePrefers      ( self , DB , TABLE , PREFERs                     ) :
+    ##########################################################################
+    LISTS = " , " . join ( PREFERs                                           )
+    UUID  = self . Uuid
+    KEY   = self . Name
+    QQ    = f"""delete from {TABLE}
+                where ( `uuid` = '{UUID}' )
+                  and ( `name` = '{KEY}' )
+                  and ( `prefer` in ( {LISTS} ) ) ;"""
+    QQ    = " " . join   ( QQ . split ( )                                    )
+    DB    . Query        ( QQ                                                )
+    ##########################################################################
     return
 ##############################################################################
