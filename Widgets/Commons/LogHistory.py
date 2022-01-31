@@ -78,8 +78,8 @@ class LogHistory                   ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnCount          ( 4                                       )
+    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -101,7 +101,7 @@ class LogHistory                   ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 480 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 480 , 480 )                       )
   ############################################################################
   def FocusIn              ( self                                          ) :
     ##########################################################################
@@ -171,6 +171,8 @@ class LogHistory                   ( TreeDock                              ) :
     NOW = StarDate               (                                           )
     ID  = int                    ( JSON [ "Prefer"                         ] )
     ID  = int                    ( ID                                        )
+    LEN = int                    ( JSON [ "Length"                         ] )
+    LEN = int                    ( LEN                                       )
     ##########################################################################
     NOW . Stardate = int         ( JSON [ "Lastest"                        ] )
     DT  = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"        )
@@ -180,7 +182,10 @@ class LogHistory                   ( TreeDock                              ) :
     IT  . setData                ( 0 , Qt . UserRole , ID                    )
     IT  . setTextAlignment       ( 0 , Qt.AlignRight                         )
     ##########################################################################
-    IT  . setText                ( 1 , DT                                    )
+    IT  . setText                ( 1 , str ( LEN )                           )
+    IT  . setTextAlignment       ( 1 , Qt.AlignRight                         )
+    ##########################################################################
+    IT  . setText                ( 2 , DT                                    )
     ##########################################################################
     return
   ############################################################################
@@ -239,8 +244,9 @@ class LogHistory                   ( TreeDock                              ) :
     ORDER   = self . SortOrder
     ITEMs   =                         [                                      ]
     ##########################################################################
-    QQ      = f"""select `prefer`,`ltime` from {NOXTAB}
-                  where ( `name` = '{KEY}' )
+    QQ      = f"""select `prefer`,length(`note`),`ltime` from {NOXTAB}
+                  where ( `uuid` = '{UUID}' )
+                    and ( `name` = '{KEY}' )
                   order by `prefer` {ORDER} ;"""
     QQ      = " " . join              ( QQ . split ( )                       )
     DB      . Query                   ( QQ                                   )
@@ -251,9 +257,11 @@ class LogHistory                   ( TreeDock                              ) :
       for ITEM in ALL                                                        :
         ######################################################################
         PREFER = int                  ( ITEM [ 0 ]                           )
-        NOW . fromDateTime            ( ITEM [ 1 ]                           )
+        LENGTH = int                  ( ITEM [ 1 ]                           )
+        NOW . fromDateTime            ( ITEM [ 2 ]                           )
         ######################################################################
         J   =                         { "Prefer"  : PREFER                 , \
+                                        "Length"  : LENGTH                 , \
                                         "Lastest" : NOW . Stardate           }
         ITEMs . append                ( J                                    )
     ##########################################################################
@@ -273,8 +281,9 @@ class LogHistory                   ( TreeDock                              ) :
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . setColumnWidth ( 0 , 100                                          )
-    self . setColumnWidth ( 1 , 320                                          )
-    self . defaultPrepare ( self . ClassTag , 2                              )
+    self . setColumnWidth ( 1 , 120                                          )
+    self . setColumnWidth ( 2 , 200                                          )
+    self . defaultPrepare ( self . ClassTag , 3                              )
     ##########################################################################
     return
   ############################################################################
@@ -285,11 +294,11 @@ class LogHistory                   ( TreeDock                              ) :
     return
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 0                         )
+    return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9000 ) and ( at <= 9002 )         :
+    if                             ( at >= 9001 ) and ( at <= 9003 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
