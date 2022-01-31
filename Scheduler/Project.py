@@ -175,6 +175,7 @@ class Project            ( Columns                                         ) :
       TYPE     = 0
       START    = 0
       ENDST    = 0
+      STATES   = 0
     ##########################################################################
     SAME       = self . Period . isIdentical ( START , ENDST , STATES        )
     if                            ( SAME ) and ( STATES == self . States )   :
