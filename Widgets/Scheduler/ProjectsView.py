@@ -82,6 +82,7 @@ class ProjectsView            ( IconDock                                   ) :
   ############################################################################
   ProjectTasks   = pyqtSignal ( str , int , str , QIcon                      )
   NodeDependency = pyqtSignal ( str , int , str , int                        )
+  OpenLogHistory = pyqtSignal ( str , str , str                              )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
@@ -503,18 +504,21 @@ class ProjectsView            ( IconDock                                   ) :
     msg  = self . getMenuItem    ( "Tasks"                                   )
     mm   . addActionFromMenu     ( LOM , 406301 , msg                        )
     ##########################################################################
+    msg  = self . getMenuItem    ( "LogHistory"                              )
+    mm   . addActionFromMenu     ( LOM , 406302 , msg                        )
+    ##########################################################################
     mm   . addSeparatorFromMenu  ( LOM                                       )
     ##########################################################################
     msg  = self . getMenuItem    ( "Prerequisite"                            )
-    mm   . addActionFromMenu     ( LOM , 406302 , msg                        )
+    mm   . addActionFromMenu     ( LOM , 406311 , msg                        )
     ##########################################################################
     msg  = self . getMenuItem    ( "Successor"                               )
-    mm   . addActionFromMenu     ( LOM , 406303 , msg                        )
+    mm   . addActionFromMenu     ( LOM , 406312 , msg                        )
     ##########################################################################
     mm   . addSeparatorFromMenu  ( LOM                                       )
     ##########################################################################
     msg  = self . getMenuItem    ( "Recalculate"                             )
-    mm   . addActionFromMenu     ( LOM , 406304 , msg                        )
+    mm   . addActionFromMenu     ( LOM , 406321 , msg                        )
     ##########################################################################
     mm   . addActionFromMenu     ( LOM , 401801 , "查詢" )
     ##########################################################################
@@ -536,11 +540,20 @@ class ProjectsView            ( IconDock                                   ) :
       ########################################################################
       name = atItem . text         (                                         )
       uuid = atItem . data         ( Qt . UserRole                           )
+      uuid = int                   ( uuid                                    )
+      self . OpenLogHistory . emit ( name , str ( uuid ) , "Description"     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( atId == 406311                        ) :
+      ########################################################################
+      name = atItem . text         (                                         )
+      uuid = atItem . data         ( Qt . UserRole                           )
       self . NodeDependency . emit ( name , 71 , str ( uuid ) , 31           )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( atId == 406303                        ) :
+    if                             ( atId == 406312                        ) :
       ########################################################################
       name = atItem . text         (                                         )
       uuid = atItem . data         ( Qt . UserRole                           )
@@ -548,7 +561,7 @@ class ProjectsView            ( IconDock                                   ) :
       ########################################################################
       return True
     ##########################################################################
-    if                             ( atId == 406304                        ) :
+    if                             ( atId == 406321                        ) :
       ########################################################################
       uuid = atItem . data         ( Qt . UserRole                           )
       uuid = int                   ( uuid                                    )

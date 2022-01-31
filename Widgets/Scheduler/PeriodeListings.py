@@ -63,6 +63,7 @@ class PeriodeListings              ( TreeDock                              ) :
   emitAllNames   = pyqtSignal      ( list                                    )
   PeriodDetails  = pyqtSignal      ( str , str                               )
   NodeDependency = pyqtSignal      ( str , int , str , int                   )
+  OpenLogHistory = pyqtSignal      ( str , str , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -916,13 +917,16 @@ class PeriodeListings              ( TreeDock                              ) :
     msg  = self . getMenuItem   ( "Editor"                                   )
     mm   . addActionFromMenu    ( LOM , 1501 , msg                           )
     ##########################################################################
+    msg  = self . getMenuItem   ( "LogHistory"                               )
+    mm   . addActionFromMenu    ( LOM , 1502 , msg                           )
+    ##########################################################################
     mm   . addSeparatorFromMenu ( LOM                                        )
     ##########################################################################
     msg  = self . getMenuItem   ( "Prerequisite"                             )
-    mm   . addActionFromMenu    ( LOM , 1502 , msg                           )
+    mm   . addActionFromMenu    ( LOM , 1511 , msg                           )
     ##########################################################################
     msg  = self . getMenuItem   ( "Successor"                                )
-    mm   . addActionFromMenu    ( LOM , 1503 , msg                           )
+    mm   . addActionFromMenu    ( LOM , 1512 , msg                           )
     ##########################################################################
     mm   . addSeparatorFromMenu ( LOM                                        )
     ##########################################################################
@@ -942,11 +946,19 @@ class PeriodeListings              ( TreeDock                              ) :
       ########################################################################
       uuid = self . itemUuid       ( item , 0                                )
       name = item . text           ( 1                                       )
+      self . OpenLogHistory . emit ( name , str ( uuid ) , "Description"     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1511                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
       self . NodeDependency . emit ( name , 92 , str ( uuid ) , 31           )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1503                            ) :
+    if                             ( at == 1512                            ) :
       ########################################################################
       uuid = self . itemUuid       ( item , 0                                )
       name = item . text           ( 1                                       )

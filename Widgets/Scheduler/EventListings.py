@@ -62,6 +62,7 @@ class EventListings                ( TreeDock                              ) :
   emitAllNames   = pyqtSignal      ( list                                    )
   EventPeriods   = pyqtSignal      ( str , int , str                         )
   NodeDependency = pyqtSignal      ( str , int , str , int                   )
+  OpenLogHistory = pyqtSignal      ( str , str , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -899,18 +900,21 @@ class EventListings                ( TreeDock                              ) :
     msg  = self . getMenuItem   ( "Periods"                                  )
     mm   . addActionFromMenu    ( LOM , 1501 , msg                           )
     ##########################################################################
+    msg  = self . getMenuItem   ( "LogHistory"                               )
+    mm   . addActionFromMenu    ( LOM , 1502 , msg                           )
+    ##########################################################################
     mm   . addSeparatorFromMenu ( LOM                                        )
     ##########################################################################
     msg  = self . getMenuItem   ( "Prerequisite"                             )
-    mm   . addActionFromMenu    ( LOM , 1502 , msg                           )
+    mm   . addActionFromMenu    ( LOM , 1511 , msg                           )
     ##########################################################################
     msg  = self . getMenuItem   ( "Successor"                                )
-    mm   . addActionFromMenu    ( LOM , 1503 , msg                           )
+    mm   . addActionFromMenu    ( LOM , 1512 , msg                           )
     ##########################################################################
     mm   . addSeparatorFromMenu ( LOM                                        )
     ##########################################################################
     msg  = self . getMenuItem   ( "Recalculate"                              )
-    mm   . addActionFromMenu    ( LOM , 1504 , msg                           )
+    mm   . addActionFromMenu    ( LOM , 1521 , msg                           )
     ##########################################################################
     return mm
   ############################################################################
@@ -928,11 +932,19 @@ class EventListings                ( TreeDock                              ) :
       ########################################################################
       uuid = self . itemUuid       ( item , 0                                )
       name = item . text           ( 1                                       )
+      self . OpenLogHistory . emit ( name , str ( uuid ) , "Description"     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1511                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( item , 0                                )
+      name = item . text           ( 1                                       )
       self . NodeDependency . emit ( name , 15 , str ( uuid ) , 31           )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1503                            ) :
+    if                             ( at == 1512                            ) :
       ########################################################################
       uuid = self . itemUuid       ( item , 0                                )
       name = item . text           ( 1                                       )
@@ -940,7 +952,7 @@ class EventListings                ( TreeDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1504                            ) :
+    if                             ( at == 1521                            ) :
       ########################################################################
       uuid = self . itemUuid       ( item , 0                                )
       self . Go                    ( self . RecalculatePeriods , ( uuid , )  )

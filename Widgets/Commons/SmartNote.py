@@ -81,6 +81,8 @@ class SmartNote                    ( TextEdit                              ) :
     ##########################################################################
     self . Method       = "None"
     self . Uuid         = 0
+    self . Key          = ""
+    self . Prefer       = -1
     self . Filename     = ""
     self . Relation     = Relation  (                                        )
     self . defaultLocality  = 1002
