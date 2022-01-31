@@ -215,6 +215,27 @@ class Apple              (                                                 ) :
     NOW   . Stardate = PERIOD . End
     ETS   = NOW . toDateTime     ( self . TZ                                 )
     ##########################################################################
+    NOW   . Now                  (                                           )
+    CDT   = NOW . Stardate
+    ##########################################################################
+    ## VEVENT
+    ##   TENTATIVE
+    ##   CONFIRMED
+    ##   CANCELLED
+    ## VTODO
+    ##   NEEDS-ACTION
+    ##   COMPLETED
+    ##   IN-PROCESS
+    ##   CANCELLED
+    ## VJOURNAL
+    ##   DRAFT
+    ##   FINAL
+    ##   CANCELLED
+    ##########################################################################
+    STAT  = "CONFIRMED"
+    if                           ( PERIOD . States == 1                    ) :
+      STAT  = "TENTATIVE"
+    ##########################################################################
     PUID  = PERIOD . Uuid
     ##########################################################################
     NAME  = PERIOD . getProperty ( "Name"                                    )
@@ -236,11 +257,10 @@ class Apple              (                                                 ) :
     iCal  . add                  ( "CALSCALE"    , "GREGORIAN"               )
     ##########################################################################
     evt   = icalendar . Event    (                                           )
-    ## evt   . add                  ( "CLASS"       , f"{PUID}"                 )
     evt   . add                  ( "SUMMARY"     , NAME                      )
     evt   . add                  ( "DTSTART"     , DTS                       )
     evt   . add                  ( "DTEND"       , ETS                       )
-    evt   . add                  ( "STATUS"      , "CONFIRMED"               )
+    evt   . add                  ( "STATUS"      , STAT                      )
     evt   . add                  ( "LOCATION"    , TSON                      )
     ##########################################################################
     if                           ( len ( DESC ) > 0                        ) :

@@ -74,6 +74,7 @@ class PeriodEditor                 ( Widget                                ) :
   emitAskClose        = pyqtSignal (                                         )
   emitShowAppleEvents = pyqtSignal ( list                                    )
   emitOpenSmartNote   = pyqtSignal ( str                                     )
+  emitAssignAppleBtn  = pyqtSignal ( bool                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -96,6 +97,7 @@ class PeriodEditor                 ( Widget                                ) :
     self . emitUpdate   . connect  ( self . UpdatePeriodValues               )
     self . emitAskClose . connect  ( self . AskToClose                       )
     self . emitShowAppleEvents . connect ( self . ShowAppleEvents            )
+    self . emitAssignAppleBtn  . connect ( self . AssignAppleButton          )
     ##########################################################################
     self . ui . SaveNote . blockSignals  ( True                              )
     self . ui . SaveNote . setEnabled    ( False                             )
@@ -113,6 +115,12 @@ class PeriodEditor                 ( Widget                                ) :
       return
     ##########################################################################
     super ( ) . closeEvent          ( event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignAppleButton                ( self , enable                     ) :
+    ##########################################################################
+    self . ui . SyncApple . setEnabled (        enable                       )
     ##########################################################################
     return
   ############################################################################
@@ -358,19 +366,23 @@ class PeriodEditor                 ( Widget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def SyncToApple                             ( self                       ) :
+  def SyncToApple                              ( self                      ) :
     ##########################################################################
-    CID   = self . GetCurrentCalendarId       (                              )
-    if                                        ( len ( CID ) <= 0           ) :
+    CID    = self . GetCurrentCalendarId       (                             )
+    if                                         ( len ( CID ) <= 0          ) :
       return
     ##########################################################################
-    EID   = self . ui . AppleEventEdit . text (                              )
-    if                                        ( len ( EID ) <= 0           ) :
-      EID = ""
+    EID    = self . ui . AppleEventEdit . text (                             )
+    if                                         ( len ( EID ) <= 0          ) :
+      EID  = ""
     ##########################################################################
-    VAL   =                                   ( CID , EID ,                  )
-    FUNC  = self . SyncToAppleCalendar
-    self  . Go                                ( FUNC , VAL                   )
+    NOTICE = self . ui . AlarmBox . value      (                             )
+    ##########################################################################
+    self   . emitAssignAppleBtn . emit         ( False                       )
+    ##########################################################################
+    VAL    =                                   ( CID , EID , - NOTICE        )
+    FUNC   = self . SyncToAppleCalendar
+    self   . Go                                ( FUNC , VAL                  )
     ##########################################################################
     return
   ############################################################################
@@ -540,7 +552,7 @@ class PeriodEditor                 ( Widget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def SyncToAppleCalendar           ( self , CalendarId , EventId          ) :
+  def SyncToAppleCalendar           ( self , CalendarId , EventId , NOTICE ) :
     ##########################################################################
     self   . Period . setProperties ( "Calendar" , CalendarId                )
     self   . Period . setProperties ( "Event"    , EventId                   )
@@ -555,19 +567,24 @@ class PeriodEditor                 ( Widget                                ) :
     ##########################################################################
     if ( not OKAY ) or ( len ( APPLE . Calendars ) <= 0 )                    :
       ########################################################################
+      self . emitAssignAppleBtn . emit ( True                                )
+      ########################################################################
       return
     ##########################################################################
     CAL    = APPLE . FindCalendar   ( CalendarId                             )
     if                              ( CAL in [ False , None ]              ) :
+      self . emitAssignAppleBtn . emit ( True                                )
+      ########################################################################
       return
     ##########################################################################
     if                              ( len ( EventId ) <= 0                 ) :
       ########################################################################
-      E    = APPLE . iCalFromPeriod ( self . Period                          )
+      E    = APPLE . iCalFromPeriod ( self . Period , NOTICE                 )
       try                                                                    :
         R  = CAL . add_event        ( ical = E . to_ical ( )                 )
       except                                                                 :
         self . Notify               ( 1                                      )
+        self . emitAssignAppleBtn . emit ( True                              )
         return
       ########################################################################
       evt  = APPLE . EventFromICalData ( R . data                            )
@@ -577,6 +594,7 @@ class PeriodEditor                 ( Widget                                ) :
       self . AssignAppleCalendarId  ( CalendarId , EID                       )
       self . emitEventId . emit     (                                        )
       self . Notify                 ( 5                                      )
+      self . emitAssignAppleBtn . emit ( True                                )
       ########################################################################
       return
     ##########################################################################
@@ -586,14 +604,16 @@ class PeriodEditor                 ( Widget                                ) :
     ##########################################################################
     if                              ( R in [ False , None ]                ) :
       self . Notify                 ( 1                                      )
+      self . emitAssignAppleBtn . emit ( True                                )
       return
     ##########################################################################
     evt    = APPLE . EventFromICalData    ( R . data                         )
-    evt    = APPLE . iCalUpdateFromPeriod ( evt , self . Period              )
+    evt    = APPLE . iCalUpdateFromPeriod ( evt , self . Period , NOTICE     )
     R      . data = evt . to_ical   (                                        )
     R      . save                   (                                        )
     ##########################################################################
     self   . Notify                 ( 5                                      )
+    self   . emitAssignAppleBtn . emit ( True                                )
     ##########################################################################
     return
   ############################################################################

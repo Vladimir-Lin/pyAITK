@@ -130,54 +130,64 @@ class Project            ( Columns                                         ) :
                "Type"   : self . Type                                        ,
                "States" : self . States                                      }
   ############################################################################
-  def Investigate                  ( self , DB , TASKs                     ) :
+  def Investigate                 ( self , DB , TASKs                      ) :
     ##########################################################################
-    if                             ( len ( self . Tasks ) <= 0             ) :
+    if                            ( len ( self . Tasks ) <= 0              ) :
       return
     ##########################################################################
     MAXV       = 9223372036854775807
     START      = MAXV
     ENDST      = 0
+    TYPE       = 4
     STATES     = 4
     ##########################################################################
     for TUID in self . Tasks                                                 :
       ########################################################################
-      TASK     = TASKs . GetTask   ( TUID                                    )
-      if                           ( TASK in [ False , None ]              ) :
+      TASK     = TASKs . GetTask  ( TUID                                     )
+      if                          ( TASK in [ False , None ]               ) :
         continue
       ########################################################################
-      if                           ( not TASK . Period . isAllow ( )       ) :
+      if                          ( not TASK . Period . isAllow ( )        ) :
         continue
       ########################################################################
       S        = TASK . Period . Start
       E        = TASK . Period . End
       ########################################################################
-      if                           ( S < START                             ) :
+      if                          ( S < START                              ) :
         START  = S
       ########################################################################
-      if                           ( E > ENDST                             ) :
+      if                          ( E > ENDST                              ) :
         ENDST  = E
       ########################################################################
-      if                           ( not TASK . Period . isCompleted ( )   ) :
+      if                          ( not TASK . Period . isCompleted ( )    ) :
         STATES = 5
     ##########################################################################
-    if                             ( START == MAXV                         ) :
-      return False
+    EMPTY      = False
     ##########################################################################
-    if                             ( ENDST == 0                            ) :
-      return False
+    if                            ( START == MAXV                          ) :
+      EMPTY    = True
     ##########################################################################
-    if ( self . Period . isIdentical ( START , ENDST , STATES ) )            :
+    if                            ( ENDST == 0                             ) :
+      EMPTY    = True
+    ##########################################################################
+    if                            ( EMPTY                                  ) :
+      ########################################################################
+      TYPE     = 0
+      START    = 0
+      ENDST    = 0
+    ##########################################################################
+    SAME       = self . Period . isIdentical ( START , ENDST , STATES        )
+    if                            ( SAME ) and ( STATES == self . States )   :
       return True
     ##########################################################################
-    self . Period . Type   = 4
+    self . Period . Type   = TYPE
     self . Period . States = STATES
     self . Period . Start  = START
     self . Period . End    = ENDST
     ##########################################################################
-    PRDTAB = self . Tables         [ "Periods"                               ]
-    ITEMs  =                       [ "type" , "states" , "start" , "end"     ]
-    self   . Period . UpdateItems  ( DB , PRDTAB , ITEMs                     )
+    PRDTAB = self . Tables        [ "Periods"                                ]
+    ITEMs  =                      [ "type" , "states" , "start" , "end"      ]
+    self   . Period . UpdateItems ( DB , PRDTAB , ITEMs                      )
     ##########################################################################
     return True
   ############################################################################
