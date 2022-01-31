@@ -43,6 +43,7 @@ from   PyQt5 . QtWidgets                 import QTreeWidgetItem
 from   PyQt5 . QtWidgets                 import QLineEdit
 from   PyQt5 . QtWidgets                 import QComboBox
 from   PyQt5 . QtWidgets                 import QSpinBox
+from   PyQt5 . QtWidgets                 import QFileDialog
 ##############################################################################
 from   AITK  . Qt        . MenuManager   import MenuManager   as MenuManager
 from   AITK  . Qt        . LineEdit      import LineEdit      as LineEdit
@@ -53,8 +54,9 @@ from   AITK  . Qt        . TextEdit      import TextEdit      as TextEdit
 from   AITK  . Essentials . Relation     import Relation
 from   AITK  . Calendars  . StarDate     import StarDate
 from   AITK  . Calendars  . Periode      import Periode
+from   AITK  . Documents  . Notes        import Notes
 ##############################################################################
-class SmartNote                    ( TextEdit                              ) :
+class SmartNote                     ( TextEdit                             ) :
   ############################################################################
   HavingMenu  = 1371434312
   ############################################################################
@@ -109,35 +111,55 @@ class SmartNote                    ( TextEdit                              ) :
     ##########################################################################
     return   False
   ############################################################################
-  def FocusIn                    ( self                                    ) :
+  def FocusIn              ( self                                          ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
+    if                     ( not self . isPrepared ( )                     ) :
       return False
     ##########################################################################
-    self . setActionLabel        ( "Label"   , self . windowTitle ( )        )
+    self . setActionLabel  ( "Label"   , self . windowTitle ( )              )
     ##########################################################################
-    self . LinkAction            ( "Load"      , self . Load                 )
-    self . LinkAction            ( "Save"      , self . Save                 )
-    self . LinkAction            ( "SaveAs"    , self . SaveAs               )
-    self . LinkAction            ( "Undo"      , self . undo                 )
-    self . LinkAction            ( "Redo"      , self . redo                 )
-    self . LinkAction            ( "Cut"       , self . cut                  )
-    self . LinkAction            ( "Copy"      , self . copy                 )
-    self . LinkAction            ( "Paste"     , self . paste                )
-    self . LinkAction            ( "SelectAll" , self . selectAll            )
-    self . LinkAction            ( "ZoomIn"    , self . ZoomIn               )
-    self . LinkAction            ( "ZoomOut"   , self . ZoomOut              )
+    self . LinkAction      ( "Load"      , self . Load                       )
+    self . LinkAction      ( "Save"      , self . Save                       )
+    self . LinkAction      ( "SaveAs"    , self . SaveAs                     )
+    self . LinkAction      ( "Undo"      , self . undo                       )
+    self . LinkAction      ( "Redo"      , self . redo                       )
+    self . LinkAction      ( "Cut"       , self . cut                        )
+    self . LinkAction      ( "Copy"      , self . copy                       )
+    self . LinkAction      ( "Paste"     , self . paste                      )
+    self . LinkAction      ( "SelectAll" , self . selectAll                  )
+    self . LinkAction      ( "ZoomIn"    , self . ZoomIn                     )
+    self . LinkAction      ( "ZoomOut"   , self . ZoomOut                    )
     ##########################################################################
-    self . LinkVoice             ( self . CommandParser                      )
+    self . LinkVoice       ( self . CommandParser                            )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                   ( self                                    ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return False
     ##########################################################################
     return False
+  ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Load"      , self . Load      , False          )
+    self . LinkAction      ( "Save"      , self . Save      , False          )
+    self . LinkAction      ( "SaveAs"    , self . SaveAs    , False          )
+    self . LinkAction      ( "Undo"      , self . undo      , False          )
+    self . LinkAction      ( "Redo"      , self . redo      , False          )
+    self . LinkAction      ( "Cut"       , self . cut       , False          )
+    self . LinkAction      ( "Copy"      , self . copy      , False          )
+    self . LinkAction      ( "Paste"     , self . paste     , False          )
+    self . LinkAction      ( "SelectAll" , self . selectAll , False          )
+    self . LinkAction      ( "ZoomIn"    , self . ZoomIn    , False          )
+    self . LinkAction      ( "ZoomOut"   , self . ZoomOut   , False          )
+    ##########################################################################
+    self . LinkVoice       ( None                                            )
+    ##########################################################################
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
   ############################################################################
   def ZoomIn                       ( self                                  ) :
     self . zoomIn                  ( 1                                       )
@@ -147,14 +169,130 @@ class SmartNote                    ( TextEdit                              ) :
     self . zoomOut                 ( 1                                       )
     return
   ############################################################################
-  def loading                    ( self                                    ) :
+  def LoadFileContent        ( self , Filename                             ) :
     ##########################################################################
-    DB     = self . ConnectDB    (                                           )
-    if                           ( DB == None                              ) :
+    TEXT     = ""
+    BODY     = ""
+    ##########################################################################
+    try                                                                      :
+      with open              ( Filename , "rb" ) as File                     :
+        TEXT = File . read   (                                               )
+    except                                                                   :
+      return "" , False
+    ##########################################################################
+    try                                                                      :
+      BODY   = TEXT . decode ( "utf-8"                                       )
+    except                                                                   :
+      return "" , False
+    ##########################################################################
+    return BODY , True
+  ############################################################################
+  def SaveFileContent             ( self , Filename                        ) :
+    ##########################################################################
+    BODY     = self . toPlainText (                                          )
+    try                                                                      :
+      with open ( Filename , 'w' , encoding = "utf-8" ) as File              :
+        File . write              ( BODY                                     )
+    except                                                                   :
+      return False
+    ##########################################################################
+    return   True
+  ############################################################################
+  def LoadFromFilename                   ( self , Filename                 ) :
+    ##########################################################################
+    if                                   ( len ( Filename ) <= 0           ) :
+      self      . Notify                 ( 1                                 )
       return
     ##########################################################################
+    BODY , OKAY = self . LoadFileContent ( Filename                          )
+    if                                   ( not OKAY                        ) :
+      self      . Notify                 ( 1                                 )
+      return
     ##########################################################################
-    DB     . Close               (                                        )
+    self        . emitInsertText . emit  ( BODY                              )
+    self        . Notify                 ( 5                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def LoadFromFile          ( self                                         ) :
+    ##########################################################################
+    self . LoadFromFilename ( self . Filename                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveToFilename                ( self , Filename                      ) :
+    ##########################################################################
+    if                              ( len ( Filename ) <= 0                ) :
+      self . Notify                 ( 1                                      )
+      return
+    ##########################################################################
+    OKAY   = self . SaveFileContent ( Filename                               )
+    if                              ( not OKAY                             ) :
+      self . Notify                 ( 1                                      )
+      return
+    ##########################################################################
+    self   . Notify                 ( 5                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveToFile          ( self                                           ) :
+    ##########################################################################
+    self . SaveToFilename ( self . Filename                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def LoadFromNotes                ( self                                  ) :
+    ##########################################################################
+    DB     = self . ConnectDB      (                                         )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    NOXTAB = self . Tables         [ "Notes"                                 ]
+    NOX    = Notes                 (                                         )
+    NOX    . Uuid = self . Uuid
+    NOX    . Name = self . Key
+    NOX    . Obtains               ( DB , NOXTAB , self . Prefer             )
+    BODY   = NOX . Note
+    ##########################################################################
+    DB     . Close                 (                                         )
+    ##########################################################################
+    self   . emitInsertText . emit ( BODY                                    )
+    self   . Notify                ( 5                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveToNotes                        ( self                            ) :
+    ##########################################################################
+    DB     = self . ConnectDB            (                                   )
+    if                                   ( DB == None                      ) :
+      return
+    ##########################################################################
+    NOXTAB = self . Tables               [ "Notes"                           ]
+    NOX    = Notes                       (                                   )
+    NOX    . Uuid   = self . Uuid
+    NOX    . Name   = self . Key
+    NOX    . Prefer = self . Prefer
+    NOX    . Note   = self . toPlainText (                                   )
+    ##########################################################################
+    DB     . LockWrites                  ( [ NOXTAB                        ] )
+    NOX    . Editing                     ( DB , NOXTAB                       )
+    DB     . UnlockTables                (                                   )
+    ##########################################################################
+    DB     . Close                       (                                   )
+    ##########################################################################
+    self   . Notify                      ( 5                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def loading              ( self                                          ) :
+    ##########################################################################
+    if                     ( self . Method in [ "Note" ]                   ) :
+      self . LoadFromNotes (                                                 )
+      return
+    ##########################################################################
+    if                     ( self . Method in [ "File" ]                   ) :
+      self . LoadFromFile  (                                                 )
+      return
     ##########################################################################
     return
   ############################################################################
@@ -171,18 +309,68 @@ class SmartNote                    ( TextEdit                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Load                       ( self                                    ) :
+  def Load                        ( self                                   ) :
     ##########################################################################
+    Filters  = self . getMenuItem ( "TextFilters"                            )
+    Name , t = QFileDialog . getOpenFileName                                 (
+                                    self                                   , \
+                                    self . windowTitle ( )                 , \
+                                    ""                                     , \
+                                    Filters                                  )
+    ##########################################################################
+    if                            ( len ( Name ) <= 0                      ) :
+      self   . Notify             ( 1                                        )
+      return
+    ##########################################################################
+    self     . setPlainText       ( ""                                       )
+    ##########################################################################
+    if                            ( self . Method in [ "None" , "File" ]   ) :
+      self   . Filename = Name
+      self   . startup            (                                          )
+      return
+    ##########################################################################
+    self     . Go                 ( self . LoadFromFilename ,  ( Name , )    )
     ##########################################################################
     return
   ############################################################################
-  def Save                       ( self                                    ) :
+  def Save          ( self                                                 ) :
     ##########################################################################
+    if              ( self . Method in [ "None" ]                          ) :
+      self . SaveAs (                                                        )
+      return
+    ##########################################################################
+    if              ( self . Method in [ "File" ]                          ) :
+      self . Go     ( self . SaveToFile                                      )
+      return
+    ##########################################################################
+    if              ( self . Method in [ "Note" ]                          ) :
+      self . Go     ( self . SaveToNotes                                     )
+      return
     ##########################################################################
     return
   ############################################################################
-  def SaveAs                     ( self                                    ) :
+  def SaveAs                      ( self                                   ) :
     ##########################################################################
+    Filters  = self . getMenuItem ( "TextFilters"                            )
+    Name , t = QFileDialog . getSaveFileName                                 (
+                                    self                                   , \
+                                    self . windowTitle ( )                 , \
+                                    ""                                     , \
+                                    Filters                                  )
+    ##########################################################################
+    if                            ( len ( Name ) <= 0                      ) :
+      self   . Notify             ( 1                                        )
+      return
+    ##########################################################################
+    if                            ( self . Method in [ "None" ]            ) :
+      ########################################################################
+      self   . Filename = Name
+      self   . Method   = "File"
+      self   . Go                 ( self . SaveToFile                        )
+      ########################################################################
+      return
+    ##########################################################################
+    self     . Go                 ( self . SaveToFilename , ( Name , )       )
     ##########################################################################
     return
   ############################################################################
