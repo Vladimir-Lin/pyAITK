@@ -63,14 +63,15 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     ## WidgetClass                                                       ;
     ##########################################################################
-    self . ClassTag      = ""
-    self . Total         = 0
-    self . StartId       = 0
-    self . Amount        = 60
-    self . SortOrder     = "asc"
-    self . LoopRunning   = True
-    self . SpinStartId   = None
-    self . SpinAmount    = None
+    self . ClassTag           = ""
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 60
+    self . AssignedAmount     = 0
+    self . SortOrder          = "asc"
+    self . LoopRunning        = True
+    self . SpinStartId        = None
+    self . SpinAmount         = None
     ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"
@@ -269,7 +270,8 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     if                                  ( self . StartId > T               ) :
       self . StartId = 0
     ##########################################################################
-    T      = self . Total
+    self   . AssignedAmount = AMT
+    ##########################################################################
     MSG    = self . getMenuItem         ( "Total"                            )
     SSI    = self . getMenuItem         ( "SpinStartId"                      )
     SSA    = self . getMenuItem         ( "SpinAmount"                       )
@@ -309,7 +311,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     self . SpinStartId = None
     self . SpinAmount  = None
     ##########################################################################
-    if ( ( SID != self . StartId ) or ( AMT != self . Amount ) )             :
+    if ( ( SID != self . StartId ) or ( AMT != self . AssignedAmount ) )     :
       ########################################################################
       self . StartId = SID
       self . Amount  = AMT

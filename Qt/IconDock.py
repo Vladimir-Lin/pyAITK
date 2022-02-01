@@ -75,27 +75,28 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     super ( ) . __init__            ( parent , plan                          )
     ##########################################################################
-    self . EditAllNames  = None
-    self . IconFont      = None
-    self . UsingName     = True
-    self . SortOrder     = "asc"
-    self . Total         = 0
-    self . StartId       = 0
-    self . Amount        = 60
-    self . PrivateIcon   = False
-    self . PrivateGroup  = False
-    self . ExtraINFOs    = False
-    self . LoopRunning   = True
-    self . SpinStartId   = None
-    self . SpinAmount    = None
-    self . UuidItemMaps  =          {                                        }
+    self . EditAllNames   = None
+    self . IconFont       = None
+    self . UsingName      = True
+    self . SortOrder      = "asc"
+    self . Total          = 0
+    self . StartId        = 0
+    self . Amount         = 60
+    self . AssignedAmount = 0
+    self . PrivateIcon    = False
+    self . PrivateGroup   = False
+    self . ExtraINFOs     = False
+    self . LoopRunning    = True
+    self . SpinStartId    = None
+    self . SpinAmount     = None
+    self . UuidItemMaps   =          {                                        }
     ##########################################################################
-    self . Method        = "Original"
+    self . Method         = "Original"
     ##########################################################################
-    self . Grouping      = "Original"
-    self . OldGrouping   = "Original"
-    ## self . Grouping      = "Subordination"
-    ## self . Grouping      = "Reverse"
+    self . Grouping       = "Original"
+    self . OldGrouping    = "Original"
+    ## self . Grouping       = "Subordination"
+    ## self . Grouping       = "Reverse"
     ##########################################################################
     self . setViewMode              ( QListView . IconMode                   )
     self . setIconSize              ( QSize ( 128 , 128 )                    )
@@ -518,6 +519,8 @@ class IconDock                      ( ListDock                             ) :
     if                                  ( self . StartId > T               ) :
       self . StartId = 0
     ##########################################################################
+    self   . AssignedAmount = AMT
+    ##########################################################################
     MSG    = self . getMenuItem         ( "Total"                            )
     SSI    = self . getMenuItem         ( "SpinStartId"                      )
     SSA    = self . getMenuItem         ( "SpinAmount"                       )
@@ -557,7 +560,7 @@ class IconDock                      ( ListDock                             ) :
     self . SpinStartId = None
     self . SpinAmount  = None
     ##########################################################################
-    if ( ( SID != self . StartId ) or ( AMT != self . Amount ) )             :
+    if ( ( SID != self . StartId ) or ( AMT != self . AssignedAmount ) )     :
       ########################################################################
       self . StartId = SID
       self . Amount  = AMT
