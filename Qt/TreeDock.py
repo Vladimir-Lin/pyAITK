@@ -261,10 +261,11 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
   def AmountIndexMenu                   ( self , mm                        ) :
     ##########################################################################
     T      = int                        ( self . Total                       )
+    AMT    = int                        ( self . Amount                      )
     if                                  ( T <= 0                           ) :
       return mm
-    if                                  ( self . Amount  > T               ) :
-      self . Amount  = T
+    if                                  ( AMT > T                          ) :
+      AMT  = T
     if                                  ( self . StartId > T               ) :
       self . StartId = 0
     ##########################################################################
@@ -272,7 +273,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     MSG    = self . getMenuItem         ( "Total"                            )
     SSI    = self . getMenuItem         ( "SpinStartId"                      )
     SSA    = self . getMenuItem         ( "SpinAmount"                       )
-    MSG    = MSG . format               ( T                                  )
+    MSG    = MSG . format               ( AMT                                )
     ##########################################################################
     mm     . addAction                  ( 9999991 , MSG                      )
     ##########################################################################
@@ -286,7 +287,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     self   . SpinAmount  = SpinBox      ( None , self . PlanFunc             )
     self   . SpinAmount  . setPrefix    ( SSA                                )
     self   . SpinAmount  . setRange     ( 0 , self . Total                   )
-    self   . SpinAmount  . setValue     ( self . Amount                      )
+    self   . SpinAmount  . setValue     ( AMT                                )
     self   . SpinAmount  . setAlignment ( Qt . AlignRight                    )
     mm     . addWidget                  ( 9999993 , self . SpinAmount        )
     ##########################################################################

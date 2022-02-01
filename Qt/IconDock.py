@@ -510,10 +510,11 @@ class IconDock                      ( ListDock                             ) :
   def AmountIndexMenu                   ( self , mm                        ) :
     ##########################################################################
     T      = int                        ( self . Total                       )
+    AMT    = int                        ( self . Amount                      )
     if                                  ( T <= 0                           ) :
       return mm
-    if                                  ( self . Amount  > T               ) :
-      self . Amount  = T
+    if                                  ( AMT > T                          ) :
+      AMT  = T
     if                                  ( self . StartId > T               ) :
       self . StartId = 0
     ##########################################################################
@@ -534,7 +535,7 @@ class IconDock                      ( ListDock                             ) :
     self   . SpinAmount  = SpinBox      ( None , self . PlanFunc             )
     self   . SpinAmount  . setPrefix    ( SSA                                )
     self   . SpinAmount  . setRange     ( 0 , self . Total                   )
-    self   . SpinAmount  . setValue     ( self . Amount                      )
+    self   . SpinAmount  . setValue     ( AMT                                )
     self   . SpinAmount  . setAlignment ( Qt . AlignRight                    )
     mm     . addWidget                  ( 9999993 , self . SpinAmount        )
     ##########################################################################
