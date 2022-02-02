@@ -121,7 +121,8 @@ class Download    (                                                        ) :
   ############################################################################
   def Download               ( self                                        ) :
     ##########################################################################
-    self . Code = 0
+    self . Code     = 0
+    self . Success  = False
     ##########################################################################
     self . download . setopt ( pycurl . URL            , self . URL          )
     self . download . setopt ( pycurl . HEADERFUNCTION , self . GetHeader    )
