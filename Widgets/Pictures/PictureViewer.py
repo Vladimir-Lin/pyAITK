@@ -330,7 +330,7 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
   ############################################################################
   def FetchImage                ( self , Uuid                              ) :
     ##########################################################################
-    DB       = self . ConnectDB (                                            )
+    DB       = self . ConnectDB ( UsePure = True                             )
     if                          ( DB == None                               ) :
       return
     ##########################################################################
@@ -374,7 +374,7 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
       IMG     = QImage          (                                            )
       IMG     . loadFromData    ( BLOB , SUFFIX                              )
     else                                                                     :
-      INTL    = Image           ( blob = BLOB                                )
+      INTL    = Image           ( blob = bytes ( BLOB )                      )
       INTL    . format = "png"
       DAT     = BytesIO         (                                            )
       INTL    . save            ( file = DAT                                 )
@@ -388,7 +388,7 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
   ############################################################################
   def FetchGallery                   ( self , T1 , UUID , RELATED          ) :
     ##########################################################################
-    DB          = self . ConnectDB   (                                       )
+    DB          = self . ConnectDB   ( UsePure = True                        )
     if                               ( DB == None                          ) :
       return
     ##########################################################################
@@ -440,7 +440,7 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
         IMG     = QImage             (                                       )
         IMG     . loadFromData       ( BLOB , SUFFIX                         )
       else                                                                   :
-        INTL    = Image              ( blob = BLOB                           )
+        INTL    = Image              ( blob = bytes ( BLOB )                 )
         INTL    . format = "png"
         DAT     = BytesIO            (                                       )
         INTL    . save               ( file = DAT                            )
@@ -457,16 +457,16 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
     ##########################################################################
     return
   ############################################################################
-  def loadUuid          ( self , Uuid                                      ) :
+  def loadUuid    ( self , Uuid                                            ) :
     ##########################################################################
-    self . Go           ( self . FetchImage , ( Uuid , )                     )
+    self . Go     ( self . FetchImage , ( Uuid , )                           )
     ##########################################################################
     return
   ############################################################################
-  def loadGallery       ( self , T1 , UUID , RELATED                       ) :
+  def loadGallery ( self , T1 , UUID , RELATED                             ) :
     ##########################################################################
-    ARGS =              ( T1 , UUID , RELATED ,                              )
-    self . Go           ( self . FetchGallery , ARGS                         )
+    ARGS =        ( T1 , UUID , RELATED ,                                    )
+    self . Go     ( self . FetchGallery , ARGS                               )
     ##########################################################################
     return
 ##############################################################################
