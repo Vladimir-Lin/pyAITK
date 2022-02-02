@@ -33,8 +33,9 @@ class Download    (                                                        ) :
     self . Responses = { }
     self . isHTTPS   = False
     self . Success   = False
-    self . Data      = BytesIO ( )
-    self . download  = pycurl . Curl ( )
+    self . Data      = BytesIO       (                                       )
+    self . download  = pycurl . Curl (                                       )
+    self . Code      = 0
     return
   ############################################################################
   def setFilename ( self , filename                                        ) :
@@ -48,10 +49,12 @@ class Download    (                                                        ) :
       self . isHTTPS   = True
     return
   ############################################################################
-  def Execute                   ( self                                      ) :
-    try                                                                       :
-      self . download . perform (                                             )
-    except pycurl . error                                                     :
+  def Execute                   ( self                                     ) :
+    try                                                                      :
+      self . download . perform (                                            )
+      self . Code = self . curl . getinfo ( pycurl . HTTP_CODE               )
+    except pycurl . error                                                    :
+      self . Code = 400
       return False
     return True
   ############################################################################
@@ -103,6 +106,7 @@ class Download    (                                                        ) :
     self . download . setopt ( pycurl . HEADERFUNCTION , self . GetHeader    )
     self . download . setopt ( pycurl . WRITEDATA      , self . Data         )
     self . download . setopt ( pycurl . HTTPHEADER     , self . Headers      )
+    self . download . setopt ( pycurl . FOLLOWLOCATION , 1                   )
     self . CheckHttps        (                                               )
     self . Success  = self . Execute (                                       )
     self . download . close          (                                       )
