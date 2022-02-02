@@ -64,14 +64,11 @@ class Download    (                                                        ) :
     try                                                                      :
       ########################################################################
       self . download . perform (                                            )
-      print ( "perform" )
       self . Code = self . download . getinfo ( pycurl . HTTP_CODE           )
-      print ( self . Code )
       ########################################################################
     except pycurl . error                                                    :
       ########################################################################
       self . Code = 400
-      print ( self . Code )
       return False
     ##########################################################################
     return True
