@@ -61,6 +61,7 @@ class Download    (                                                        ) :
     try                                                                      :
       ########################################################################
       self . download . perform (                                            )
+      print ( "perform" )
       self . Code = self . download . getinfo ( pycurl . HTTP_CODE           )
       print ( self . Code )
       ########################################################################
