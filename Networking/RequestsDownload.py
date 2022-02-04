@@ -36,6 +36,7 @@ class RequestsDownload (                                                   ) :
     self . Success   = False
     self . Data      = BytesIO ( )
     self . Code      = 0
+    self . Timeout   = 30
     return
   ############################################################################
   def setFilename ( self , filename                                        ) :

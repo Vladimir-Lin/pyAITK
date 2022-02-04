@@ -27,6 +27,7 @@ class Download    (                                                        ) :
     pass
   ############################################################################
   def Clear       ( self                                                   ) :
+    ##########################################################################
     self . Headers   = [ 'User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:8.0) Gecko/20100101 Firefox/8.0' ]
     self . Filename  = ""
     self . URL       = ""
@@ -36,6 +37,8 @@ class Download    (                                                        ) :
     self . Data      = BytesIO       (                                       )
     self . download  = pycurl . Curl (                                       )
     self . Code      = 0
+    self . Timeout   = 30
+    ##########################################################################
     return
   ############################################################################
   def setFilename ( self , filename                                        ) :
@@ -116,19 +119,23 @@ class Download    (                                                        ) :
     ##########################################################################
     return JST
   ############################################################################
-  def Download               ( self                                        ) :
+  def Download                 ( self                                      ) :
     ##########################################################################
-    self . Code     = 0
-    self . Success  = False
+    self   . Code     = 0
+    self   . Success  = False
     ##########################################################################
-    self . download . setopt ( pycurl . URL            , self . URL          )
-    self . download . setopt ( pycurl . HEADERFUNCTION , self . GetHeader    )
-    self . download . setopt ( pycurl . WRITEDATA      , self . Data         )
-    self . download . setopt ( pycurl . HTTPHEADER     , self . Headers      )
-    self . download . setopt ( pycurl . FOLLOWLOCATION , 1                   )
-    self . CheckHttps        (                                               )
-    self . Success  = self . Execute (                                       )
-    self . download . close          (                                       )
+    self   . download . setopt ( pycurl . URL            , self . URL        )
+    self   . download . setopt ( pycurl . HEADERFUNCTION , self . GetHeader  )
+    self   . download . setopt ( pycurl . WRITEDATA      , self . Data       )
+    self   . download . setopt ( pycurl . HTTPHEADER     , self . Headers    )
+    self   . download . setopt ( pycurl . FOLLOWLOCATION , 1                 )
+    ##########################################################################
+    if                         ( self . Timeout > 0                        ) :
+      self . download . setopt ( pycurl . CONNECTTIMEOUT , self . Timeout    )
+    ##########################################################################
+    self   . CheckHttps        (                                             )
+    self   . Success  = self . Execute (                                     )
+    self   . download . close  (                                             )
     ##########################################################################
     return self . Success
-  ############################################################################
+##############################################################################
