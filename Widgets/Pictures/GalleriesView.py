@@ -78,6 +78,7 @@ class GalleriesView                ( IconDock                              ) :
     self . StartId      =  0
     self . Amount       = 60
     self . SortOrder    = "asc"
+    self . SortByName   = False
     ##########################################################################
     self . Grouping     = "Original"
     self . OldGrouping  = "Original"
@@ -166,12 +167,31 @@ class GalleriesView                ( IconDock                              ) :
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables     [ "Relation"                                  ]
+    NAMTAB = self . Tables     [ "Names"                                     ]
     ##########################################################################
-    if                         ( self . Grouping == "Subordination"        ) :
-      OPTS = f"order by `position` {ORDER}"
-      return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
-    if                         ( self . Grouping == "Reverse"              ) :
+    if                         ( self . isSubordination ( )                ) :
+      ########################################################################
+      if                       ( self . SortByName                         ) :
+        ######################################################################
+        WS = self . Relation . FirstItem (                                   )
+        QS = f"select `second` from {RELTAB} {WS}"
+        QN = f"""select `uuid` from {NAMTAB}
+                 where ( `uuid` in  ( {QS} ) )
+                 group by `uuid`"""
+        QQ = f"""select `uuid` from {NAMTAB}
+                 where ( `uuid` in ( {QN} ) )
+                 order by `name` {ORDER} {LMTS} ;"""
+        ######################################################################
+        return DB . ObtainUuids ( QQ                                         )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        OPTS = f"order by `position` {ORDER}"
+        return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS   )
+      ########################################################################
+    if                         ( self . isReverse       ( )                ) :
+      ########################################################################
       OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
       return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
     ##########################################################################
@@ -567,6 +587,49 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def PropertiesMenu           ( self , mm                                 ) :
+    ##########################################################################
+    MSG   = self . getMenuItem ( "Properties"                                )
+    COL   = mm   . addMenu     ( MSG                                         )
+    ##########################################################################
+    if                         ( self . isSubordination ( )                ) :
+      ########################################################################
+      msg = self . getMenuItem ( "AssignTables"                              )
+      mm  . addActionFromMenu  ( COL , 1301 , msg                            )
+    ##########################################################################
+    msg   = self . getMenuItem ( "SortByName"                                )
+    mm    . addActionFromMenu  ( COL , 1302 , msg , True , self . SortByName )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunPropertiesMenu ( self , at                                        ) :
+    ##########################################################################
+    if                  ( at == 1301                                       ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      UUID  = self . Relation  . get   ( "first"                             )
+      TYPE  = self . Relation  . get   ( "t1"                                )
+      TYPE  = int                      ( TYPE                                )
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         "Tables"                          , \
+                                         self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                  ( at == 1302                                       ) :
+      ########################################################################
+      if                ( self . SortByName                                ) :
+        self . SortByName = False
+      else                                                                   :
+        self . SortByName = True
+      ########################################################################
+      self   . clear    (                                                    )
+      self   . startup  (                                                    )
+    ##########################################################################
+    return False
+  ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
     if                              ( not self . isPrepared ( )            ) :
@@ -606,17 +669,13 @@ class GalleriesView                ( IconDock                              ) :
       msg  = self . getMenuItem     ( "ViewFullPictures"                     )
       mm   . addAction              ( 1202 , msg                             )
     ##########################################################################
-    if                              ( self . isSubordination ( )           ) :
-      ########################################################################
-      msg  = self . getMenuItem     ( "AssignTables"                         )
-      mm   . addAction              ( 1301 , msg                             )
-    ##########################################################################
     mm     . addSeparator           (                                        )
     if                              ( atItem not in [ False , None ]       ) :
       if                            ( self . EditAllNames != None          ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
         mm . addSeparator           (                                        )
     ##########################################################################
+    mm     = self . PropertiesMenu  ( mm                                     )
     mm     = self . SortingMenu     ( mm                                     )
     mm     = self . LocalityMenu    ( mm                                     )
     self   . DockingMenu            ( mm                                     )
@@ -640,6 +699,9 @@ class GalleriesView                ( IconDock                              ) :
       self . clear                  (                                        )
       self . startup                (                                        )
       ########################################################################
+      return True
+    ##########################################################################
+    if                              ( self . RunPropertiesMenu  ( at )     ) :
       return True
     ##########################################################################
     if                              ( self . RunSortingMenu     ( at )     ) :
@@ -681,20 +743,6 @@ class GalleriesView                ( IconDock                              ) :
       xsid = str                    ( uuid                                   )
       ########################################################################
       self . ViewFullGallery . emit ( text , 64 , xsid , 1 , icon            )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                  ( at == 1301                                       ) :
-      ########################################################################
-      TITLE = self . windowTitle       (                                     )
-      UUID  = self . Relation  . get   ( "first"                             )
-      TYPE  = self . Relation  . get   ( "t1"                                )
-      TYPE  = int                      ( TYPE                                )
-      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
-                                         str ( UUID  )                     , \
-                                         TYPE                              , \
-                                         "Tables"                          , \
-                                         self . Tables                       )
       ########################################################################
       return True
     ##########################################################################

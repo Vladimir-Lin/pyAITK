@@ -66,21 +66,21 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . Total     = 0
-    self . StartId   = 0
-    self . Amount    = 60
-    self . SortOrder = "asc"
-    self . UsingName = False
+    self . Total      = 0
+    self . StartId    = 0
+    self . Amount     = 60
+    self . SortOrder  = "asc"
+    self . UsingName  = False
     ##########################################################################
-    self . Grouping  = "Original"
-    ## self . Grouping  = "Subordination"
-    ## self . Grouping  = "Reverse"
+    self . Grouping   = "Original"
+    ## self . Grouping   = "Subordination"
+    ## self . Grouping   = "Reverse"
     ##########################################################################
-    self . Property  =             {                                         }
-    self . Naming    = ""
-    ## self . Naming    = "Size"
-    ## self . Naming    = "Name"
-    ## self . Naming    = "Uuid"
+    self . Property   =             {                                        }
+    self . Naming     = ""
+    ## self . Naming     = "Size"
+    ## self . Naming     = "Name"
+    ## self . Naming     = "Uuid"
     ##########################################################################
     self . Relation  = Relation    (                                         )
     self . Relation  . setT2       ( "Picture"                               )
