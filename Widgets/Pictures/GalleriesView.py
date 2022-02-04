@@ -174,14 +174,14 @@ class GalleriesView                ( IconDock                              ) :
       ########################################################################
       if                       ( self . SortByName                         ) :
         ######################################################################
+        LC = self . getLocality          (                                   )
         WS = self . Relation . FirstItem (                                   )
         QS = f"select `second` from {RELTAB} {WS}"
-        QN = f"""select `uuid` from {NAMTAB}
-                 where ( `uuid` in  ( {QS} ) )
-                 group by `uuid`"""
-        QQ = f"""select `uuid` from {NAMTAB}
-                 where ( `uuid` in ( {QN} ) )
+        QQ = f"""select distinct(`uuid`) from {NAMTAB}
+                 where ( `uuid` in ( {QS} ) )
+                   and ( `locality` = {LC} )
                  order by `name` {ORDER} {LMTS} ;"""
+        QQ = " " . join         ( QQ . split ( )                             )
         ######################################################################
         return DB . ObtainUuids ( QQ                                         )
         ######################################################################
