@@ -55,6 +55,7 @@ from   AITK . Database  . Columns        import Columns
 from   AITK . Documents . Name           import Name           as NameItem
 from   AITK . Documents . Name           import Naming         as Naming
 from   AITK . Documents . ParameterQuery import ParameterQuery as ParameterQuery
+from   AITK . Documents . Variables      import Variables      as VariableItem
 ##############################################################################
 from   AITK . Calendars . StarDate       import StarDate
 ##############################################################################
@@ -1569,6 +1570,53 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     return LEFTs
   ############################################################################
+  def ObtainsVariantTables   ( self                                        , \
+                               DB                                          , \
+                               VARTAB                                      , \
+                               UUID                                        , \
+                               TYPE                                        , \
+                               NAME                                        , \
+                               JSON                                        ) :
+    ##########################################################################
+    VARI   = VariableItem    (                                               )
+    VARI   . Uuid = UUID
+    VARI   . Type = TYPE
+    VARI   . Name = NAME
+    ##########################################################################
+    BODY   = VARI . GetValue ( DB , VARTAB                                   )
+    if                       ( BODY in [ False , None ]                    ) :
+      return JSON
+    ##########################################################################
+    try                                                                      :
+      BODY = BODY . decode   ( "utf-8"                                       )
+    except                                                                   :
+      pass
+    ##########################################################################
+    if                       ( len ( BODY ) <= 0                           ) :
+      return JSON
+    ##########################################################################
+    try                                                                      :
+      J = json . loads       ( BODY                                          )
+    except                                                                   :
+      return JSON
+    ##########################################################################
+    return J
+  ############################################################################
+  def ObtainsOwnerVariantTables        ( self                              , \
+                                         DB                                , \
+                                         UUID                              , \
+                                         TYPE                              , \
+                                         NAME                              , \
+                                         JSON                              ) :
+    ##########################################################################
+    VARTAB = self . Tables             [ "Variables"                         ]
+    ##########################################################################
+    return self . ObtainsVariantTables ( DB                                , \
+                                         VARTAB                            , \
+                                         UUID                              , \
+                                         TYPE                              , \
+                                         NAME                              , \
+                                         JSON                                )
   ############################################################################
 ##############################################################################
 

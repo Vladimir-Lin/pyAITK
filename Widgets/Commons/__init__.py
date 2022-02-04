@@ -8,6 +8,7 @@ from . ProgressManager       import ProgressManager       as ProgressManager
 from . ProgressIndicator     import ProgressIndicator     as ProgressIndicator
 from . SmartNote             import SmartNote             as SmartNote
 from . LogHistory            import LogHistory            as LogHistory
+from . VariantTables         import VariantTables         as VariantTables
 from . ClipboardView         import ClipboardView         as ClipboardView
 from . TimeZoneListings      import TimeZoneListings      as TimeZoneListings
 from . VoiceTracker          import VoiceTracker          as VoiceTracker
@@ -20,6 +21,7 @@ __all__ = [ "NamesEditor"                                                  , \
             "ProgressIndicator"                                            , \
             "SmartNote"                                                    , \
             "LogHistory"                                                   , \
+            "VariantTables"                                                , \
             "ClipboardView"                                                , \
             "TimeZoneListings"                                             , \
             "VoiceTracker"                                                   ]

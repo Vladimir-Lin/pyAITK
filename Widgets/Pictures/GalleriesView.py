@@ -68,6 +68,7 @@ class GalleriesView                ( IconDock                              ) :
   ############################################################################
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
   ViewFullGallery     = pyqtSignal ( str , int , str , int , QIcon           )
+  OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -192,6 +193,15 @@ class GalleriesView                ( IconDock                              ) :
       return
     ##########################################################################
     if                                ( self . isSubordination ( )         ) :
+      ########################################################################
+      UUID   = self . Relation . get  ( "first"                              )
+      TYPE   = self . Relation . get  ( "t1"                                 )
+      self   . Tables = self . ObtainsOwnerVariantTables                   ( \
+                                          DB                               , \
+                                          str ( UUID )                     , \
+                                          int ( TYPE )                     , \
+                                          "Tables"                         , \
+                                          self . Tables                      )
       ########################################################################
       self . Total = self . FetchGroupMembersCount ( DB                      )
       ########################################################################
@@ -596,6 +606,11 @@ class GalleriesView                ( IconDock                              ) :
       msg  = self . getMenuItem     ( "ViewFullPictures"                     )
       mm   . addAction              ( 1202 , msg                             )
     ##########################################################################
+    if                              ( self . isSubordination ( )           ) :
+      ########################################################################
+      msg  = self . getMenuItem     ( "AssignTables"                         )
+      mm   . addAction              ( 1301 , msg                             )
+    ##########################################################################
     mm     . addSeparator           (                                        )
     if                              ( atItem not in [ False , None ]       ) :
       if                            ( self . EditAllNames != None          ) :
@@ -666,6 +681,20 @@ class GalleriesView                ( IconDock                              ) :
       xsid = str                    ( uuid                                   )
       ########################################################################
       self . ViewFullGallery . emit ( text , 64 , xsid , 1 , icon            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                  ( at == 1301                                       ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      UUID  = self . Relation  . get   ( "first"                             )
+      TYPE  = self . Relation  . get   ( "t1"                                )
+      TYPE  = int                      ( TYPE                                )
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         "Tables"                          , \
+                                         self . Tables                       )
       ########################################################################
       return True
     ##########################################################################

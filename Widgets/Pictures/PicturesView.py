@@ -55,11 +55,12 @@ from   AITK  . Calendars  . StarDate  import StarDate    as StarDate
 from   AITK  . Calendars  . Periode   import Periode     as Periode
 from   AITK  . Pictures   . Gallery   import Gallery     as Gallery
 ##############################################################################
-class PicturesView                ( IconDock                               ) :
+class PicturesView                 ( IconDock                              ) :
   ############################################################################
-  HavingMenu  = 1371434312
+  HavingMenu        = 1371434312
   ############################################################################
-  ShowPicture = pyqtSignal         ( str                                     )
+  ShowPicture       = pyqtSignal   ( str                                     )
+  OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -177,6 +178,15 @@ class PicturesView                ( IconDock                               ) :
       return
     ##########################################################################
     if                                ( self . Grouping == "Subordination" ) :
+      ########################################################################
+      UUID   = self . Relation . get  ( "first"                              )
+      TYPE   = self . Relation . get  ( "t1"                                 )
+      self   . Tables = self . ObtainsOwnerVariantTables                   ( \
+                                          DB                               , \
+                                          str ( UUID )                     , \
+                                          int ( TYPE )                     , \
+                                          "Tables"                         , \
+                                          self . Tables                      )
       ########################################################################
       self . Total = self . FetchGroupMembersCount ( DB                      )
       ########################################################################
@@ -502,28 +512,47 @@ class PicturesView                ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def PropertiesMenu         ( self , mm                                   ) :
+  def PropertiesMenu           ( self , mm                                 ) :
     ##########################################################################
-    MSG = self . getMenuItem ( "Properties"                                  )
-    COL = mm   . addMenu     ( MSG                                           )
+    MSG   = self . getMenuItem ( "Properties"                                )
+    COL   = mm   . addMenu     ( MSG                                         )
     ##########################################################################
-    msg = self . getMenuItem ( "DisplayNone"                                 )
-    mm  . addActionFromMenu  ( COL , 1301 , msg                              )
+    if                         ( self . isSubordination ( )                ) :
+      ########################################################################
+      msg = self . getMenuItem ( "AssignTables"                              )
+      mm  . addActionFromMenu  ( COL , 1301 , msg                            )
     ##########################################################################
-    msg = self . getMenuItem ( "DisplaySize"                                 )
-    mm  . addActionFromMenu  ( COL , 1302 , msg                              )
+    msg   = self . getMenuItem ( "DisplayNone"                               )
+    mm    . addActionFromMenu  ( COL , 1302 , msg                            )
     ##########################################################################
-    msg = self . getMenuItem ( "DisplayName"                                 )
-    mm  . addActionFromMenu  ( COL , 1303 , msg                              )
+    msg   = self . getMenuItem ( "DisplaySize"                               )
+    mm    . addActionFromMenu  ( COL , 1303 , msg                            )
     ##########################################################################
-    msg = self . getMenuItem ( "DisplayUuid"                                 )
-    mm  . addActionFromMenu  ( COL , 1304 , msg                              )
+    msg   = self . getMenuItem ( "DisplayName"                               )
+    mm    . addActionFromMenu  ( COL , 1304 , msg                            )
+    ##########################################################################
+    msg   = self . getMenuItem ( "DisplayUuid"                               )
+    mm    . addActionFromMenu  ( COL , 1305 , msg                            )
     ##########################################################################
     return mm
   ############################################################################
   def RunPropertiesMenu ( self , at                                        ) :
     ##########################################################################
     if                  ( at == 1301                                       ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      UUID  = self . Relation  . get   ( "first"                             )
+      TYPE  = self . Relation  . get   ( "t1"                                )
+      TYPE  = int                      ( TYPE                                )
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         "Tables"                          , \
+                                         self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                  ( at == 1302                                       ) :
       ########################################################################
       self . UsingName = False
       self . Naming    = ""
@@ -533,7 +562,7 @@ class PicturesView                ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
-    if                  ( at == 1302                                       ) :
+    if                  ( at == 1303                                       ) :
       ########################################################################
       self . UsingName = True
       self . Naming    = "Size"
@@ -543,7 +572,7 @@ class PicturesView                ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
-    if                  ( at == 1303                                       ) :
+    if                  ( at == 1304                                       ) :
       ########################################################################
       self . UsingName = True
       self . Naming    = "Name"
@@ -553,7 +582,7 @@ class PicturesView                ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
-    if                  ( at == 1304                                       ) :
+    if                  ( at == 1305                                       ) :
       ########################################################################
       self . UsingName = True
       self . Naming    = "Uuid"
