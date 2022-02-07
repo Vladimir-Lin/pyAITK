@@ -43,15 +43,17 @@ from   PyQt5 . QtWidgets              import QGraphicsView
 from   AITK  . Qt . VirtualGui        import VirtualGui as VirtualGui
 from   AITK  . Qt . AttachDock        import AttachDock as AttachDock
 ##############################################################################
-from              . VcfFont           import VcfFont    as VcfFont
-from              . VcfDisplay        import VcfDisplay as VcfDisplay
-from              . VcfOptions        import VcfOptions as VcfOptions
-from              . VcfItem           import VcfItem    as VcfItem
+from         . VcfFont                import VcfFont    as VcfFont
+from         . VcfDisplay             import VcfDisplay as VcfDisplay
+from         . VcfOptions             import VcfOptions as VcfOptions
+from         . VcfManager             import VcfManager as VcfManager
+from         . VcfItem                import VcfItem    as VcfItem
 ##############################################################################
 class VcfWidget           ( QGraphicsView                                  , \
                             VirtualGui                                     , \
                             AttachDock                                     , \
-                            VcfDisplay                                     ) :
+                            VcfDisplay                                     , \
+                            VcfManager                                     ) :
   ############################################################################
   attachNone = pyqtSignal ( QWidget                                          )
   attachDock = pyqtSignal ( QWidget , str , int , int                        )
@@ -66,6 +68,7 @@ class VcfWidget           ( QGraphicsView                                  , \
     self . setPlanFunction                 ( plan                            )
     self . InitializeDock                  ( plan                            )
     self . InitializeDisplay               (                                 )
+    self . InitializeManager               (                                 )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea

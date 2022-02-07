@@ -34,7 +34,9 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
-class VcfRectangle    (                                                    ) :
+from         . VcfItem                import VcfItem    as VcfItem
+##############################################################################
+class VcfRectangle    ( VcfItem                                            ) :
   ############################################################################
   def __init__        ( self                                               ) :
     ##########################################################################

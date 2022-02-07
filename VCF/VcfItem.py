@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## VcfFont
+## VcfItem
 ##############################################################################
 import os
 import sys
@@ -33,11 +33,23 @@ from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
+from   PyQt5 . QtWidgets              import QGraphicsItem
 ##############################################################################
-class VcfItem         (                                                    ) :
+from   AITK  . Qt . AbstractGui       import AbstractGui as AbstractGui
+##############################################################################
+class VcfItem                   ( QObject                                  , \
+                                  QGraphicsItem                            , \
+                                  AbstractGui                              ) :
   ############################################################################
-  def __init__        ( self                                               ) :
+  def __init__                  ( self                                     , \
+                                  parent = None                            , \
+                                  item   = None                            , \
+                                  plan   = None                            ) :
     ##########################################################################
+    super ( ) . __init__        ( parent                                     )
+    self      . setParentItem   ( item                                       )
+    self      . Initialize      ( self                                       )
+    self      . setPlanFunction ( plan                                       )
     ##########################################################################
     return
   ############################################################################

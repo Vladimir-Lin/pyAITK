@@ -59,7 +59,9 @@ class VcfDisplay             (                                             ) :
     self . Options       = VcfOptions     (                                  )
     self . Margins       = QMargins       ( 0 , 0 , 3 , 3                    )
     self . Transform     = QTransform     (                                  )
+    self . Inversion     = QTransform     (                                  )
     self . Transform     . reset          (                                  )
+    self . Inversion     . reset          (                                  )
     self . Origin        = QPointF        ( 0 , 0                            )
     self . View          = QRectF         (                                  )
     self . MonitorFactor = 1.0
@@ -150,6 +152,7 @@ class VcfDisplay             (                                             ) :
     sy     = sy * self . ZoomFactor
     self   . Transform . scale           ( sx , sy                           )
     I , OK = self . Transform . inverted (                                   )
+    self   . Inversion = I
     Z      = QPointF                     ( S . width ( ) , S . height ( )    )
     Z      = I . map                     ( Z                                 )
     ##########################################################################
