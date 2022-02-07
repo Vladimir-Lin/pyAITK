@@ -44,6 +44,7 @@ from   AITK  . Qt . AttachDock        import AttachDock as AttachDock
 ##############################################################################
 from              . VcfFont           import VcfFont    as VcfFont
 from              . VcfDisplay        import VcfDisplay as VcfDisplay
+from              . VcfOptions        import VcfOptions as VcfOptions
 from              . VcfItem           import VcfItem    as VcfItem
 ##############################################################################
 class VcfWidget           ( QGraphicsView                                  , \
@@ -63,6 +64,7 @@ class VcfWidget           ( QGraphicsView                                  , \
     self . Initialize                      ( self                            )
     self . setPlanFunction                 ( plan                            )
     self . InitializeDock                  ( plan                            )
+    self . InitializeDisplay               (                                 )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -73,11 +75,33 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     self . setAttribute ( Qt . WA_InputMethodEnabled                         )
     self . VoiceJSON =  {                                                    }
+    self . setDefaultZoom        (                                           )
+    self . setScene              ( self . Scene                              )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
+  ############################################################################
+  def resizeEvent           ( self , event                                 ) :
+    ##########################################################################
+    if                      ( self . Relocation ( )                        ) :
+      event . accept        (                                                )
+      return
+    ##########################################################################
+    super ( ) . resizeEvent ( event                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def showEvent           ( self , event                                   ) :
+    ##########################################################################
+    super ( ) . showEvent ( event                                            )
+    self . Relocation     (                                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def Relocation                    ( self                                 ) :
+    return self . windowSizeChanged ( self . width  ( ) , self . height ( )  )
   ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
@@ -170,16 +194,38 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     return False
   ############################################################################
-  def startup ( self                                                       ) :
+  def WindowSizeView             ( self , size                             ) :
     ##########################################################################
-    r     = self . sceneRect ( )
-    self  . setScene ( self . Scene )
-    self  . Scene . setSceneRect ( r )
+    self . View = self . asPaper ( self . available ( size )                 )
+    self . Scene . setSceneRect  ( self . View                               )
+    self . setTransform          ( self . Transform                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def PerfectView         ( self                                           ) :
+    self . WindowSizeView ( self . size ( )                                  )
+    return
+  ############################################################################
+  def windowSizeChanged   ( self , width , height                          ) :
+    ##########################################################################
+    if                    ( not self . isPrepared ( )                      ) :
+      return False
+    ##########################################################################
+    self . WindowSizeView ( QSizeF ( width , height )                        )
+    ##########################################################################
+    return True
+  ############################################################################
+  def startup          ( self                                              ) :
+    ##########################################################################
+    self . PerfectView (                                                     )
+    PUID  = 3800400000000000042
+    ## print(PUID)
     pen   = QPen ( QColor(255,0,0) )
     cm    = QRectF ( 0 , 0 , 5.0 , 5.0 )
-    rect  = self . Options . Region ( cm )
-    print(rect)
-    ritem = self . Scene . addRect ( rect , pen )
+    pixels = self . toPaper ( cm )
+    rect   = QRectF ( 0 , 0 , pixels . width ( ) , pixels . height ( ) )
+    ritem = self . Scene . addRect ( rect , pen                              )
+    self   . setPrepared           ( True                                    )
     ##########################################################################
     return
 ##############################################################################

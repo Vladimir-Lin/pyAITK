@@ -22,6 +22,8 @@ from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QRect
 from   PyQt5 . QtCore                 import QRectF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
 from   PyQt5 . QtCore                 import QMargins
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
@@ -38,23 +40,19 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsScene
+from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
 from         . VcfOptions             import VcfOptions
 ##############################################################################
 class VcfDisplay             (                                             ) :
   ############################################################################
   def __init__               ( self                                        ) :
-    ##########################################################################
-    self . InitializeDisplay (                                               )
-    ##########################################################################
     return
   ############################################################################
-  def __del__         ( self                                               ) :
-    ##########################################################################
-    ##########################################################################
+  def __del__                ( self                                        ) :
     return
   ############################################################################
-  def InitializeDisplay       ( self                                       ) :
+  def InitializeDisplay      ( self                                        ) :
     ##########################################################################
     self . Scene         = QGraphicsScene (                                  )
     self . Zooms         =                [                                  ]
@@ -64,13 +62,39 @@ class VcfDisplay             (                                             ) :
     self . Transform     . reset          (                                  )
     self . Origin        = QPointF        ( 0 , 0                            )
     self . View          = QRectF         (                                  )
-    ## Screen           screen
-    ## self . screen        = False
     self . MonitorFactor = 1.0
     self . ZoomFactor    = 1.0
-    self . DPI           = 300
+    self . DPI           = 300.0
+    self . DPIX          = self . Options . DPIX
+    self . DPIY          = self . Options . DPIY
     ##########################################################################
     return
+  ############################################################################
+  def setOptions ( self , options                                          ) :
+    ##########################################################################
+    self . Options = options
+    self . DPIX    = self . Options . DPIX
+    self . DPIY    = self . Options . DPIY
+    ##########################################################################
+    return
+  ############################################################################
+  def cmToDpi    ( self , cm                                               ) :
+    return float ( cm ) * self . DPI  * 100 / 254.0
+  ############################################################################
+  def dpiToCm    ( self , pixel                                            ) :
+    return float ( pixel ) * 254.0 / ( self . DPI  * 100 )
+  ############################################################################
+  def cmToDpiX   ( self , cm                                               ) :
+    return float ( cm ) * self . DPIX * 100 / 254.0
+  ############################################################################
+  def dpiToCmX   ( self , pixel                                            ) :
+    return float ( pixel ) * 254.0 / ( self . DPIX * 100 )
+  ############################################################################
+  def cmToDpiY   ( self , cm                                               ) :
+    return float ( cm ) * self . DPIY * 100 / 254.0
+  ############################################################################
+  def dpiToCmY   ( self , pixel                                            ) :
+    return float ( pixel ) * 254.0 / ( self . DPIY * 100 )
   ############################################################################
   def Enlarge ( self                                                       ) :
     ##########################################################################
@@ -84,22 +108,18 @@ class VcfDisplay             (                                             ) :
     ##########################################################################
     return
   ############################################################################
-  def ZoomSpin ( self , parent , widget , method                           ) :
+  def ZoomSpin                  ( self , parent , func                     ) :
     ##########################################################################
-    """
-  QDoubleSpinBox * ds = new QDoubleSpinBox(parent) ;
-  ds->setMinimum    (0.01000       )               ;
-  ds->setMaximum    (1000000       )               ;
-  ds->setValue      (ZoomFactor*100)               ;
-  ds->setSingleStep (1.00          )               ;
-  ds->setSuffix     ("%")                          ;
-  ds->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-  QObject::connect(ds,SIGNAL(valueChanged(double)) ,
-                   widget,method                )  ;
-  return ds                                        ;
-    """
+    ds = QDoubleSpinBox         (        parent                              )
+    ds . setMinimum             (       0.01                                 )
+    ds . setMaximum             ( 1000000.0                                  )
+    ds . setValue               ( self . ZoomFactor * 100.0                  )
+    ds . setSingleStep          ( 1.0                                        )
+    ds . setSuffix              ( "%"                                        )
+    ds . setAlignment           ( Qt . AlignRight | Qt . AlignVCenter        )
+    ds . valueChanged . connect ( func                                       )
     ##########################################################################
-    return
+    return ds
   ############################################################################
   def ZoomSpinChanged         ( self , value                               ) :
     ##########################################################################
@@ -107,112 +127,100 @@ class VcfDisplay             (                                             ) :
     ##########################################################################
     return
   ############################################################################
-  def available ( self , size                                              ) :
+  def available   ( self , size                                            ) :
     ##########################################################################
-    """
-  return QSize                                                        (
-           size . width  () - Margins . left () - Margins . right  () ,
-           size . height () - Margins . top  () - Margins . bottom ()
-         )                                                            ;
-    """
+    SW = self . Margins . left ( ) + self . Margins . right  ( )
+    SH = self . Margins . top  ( ) + self . Margins . bottom ( )
     ##########################################################################
-    return
+    return QSizeF ( size . width  ( ) - SW , size . height ( ) - SH          )
   ############################################################################
-  def centimeter ( self , size                                             ) :
+  def centimeter        ( self , size                                      ) :
     ##########################################################################
-    """
-  double w = size.width () ;
-  double h = size.height() ;
-  w *= screen.WidthLength  ;
-  w /= screen.WidthPixels  ;
-  w /= 10                  ;
-  h *= screen.HeightLength ;
-  h /= screen.HeightPixels ;
-  h /= 10                  ;
-  return QSizeF(w,h)       ;
-    """
+    w = self . dpiToCmX ( size . width  ( )                                  )
+    h = self . dpiToCmY ( size . height ( )                                  )
     ##########################################################################
-    return
+    return QSizeF       ( w , h                                              )
   ############################################################################
-  def toPaper ( self , cm                                             ) :
+  def toPaper          ( self , cm                                         ) :
     ##########################################################################
-    """
-  double x = cm.width () ; x *= DPI ; x *= 100 ; x /= 254 ;
-  double y = cm.height() ; y *= DPI ; y *= 100 ; y /= 254 ;
-  return QSizeF(x,y)                                      ;
-    """
-    ##########################################################################
-    return
+    x = self . cmToDpi ( cm . width  ( )                                     )
+    y = self . cmToDpi ( cm . height ( )                                     )
+    return QSizeF      ( x , y                                               )
   ############################################################################
-  def asPaper ( self , size                                             ) :
+  def asPaper                            ( self , size                     ) :
     ##########################################################################
-    """
-  QSizeF S = size                      ;
-  QSizeF P = toPaper(centimeter(size)) ;
-  Transform.reset ()                   ;
-  double sx = S.width  () / P.width () ;
-  double sy = S.height () / P.height() ;
-  sx *= ZoomFactor                     ;
-  sy *= ZoomFactor                     ;
-  Transform.scale (sx,sy)              ;
-  QTransform I = Transform.inverted()  ;
-  QPointF Z(S.width(),S.height())      ;
-  Z = I.map(Z)                         ;
-  return QRectF(0,0,Z.x(),Z.y())       ;
-    """
+    S      = size
+    C      = self . centimeter           ( size                              )
+    P      = self . toPaper              ( C                                 )
+    self   . Transform . reset           (                                   )
+    sx     = S . width  ( ) / P . width  (                                   )
+    sy     = S . height ( ) / P . height (                                   )
+    sx     = sx * self . ZoomFactor
+    sy     = sy * self . ZoomFactor
+    self   . Transform . scale           ( sx , sy                           )
+    I , OK = self . Transform . inverted (                                   )
+    Z      = QPointF                     ( S . width ( ) , S . height ( )    )
+    Z      = I . map                     ( Z                                 )
     ##########################################################################
-    return
+    return QRectF                        ( 0 , 0 , Z . x ( ) , Z . y ( )     )
   ############################################################################
-  def Percentage ( self                                                ) :
-    ##########################################################################
-    """
-  char P[1024]                        ;
-  sprintf(P,"%4.2f",(ZoomFactor*100)) ;
-  return QString("%1%").arg(P)        ;
-    """
-    ##########################################################################
-    return
+  def Percentage              ( self                                       ) :
+    return "{:4.2f}" . format ( self . ZoomFactor * 100.0                    )
   ############################################################################
-  def FactorLevel ( self , factor , enlarge                                ) :
+  def FactorLevel            ( self , Factor , Enlarge                     ) :
     ##########################################################################
-    """
-  qreal f = factor;
-  int   F = (int)(f * 100);
-  bool  B = false;
-  for (int i=1;!B && i<Zooms.count();i++) {
-    if (Zooms[i-1]==F) {
-      if (enlarge) {
-        F = Zooms[i];
-        B = true;
-      } else {
-        if (i>1) F = Zooms[i-2]; else F = Zooms[0];
-        B = true;
-      };
-    } else
-    if (Zooms[i]==F) {
-      if (enlarge) {
-        F = Zooms[i+1];
-        B = true;
-      } else {
-        if (i>0) F = Zooms[i-1]; else F = Zooms[0];
-        B = true;
-      };
-    } else
-    if (Zooms[i-1]<F && F<Zooms[i]) {
-      if (enlarge) {
-        F = Zooms[i+1];
-        B = true;
-      } else {
-        if (i>0) F = Zooms[i-1]; else F = Zooms[0];
-        B = true;
-      };
-    };
-  };
-  f = F; f /= 100;
-  return f;
-    """
+    F         = int          ( Factor * 100.0                                )
+    B         = False
+    TOTAL     = len          ( self . Zooms                                  )
+    AT        = 1
     ##########################################################################
-    return
+    while                    ( AT < TOTAL                                  ) :
+      ########################################################################
+      if                     ( self . Zooms [ AT - 1 ] == F                ) :
+        ######################################################################
+        B     = True
+        ######################################################################
+        if                   ( Enlarge                                     ) :
+          F   = self . Zooms [ AT                                            ]
+        else                                                                 :
+          ####################################################################
+          if                 ( AT    > 1                                   ) :
+            F = self . Zooms [ AT    - 2                                     ]
+          else                                                               :
+            F = self . Zooms [ 0                                             ]
+        ######################################################################
+      elif                   ( self . Zooms [ AT     ] == F                ) :
+        ######################################################################
+        B     = True
+        ######################################################################
+        if                   ( Enlarge                                     ) :
+          if                 ( ( AT + 1 ) < TOTAL                          ) :
+            F = self . Zooms [ AT    + 1                                     ]
+          else                                                               :
+            F = self . Zooms [ TOTAL - 1                                     ]
+        else                                                                 :
+          ####################################################################
+          if                 ( AT    > 0                                   ) :
+            F = self . Zooms [ AT    - 1                                     ]
+          else                                                               :
+            F = self . Zooms [ 0                                             ]
+        ######################################################################
+      elif ( self . Zooms [ AT - 1 ] < F ) and ( F < self . Zooms [ AT ] )   :
+        ######################################################################
+        B     = True
+        ######################################################################
+        if                   ( Enlarge                                     ) :
+          F   = self . Zooms [ AT    + 1                                     ]
+        else                                                                 :
+          ####################################################################
+          if                 ( AT    > 0                                   ) :
+            F = self . Zooms [ AT    - 1                                     ]
+          else                                                               :
+            F = self . Zooms [ 0                                             ]
+      ########################################################################
+      AT = AT + 1
+    ##########################################################################
+    return float ( float ( F ) / 100.0 )
   ############################################################################
   def setDefaultZoom ( self                                                ) :
     ##########################################################################
@@ -237,175 +245,3 @@ class VcfDisplay             (                                             ) :
     ##########################################################################
     return
 ##############################################################################
-"""
-class Q_COMPONENTS_EXPORT VcfDisplay
-{
-  public:
-
-    CUIDs Zooms ;
-
-    explicit VcfDisplay           (void) ;
-    virtual ~VcfDisplay           (void) ;
-
-    void     Enlarge              (void);
-    void     Shrink               (void);
-
-    QDoubleSpinBox * ZoomSpin     (QWidget * parent,QWidget * widget,const char * method);
-    void ZoomSpinChanged          (double value);
-
-  protected:
-
-    QGraphicsScene * Scene         ;
-    VcfOptions       Options       ;
-    QMargins         Margins       ;
-    QTransform       Transform     ;
-    QPointF          Origin        ;
-    QRectF           View          ;
-    Screen           screen        ;
-    double           MonitorFactor ;
-    double           ZoomFactor    ;
-    int              DPI           ;
-
-    QSize          available      (QSize  size) ;
-    QSizeF         centimeter     (QSize  size) ;
-    QSizeF         toPaper        (QSizeF cm  ) ;
-    QRectF         asPaper        (QSize  size) ;
-
-    QString        Percentage     (void);
-
-    qreal          FactorLevel    (qreal factor,bool enlarge);
-
-    void           setDefaultZoom (void) ;
-
-  private:
-
-};
-
-N::VcfDisplay:: VcfDisplay    (void        )
-              : Margins       (0,0,3,3     )
-              , DPI           (300         )
-              , ZoomFactor    (1.00        )
-              , MonitorFactor (1.00        )
-              , Origin        (QPointF(0,0))
-{
-  Scene     = new QGraphicsScene ( ) ;
-  Transform . reset              ( ) ;
-}
-
-N::VcfDisplay::~VcfDisplay (void)
-{
-}
-
-QString N::VcfDisplay::Percentage(void)
-{
-  char P[1024]                        ;
-  sprintf(P,"%4.2f",(ZoomFactor*100)) ;
-  return QString("%1%").arg(P)        ;
-}
-
-QSize N::VcfDisplay::available(QSize size)
-{
-  return QSize                                                        (
-           size . width  () - Margins . left () - Margins . right  () ,
-           size . height () - Margins . top  () - Margins . bottom ()
-         )                                                            ;
-}
-
-QSizeF N::VcfDisplay::centimeter(QSize size)
-{
-  double w = size.width () ;
-  double h = size.height() ;
-  w *= screen.WidthLength  ;
-  w /= screen.WidthPixels  ;
-  w /= 10                  ;
-  h *= screen.HeightLength ;
-  h /= screen.HeightPixels ;
-  h /= 10                  ;
-  return QSizeF(w,h)       ;
-}
-
-QSizeF N::VcfDisplay::toPaper(QSizeF cm)
-{
-  double x = cm.width () ; x *= DPI ; x *= 100 ; x /= 254 ;
-  double y = cm.height() ; y *= DPI ; y *= 100 ; y /= 254 ;
-  return QSizeF(x,y)                                      ;
-}
-
-QRectF N::VcfDisplay::asPaper(QSize size)
-{
-  QSizeF S = size                      ;
-  QSizeF P = toPaper(centimeter(size)) ;
-  Transform.reset ()                   ;
-  double sx = S.width  () / P.width () ;
-  double sy = S.height () / P.height() ;
-  sx *= ZoomFactor                     ;
-  sy *= ZoomFactor                     ;
-  Transform.scale (sx,sy)              ;
-  QTransform I = Transform.inverted()  ;
-  QPointF Z(S.width(),S.height())      ;
-  Z = I.map(Z)                         ;
-  return QRectF(0,0,Z.x(),Z.y())       ;
-}
-
-qreal N::VcfDisplay::FactorLevel(qreal factor,bool enlarge)
-{
-  qreal f = factor;
-  int   F = (int)(f * 100);
-  bool  B = false;
-  for (int i=1;!B && i<Zooms.count();i++) {
-    if (Zooms[i-1]==F) {
-      if (enlarge) {
-        F = Zooms[i];
-        B = true;
-      } else {
-        if (i>1) F = Zooms[i-2]; else F = Zooms[0];
-        B = true;
-      };
-    } else
-    if (Zooms[i]==F) {
-      if (enlarge) {
-        F = Zooms[i+1];
-        B = true;
-      } else {
-        if (i>0) F = Zooms[i-1]; else F = Zooms[0];
-        B = true;
-      };
-    } else
-    if (Zooms[i-1]<F && F<Zooms[i]) {
-      if (enlarge) {
-        F = Zooms[i+1];
-        B = true;
-      } else {
-        if (i>0) F = Zooms[i-1]; else F = Zooms[0];
-        B = true;
-      };
-    };
-  };
-  f = F; f /= 100;
-  return f;
-}
-
-void N::VcfDisplay::Enlarge(void)
-{
-  ZoomFactor = FactorLevel(ZoomFactor,true ) ;
-}
-
-void N::VcfDisplay::Shrink(void)
-{
-  ZoomFactor = FactorLevel(ZoomFactor,false) ;
-}
-
-QDoubleSpinBox * N::VcfDisplay::ZoomSpin(QWidget * parent,QWidget * widget,const char * method)
-{
-  QDoubleSpinBox * ds = new QDoubleSpinBox(parent) ;
-  ds->setMinimum    (0.01000       )               ;
-  ds->setMaximum    (1000000       )               ;
-  ds->setValue      (ZoomFactor*100)               ;
-  ds->setSingleStep (1.00          )               ;
-  ds->setSuffix     ("%")                          ;
-  ds->setAlignment(Qt::AlignRight|Qt::AlignVCenter);
-  QObject::connect(ds,SIGNAL(valueChanged(double)) ,
-                   widget,method                )  ;
-  return ds                                        ;
-}
-"""
