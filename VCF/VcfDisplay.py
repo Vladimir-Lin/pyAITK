@@ -78,24 +78,6 @@ class VcfDisplay             (                                             ) :
     ##########################################################################
     return
   ############################################################################
-  def cmToDpi    ( self , cm                                               ) :
-    return float ( cm ) * self . DPI  * 100 / 254.0
-  ############################################################################
-  def dpiToCm    ( self , pixel                                            ) :
-    return float ( pixel ) * 254.0 / ( self . DPI  * 100 )
-  ############################################################################
-  def cmToDpiX   ( self , cm                                               ) :
-    return float ( cm ) * self . DPIX * 100 / 254.0
-  ############################################################################
-  def dpiToCmX   ( self , pixel                                            ) :
-    return float ( pixel ) * 254.0 / ( self . DPIX * 100 )
-  ############################################################################
-  def cmToDpiY   ( self , cm                                               ) :
-    return float ( cm ) * self . DPIY * 100 / 254.0
-  ############################################################################
-  def dpiToCmY   ( self , pixel                                            ) :
-    return float ( pixel ) * 254.0 / ( self . DPIY * 100 )
-  ############################################################################
   def Enlarge ( self                                                       ) :
     ##########################################################################
     self . ZoomFactor = self . FactorLevel ( self . ZoomFactor , True        )
@@ -134,18 +116,27 @@ class VcfDisplay             (                                             ) :
     ##########################################################################
     return QSizeF ( size . width  ( ) - SW , size . height ( ) - SH          )
   ############################################################################
-  def centimeter        ( self , size                                      ) :
+  def centimeter                   ( self , size                           ) :
     ##########################################################################
-    w = self . dpiToCmX ( size . width  ( )                                  )
-    h = self . dpiToCmY ( size . height ( )                                  )
+    w = self . Options . pixelToCm ( size . width  ( ) , self . DPIX         )
+    h = self . Options . pixelToCm ( size . height ( ) , self . DPIY         )
     ##########################################################################
-    return QSizeF       ( w , h                                              )
+    return QSizeF                  ( w , h                                   )
   ############################################################################
-  def toPaper          ( self , cm                                         ) :
+  def toPaper                      ( self , cm                             ) :
     ##########################################################################
-    x = self . cmToDpi ( cm . width  ( )                                     )
-    y = self . cmToDpi ( cm . height ( )                                     )
-    return QSizeF      ( x , y                                               )
+    x = self . Options . cmToPixel ( cm . width  ( ) , self . DPI            )
+    y = self . Options . cmToPixel ( cm . height ( ) , self . DPI            )
+    return QSizeF                  ( x , y                                   )
+  ############################################################################
+  def toRegion         ( self , cm                                         ) :
+    ##########################################################################
+    S = QSizeF         ( cm . left  ( ) , cm . top    ( )                    )
+    W = QSizeF         ( cm . width ( ) , cm . height ( )                    )
+    S = self . toPaper ( S                                                   )
+    W = self . toPaper ( W                                                   )
+    ##########################################################################
+    return QRectF      ( S.width() , S.height() , W.width() , W.height()     )
   ############################################################################
   def asPaper                            ( self , size                     ) :
     ##########################################################################

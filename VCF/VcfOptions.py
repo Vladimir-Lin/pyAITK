@@ -58,10 +58,8 @@ class VcfOptions      (                                                    ) :
       return
     ##########################################################################
     s                 = screens                  [ 0                         ]
-    ## self . DPIX       = s . physicalDotsPerInchX (                           )
-    ## self . DPIY       = s . physicalDotsPerInchY (                           )
-    self . DPIX       = s . logicalDotsPerInchX  (                           )
-    self . DPIY       = s . logicalDotsPerInchY  (                           )
+    self . DPIX       = s . physicalDotsPerInchX (                           )
+    self . DPIY       = s . physicalDotsPerInchY (                           )
     ##########################################################################
     return
   ############################################################################
@@ -110,14 +108,14 @@ class VcfOptions      (                                                    ) :
   ## Centimeter to Paper resolution
   ## cm * DPI * 100 / 254
   ############################################################################
-  def Position                       ( self , cm                           ) :
+  def Position                         ( self , cm                         ) :
     ##########################################################################
-    x = self . cmToPixel             ( cm . x ( ) , self . DPIX              )
-    x = x / self . ScaleRatio.width  (                                       )
-    y = self . cmToPixel             ( cm . y ( ) , self . DPIY              )
-    y = y / self . ScaleRatio.height (                                       )
+    x = self . cmToPixel               ( cm . x ( ) , self . DPIX            )
+    x = x / self . ScaleRatio . width  (                                     )
+    y = self . cmToPixel               ( cm . y ( ) , self . DPIY            )
+    y = y / self . ScaleRatio . height (                                     )
     ##########################################################################
-    return QPointF                   ( x , y                                 )
+    return QPointF                     ( x , y                               )
   ############################################################################
   def Region            ( self , cm                                        ) :
     ##########################################################################
@@ -128,14 +126,14 @@ class VcfOptions      (                                                    ) :
     ##########################################################################
     return QRectF       ( S . x ( ) , S . y ( ) , W . x ( ) , W . y ( )      )
   ############################################################################
-  def toCM                           ( self , pixel                        ) :
+  def toCM                             ( self , pixel                      ) :
     ##########################################################################
-    x = self . pixelToCm             ( pixel . x ( ) , self . DPIX           )
-    x = x * self . ScaleRatio.width  (                                       )
-    y = self . pixelToCm             ( pixel . y ( ) , self . DPIY           )
-    y = y * self . ScaleRatio.height (                                       )
+    x = self . pixelToCm               ( pixel . x ( ) , self . DPIX         )
+    x = x * self . ScaleRatio . width  (                                     )
+    y = self . pixelToCm               ( pixel . y ( ) , self . DPIY         )
+    y = y * self . ScaleRatio . height (                                     )
     ##########################################################################
-    return QPointF                   ( x , y                                 )
+    return QPointF                     ( x , y                               )
   ############################################################################
   def toCmRegion    ( self , pixel                                         ) :
     ##########################################################################

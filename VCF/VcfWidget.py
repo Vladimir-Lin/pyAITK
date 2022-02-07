@@ -33,6 +33,7 @@ from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
+from   PyQt5 . QtGui                  import QPainter
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
@@ -73,10 +74,13 @@ class VcfWidget           ( QGraphicsView                                  , \
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setAttribute ( Qt . WA_InputMethodEnabled                         )
-    self . VoiceJSON =  {                                                    }
+    self . setAttribute          ( Qt . WA_InputMethodEnabled                )
+    self . VoiceJSON =           {                                           }
     self . setDefaultZoom        (                                           )
     self . setScene              ( self . Scene                              )
+    self . setRenderHint         ( QPainter . Antialiasing           , True  )
+    self . setRenderHint         ( QPainter . TextAntialiasing       , True  )
+    ## self . setRenderHint         ( QPainter . LosslessImageRendering , True  )
     ##########################################################################
     return
   ############################################################################
@@ -221,9 +225,7 @@ class VcfWidget           ( QGraphicsView                                  , \
     PUID  = 3800400000000000042
     ## print(PUID)
     pen   = QPen ( QColor(255,0,0) )
-    cm    = QRectF ( 0 , 0 , 5.0 , 5.0 )
-    pixels = self . toPaper ( cm )
-    rect   = QRectF ( 0 , 0 , pixels . width ( ) , pixels . height ( ) )
+    rect  = self . toRegion ( QRectF ( 1.0 , 1.0 , 5.0 , 5.0 ) )
     ritem = self . Scene . addRect ( rect , pen                              )
     self   . setPrepared           ( True                                    )
     ##########################################################################
