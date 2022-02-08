@@ -34,6 +34,11 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
+from   AITK  . Math . Essentials      import Object  as Object
+from   AITK  . Math . Node            import Node    as Node
+##############################################################################
+from                . VcfItem         import VcfItem as VcfItem
+##############################################################################
 class VcfNode         (                                                    ) :
   ############################################################################
   def __init__        ( self                                               ) :

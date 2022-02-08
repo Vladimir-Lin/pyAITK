@@ -4,7 +4,8 @@
 ##############################################################################
 __all__ = [ "AI"                                                           , \
             "Calendars"                                                    , \
-            "Catalogue"                                                    , \
+            "Conductions"                                                  , \
+            "Measure"                                                      , \
             "Database"                                                     , \
             "Decisions"                                                    , \
             "Documents"                                                    , \
@@ -13,6 +14,7 @@ __all__ = [ "AI"                                                           , \
             "Games"                                                        , \
             "Google"                                                       , \
             "Math"                                                         , \
+            "Measure"                                                      , \
             "Models"                                                       , \
             "Networking"                                                   , \
             "People"                                                       , \
