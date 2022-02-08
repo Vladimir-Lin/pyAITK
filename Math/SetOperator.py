@@ -5,7 +5,7 @@
 ## typedef enum       {
 ##   Nothing      = 0 , // Actually, this is invalid operator
 ##   Intersection = 1 , // A & B , And       , with operator &
-##   Union        = 2 , // A | B , Or        , with operator |
+##   Union        = 2 , // A | B , Or        , with operator | or +
 ##   Complement   = 3 , // A - B , Substract , with operator / or -
 ##                      // as a formal notation A - B should be written as
 ##                      // A \ B , read ISO 31-11 standard for details
@@ -14,6 +14,7 @@
 ## } Operators        ;
 ## if (o=="&" ) O = Intersection ; else
 ## if (o=="|" ) O = Union        ; else
+## if (o=="+" ) O = Union        ; else
 ## if (o=="-" ) O = Complement   ; else
 ## if (o=="\\") O = Complement   ; else
 ## if (o=="^" ) O = Symmetric    ;
@@ -134,22 +135,22 @@ class SetOperator           (                                              ) :
     ##########################################################################
     return ""
   ############################################################################
-  def Syntax                           ( self                              ) :
+  def Syntax                          ( self                               ) :
     ##########################################################################
-    if                                 ( self . O == self . Nothing        ) :
+    if                                ( self . O == self . Nothing         ) :
       return ""
     ##########################################################################
-    if                                 ( self . O == self . Intersection   ) :
-      return "( {0} & {1} )"  . format ( self . A , self . B                 )
+    if                                ( self . O == self . Intersection    ) :
+      return "( {0} & {1} )" . format ( self . A , self . B                  )
     ##########################################################################
-    if                                 ( self . O == self . Union          ) :
-      return "( {0} | {1} )"  . format ( self . A , self . B                 )
+    if                                ( self . O == self . Union           ) :
+      return "( {0} | {1} )" . format ( self . A , self . B                  )
     ##########################################################################
-    if                                 ( self . O == self . Complement     ) :
-      return "( {0} \\ {1} )" . format ( self . A , self . B                 )
+    if                                ( self . O == self . Complement      ) :
+      return "( {0} - {1} )" . format ( self . A , self . B                  )
     ##########################################################################
-    if                                 ( self . O == self . Symmetric      ) :
-      return "( {0} ^ {1} )"  . format ( self . A , self . B                 )
+    if                                ( self . O == self . Symmetric       ) :
+      return "( {0} ^ {1} )" . format ( self . A , self . B                  )
     ##########################################################################
     return ""
   ############################################################################
@@ -171,6 +172,7 @@ class SetOperator           (                                              ) :
     s   = s . replace ( ")"  , ""                                            )
     s   = s . replace ( "&"  , " & "                                         )
     s   = s . replace ( "|"  , " | "                                         )
+    s   = s . replace ( "+"  , " + "                                         )
     s   = s . replace ( "-"  , " - "                                         )
     s   = s . replace ( "\\" , " \\ "                                        )
     s   = s . replace ( "^"  , " ^ "                                         )
@@ -209,6 +211,8 @@ class SetOperator           (                                              ) :
     if                       ( L [ 1 ] == "&"                              ) :
       self . O = self . Intersection
     elif                     ( L [ 1 ] == "|"                              ) :
+      self . O = self . Union
+    elif                     ( L [ 1 ] == "+"                              ) :
       self . O = self . Union
     elif                     ( L [ 1 ] == "-"                              ) :
       self . O = self . Complement
