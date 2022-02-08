@@ -20,6 +20,10 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
+from   PyQt5 . QtCore                 import QRect
+from   PyQt5 . QtCore                 import QRectF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -37,8 +41,10 @@ from   PyQt5 . QtWidgets              import QGraphicsItem
 ##############################################################################
 from   AITK  . Qt . AbstractGui       import AbstractGui as AbstractGui
 ##############################################################################
-class VcfItem                   ( QObject                                  , \
-                                  QGraphicsItem                            , \
+from              . VcfOptions        import VcfOptions as VcfOptions
+from              . VcfPainter        import VcfPainter as VcfPainter
+##############################################################################
+class VcfItem                   ( QGraphicsItem                            , \
                                   AbstractGui                              ) :
   ############################################################################
   def __init__                  ( self                                     , \
@@ -46,10 +52,10 @@ class VcfItem                   ( QObject                                  , \
                                   item   = None                            , \
                                   plan   = None                            ) :
     ##########################################################################
-    super ( ) . __init__        ( parent                                     )
-    self      . setParentItem   ( item                                       )
-    self      . Initialize      ( self                                       )
-    self      . setPlanFunction ( plan                                       )
+    super ( ) . __init__        ( item                                       )
+    self . Initialize           ( self                                       )
+    self . setPlanFunction      ( plan                                       )
+    self . setVcfItemDefaults   (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -57,6 +63,236 @@ class VcfItem                   ( QObject                                  , \
     ##########################################################################
     ##########################################################################
     return
+  ############################################################################
+  def setVcfItemDefaults             ( self                                ) :
+    ##########################################################################
+    self . Options      = VcfOptions (                                       )
+    self . Painter      = VcfPainter (                                       )
+    self . Printable    = True
+    self . Editable     = True
+    self . Modified     = False
+    self . Overlay      = False
+    self . Lockup       = False
+    self . Related      = [ ]
+    self . Relations    = { }
+    self . pens         = [ ]
+    self . brushes      = [ ]
+    self . fonts        = [ ]
+    self . transforms   = [ ]
+    self . WritingPaper = QRectF     (                                       )
+    self . PaperDPI     = 300
+    ##########################################################################
+    self . setAcceptHoverEvents      ( True                                  )
+    self . setAcceptDrops            ( True                                  )
+    ##########################################################################
+    self . setFlag ( QGraphicsItem . ItemAcceptsInputMethod , True           )
+    ##########################################################################
+    return
+  ############################################################################
+  def GraphicsView    ( self                                               ) :
+    ##########################################################################
+    gs = self . scene (                                                      )
+    if                ( gs in [ False , None ]                             ) :
+      return None
+    ##########################################################################
+    vs = gs . views   (                                                      )
+    if                ( len ( vs ) <= 0                                    ) :
+      return None
+    ##########################################################################
+    return vs         [ 0                                                    ]
+  ############################################################################
+  def focusInEvent            ( self , event                               ) :
+    ##########################################################################
+    super ( ) . focusInEvent  (        event                                 )
+    self      . FocusIn       (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def focusOutEvent           ( self , event                               ) :
+    ##########################################################################
+    super ( ) . focusOutEvent (        event                                 )
+    self      . FocusOut      (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn  ( self                                                      ) :
+    return True
+  ############################################################################
+  def FocusOut ( self                                                      ) :
+    return True
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  def pushPainters          ( self , p                                     ) :
+    ##########################################################################
+    self . pens    . append ( p . pen   ( )                                  )
+    self . brushes . append ( p . brush ( )                                  )
+    self . fonts   . append ( p . font  ( )                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def popPainters      ( self , p                                          ) :
+    ##########################################################################
+    AT = len           ( self . pens                                         )
+    AT = AT - 1
+    ##########################################################################
+    if                 ( AT < 0                                            ) :
+      return
+    ##########################################################################
+    p  . setPen        ( self . pens    [ AT ]                               )
+    p  . setBrush      ( self . brushes [ AT ]                               )
+    p  . setFont       ( self . fonts   [ AT ]                               )
+    ##########################################################################
+    del self . pens    [ AT                                                  ]
+    del self . brushes [ AT                                                  ]
+    del self . fonts   [ AT                                                  ]
+    ##########################################################################
+    return
+  ############################################################################
+  def setPenStyle                           ( self , Id , style            ) :
+    self . Painter . pens [ Id ] . setStyle (             style              )
+    return
+  ############################################################################
+  def setPenColor           ( self , Id , color                            ) :
+    self . Painter . addPen (        Id , color                              )
+    return
+  ############################################################################
+  def setBrushStyle                            ( self , Id , style         ) :
+    self . Painter . brushes [ Id ] . setStyle (             style           )
+    return
+  ############################################################################
+  def setBrushColor           ( self , Id , color                          ) :
+    self . Painter . addBrush (        Id , color                            )
+    return
+  ############################################################################
+  def pushTransform            ( self                                      ) :
+    self . transforms . append ( self . transform ( )                        )
+    return
+  ############################################################################
+  def PaperTransform ( self , DPI , Paper                                  ) :
+    self . PaperDPI     = DPI
+    self . WritingPaper = Paper
+    return
+  ############################################################################
+  def clipRect ( self                                                      ) :
+    return self . WritingPaper
+  ############################################################################
+  def visibleRect              ( self                                      ) :
+    ##########################################################################
+    gv = self . GraphicsView   (                                             )
+    if                         ( gv in [ False , None ]                    ) :
+      return QRectF            ( 0 , 0 , 1 , 1                               )
+    ##########################################################################
+    GS = gv . size             (                                             )
+    GR = QRect                 ( 0 , 0 , GS . width ( ) , GS . height ( )    )
+    SR = gv     . mapToScene   ( GR ) . boundingRect (                       )
+    ##########################################################################
+    return self . mapFromScene ( SR ) . boundingRect (                       )
+  ############################################################################
+  def popTransform        ( self                                           ) :
+    ##########################################################################
+    AT   = len            ( self . transforms                                )
+    AT   = AT - 1
+    if                    ( AT < 0                                         ) :
+      return
+    ##########################################################################
+    self . setTransform   ( self . transforms [ AT ]                         )
+    del self . transforms [ AT                                               ]
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  def Bustle         ( self                                                ) :
+    ##########################################################################
+    self . LockGui   (                                                       )
+    self . setCursor ( Qt . WaitCursor                                       )
+    ##########################################################################
+    return True
+  ############################################################################
+  def Vacancy        ( self                                                ) :
+    ##########################################################################
+    self . setCursor ( Qt . ArrowCursor                                      )
+    self . UnlockGui (                                                       )
+    ##########################################################################
+    return True
+  ############################################################################
+  def setOptions ( self , options , privated ) :
+    ##########################################################################
+    if ( not privated ) :
+      self . Options . setOptions ( options )
+      return
+    ##########################################################################
+    """
+      Options  = new VcfOptions()             ;
+    (*Options) = options                      ;
+      Options -> Private = true               ;
+    """
+    self . Options . Private = True
+    ##########################################################################
+    return
+  ############################################################################
+  def adjustTransform ( self                                               ) :
+    ##########################################################################
+    """
+    nDropOut ( IsNull ( Options )   ) ;
+    nDropOut ( ! Options -> Private ) ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def ItemMarriage            ( self , item , relationship                 ) :
+    ##########################################################################
+    if                        ( item not in self . Related                 ) :
+      self . Related . append ( item                                         )
+    ##########################################################################
+    self . Relations [ item ] = relationship
+    ##########################################################################
+    return
+  ############################################################################
+  def ItemDivorce               ( self , item                              ) :
+    ##########################################################################
+    if                          ( item not in self . Related               ) :
+      return
+    ##########################################################################
+    AT = self . Related . index ( item                                       )
+    if                          ( AT < 0                                   ) :
+      return
+    ##########################################################################
+    del self . Relations        [ item                                       ]
+    del self . Related          [ AT                                         ]
+    ##########################################################################
+    return
+  ############################################################################
+  def Relationship          ( self , item                                  ) :
+    ##########################################################################
+    if                      ( item not in self . Related                   ) :
+      return 0
+    ##########################################################################
+    if                      ( item not in self . Relations                 ) :
+      return 0
+    ##########################################################################
+    return self . Relations [ item                                           ]
+  ############################################################################
+  def settings ( self , item                                               ) :
+    return
+  ############################################################################
+  def mousePosition            ( self                                      ) :
+    ##########################################################################
+    pos = QCursor . pos        (                                             )
+    gv  = self . GraphicsView  (                                             )
+    if                         ( gv in [ False , None ]                    ) :
+      return pos
+    ##########################################################################
+    pos = gv . mapFromGlobal   ( pos                                         )
+    pfs = gv . mapToScene      ( pos                                         )
+    ##########################################################################
+    return self . mapFromScene ( pfs                                         )
 ##############################################################################
 """
 class Q_COMPONENTS_EXPORT VcfItem : public QObject
@@ -224,18 +460,6 @@ N::VcfItem::~VcfItem (void)
   nEnsureNull ( Options           ) ;
 }
 
-void N::VcfItem::focusInEvent(QFocusEvent * event)
-{
-  QGraphicsItem::focusInEvent  ( event ) ;
-  FocusIn                      (       ) ;
-}
-
-void N::VcfItem::focusOutEvent(QFocusEvent * event)
-{
-  QGraphicsItem::focusOutEvent ( event ) ;
-  FocusOut                     (       ) ;
-}
-
 void N::VcfItem::dragEnterEvent(QGraphicsSceneDragDropEvent * event)
 {
   if (allowDrop() && dragEnter(event)) event->acceptProposedAction() ; else {
@@ -317,86 +541,6 @@ bool N::VcfItem::drop(QGraphicsSceneDragDropEvent * event)
   nKickOut(!acceptDrop(event->source(),event->mimeData()             ),false) ;
   nKickOut(!dropAppend(event->source(),event->mimeData(),event->pos()),false) ;
   return true                                                                 ;
-}
-
-QGraphicsView * N::VcfItem::GraphicsView(void)
-{
-  QGraphicsScene * gs = scene ( )         ;
-  nKickOut ( IsNull(gs)      , NULL )     ;
-  QList<QGraphicsView *> vs = gs->views() ;
-  nKickOut ( vs.count() <= 0 , NULL )     ;
-  return Casting( QGraphicsView , vs[0] ) ;
-}
-
-void N::VcfItem::setPenStyle(int Id,Qt::PenStyle style)
-{
-  Painter . pens   [ Id ] . setStyle (style) ;
-}
-
-void N::VcfItem::setPenColor(int Id,QColor color)
-{
-  Painter . addPen   (Id,color) ;
-}
-
-void N::VcfItem::setBrushStyle(int Id,Qt::BrushStyle style)
-{
-  Painter . brushes [ Id ] . setStyle (style) ;
-}
-
-void N::VcfItem::setBrushColor(int Id,QColor color)
-{
-  Painter . addBrush (Id,color) ;
-}
-
-void N::VcfItem::pushPainters(QPainter * p)
-{
-  pens    << p->pen   () ;
-  brushes << p->brush () ;
-  fonts   << p->font  () ;
-}
-
-void N::VcfItem::popPainters(QPainter * p)
-{
-  int index = pens.count() - 1      ;
-  nDropOut ( index < 0 )            ;
-  p -> setPen      (pens   [index]) ;
-  p -> setBrush    (brushes[index]) ;
-  p -> setFont     (fonts  [index]) ;
-  pens    . takeAt (index         ) ;
-  brushes . takeAt (index         ) ;
-  fonts   . takeAt (index         ) ;
-}
-
-void N::VcfItem::pushTransform(void)
-{
-  transforms << transform() ;
-}
-
-void N::VcfItem::PaperTransform(int DPI,QRectF Paper)
-{
-  PaperDPI     = DPI   ;
-  WritingPaper = Paper ;
-}
-
-QRectF N::VcfItem::clipRect(void)
-{
-  return WritingPaper ;
-}
-
-QRectF N::VcfItem::visibleRect(void)
-{
-  QSize  GS = GraphicsView()->size()                        ;
-  QRect  GR(0,0,GS.width(),GS.height())                     ;
-  QRectF SR = GraphicsView()->mapToScene(GR).boundingRect() ;
-  return mapFromScene(SR).boundingRect()                    ;
-}
-
-void N::VcfItem::popTransform(void)
-{
-  int index = transforms.count() - 1 ;
-  nDropOut ( index < 0 )             ;
-  setTransform(transforms[index])    ;
-  transforms.takeAt(index)           ;
 }
 
 void N::VcfItem::PaintPath(QPainter * p,int Id)
@@ -635,29 +779,6 @@ void N::VcfItem::setQuadratic(int Id,QPolygonF & polygon)
   update ( )                            ;
 }
 
-bool N::VcfItem::FocusIn(void)
-{
-  return true ;
-}
-
-bool N::VcfItem::FocusOut(void)
-{
-  return true ;
-}
-
-bool N::VcfItem::Bustle(void)
-{
-  LockGui   (                 ) ;
-  setCursor ( Qt::WaitCursor  ) ;
-  return true                   ;
-}
-
-bool N::VcfItem::Vacancy(void)
-{
-  setCursor ( Qt::ArrowCursor ) ;
-  UnlockGui (                 ) ;
-  return true                   ;
-}
 
 bool N::VcfItem::FetchFont(int Id,SUID uuid)
 {
@@ -729,57 +850,5 @@ bool N::VcfItem::FetchGradient(int Id,QString name)
     Painter . gradients [Id] = GM . GetGradient ( SC , name ) ;
   LeaveSQL ( SC , plan->sql )                                 ;
   return true                                                 ;
-}
-
-void N::VcfItem::setOptions(VcfOptions & options,bool privated)
-{
-  if ( ! privated ) Options = &options ; else {
-      Options  = new VcfOptions()             ;
-    (*Options) = options                      ;
-      Options -> Private = true               ;
-  }                                           ;
-}
-
-void N::VcfItem::adjustTransform(void)
-{
-  nDropOut ( IsNull ( Options )   ) ;
-  nDropOut ( ! Options -> Private ) ;
-}
-
-void N::VcfItem::ItemMarriage(VcfItem * item,int relationship)
-{
-  if ( ! Related . contains ( item ) ) {
-    Related << item                    ;
-  }                                    ;
-  Relations [ item ] = relationship    ;
-}
-
-void N::VcfItem::ItemDivorce(VcfItem * item)
-{
-  nDropOut ( ! Related . contains ( item ) ) ;
-  int index =  Related . indexOf  ( item )   ;
-  nDropOut ( index < 0                     ) ;
-  Relations . remove ( item  )               ;
-  Related   . takeAt ( index )               ;
-}
-
-int N::VcfItem:: Relationship(VcfItem * item)
-{
-  nKickOut ( !Related  .contains(item) , 0 ) ;
-  nKickOut ( !Relations.contains(item) , 0 ) ;
-  return Relations [ item ]                  ;
-}
-
-void N::VcfItem::settings(int item)
-{
-}
-
-QPointF N::VcfItem::mousePosition(void)
-{
-  QPoint pos  = QCursor::pos ( )                         ;
-  pos         = GraphicsView ( ) ->mapFromGlobal ( pos ) ;
-  QPointF pfs = GraphicsView ( ) ->mapToScene    ( pos ) ;
-  pfs         = mapFromScene                     ( pfs ) ;
-  return pfs                                             ;
 }
 """

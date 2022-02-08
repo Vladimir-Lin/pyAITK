@@ -25,6 +25,7 @@ from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QFont
 from   PyQt5 . QtGui                  import QFontMetricsF
+from   PyQt5 . QtGui                  import QColor
 from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
 from   PyQt5 . QtGui                  import QKeySequence
@@ -33,11 +34,27 @@ from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
+from   PyQt5 . QtWidgets              import QGraphicsItem
 ##############################################################################
-class VcfCanvas       (                                                    ) :
+from   AITK  . Essentials . Object    import Object       as Object
+from         . VcfRectangle           import VcfRectangle as VcfRectangle
+##############################################################################
+class VcfCanvas                 ( VcfRectangle                             , \
+                                  Object                                   ) :
   ############################################################################
-  def __init__        ( self                                               ) :
+  EmptyMode  = 0
+  BorderMode = 1
+  BoardMode  = 2
+  CustomMode = 3
+  ############################################################################
+  def __init__                  ( self                                     , \
+                                  parent = None                            , \
+                                  item   = None                            , \
+                                  plan   = None                            ) :
     ##########################################################################
+    super ( ) . __init__        ( parent , item , plan                       )
+    self . setObjectEmpty       (                                            )
+    self . setVcfCanvasDefaults (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -45,6 +62,73 @@ class VcfCanvas       (                                                    ) :
     ##########################################################################
     ##########################################################################
     return
+  ############################################################################
+  def setVcfCanvasDefaults    ( self                                       ) :
+    ##########################################################################
+    self . Mode            = self . EmptyMode
+    self . GradientEditing = False
+    self . Printable       = False
+    self . Scaling         = True
+    ##########################################################################
+    self . Painter . addMap   ( "Default" , 0                                )
+    self . Painter . addPen   ( 0 , QColor ( 192 , 192 , 192 )               )
+    self . Painter . addBrush ( 0 , QColor ( 240 , 240 , 240 )               )
+    ##########################################################################
+    self . setFlag ( QGraphicsItem . ItemIsMovable            , True         )
+    self . setFlag ( QGraphicsItem . ItemIsSelectable         , True         )
+    self . setFlag ( QGraphicsItem . ItemIsFocusable          , True         )
+    self . setFlag ( QGraphicsItem . ItemClipsToShape         , False        )
+    self . setFlag ( QGraphicsItem . ItemClipsChildrenToShape , False        )
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def paint         ( self , painter , options , widget                    ) :
+    ##########################################################################
+    self . Painting (        painter , self . ScreenRect , False , True      )
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  def Painting                    ( self , p , region , clip , color       ) :
+    ##########################################################################
+    self . pushPainters           ( p                                        )
+    ##########################################################################
+    if                            ( self . Mode == self . EmptyMode        ) :
+      pass
+    elif                          ( self . Mode == self . BorderMode       ) :
+      self . Painter . drawBorder ( p , "Default" , self . ScreenRect        )
+    elif                          ( self . Mode == self . BoardMode        ) :
+      self . Painter . drawRect   ( p , "Default" , self . ScreenRect        )
+    else                                                                     :
+      self . CustomPainting       (        p , region , clip , color         )
+    ##########################################################################
+    """
+    p . setPen(QPen(Qt.blue))
+    p . setBrush(Qt.yellow)
+    p . drawRect(self.ScreenRect)
+    """
+    ##########################################################################
+    self . popPainters            ( p                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def CustomPainting              ( self , p , region , clip , color       ) :
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
 ##############################################################################
 """
 class Q_COMPONENTS_EXPORT VcfCanvas : public VcfRectangle
@@ -336,22 +420,6 @@ void N::VcfCanvas::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
 void N::VcfCanvas::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
 {
   scaleReleaseEvent ( event ) ;
-}
-
-void N::VcfCanvas::Paint(QPainter * p,QRectF,bool,bool)
-{
-  pushPainters             ( p                          ) ;
-  switch (Mode)                                           {
-    case Empty                                            :
-    break                                                 ;
-    case Border                                           :
-      Painter . drawBorder ( p , "Default" , ScreenRect ) ;
-    break                                                 ;
-    case Board                                            :
-      Painter . drawRect   ( p , "Default" , ScreenRect ) ;
-    break                                                 ;
-  }                                                       ;
-  popPainters              ( p                          ) ;
 }
 
 void N::VcfCanvas::setCanvas(QRectF selection)

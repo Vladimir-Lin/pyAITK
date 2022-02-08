@@ -25,123 +25,103 @@ from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QFont
 from   PyQt5 . QtGui                  import QFontMetricsF
+from   PyQt5 . QtGui                  import QColor
 from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
-from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QPolygonF
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import QGraphicsView
-##############################################################################
-class VcfPainter      (                                                    ) :
+class VcfPainter                 (                                         ) :
   ############################################################################
-  def __init__        ( self                                               ) :
+  def __init__                   ( self                                    ) :
     ##########################################################################
+    self . setVcfPainterDefaults (                                           )
     ##########################################################################
     return
   ############################################################################
-  def __del__         ( self                                               ) :
+  def __del__ ( self                                                       ) :
+    return
+  ############################################################################
+  def setVcfPainterDefaults ( self                                         ) :
     ##########################################################################
+    self . Names     =      {                                                }
+    self . pens      =      {                                                }
+    self . brushes   =      {                                                }
+    self . gradients =      {                                                }
+    self . fonts     =      {                                                }
+    self . pathes    =      {                                                }
+    self . switches  =      {                                                }
     ##########################################################################
     return
+  ############################################################################
+  def addMap ( self , Name , Id                                            ) :
+    self . Names [ Name ] = Id
+    return
+  ############################################################################
+  def addPen                       ( self , Id , color                     ) :
+    self . pens    [ Id ] = QPen   ( color                                   )
+    return len                     ( self . pens                             )
+  ############################################################################
+  def addBrush                     ( self , Id , color                     ) :
+    self . brushes [ Id ] = QBrush ( color                                   )
+    return len                     ( self . brushes                          )
+  ############################################################################
+  def setPainter       ( self , p , name                                   ) :
+    ##########################################################################
+    if                 ( name not in self . Names                          ) :
+      return
+    ##########################################################################
+    Id  = self . Names [ name                                                ]
+    ##########################################################################
+    if                 ( Id in self . pens                                 ) :
+      p . setPen       ( self . pens    [ Id ]                               )
+    ##########################################################################
+    if                 ( Id in self . brushes                              ) :
+      p . setBrush     ( self . brushes [ Id ]                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def drawRect         ( self , p , name , rect                            ) :
+    ##########################################################################
+    if                 ( name not in self . Names                          ) :
+      return
+    ##########################################################################
+    Id  = self . Names [ name                                                ]
+    ##########################################################################
+    if                 ( Id in self . pens                                 ) :
+      p . setPen       ( self . pens    [ Id ]                               )
+    ##########################################################################
+    if                 ( Id in self . brushes                              ) :
+      p . setBrush     ( self . brushes [ Id ]                               )
+    ##########################################################################
+    p   . drawRect     ( rect                                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def drawBorder       ( self , p , name ,rect                             ) :
+    ##########################################################################
+    if                 ( name not in self . Names                          ) :
+      return
+    ##########################################################################
+    Id  = self . Names [ name                                                ]
+    ##########################################################################
+    if                 ( Id in self . pens                                 ) :
+      p . setPen       ( self . pens    [ Id ]                               )
+    ##########################################################################
+    X   = QPolygonF    (                                                     )
+    ##########################################################################
+    X   . append       ( rect . topLeft     ( )                              )
+    X   . append       ( rect . topRight    ( )                              )
+    X   . append       ( rect . bottomRight ( )                              )
+    X   . append       ( rect . bottomLeft  ( )                              )
+    X   . append       ( rect . topLeft     ( )                              )
+    ##########################################################################
+    p   . drawPolyline ( X                                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def FontMetrics        ( self , Id                                       ) :
+    return QFontMetricsF ( self . fonts [ Id ]                               )
+  ############################################################################
+  def boundingRect ( self , Id , text                                      ) :
+    return self . FontMetrics ( Id ) . boundingRect ( text                   )
 ##############################################################################
-"""
-class Q_COMPONENTS_EXPORT VcfPainter
-{
-  public:
-
-    UMAPs     Names     ;
-    Pens      pens      ;
-    Brushes   brushes   ;
-    Gradients gradients ;
-    FONTs     fonts     ;
-    Pathes    pathes    ;
-    BMAPs     switches  ;
-
-    explicit VcfPainter        (void) ;
-    virtual ~VcfPainter        (void) ;
-
-    int           addPen       (int Id,QColor color) ;
-    int           addBrush     (int Id,QColor color) ;
-    void          addMap       (QString name,int Id) ;
-    void          setPainter   (QPainter * painter,QString name) ;
-    void          drawRect     (QPainter * painter,QString name,QRectF rect) ;
-    void          drawBorder   (QPainter * painter,QString name,QRectF rect) ;
-    QFontMetricsF FontMetrics  (int Id) ;
-    QRectF        boundingRect (int Id,QString text);
-
-  protected:
-
-  private:
-
-};
-
-N::VcfPainter:: VcfPainter (void)
-{
-}
-
-N::VcfPainter::~VcfPainter (void)
-{
-}
-
-int N::VcfPainter::addPen(int Id,QColor color)
-{
-  pens [ Id ] = Pen   ( color ) ;
-  return pens . count (       ) ;
-}
-
-int N::VcfPainter::addBrush(int Id,QColor color)
-{
-  brushes [ Id ] = Brush ( color ) ;
-  return brushes . count (       ) ;
-}
-
-void N::VcfPainter::addMap(QString name,int Id)
-{
-  Names[name] = Id ;
-}
-
-void N::VcfPainter::setPainter(QPainter * p,QString name)
-{
-  if (!Names.contains(name)) return                     ;
-  int Id = Names[name]                                  ;
-  if (pens   .contains(Id)) p -> setPen   (pens   [Id]) ;
-  if (brushes.contains(Id)) p -> setBrush (brushes[Id]) ;
-}
-
-void N::VcfPainter::drawRect(QPainter * p,QString name,QRectF Rect)
-{
-  if (!Names.contains(name)) return                     ;
-  int Id = Names[name]                                  ;
-  if (pens   .contains(Id)) p -> setPen   (pens   [Id]) ;
-  if (brushes.contains(Id)) p -> setBrush (brushes[Id]) ;
-  p -> drawRect ( Rect )                                ;
-}
-
-void N::VcfPainter::drawBorder(QPainter * p,QString name,QRectF Rect)
-{
-  if (!Names.contains(name)) return ;
-  int Id = Names[name]              ;
-  if (pens   .contains(Id))         {
-    p -> setPen ( pens [ Id ] )     ;
-  }                                 ;
-  QPolygonF P                       ;
-  P << Rect . topLeft     (   )     ;
-  P << Rect . topRight    (   )     ;
-  P << Rect . bottomRight (   )     ;
-  P << Rect . bottomLeft  (   )     ;
-  P << Rect . topLeft     (   )     ;
-  p -> drawPolyline       ( P )     ;
-}
-
-QFontMetricsF N::VcfPainter::FontMetrics (int Id)
-{
-  return QFontMetricsF(fonts[Id]) ;
-}
-
-QRectF N::VcfPainter::boundingRect(int Id,QString text)
-{
-  return FontMetrics(Id).boundingRect(text) ;
-}
-"""

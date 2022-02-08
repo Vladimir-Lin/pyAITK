@@ -19,22 +19,22 @@ class Object     (                                                         ) :
   ############################################################################
   def Empty ( self                                                         ) :
     ##########################################################################
-    self . Uuid = 0
-    self . Type = 0
+    self . Uuid       = 0
+    self . objectType = 0
     ##########################################################################
     return
   ############################################################################
-  def setObject                       ( self , object                      ) :
+  def setObject                             ( self , object                ) :
     ##########################################################################
-    self . Uuid = object . ObjectUuid (                                      )
-    self . Type = object . ObjectType (                                      )
+    self . Uuid       = object . ObjectUuid (                                )
+    self . objectType = object . ObjectType (                                )
     ##########################################################################
     return
   ############################################################################
   def setOwner ( self , u , t                                              ) :
     ##########################################################################
-    self . Uuid = u
-    self . Type = t
+    self . Uuid       = u
+    self . objectType = t
     ##########################################################################
     return
   ############################################################################
@@ -46,11 +46,11 @@ class Object     (                                                         ) :
     return int      ( self . Uuid                                            )
   ############################################################################
   def ObjectType ( self                                                    ) :
-    return int   ( self . Type                                               )
+    return int   ( self . objectType                                         )
   ############################################################################
   def setObjectType ( self , type                                          ) :
-    self . Type = type
-    return int      ( self . Type                                            )
+    self . objectType = type
+    return int      ( self . objectType                                      )
   ############################################################################
   def isObjectType ( self , type                                           ) :
     return         ( int ( type ) == int ( self . Type )                     )

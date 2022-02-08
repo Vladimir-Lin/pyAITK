@@ -20,6 +20,10 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
+from   PyQt5 . QtCore                 import QRect
+from   PyQt5 . QtCore                 import QRectF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -28,6 +32,7 @@ from   PyQt5 . QtGui                  import QFontMetricsF
 from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QTransform
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
@@ -36,10 +41,17 @@ from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
 from         . VcfItem                import VcfItem    as VcfItem
 ##############################################################################
-class VcfRectangle    ( VcfItem                                            ) :
+class VcfRectangle              ( VcfItem                                  ) :
   ############################################################################
-  def __init__        ( self                                               ) :
+  GeometryChanged = pyqtSignal  ( VcfItem                                    )
+  ############################################################################
+  def __init__                  ( self                                     , \
+                                  parent = None                            , \
+                                  item   = None                            , \
+                                  plan   = None                            ) :
     ##########################################################################
+    super ( ) . __init__        ( parent , item , plan                       )
+    self . setRectangleDefaults (                                            )
     ##########################################################################
     return
   ############################################################################
@@ -47,6 +59,33 @@ class VcfRectangle    ( VcfItem                                            ) :
     ##########################################################################
     ##########################################################################
     return
+  ############################################################################
+  def setRectangleDefaults         ( self                                  ) :
+    ##########################################################################
+    self . PaperPos   = QPointF    (                                         )
+    self . PaperRect  = QRectF     (                                         )
+    self . ScreenRect = QRectF     ( 100.0 , 100.0 , 500.0 , 500.0           )
+    self . Scaling    = False
+    self . Editing    = False
+    self . Angle      = 0.0
+    self . Transform  = QTransform (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def boundingRect ( self                                                  ) :
+    return self . ScreenRect
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
 ##############################################################################
 """
 class Q_COMPONENTS_EXPORT VcfRectangle : public VcfItem
@@ -180,11 +219,6 @@ N::VcfRectangle:: VcfRectangle (QObject * parent,QGraphicsItem * item,Plan * p)
 
 N::VcfRectangle::~VcfRectangle (void)
 {
-}
-
-QRectF N::VcfRectangle::boundingRect (void) const
-{
-  return ScreenRect ;
 }
 
 QSizeF N::VcfRectangle::PaperSize(void) const

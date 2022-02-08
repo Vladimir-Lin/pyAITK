@@ -40,14 +40,16 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
-from   AITK  . Qt . VirtualGui        import VirtualGui as VirtualGui
-from   AITK  . Qt . AttachDock        import AttachDock as AttachDock
+from   AITK  . Qt . VirtualGui        import VirtualGui   as VirtualGui
+from   AITK  . Qt . AttachDock        import AttachDock   as AttachDock
 ##############################################################################
-from         . VcfFont                import VcfFont    as VcfFont
-from         . VcfDisplay             import VcfDisplay as VcfDisplay
-from         . VcfOptions             import VcfOptions as VcfOptions
-from         . VcfManager             import VcfManager as VcfManager
-from         . VcfItem                import VcfItem    as VcfItem
+from         . VcfFont                import VcfFont      as VcfFont
+from         . VcfDisplay             import VcfDisplay   as VcfDisplay
+from         . VcfOptions             import VcfOptions   as VcfOptions
+from         . VcfManager             import VcfManager   as VcfManager
+from         . VcfItem                import VcfItem      as VcfItem
+from         . VcfRectangle           import VcfRectangle as VcfRectangle
+from         . VcfCanvas              import VcfCanvas    as VcfCanvas
 ##############################################################################
 class VcfWidget           ( QGraphicsView                                  , \
                             VirtualGui                                     , \
@@ -227,9 +229,12 @@ class VcfWidget           ( QGraphicsView                                  , \
     self . PerfectView (                                                     )
     PUID  = 3800400000000000042
     ## print(PUID)
-    pen   = QPen ( QColor(255,0,0) )
-    rect  = self . toRegion ( QRectF ( 1.0 , 1.0 , 5.0 , 5.0 ) )
-    ritem = self . Scene . addRect ( rect , pen                              )
+    VRIT  = VcfCanvas ( self , None , self . PlanFunc )
+    VRIT  . Mode = 1
+    ## pen   = QPen ( QColor(255,0,0) )
+    ## rect  = self . toRegion ( QRectF ( 1.0 , 1.0 , 5.0 , 5.0 ) )
+    ## ritem = self . Scene . addRect ( rect , pen                              )
+    self   . Scene . addItem ( VRIT )
     self   . setPrepared           ( True                                    )
     ##########################################################################
     return
