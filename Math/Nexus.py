@@ -2,163 +2,125 @@
 ##############################################################################
 ## Nexus
 ##############################################################################
-class Nexus      (                                                         ) :
+class Nexus              (                                                 ) :
   ############################################################################
-  def __init__   ( self                                                    ) :
+  def __init__           ( self                                            ) :
     ##########################################################################
+    self . setNexusEmpty (                                                   )
     ##########################################################################
     return
   ############################################################################
-  def __del__    ( self                                                    ) :
+  def __del__          ( self                                              ) :
     return
+  ############################################################################
+  def setNexusEmpty    ( self                                              ) :
+    ##########################################################################
+    self . relation  = 0
+    self . linkType  = 0
+    self . flags     = 0
+    self . name      = ""
+    self . data      = None
+    self . arguments = [                                                     ]
+    self . nodes     = [                                                     ]
+    ##########################################################################
+    return
+  ############################################################################
+  def setConnexion     ( self , relate , linkType                          ) :
+    ##########################################################################
+    self . relation  = relate
+    self . linkType  = linkType
+    ##########################################################################
+    return
+  ############################################################################
+  def setFlags         ( self , flags                                      ) :
+    ##########################################################################
+    self . flags = flags
+    ##########################################################################
+    return
+  ############################################################################
+  def setName          ( self , name                                       ) :
+    ##########################################################################
+    self . name = name
+    ##########################################################################
+    return
+  ############################################################################
+  def equalTo          ( self , relate                                     ) :
+    ##########################################################################
+    self . relation  = relate . relation
+    self . linkType  = relate . linkType
+    self . flags     = relate . flags
+    self . name      = relate . name
+    self . data      = relate . data
+    self . arguments = relate . arguments
+    self . nodes     = relate . nodes
+    ##########################################################################
+    return
+  ############################################################################
+  def connect         ( self , first , second                              ) :
+    ##########################################################################
+    self . disconnect (                                                      )
+    ##########################################################################
+    self . nodes =    [ first , second                                       ]
+    ##########################################################################
+    for node in self . nodes                                                 :
+      ########################################################################
+      node . Marriage ( self                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def disconnect     ( self                                                ) :
+    ##########################################################################
+    for node in self . nodes                                                 :
+      node . Divorce ( self                                                  )
+    ##########################################################################
+    self . nodes =   [                                                       ]
+    ##########################################################################
+    return
+  ############################################################################
+  def join                ( self , node                                    ) :
+    ##########################################################################
+    if                    ( node in self . nodes                           ) :
+      return len          ( nodes . count ( )                                )
+    ##########################################################################
+    self . nodes . append ( node                                             )
+    node . Marriage       ( self                                             )
+    ##########################################################################
+    return len            ( nodes . count ( )                                )
+  ############################################################################
+  def Indexing                  ( self , node                              ) :
+    return self . nodes . index (        node                                )
+  ############################################################################
+  def isFirst            ( self , node                                     ) :
+    ##########################################################################
+    if                   ( len ( self . nodes ) <= 0                       ) :
+      return False
+    ##########################################################################
+    AT = self . Indexing ( node                                              )
+    if                   ( AT < 0                                          ) :
+      return False
+    ##########################################################################
+    return               ( AT == 0                                           )
+  ############################################################################
+  def isEnd                 ( self , node                                  ) :
+    ##########################################################################
+    TOTAL = len             ( self . nodes                                   )
+    if                      ( TOTAL <= 1                                   ) :
+      return False
+    ##########################################################################
+    AT    = self . Indexing ( node                                           )
+    if                      ( AT < 0                                       ) :
+      return False
+    ##########################################################################
+    AT    = AT + 1
+    ##########################################################################
+    return                  ( AT == TOTAL                                    )
+  ############################################################################
+  def isDating ( self                                                      ) :
+    return     ( len ( self . nodes ) == 1                                   )
+  ############################################################################
+  def Is   ( self , relate                                                 ) :
+    return ( self . linkType == relate                                       )
+  ############################################################################
+  def connexion ( self                                                     ) :
+    return self . relation
 ##############################################################################
-"""
-class Q_DISCRETE_EXPORT Relation
-{
-  public:
-
-    SUID    relation  ;
-    int     linkType  ;
-    SUID    flags     ;
-    QString name      ;
-    void  * data      ;
-    VarArgs arguments ;
-    Nodes   nodes     ;
-
-    explicit Relation     (SUID relate,int linkType) ;
-    explicit Relation     (void) ;
-    virtual ~Relation     (void) ;
-
-    Relation & operator = (Relation & relation) ;
-    Relation & equalTo    (Relation & relation) ;
-
-    void connect          (Node & first,Node & second) ;
-    void disconnect       (void) ;
-
-    // More than binary relation
-    int  join             (Node & node) ;
-    int  operator      += (Node & node) ;
-
-    int  Indexing         (Node * node) ;
-    bool isFirst          (Node * node) ;
-    bool isEnd            (Node * node) ;
-    bool isDating         (void) ;
-
-    bool is               (N::Groups::Relations relate) ;
-
-    int  connexion        (void) const ;
-
-  protected:
-
-  private:
-
-};
-
-
-
-N::Relation:: Relation (SUID relate,int lt)
-            : relation (relate            )
-            , linkType (                lt)
-            , flags    (0                 )
-            , name     (""                )
-            , data     (NULL              )
-{
-}
-
-N::Relation:: Relation (void)
-            : relation (0   )
-            , linkType (0   )
-            , flags    (0   )
-            , name     (""  )
-            , data     (NULL)
-{
-}
-
-N::Relation::~Relation(void)
-{
-}
-
-N::Relation & N::Relation::operator = (Relation & relation)
-{
-  return equalTo ( relation ) ;
-}
-
-N::Relation & N::Relation::equalTo(Relation & relate)
-{
-  relation  = relate.relation  ;
-  linkType  = relate.linkType  ;
-  flags     = relate.flags     ;
-  name      = relate.name      ;
-  data      = relate.data      ;
-  arguments = relate.arguments ;
-  nodes     = relate.nodes     ;
-  return ME                    ;
-}
-
-void N::Relation::connect(Node & first,Node & second)
-{
-  disconnect ( )                    ;
-  nodes << &first                   ;
-  nodes << &second                  ;
-  for (int i=0;i<nodes.count();i++) {
-    nodes[i]->Marriage(this)        ;
-  }                                 ;
-}
-
-void N::Relation::disconnect(void)
-{
-  for (int i=0;i<nodes.count();i++) {
-    nodes[i]->Divorce(this)         ;
-  }                                 ;
-  nodes . clear ( )                 ;
-}
-
-int N::Relation::join(Node & node)
-{
-  nodes << &node           ;
-  node.Marriage(this)      ;
-  return nodes . count ( ) ;
-}
-
-int N::Relation::operator += (Node & node)
-{
-  return join ( node ) ;
-}
-
-int N::Relation::Indexing(Node * node)
-{
-  return nodes . indexOf ( node ) ;
-}
-
-bool N::Relation::isFirst(Node * node)
-{
-  if (nodes.count()<=0) return false ;
-  int index = Indexing(node)         ;
-  if (index<0) return false          ;
-  return ( index == 0 )              ;
-}
-
-bool N::Relation::isEnd(Node * node)
-{
-  if (nodes.count()<=1) return false ;
-  int index = Indexing(node)         ;
-  if (index<0) return false          ;
-  index++                            ;
-  return ( index == nodes.count() )  ;
-}
-
-bool N::Relation::isDating(void)
-{
-  return ( nodes . count () == 1 ) ;
-}
-
-bool N::Relation::is(N::Groups::Relations relate)
-{
-  return nEqual ( linkType , (int)relate ) ;
-}
-
-int N::Relation::connexion(void) const
-{
-  return relation ;
-}
-"""

@@ -2,144 +2,101 @@
 ##############################################################################
 ## Node
 ##############################################################################
-class Node       (                                                         ) :
+class Node              (                                                  ) :
   ############################################################################
-  def __init__   ( self                                                    ) :
+  def __init__          ( self                                             ) :
+    self . setNodeEmpty (                                                    )
     return
   ############################################################################
   def __del__    ( self                                                    ) :
     return
+  ############################################################################
+  def setNodeEmpty      ( self                                             ) :
+    ##########################################################################
+    self . node       = 0
+    self . nodeType   = 0
+    self . flags      = 0
+    self . name       = ""
+    self . data       = None
+    self . parameters = [                                                    ]
+    self . relations  = [                                                    ]
+    ##########################################################################
+    return
+  ############################################################################
+  def setOwner ( self , Uuid , Type                                        ) :
+    ##########################################################################
+    self . node     = Uuid
+    self . nodeType = Type
+    ##########################################################################
+    return
+  ############################################################################
+  def setName ( self , name                                                ) :
+    self . name = name
+    return
+  ############################################################################
+  def setFlag ( self , flags                                               ) :
+    self . flags = flags
+    return
+  ############################################################################
+  def Flag ( self , Mask                                                   ) :
+    return ( ( self . flags & Mask ) == Mask                                 )
+  ############################################################################
+  def equalTo ( self , node                                                ) :
+    ##########################################################################
+    self . node       = node . node
+    self . nodeType   = node . nodeType
+    self . flags      = node . flags
+    self . name       = node . name
+    self . data       = node . data
+    self . parameters = node . parameters
+    self . relations  = node . relations
+    ##########################################################################
+    return
+  ############################################################################
+  def isolate          ( self                                              ) :
+    ##########################################################################
+    self . relations = [                                                     ]
+    ##########################################################################
+    return
+  ############################################################################
+  def Marriage                ( self , relation                            ) :
+    ##########################################################################
+    if                        ( relation in self . relations               ) :
+      return
+    ##########################################################################
+    self . relations . append ( relation                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def Divorce                     ( self , relation                        ) :
+    ##########################################################################
+    if                            ( relation not in self . relations       ) :
+      return
+    ##########################################################################
+    AT = self . relations . index ( relation                                 )
+    if                            ( AT < 0                                 ) :
+      return
+    ##########################################################################
+    del self  . relations         [ AT                                       ]
+    ##########################################################################
+    return
+  ############################################################################
+  def isFirst                 ( self , relation                            ) :
+    return relation . isFirst ( self                                         )
+  ############################################################################
+  def isEnd                   ( self , relation                            ) :
+    return relation . isEnd   ( self                                         )
+  ############################################################################
+  def Connectors ( self                                                    ) :
+    return len   ( self . relations                                          )
+  ############################################################################
+  def Connector             ( self , AT                                    ) :
+    ##########################################################################
+    if                      ( AT < 0                                       ) :
+      return None
+    ##########################################################################
+    if                      ( len ( self . relations ) <= AT               ) :
+      return None
+    ##########################################################################
+    return self . relations [ AT                                             ]
 ##############################################################################
-"""
-class Q_DISCRETE_EXPORT Node
-{
-  public:
-
-    SUID      node      ;
-    int       nodeType  ;
-    SUID      flags     ;
-    QString   name      ;
-    void    * data      ;
-    VarArgs   paraments ;
-    Relations relations ;
-
-    explicit   Node       (void) ;
-    explicit   Node       (int Type) ;
-    virtual ~  Node       (void) ;
-
-    void       isolate    (void) ;
-
-    Node &     operator = (Node & node) ;
-    Node &     equalTo    (Node & node) ;
-    bool       Flag       (SUID Mask) ;
-
-    void       Marriage   (Relation * relation) ;
-    void       Divorce    (Relation * relation) ;
-
-    bool       isFirst    (Relation * relation) ;
-    bool       isEnd      (Relation * relation) ;
-
-    int        Connectors (void) ;
-    Relation * Connector  (int index) ;
-
-  protected:
-
-  private:
-
-};
-
-N::Node:: Node     ( void )
-        : node     ( 0    )
-        , nodeType ( 0    )
-        , flags    ( 0    )
-        , name     ( ""   )
-        , data     ( NULL )
-{
-}
-
-N::Node:: Node     ( int Type )
-        : node     ( 0        )
-        , nodeType ( Type     )
-        , flags    ( 0        )
-        , name     ( ""       )
-        , data     ( NULL     )
-{
-}
-
-N::Node::~Node(void)
-{
-}
-
-void N::Node::isolate(void)
-{
-  relations . clear ( ) ;
-}
-
-N::Node & N::Node::operator = (Node & n)
-{
-  return equalTo ( n ) ;
-}
-
-N::Node & N::Node::equalTo(Node & n)
-{
-  node      = n.node      ;
-  nodeType  = n.nodeType  ;
-  flags     = n.flags     ;
-  name      = n.name      ;
-  data      = n.data      ;
-  paraments = n.paraments ;
-  relations = n.relations ;
-  return ME               ;
-}
-
-bool N::Node::Flag(SUID Mask)
-{
-  return ( ( flags & Mask ) == Mask ) ;
-}
-
-void N::Node::Marriage(Relation * relation)
-{
-  if (relations.contains(relation)) return ;
-  relations << relation                    ;
-}
-
-void N::Node::Divorce(Relation * relation)
-{
-  if (!relations.contains(relation)) return ;
-  int index = relations.indexOf(relation)   ;
-  if (index<0) return                       ;
-  relations . takeAt ( index )              ;
-}
-
-bool N::Node::isFirst(Relation * relation)
-{
-  return relation->isFirst(this) ;
-}
-
-bool N::Node::isEnd(Relation * relation)
-{
-  return relation->isEnd(this) ;
-}
-
-int N::Node::Connectors(void)
-{
-  return relations . count ( ) ;
-}
-
-N::Relation * N::Node::Connector (int index)
-{
-  if (relations.count()<=index) return NULL ;
-  return relations[index]                   ;
-}
-
-bool N::clean(Nodes & nodes)
-{
-  int t = nodes.count()      ;
-  nKickOut ( t <=0 , false ) ;
-  for (int i=0;i<t;i++)      {
-    delete nodes[i]          ;
-  }                          ;
-  nodes.clear()              ;
-  return true                ;
-}
-"""
