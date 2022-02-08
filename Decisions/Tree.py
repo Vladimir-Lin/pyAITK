@@ -2,106 +2,107 @@
 ##############################################################################
 ## 決策樹
 ##############################################################################
-
 import os
 import sys
 import time
 import datetime
 from   threading   import Thread
 from   threading   import Lock
+##############################################################################
 from   . Condition import Condition as Condition
 from   . Action    import Action    as Action
 from   . Table     import Table     as Table
 from   . Tables    import Tables    as Tables
-
-class Tree ( Tables ) :
-
-  def __init__ ( self ) :
-    super ( Tables , self ) . __init__ ( )
-    self . clear ( )
-    pass
-
-  def __del__ ( self ) :
-    pass
-
-  def clear ( self ) :
-    self . Root       = [ ]
-    self . Current    = [ ]
-    self . Connectors = { }
-    return
-
+##############################################################################
+class Tree               ( Tables                                          ) :
   ############################################################################
-  # 加入決策樹
-  ############################################################################
-  def join ( self , tree )                                                   :
+  def __init__           ( self                                            ) :
     ##########################################################################
-    Ds = self . keys ( )
-    Ts = tree . keys ( )
-    Xs = list ( set ( Ts ) - set ( Ds ) )
+    super ( ) . __init__ (                                                   )
+    self      . clear    (                                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def __del__            ( self                                            ) :
+    return
+  ############################################################################
+  def clear             ( self                                             ) :
+    ##########################################################################
+    self . Root       = [                                                    ]
+    self . Current    = [                                                    ]
+    self . Connectors = {                                                    }
+    ##########################################################################
+    return
+  ############################################################################
+  ## 加入決策樹
+  ############################################################################
+  def join                              ( self , tree                      ) :
+    ##########################################################################
+    Ds       = self . keys              (                                    )
+    Ts       = tree . keys              (                                    )
+    Xs       = list                     ( set ( Ts ) - set ( Ds )            )
     ##########################################################################
     if ( len ( Xs ) > 0 )                                                    :
       for u in Xs                                                            :
-        self . Tables [ u ] = tree [ u ]
+        self . Tables [ u ] = tree      [ u                                  ]
     ##########################################################################
-    Ds = tree . Connectors . keys ( )
-    Ts = self . Connectors . keys ( )
+    Ds       = tree . Connectors . keys (                                    )
+    Ts       = self . Connectors . keys (                                    )
     ##########################################################################
     for u in Ds                                                              :
-      if ( u in Ts )                                                         :
-        Xs = tree . Connectors [ u ]
-        Zs = self . Connectors [ u ]
-        self . Connectors [ u ] = list ( set ( Zs ) + set ( Xs ) )
+      if                                ( u in Ts                          ) :
+        Xs   = tree . Connectors        [ u                                  ]
+        Zs   = self . Connectors        [ u                                  ]
+        self . Connectors [ u ] = list  ( set ( Zs ) + set ( Xs )            )
       else                                                                   :
-        self . Connectors [ u ] = tree . Connectors [ u ]
+        self . Connectors [ u ] = tree . Connectors [ u                      ]
     ##########################################################################
-    self . roots ( )
+    self . roots                        (                                    )
     ##########################################################################
     return
-
   ############################################################################
-  # 決策源頭列表
+  ## 決策源頭列表
   ############################################################################
-  def roots ( self )                                                         :
+  def roots                        ( self                                  ) :
     ##########################################################################
-    R           =                          [ ]
-    Ds          = self              . keys ( )
-    Ks          = self . Connectors . keys ( )
+    R   =                          [                                         ]
+    Ds  = self              . keys (                                         )
+    Ks  = self . Connectors . keys (                                         )
     ##########################################################################
     for u in Ks                                                              :
-      T = self . Connectors [ u ]
-      R = list ( set ( R ) + set ( T ) )
+      T = self . Connectors        [ u                                       ]
+      R = list                     ( set ( R ) + set ( T )                   )
     ##########################################################################
-    self . Root = list ( set ( Ds ) - set ( R ) )
+    self . Root = list             ( set ( Ds ) - set ( R )                  )
     ##########################################################################
     return
-
   ############################################################################
-  # 決策行動列表
+  ## 決策行動列表
   ############################################################################
-  def reactions ( self )                                                     :
+  def reactions                            ( self                          ) :
     ##########################################################################
-    R  = [ ]
+    R   =                                  [                                 ]
     for u in self . Current                                                  :
-      T = self . Tables [ u ] . actionKeys ( )
-      R = list ( set ( R ) + set ( T ) )
+      T = self . Tables [ u ] . actionKeys (                                 )
+      R = list                             ( set ( R ) + set ( T )           )
     ##########################################################################
-    return list ( set ( R ) )
-
+    return list                            ( set ( R )                       )
   ############################################################################
-  # 下一步
+  ## 下一步
   ############################################################################
-  def next ( self , reacts )                                                 :
+  def next                    ( self , reacts                              ) :
     ##########################################################################
-    D = [ ]
+    D     = [ ]
     for u in reacts                                                          :
-      if ( u in self . Connectors )                                          :
+      if                      ( u in self . Connectors                     ) :
         T = self . Connectors [ u ]
-        D = list ( set ( D ) + set ( T ) )
+        D = list              ( set ( D ) + set ( T )                        )
     ##########################################################################
-    if ( len ( D ) > 0 )                                                     :
-      self . Current = list ( set ( D ) )
+    if                        ( len ( D ) > 0                              ) :
+      self . Current = list   ( set ( D )                                    )
     else                                                                     :
-      self . Current = [ ]
+      self . Current =        [                                              ]
       return False
     ##########################################################################
     return True
+##############################################################################

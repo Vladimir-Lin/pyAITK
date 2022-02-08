@@ -1,53 +1,62 @@
 # -*- coding: utf-8 -*-
-#
-# 條件元件
-#
-
+##############################################################################
+## 條件元件
+##############################################################################
 import os
 import sys
 import time
 import datetime
-
-class Condition ( ) :
-
-  def __init__ ( self , uuid ) :
+##############################################################################
+class Condition      (                                                     ) :
+  ############################################################################
+  def __init__       ( self , uuid                                         ) :
     self . Uuid    = uuid
-    self . Actions = [ ]
+    self . Actions = [                                                       ]
     return
-
-  def __del__ ( self ) :
-    pass
-
-  # 檢查是否相同的條件元件
-  def __eq__ ( self , another ) :
-    return self . isEqual ( another )
-
-  # 檢查是否相同的條件元件
-  def isEqual ( self , another ) :
-    return ( self . Uuid == another . Uuid )
-
-  # 新增決策行動
-  def addAction ( self , action ) :
-    if ( action not in self . Actions ) :
-      self . Actions . append ( action )
-    return action
-
-  # 移除決策行動
-  def removeAction ( self , action ) :
-    if ( action in self . Actions ) :
-      self . Actions . remove ( action )
-    return action
-
-  # 狀態改變
-  def change ( self ) :
-    for action in self . Actions :
-      action . Execute ( )
+  ############################################################################
+  def __del__ ( self                                                       ) :
     return
-
-  # 狀態名稱
-  def name ( self ) :
-    raise NotImplementedError ( )
-
-  # 狀態值
-  def value ( self ) :
-    raise NotImplementedError ( )
+  ############################################################################
+  ## 檢查是否相同的條件元件
+  ############################################################################
+  def __eq__              ( self , another                                 ) :
+    return self . isEqual (        another                                   )
+  ############################################################################
+  ## 檢查是否相同的條件元件
+  ############################################################################
+  def isEqual ( self , another                                             ) :
+    return    ( self . Uuid == another . Uuid                                )
+  ############################################################################
+  ## 新增決策行動
+  ############################################################################
+  def addAction               ( self , action                              ) :
+    if                        ( action not in self . Actions               ) :
+      self . Actions . append ( action                                       )
+    return action
+  ############################################################################
+  ## 移除決策行動
+  ############################################################################
+  def removeAction            ( self , action                              ) :
+    if                        ( action in self . Actions                   ) :
+      self . Actions . remove ( action                                       )
+    return action
+  ############################################################################
+  ## 狀態改變
+  ############################################################################
+  def change           ( self                                              ) :
+    ##########################################################################
+    for action in self . Actions                                             :
+      action . Execute (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  ## 狀態名稱
+  ############################################################################
+  def name                    ( self                                       ) :
+    raise NotImplementedError (                                              )
+  ############################################################################
+  ## 狀態值
+  ############################################################################
+  def value                   ( self                                       ) :
+    raise NotImplementedError (                                              )
+##############################################################################
