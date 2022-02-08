@@ -18,9 +18,7 @@
 ## if (o=="\\") O = Complement   ; else
 ## if (o=="^" ) O = Symmetric    ;
 ##############################################################################
-import enum
-##############################################################################
-class SetOperator           ( enum . IntEnum                               ) :
+class SetOperator           (                                              ) :
   ############################################################################
   Nothing      = 0
   Intersection = 1
@@ -190,10 +188,10 @@ class SetOperator           ( enum . IntEnum                               ) :
     self . B   = ""
     self . O   = self . Nothing
     ##########################################################################
-    if                       ( "(" not int syntax                          ) :
+    if                       ( "(" not in syntax                           ) :
       return False
     ##########################################################################
-    if                       ( ")" not int syntax                          ) :
+    if                       ( ")" not in syntax                           ) :
       return False
     ##########################################################################
     s          = self . RegulateSyntax ( syntax                              )
