@@ -289,6 +289,7 @@ class wssAccepter (                                                        ) :
     self . Translations   = {                                                }
     self . Locker         = threading . Lock  (                              )
     self . senderLock     = threading . Lock  (                              )
+    self . senderLocked   = False
     ##########################################################################
     self . Name           = ""
     self . Owner          = ""
@@ -347,10 +348,12 @@ class wssAccepter (                                                        ) :
   ############################################################################
   def LockSender                ( self                                     ) :
     self . senderLock . acquire (                                            )
+    self . senderLocked = True
     return
   ############################################################################
   def UnlockSender              ( self                                     ) :
     self . senderLock . release (                                            )
+    self . senderLocked = False
     return
   ############################################################################
   def isUnicode             ( self , val                                   ) :
@@ -498,6 +501,9 @@ class wssAccepter (                                                        ) :
     return None
   ############################################################################
   def flushBuffer               ( self , buff , send_all = False           ) :
+    ##########################################################################
+    if                          ( self . senderLocked                      ) :
+      return None
     ##########################################################################
     self . LockSender           (                                            )
     R    = self . DoFlushBuffer (        buff , send_all                     )
