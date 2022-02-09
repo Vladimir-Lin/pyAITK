@@ -224,18 +224,19 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     return True
   ############################################################################
-  def startup          ( self                                              ) :
+  def startup                ( self                                        ) :
     ##########################################################################
-    self . PerfectView (                                                     )
+    self . PerfectView       (                                               )
     PUID  = 3800400000000000042
     ## print(PUID)
-    VRIT  = VcfCanvas ( self , None , self . PlanFunc )
+    ##########################################################################
+    VRIT  = VcfCanvas        ( self , None , self . PlanFunc                 )
+    VRIT  . setOptions       ( self . Options , False                        )
     VRIT  . Mode = 1
-    ## pen   = QPen ( QColor(255,0,0) )
-    ## rect  = self . toRegion ( QRectF ( 1.0 , 1.0 , 5.0 , 5.0 ) )
-    ## ritem = self . Scene . addRect ( rect , pen                              )
-    self   . Scene . addItem ( VRIT )
-    self   . setPrepared           ( True                                    )
+    VRIT  . setRange         ( QRectF ( 1.0 , 1.0 , 5.0 , 5.0 )              )
+    ##########################################################################
+    self   . Scene . addItem ( VRIT                                          )
+    self   . setPrepared     ( True                                          )
     ##########################################################################
     return
 ##############################################################################

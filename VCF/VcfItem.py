@@ -262,10 +262,10 @@ class VcfItem                   ( QGraphicsItem                            , \
     ##########################################################################
     return True
   ############################################################################
-  def setOptions ( self , options , privated ) :
+  def setOptions ( self , options , privated                               ) :
     ##########################################################################
-    if ( not privated ) :
-      self . Options . setOptions ( options )
+    if           ( not privated                                            ) :
+      self . Options = options
       return
     ##########################################################################
     """
@@ -338,31 +338,48 @@ class VcfItem                   ( QGraphicsItem                            , \
     self . Painter . MergePathes (        TargetId                           )
     return
   ############################################################################
-  def pointToPaper                 ( self , cm                             ) :
+  def paperToPoint                 ( self , cm                             ) :
     ##########################################################################
     x = self . Options . cmToPixel ( cm . x ( ) , self . Options . PaperDPI  )
     y = self . Options . cmToPixel ( cm . y ( ) , self . Options . PaperDPI  )
+    ##########################################################################
     return QPointF                 ( x , y                                   )
   ############################################################################
-  def rectToPaper           ( self , region                                ) :
+  def paperToRect           ( self , region                                ) :
     ##########################################################################
     S = QPointF             ( region . left  ( ) , region . top    ( )       )
     W = QPointF             ( region . width ( ) , region . height ( )       )
-    S = self . pointToPaper ( S                                              )
-    W = self . pointToPaper ( W                                              )
+    S = self . paperToPoint ( S                                              )
+    W = self . paperToPoint ( W                                              )
     ##########################################################################
     return QRectF           ( S . x ( ) , S . y ( ) , W . x ( ) , W . y ( )  )
   ############################################################################
-  def polygonToPaper          ( self , polygon                             ) :
+  def paperToPolygon          ( self , polygon                             ) :
     ##########################################################################
     R   = QPolygonF           (                                              )
     ##########################################################################
     for v in polygon                                                         :
       ########################################################################
-      z = self . pointToPaper ( v                                            )
+      z = self . paperToPoint ( v                                            )
       R . append              ( z                                            )
     ##########################################################################
     return R
+  ############################################################################
+  def pointToPaper                 ( self , pt                             ) :
+    ##########################################################################
+    x = self . Options . pixelToCm ( pt . x ( ) , self . Options . PaperDPI  )
+    y = self . Options . pixelToCm ( pt . y ( ) , self . Options . PaperDPI  )
+    ##########################################################################
+    return QPointF                 ( x , y                                   )
+  ############################################################################
+  def rectToPaper           ( self , rect                                  ) :
+    ##########################################################################
+    S = QPointF             ( rect . left  ( ) , rect . top    ( )           )
+    W = QPointF             ( rect . width ( ) , rect . height ( )           )
+    S = self . pointToPaper ( S                                              )
+    W = self . pointToPaper ( W                                              )
+    ##########################################################################
+    return QRectF           ( S . x ( ) , S . y ( ) , W . x ( ) , W . y ( )  )
   ############################################################################
   def pointToView            ( self , pos                                  ) :
     ##########################################################################
@@ -422,7 +439,7 @@ class VcfItem                   ( QGraphicsItem                            , \
     ##########################################################################
     path = QPainterPath          (                                           )
     R    = QPointF               ( radius . width ( ) , radius . height ( )  )
-    R    = self . pointToPaper   ( R                                         )
+    R    = self . paperToPoint   ( R                                         )
     P    = self . polygonToPaper ( dots                                      )
     ##########################################################################
     for V in P                                                               :
