@@ -138,7 +138,7 @@ class VcfRectangle              ( VcfItem                                  ) :
     ##########################################################################
     self      . PaperPos = CM
     ##########################################################################
-    super ( ) . setPos ( self . pointToPaper ( CM )                          )
+    super ( ) . setPos ( self . paperToPoint ( CM )                          )
     ##########################################################################
     return
   ############################################################################
@@ -147,9 +147,9 @@ class VcfRectangle              ( VcfItem                                  ) :
     self . PaperRect = Region
     ##########################################################################
     TL   = self . PaperRect . topLeft     (                                  )
-    TL   = self . pointToPaper            ( TL                               )
+    TL   = self . paperToPoint            ( TL                               )
     BR   = self . PaperRect . bottomRight (                                  )
-    BR   = self . pointToPaper            ( BR                               )
+    BR   = self . paperToPoint            ( BR                               )
     ##########################################################################
     self . ScreenRect . setTopLeft        ( TL                               )
     self . ScreenRect . setBottomRight    ( BR                               )
