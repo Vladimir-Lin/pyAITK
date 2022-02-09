@@ -25,6 +25,8 @@ from   PyQt5 . QtCore                 import QSizeF
 from   PyQt5 . QtCore                 import QRect
 from   PyQt5 . QtCore                 import QRectF
 ##############################################################################
+from   PyQt5 . QtGui                  import QPolygonF
+##############################################################################
 from   PyQt5 . QtWidgets              import qApp
 ##############################################################################
 class VcfOptions      (                                                    ) :

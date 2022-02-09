@@ -31,6 +31,7 @@ from   PyQt5 . QtGui                  import QFont
 from   PyQt5 . QtGui                  import QFontMetricsF
 from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
+from   PyQt5 . QtGui                  import QPainterPath
 from   PyQt5 . QtGui                  import QKeySequence
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
@@ -121,10 +122,6 @@ class VcfItem                   ( QGraphicsItem                            , \
   def FocusOut ( self                                                      ) :
     return True
   ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
   def pushPainters          ( self , p                                     ) :
     ##########################################################################
     self . pens    . append ( p . pen   ( )                                  )
@@ -203,10 +200,53 @@ class VcfItem                   ( QGraphicsItem                            , \
     ##########################################################################
     return
   ############################################################################
+  def EnablePath ( self , Id , enable )                                      :
+    self . Painter . switches [ Id ] = enable
+    return
   ############################################################################
+  def ClearPathes               ( self                                     ) :
+    self . Painter . switches = {                                            }
+    self . Painter . pathes   = {                                            }
+    return
   ############################################################################
+  def PaintPath                      ( self , p , Id                       ) :
+    ##########################################################################
+    if                               ( Id not in self . Painter . pathes   ) :
+      return
+    ##########################################################################
+    self . pushPainters              ( p                                     )
+    ##########################################################################
+    self . Painter . assignPainterId ( p , Id                                )
+    p    . drawPath                  ( self . Painter . pathes [ Id ]        )
+    ##########################################################################
+    self . popPainters               ( p                                     )
+    ##########################################################################
+    return
   ############################################################################
+  def PaintPathes                  ( self , p                              ) :
+    ##########################################################################
+    if                             ( len ( self.Painter.switches ) <= 0    ) :
+      return
+    ##########################################################################
+    self . pushPainters            ( p                                       )
+    self . Painter . drawAllPathes ( p                                       )
+    self . popPainters             ( p                                       )
+    ##########################################################################
+    return
   ############################################################################
+  def PaintLines                        ( self , p , Id , Lines            ) :
+    ##########################################################################
+    if                                  ( len ( Lines ) <= 0               ) :
+      return
+    ##########################################################################
+    self . pushPainters                 ( p                                  )
+    ##########################################################################
+    self . Painter . assignPainterPenId ( p , Id                             )
+    p    . drawPolyline                 ( Lines                              )
+    ##########################################################################
+    self . popPainters                  ( p                                  )
+    ##########################################################################
+    return
   ############################################################################
   def Bustle         ( self                                                ) :
     ##########################################################################
@@ -293,6 +333,181 @@ class VcfItem                   ( QGraphicsItem                            , \
     pfs = gv . mapToScene      ( pos                                         )
     ##########################################################################
     return self . mapFromScene ( pfs                                         )
+  ############################################################################
+  def MergePathes                ( self , TargetId                         ) :
+    self . Painter . MergePathes (        TargetId                           )
+    return
+  ############################################################################
+  def pointToPaper                 ( self , cm                             ) :
+    ##########################################################################
+    x = self . Options . cmToPixel ( cm . x ( ) , self . Options . PaperDPI  )
+    y = self . Options . cmToPixel ( cm . y ( ) , self . Options . PaperDPI  )
+    return QPointF                 ( x , y                                   )
+  ############################################################################
+  def rectToPaper           ( self , region                                ) :
+    ##########################################################################
+    S = QPointF             ( region . left  ( ) , region . top    ( )       )
+    W = QPointF             ( region . width ( ) , region . height ( )       )
+    S = self . pointToPaper ( S                                              )
+    W = self . pointToPaper ( W                                              )
+    ##########################################################################
+    return QRectF           ( S . x ( ) , S . y ( ) , W . x ( ) , W . y ( )  )
+  ############################################################################
+  def polygonToPaper          ( self , polygon                             ) :
+    ##########################################################################
+    R   = QPolygonF           (                                              )
+    ##########################################################################
+    for v in polygon                                                         :
+      ########################################################################
+      z = self . pointToPaper ( v                                            )
+      R . append              ( z                                            )
+    ##########################################################################
+    return R
+  ############################################################################
+  def pointToView            ( self , pos                                  ) :
+    ##########################################################################
+    gv = self . GraphicsView (                                               )
+    if                       ( gv in [ False , None ]                      ) :
+      return QPointF         ( 0.0 , 0.0                                     )
+    ##########################################################################
+    return gv . mapFromScene ( self . mapToScene ( pos )                     )
+  ############################################################################
+  def pointFromView            ( self , pos                                ) :
+    ##########################################################################
+    gv = self . GraphicsView   (                                             )
+    if                         ( gv in [ False , None ]                    ) :
+      return QPointF           ( 0.0 , 0.0                                   )
+    ##########################################################################
+    return self . mapFromScene ( gv . mapToScene ( pos )                     )
+  ############################################################################
+  def pointToGlobal          ( self , pos                                  ) :
+    ##########################################################################
+    gv = self . GraphicsView (                                               )
+    if                       ( gv in [ False , None ]                      ) :
+      return QPointF         ( 0.0 , 0.0                                     )
+    ##########################################################################
+    s = self  . mapToScene   ( pos                                           )
+    w = gv    . mapFromScene ( s                                             )
+    ##########################################################################
+    return gv . mapToGlobal  ( w                                             )
+  ############################################################################
+  def Quadratic ( self , t , P1 , P2 , P3                                  ) :
+    ##########################################################################
+    mt = 1.0 - t
+    tt = t
+    ##########################################################################
+    A  = mt * mt
+    B  = mt * tt * 2
+    C  = tt * tt
+    ##########################################################################
+    return      ( ( P1 * A ) + ( P2 * B ) + ( P3 * C )                       )
+  ############################################################################
+  def Cubic ( self , t , index , polygon                                   ) :
+    ##########################################################################
+    mt = 1.0 - t
+    tt = t
+    at = mt * tt * 3
+    ##########################################################################
+    A  = mt * mt * mt
+    B  = at * mt
+    C  = at * tt
+    D  = tt * tt * tt
+    ##########################################################################
+    return  ( ( polygon [ index     ] * A )                                + \
+              ( polygon [ index + 1 ] * B )                                + \
+              ( polygon [ index + 2 ] * C )                                + \
+              ( polygon [ index + 3 ] * D )                                  )
+  ############################################################################
+  def setPoints                  ( self , Id , radius , dots               ) :
+    ##########################################################################
+    path = QPainterPath          (                                           )
+    R    = QPointF               ( radius . width ( ) , radius . height ( )  )
+    R    = self . pointToPaper   ( R                                         )
+    P    = self . polygonToPaper ( dots                                      )
+    ##########################################################################
+    for V in P                                                               :
+      ########################################################################
+      path . addEllipse          ( V , R . x ( ) , R . y ( )                 )
+    ##########################################################################
+    self . Painter . pathes [ Id ] = path
+    self . update                (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def setWideLine ( self , Id , width , Line                               ) :
+    ##########################################################################
+    """
+    VcfShape     vs                               ;
+    QPolygonF    G = vs.WideLine ( width , Line ) ;
+    QPolygonF    P = toPaper     ( G            ) ;
+    QPainterPath path                             ;
+    path . addPolygon ( P )                       ;
+    Painter . pathes [Id] = path                  ;
+    update ( )                                    ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def setFoldLines ( self , Id , width , Lines                             ) :
+    ##########################################################################
+    """
+    VcfShape     vs                                 ;
+    QPolygonF    G = vs.FoldLines ( width , Lines ) ;
+    QPolygonF    P = toPaper      ( G             ) ;
+    QPainterPath path                               ;
+    path . addPolygon ( P )                         ;
+    Painter . pathes [Id] = path                    ;
+    update ( )                                      ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def setQuadratic                 ( self , Id , polygon                   ) :
+    ##########################################################################
+    Total  = len                   ( polygon                                 )
+    if                             ( Total < 3                             ) :
+      return
+    ##########################################################################
+    P      = self . polygonToPaper ( polygon                                 )
+    C      = QPolygonF             (                                         )
+    R      = QPolygonF             (                                         )
+    P0     = QPointF               (                                         )
+    P1     = QPointF               (                                         )
+    P2     = QPointF               (                                         )
+    P3     = QPointF               (                                         )
+    path   = QPainterPath          (                                         )
+    ##########################################################################
+    for a in range                 ( 0 , Total                             ) :
+      ########################################################################
+      b    = a + 1
+      b    = b % Total
+      c    = a + 2
+      c    = c % Total
+      ########################################################################
+      P1   = P                     [ a                                       ]
+      P2   = P                     [ b                                       ]
+      P3   = P                     [ c                                       ]
+      ########################################################################
+      P0   = ( P1 + P2 ) / 2
+      C    . append                ( P0                                      )
+      P0   = self . Quadratic      ( 0.5 , P1 , P2 , P3                      )
+      R    . append                ( P0                                      )
+    ##########################################################################
+    path   . moveTo                ( R [ 0 ]                                 )
+    ##########################################################################
+    for i in range                 ( 1 , Total                             ) :
+      ########################################################################
+      path . quadTo                ( C [ i ] , R [ i ]                       )
+    ##########################################################################
+    path   . quadTo                ( C [ 0 ] , R [ 0 ]                       )
+    ##########################################################################
+    self   . Painter . pathes [ Id ] = path
+    self   . update                (                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
 ##############################################################################
 """
 class Q_COMPONENTS_EXPORT VcfItem : public QObject
@@ -542,243 +757,6 @@ bool N::VcfItem::drop(QGraphicsSceneDragDropEvent * event)
   nKickOut(!dropAppend(event->source(),event->mimeData(),event->pos()),false) ;
   return true                                                                 ;
 }
-
-void N::VcfItem::PaintPath(QPainter * p,int Id)
-{
-  pushPainters         ( p              ) ;
-  if (Painter.pathes.contains(Id))        {
-    if (Painter.pens.contains(Id))        {
-      p -> setPen   (Painter.pens   [Id]) ;
-    }                                     ;
-    if (Painter.brushes.contains(Id))     {
-      p -> setBrush (Painter.brushes[Id]) ;
-    }                                     ;
-    p -> drawPath ( Painter.pathes[Id]  ) ;
-  }                                       ;
-  popPainters          ( p              ) ;
-}
-
-void N::VcfItem::PaintPathes(QPainter * p)
-{
-  CUIDs Index = Painter.switches.keys() ;
-  CUID  i                               ;
-  nDropOut ( Index.count() <= 0 )       ;
-  qSort(Index.begin(),Index.end())      ;
-  foreach (i,Index)                     {
-    if (Painter.switches[i])            {
-      PaintPath ( p , i )               ;
-    }                                   ;
-  }                                     ;
-}
-
-void N::VcfItem::PaintLines(QPainter * p,int Id,QPolygonF & Lines)
-{
-  nDropOut ( Lines.count() <= 0  ) ;
-  pushPainters ( p               ) ;
-  if (Painter.pens.contains(Id))   {
-    p -> setPen (Painter.pens[Id]) ;
-  }                                ;
-  p -> drawPolyline ( Lines )      ;
-  popPainters  ( p               ) ;
-}
-
-void N::VcfItem::EnablePath(int Id,bool enable)
-{
-  Painter.switches[Id] = enable ;
-}
-
-void N::VcfItem::MergePathes(int TargetId)
-{
-  Painter . pathes [ TargetId ] = UnitedPathes ( ) ;
-}
-
-void N::VcfItem::ClearPathes(void)
-{
-  Painter . switches . clear ( ) ;
-  Painter . pathes   . clear ( ) ;
-}
-
-QPainterPath N::VcfItem::UnitedPathes(void)
-{
-  CUIDs Index = Painter.switches.keys() ;
-  QPainterPath path                     ;
-  nKickOut ( Index.count()<=0 , path )  ;
-  qSort(Index.begin(),Index.end())      ;
-  path = Painter.pathes[ Index [ 0 ] ]  ;
-  for (int i=1;i<Index.count();i++)     {
-    int j = Index[i]                    ;
-    if (Painter.switches[j])            {
-      path.addPath(Painter.pathes[j])   ;
-    }                                   ;
-  }                                     ;
-  return path.simplified()              ;
-}
-
-QPointF N::VcfItem::toPaper(QPointF cm)
-{
-  nKickOut ( IsNull(Options) , QPointF(0.00f,0.00f) ) ;
-  return Options->position(cm)                        ;
-}
-
-QRectF N::VcfItem::toPaper(QRectF region)
-{
-  nKickOut ( IsNull(Options) , QRectF(0.00f,0.00f,0.00f,0.00f) ) ;
-  return Options->Region(region)                                 ;
-}
-
-QPolygonF N::VcfItem::toPaper(QPolygonF & polygon)
-{
-  QPolygonF p                            ;
-  nKickOut ( IsNull(Options) , polygon ) ;
-  for (int i=0;i<polygon.count();i++)    {
-    QPointF P = polygon [ i ]            ;
-    P = Options -> position ( P )        ;
-    p << P                               ;
-  }                                      ;
-  return    p                            ;
-}
-
-QPoint N::VcfItem::toView(QPointF pos)
-{
-  QGraphicsView * gv = GraphicsView     (   ) ;
-  nKickOut ( IsNull(gv) , QPoint (0,0)      ) ;
-  QPointF         s  = mapToScene       (pos) ;
-  QPoint          w  = gv->mapFromScene (s  ) ;
-  return w                                    ;
-}
-
-QPoint N::VcfItem::toGlobal(QPointF pos)
-{
-  QGraphicsView * gv = GraphicsView     (   ) ;
-  nKickOut ( IsNull(gv) , QPoint (0,0)      ) ;
-  QPointF         s  = mapToScene       (pos) ;
-  QPoint          w  = gv->mapFromScene (s  ) ;
-  QPoint          g  = gv->mapToGlobal  (w  ) ;
-  return g                                    ;
-}
-
-QPointF N::VcfItem::FromView(QPoint pos)
-{
-  QGraphicsView * gv = GraphicsView (   ) ;
-  nKickOut ( IsNull(gv) , QPoint (0,0)  ) ;
-  QPointF s = gv->mapToScene        (pos) ;
-  QPointF w =     mapFromScene      ( s ) ;
-  return  w                               ;
-}
-
-QPointF N::VcfItem::Quadratic(double t,QPointF & P1,QPointF & P2,QPointF & P3)
-{
-  double  mt = 1 - t       ;
-  double  tt = t           ;
-  double  A  = mt * mt     ;
-  double  B  = mt * tt * 2 ;
-  double  C  = tt * tt     ;
-  QPointF P                ;
-  P   = P1 * A             ;
-  P  += P2 * B             ;
-  P  += P3 * C             ;
-  return  P                ;
-}
-
-QPointF N::VcfItem::Quadratic(double t,int index,QPolygonF & polygon)
-{
-  double  mt = 1 - t              ;
-  double  tt = t                  ;
-  double  A  = mt * mt            ;
-  double  B  = mt * tt * 2        ;
-  double  C  = tt * tt            ;
-  QPointF P                       ;
-  P   = polygon [ index     ] * A ;
-  P  += polygon [ index + 1 ] * B ;
-  P  += polygon [ index + 2 ] * C ;
-  return  P                       ;
-}
-
-QPointF N::VcfItem::Cubic(double t,int index,QPolygonF & polygon)
-{
-  double  mt = 1 - t              ;
-  double  tt = t                  ;
-  double  at = mt * tt * 3        ;
-  double  A  = mt * mt * mt       ;
-  double  B  = at * mt            ;
-  double  C  = at * tt            ;
-  double  D  = tt * tt * tt       ;
-  QPointF P                       ;
-  P   = polygon [ index     ] * A ;
-  P  += polygon [ index + 1 ] * B ;
-  P  += polygon [ index + 2 ] * C ;
-  P  += polygon [ index + 3 ] * D ;
-  return  P                       ;
-}
-
-void N::VcfItem::setPoints(int Id,QSizeF radius,QPolygonF & dots)
-{
-  QPointF   R(radius.width(),radius.height()) ;
-  QPolygonF P = toPaper ( dots )              ;
-  QPainterPath path                           ;
-  R = toPaper ( R )                           ;
-  for (int i=0;i<P.count();i++)               {
-    QPointF c = P [ i ]                       ;
-    path . addEllipse ( c , R.x() , R.y() )   ;
-  }                                           ;
-  Painter . pathes [Id] = path                ;
-  update ( )                                  ;
-}
-
-void N::VcfItem::setWideLine(int Id,double width,QLineF & Line)
-{
-  VcfShape     vs                               ;
-  QPolygonF    G = vs.WideLine ( width , Line ) ;
-  QPolygonF    P = toPaper     ( G            ) ;
-  QPainterPath path                             ;
-  path . addPolygon ( P )                       ;
-  Painter . pathes [Id] = path                  ;
-  update ( )                                    ;
-}
-
-void N::VcfItem::setFoldLines(int Id,double width,QPolygonF & Lines)
-{
-  VcfShape     vs                                 ;
-  QPolygonF    G = vs.FoldLines ( width , Lines ) ;
-  QPolygonF    P = toPaper      ( G             ) ;
-  QPainterPath path                               ;
-  path . addPolygon ( P )                         ;
-  Painter . pathes [Id] = path                    ;
-  update ( )                                      ;
-}
-
-void N::VcfItem::setQuadratic(int Id,QPolygonF & polygon)
-{
-  nDropOut ( polygon.count() < 3 )      ;
-  QPolygonF    P  = toPaper ( polygon ) ;
-  QPolygonF    C                        ;
-  QPolygonF    R                        ;
-  QPointF      P0                       ;
-  QPointF      P1                       ;
-  QPointF      P2                       ;
-  QPointF      P3                       ;
-  QPainterPath path                     ;
-  int          total = P.count()        ;
-  for (int a=0;a<total;a++)             {
-    int b = a + 1 ; b %= total          ;
-    int c = a + 2 ; c %= total          ;
-    P1 = P[a]                           ;
-    P2 = P[b]                           ;
-    P3 = P[c]                           ;
-    P0 = P1 + P2 ; P0 /= 2              ;
-    C << P0                             ;
-    P0 = Quadratic(0.5,P1,P2,P3)        ;
-    R << P0                             ;
-  }                                     ;
-  path . moveTo ( R[0] )                ;
-  for (int i=1;i<total;i++)             {
-    path . quadTo ( C[ i ] , R[ i ] )   ;
-  }                                     ;
-  path . quadTo ( C[ 0 ] , R[ 0 ] )     ;
-  Painter . pathes [Id] = path          ;
-  update ( )                            ;
-}
-
 
 bool N::VcfItem::FetchFont(int Id,SUID uuid)
 {
