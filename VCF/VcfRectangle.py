@@ -119,7 +119,7 @@ class VcfRectangle              ( VcfItem                                  ) :
     ##########################################################################
     self . prepareGeometryChange  (                                          )
     self . update                 (                                          )
-    self . GeometryChanged . emit ( self                                     )
+    ## self . GeometryChanged . emit ( self                                     )
     ##########################################################################
     return
   ############################################################################
@@ -133,6 +133,12 @@ class VcfRectangle              ( VcfItem                                  ) :
   ############################################################################
   def PaperRange  ( self                                                   ) :
     return QRectF ( self . PaperPos , self . PaperSize ( )                   )
+  ############################################################################
+  def setScaling       ( self , scale                                      ) :
+    ##########################################################################
+    self . Scaling = scale
+    ##########################################################################
+    return
   ############################################################################
   def setPos           ( self , CM                                         ) :
     ##########################################################################
@@ -263,9 +269,6 @@ class VcfRectangle              ( VcfItem                                  ) :
       return
     ##########################################################################
     if                          ( Corner == self . vrInside                ) :
-      ########################################################################
-      if                        ( not self . isFunction ( 33004 )          ) :
-        return
       ########################################################################
       self . setCursor          ( Qt . ArrowCursor                           )
       ########################################################################
@@ -556,7 +559,7 @@ class VcfRectangle              ( VcfItem                                  ) :
       ########################################################################
       self   . setCursor       ( Qt . ArrowCursor                            )
       self   . Markers    [ 0 ] = 0
-      self   . Markers    [ 1 ] = vrNoSide
+      self   . Markers    [ 1 ] = self . vrNoSide
       ########################################################################
       return False
     ##########################################################################
@@ -568,9 +571,12 @@ class VcfRectangle              ( VcfItem                                  ) :
     P1     = QPointF        (                                                )
     P2     = QPointF        (                                                )
     ##########################################################################
-    CR     = [ vrTopLeft  , vrTopRight , vrBottomLeft , vrBottomRight        ]
-    LR     = [ vrLeftSide , vrRightSide                                      ]
-    TB     = [ vrTopSide  , vrBottomSide                                     ]
+    CR     =                [ self . vrTopLeft                             , \
+                              self . vrTopRight                            , \
+                              self . vrBottomLeft                          , \
+                              self . vrBottomRight                           ]
+    LR     =                [ self . vrLeftSide , self . vrRightSide         ]
+    TB     =                [ self . vrTopSide  , self . vrBottomSide        ]
     ##########################################################################
     if                      ( Corner in CR                                 ) :
       ########################################################################
@@ -614,43 +620,61 @@ class VcfRectangle              ( VcfItem                                  ) :
     ##########################################################################
     return True
   ############################################################################
-  def scalePressEvent ( self , event                                       ) :
+  def scalePressEvent           ( self , event                             ) :
     ##########################################################################
-    """
-    if (Scaling && IsMask(event->buttons(),Qt::LeftButton)) {
-      if (ResizeStart ( event ) ) event -> accept () ; else {
-        QGraphicsItem::mousePressEvent(event)               ;
-      }                                                     ;
-    } else                                                  {
-      QGraphicsItem::mousePressEvent(event)                 ;
-      DeleteGadgets()                                       ;
-    }                                                       ;
-    """
+    if                          ( self . Scaling                           ) :
+      ########################################################################
+      if ( self . IsMask ( event . buttons ( ) , Qt . LeftButton )         ) :
+        ######################################################################
+        if                      ( self . ResizeStart ( event )             ) :
+          event . accept        (                                            )
+        else                                                                 :
+          super ( ) . mousePressEvent ( event                                )
+        ######################################################################
+        return
     ##########################################################################
-    return
-  ############################################################################
-  def scaleMoveEvent ( self , event ) :
-    ##########################################################################
-    """
-    if (Scaling && IsMask(event->buttons(),Qt::LeftButton))  {
-      if (ResizeMoving ( event ) ) event -> accept () ; else {
-        QGraphicsItem::mouseMoveEvent(event)                 ;
-      }                                                      ;
-    } else if (Scaling)                                      {
-      if (CursorMoving ( event ) ) event->accept () ; else   {
-        QGraphicsItem::mouseMoveEvent(event)                 ;
-      }                                                      ;
-    } else QGraphicsItem::mouseMoveEvent(event)              ;
-    """
+    super ( ) . mousePressEvent ( event                                      )
+    self      . DeleteGadgets   (                                            )
     ##########################################################################
     return
   ############################################################################
-  def scaleReleaseEvent ( self , event ) :
+  def scaleMoveEvent                 ( self , event                        ) :
     ##########################################################################
-    """
-    if ( 1 == Markers [ 0 ]) ResizeFinish ( event ) ;
-    QGraphicsItem::mouseReleaseEvent      ( event ) ;
-    """
+    if                               ( self . Scaling                      ) :
+      if ( self . IsMask ( event . buttons ( ) , Qt . LeftButton )         ) :
+        ######################################################################
+        if                           ( self . ResizeMoving ( event )       ) :
+          ####################################################################
+          event . accept             (                                       )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          super ( ) . mouseMoveEvent ( event                                 )
+        ######################################################################
+        return
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        if                           ( self . CursorMoving ( event )       ) :
+          ####################################################################
+          event . accept             (                                       )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          super ( ) . mouseMoveEvent ( event                                 )
+        ######################################################################
+        return
+    ##########################################################################
+    super ( ) . mouseMoveEvent       ( event                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def scaleReleaseEvent           ( self , event                           ) :
+    ##########################################################################
+    if                            ( self . Markers [ 0 ] == 1              ) :
+      self . ResizeFinish         (        event                             )
+    ##########################################################################
+    super ( ) . mouseReleaseEvent (        event                             )
     ##########################################################################
     return
   ############################################################################
