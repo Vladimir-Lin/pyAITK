@@ -56,8 +56,6 @@ class VcfRectangle              ( VcfItem                                  ) :
   vrBottomSide    = 8
   vrInside        = 9
   ############################################################################
-  GeometryChanged = pyqtSignal  ( VcfItem                                    )
-  ############################################################################
   def __init__                  ( self                                     , \
                                   parent = None                            , \
                                   item   = None                            , \
@@ -74,6 +72,8 @@ class VcfRectangle              ( VcfItem                                  ) :
     return
   ############################################################################
   def setRectangleDefaults         ( self                                  ) :
+    ##########################################################################
+    self . GeometryChanged = None
     ##########################################################################
     self . PaperPos   = QPointF    ( 0.0 , 0.0                               )
     self . PaperRect  = QRectF     ( 0.0 , 0.0 , 0.0 , 0.0                   )
@@ -115,11 +115,20 @@ class VcfRectangle              ( VcfItem                                  ) :
   def boundingRect ( self                                                  ) :
     return self . ScreenRect
   ############################################################################
+  def signalGeometryChanged ( self                                         ) :
+    ##########################################################################
+    if                      ( self . GeometryChanged in [ False , None ]   ) :
+      return
+    ##########################################################################
+    self . GeometryChanged  ( self                                           )
+    ##########################################################################
+    return
+  ############################################################################
   def emitGeometryChanged         ( self                                   ) :
     ##########################################################################
     self . prepareGeometryChange  (                                          )
     self . update                 (                                          )
-    ## self . GeometryChanged . emit ( self                                     )
+    self . signalGeometryChanged  (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -697,7 +706,7 @@ class VcfRectangle              ( VcfItem                                  ) :
   def itemChange ( self , change , value                                   ) :
     ##########################################################################
     if           ( change == QGraphicsItem . ItemPositionChange            ) :
-      self . GeometryChanged . emit ( self                                   )
+      self . signalGeometryChanged  (                                        )
     ##########################################################################
     return super ( ) . itemChange   ( change , value                         )
   ############################################################################
