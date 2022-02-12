@@ -583,11 +583,6 @@ class PeopleView                   ( IconDock                              ) :
     MSG = FMT  . format        ( item . text ( )                             )
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
-    if                         ( self . isSubordination ( )                ) :
-      ########################################################################
-      msg = self . getMenuItem ( "AssignTables"                              )
-      mm  . addActionFromMenu  ( COL , 1301 , msg                            )
-    ##########################################################################
     MSG = self . getMenuItem   ( "Occupations"                               )
     mm  . addActionFromMenu    ( LOM , 1201 , MSG                            )
     ##########################################################################
@@ -610,20 +605,6 @@ class PeopleView                   ( IconDock                              ) :
     return mm
   ############################################################################
   def RunGroupsMenu                     ( self , at , uuid , item          ) :
-    ##########################################################################
-    if                  ( at == 1301                                       ) :
-      ########################################################################
-      TITLE = self . windowTitle       (                                     )
-      UUID  = self . Relation  . get   ( "first"                             )
-      TYPE  = self . Relation  . get   ( "t1"                                )
-      TYPE  = int                      ( TYPE                                )
-      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
-                                         str ( UUID  )                     , \
-                                         TYPE                              , \
-                                         "Tables"                          , \
-                                         self . Tables                       )
-      ########################################################################
-      return True
     ##########################################################################
     if                                  ( at == 1201                       ) :
       ########################################################################
@@ -708,6 +689,11 @@ class PeopleView                   ( IconDock                              ) :
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     = self . AppendRenameAction  ( mm , 1102                          )
     ##########################################################################
+    if                             ( self . isSubordination ( )            ) :
+      ########################################################################
+      msg  = self . getMenuItem    ( "AssignTables"                          )
+      mm   . addAction             ( 1301 , msg                              )
+    ##########################################################################
     mm     . addSeparator          (                                         )
     if                             ( atItem != None                        ) :
       if                           ( self . EditAllNames != None           ) :
@@ -767,6 +753,20 @@ class PeopleView                   ( IconDock                              ) :
     if                             ( at == 1102                            ) :
       ########################################################################
       self . RenamePeople          (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1301                            ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      UUID  = self . Relation  . get   ( "first"                             )
+      TYPE  = self . Relation  . get   ( "t1"                                )
+      TYPE  = int                      ( TYPE                                )
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         "Tables"                          , \
+                                         self . Tables                       )
       ########################################################################
       return True
     ##########################################################################
