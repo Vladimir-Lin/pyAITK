@@ -57,10 +57,11 @@ from   AITK  . People     . People    import People      as PeopleItem
 ##############################################################################
 class CrowdView                   ( IconDock                               ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu        = 1371434312
   ############################################################################
-  CrowdSubgroup = pyqtSignal      ( str , int , str                          )
-  PeopleGroup   = pyqtSignal      ( str , int , str                          )
+  CrowdSubgroup     = pyqtSignal  ( str , int , str                          )
+  PeopleGroup       = pyqtSignal  ( str , int , str                          )
+  OpenVariantTables = pyqtSignal  ( str , str , int , str , dict             )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################

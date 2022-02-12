@@ -71,6 +71,7 @@ class PeopleView                   ( IconDock                              ) :
   ShowGalleries       = pyqtSignal ( str , int , str ,       QIcon           )
   ShowWebPages        = pyqtSignal ( str , int , str , str , QIcon           )
   OwnedOccupation     = pyqtSignal ( str , int , str , str , QIcon           )
+  OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -186,29 +187,9 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
-  def FetchSessionInformation         ( self , DB                          ) :
+  def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
-    self   . ReloadLocality           ( DB                                   )
-    ##########################################################################
-    self   . Total = 0
-    ##########################################################################
-    if                                ( self . Grouping == "Original"      ) :
-      ########################################################################
-      self . Total = self . FetchRegularDepotCount ( DB                      )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                ( self . Grouping == "Subordination" ) :
-      ########################################################################
-      self . Total = self . FetchGroupMembersCount ( DB                      )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                ( self . Grouping == "Reverse"       ) :
-      ########################################################################
-      self . Total = self . FetchGroupOwnersCount  ( DB                      )
-      ########################################################################
-      return
+    self . defaultFetchSessionInformation (        DB                        )
     ##########################################################################
     return
   ############################################################################
@@ -602,6 +583,11 @@ class PeopleView                   ( IconDock                              ) :
     MSG = FMT  . format        ( item . text ( )                             )
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
+    if                         ( self . isSubordination ( )                ) :
+      ########################################################################
+      msg = self . getMenuItem ( "AssignTables"                              )
+      mm  . addActionFromMenu  ( COL , 1301 , msg                            )
+    ##########################################################################
     MSG = self . getMenuItem   ( "Occupations"                               )
     mm  . addActionFromMenu    ( LOM , 1201 , MSG                            )
     ##########################################################################
@@ -624,6 +610,20 @@ class PeopleView                   ( IconDock                              ) :
     return mm
   ############################################################################
   def RunGroupsMenu                     ( self , at , uuid , item          ) :
+    ##########################################################################
+    if                  ( at == 1301                                       ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      UUID  = self . Relation  . get   ( "first"                             )
+      TYPE  = self . Relation  . get   ( "t1"                                )
+      TYPE  = int                      ( TYPE                                )
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         "Tables"                          , \
+                                         self . Tables                       )
+      ########################################################################
+      return True
     ##########################################################################
     if                                  ( at == 1201                       ) :
       ########################################################################
