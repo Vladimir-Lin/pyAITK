@@ -75,28 +75,29 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     super ( ) . __init__            ( parent , plan                          )
     ##########################################################################
-    self . EditAllNames   = None
-    self . IconFont       = None
-    self . UsingName      = True
-    self . SortOrder      = "asc"
-    self . Total          = 0
-    self . StartId        = 0
-    self . Amount         = 60
-    self . AssignedAmount = 0
-    self . PrivateIcon    = False
-    self . PrivateGroup   = False
-    self . ExtraINFOs     = False
-    self . LoopRunning    = True
-    self . SpinStartId    = None
-    self . SpinAmount     = None
-    self . UuidItemMaps   =          {                                        }
+    self . EditAllNames    = None
+    self . IconFont        = None
+    self . UsingName       = True
+    self . SortOrder       = "asc"
+    self . Total           = 0
+    self . StartId         = 0
+    self . Amount          = 60
+    self . AssignedAmount  = 0
+    self . PrivateIcon     = False
+    self . PrivateGroup    = False
+    self . ExtraINFOs      = False
+    self . LoopRunning     = True
+    self . SpinStartId     = None
+    self . SpinAmount      = None
+    self . UuidItemMaps    =        {                                        }
+    self . DoParallelIcons =        {                                        }
     ##########################################################################
-    self . Method         = "Original"
+    self . Method          = "Original"
     ##########################################################################
-    self . Grouping       = "Original"
-    self . OldGrouping    = "Original"
-    ## self . Grouping       = "Subordination"
-    ## self . Grouping       = "Reverse"
+    self . Grouping        = "Original"
+    self . OldGrouping     = "Original"
+    ## self . Grouping        = "Subordination"
+    ## self . Grouping        = "Reverse"
     ##########################################################################
     self . setViewMode              ( QListView . IconMode                   )
     self . setIconSize              ( QSize ( 128 , 128 )                    )
@@ -360,12 +361,13 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return QIcon                      ( PIX                                  )
   ############################################################################
-  def FetchIcons                       ( self , UUIDs                      ) :
+  def ParallelFetchIcons               ( self , ID , UUIDs                 ) :
     ##########################################################################
     if                                 ( len ( UUIDs ) <= 0                ) :
+      ########################################################################
+      self     . DoParallelIcons [ ID ] = True
+      ########################################################################
       return
-    ##########################################################################
-    FMT        = self . Translations   [ "UI::LoadIcon"                      ]
     ##########################################################################
     if                                 ( self . PrivateIcon                ) :
       DB       = self . ConnectHost    ( self . IconDB , True                )
@@ -373,7 +375,12 @@ class IconDock                      ( ListDock                             ) :
       DB       = self . ConnectDB      ( True                                )
     ##########################################################################
     if                                 ( DB == None                        ) :
+      ########################################################################
+      self     . DoParallelIcons [ ID ] = True
+      ########################################################################
       return
+    ##########################################################################
+    FMT        = self . Translations   [ "UI::LoadIcon"                      ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
@@ -404,6 +411,69 @@ class IconDock                      ( ListDock                             ) :
         self   . emitAssignIcon . emit ( item , icon                         )
     ##########################################################################
     DB         . Close                 (                                     )
+    ##########################################################################
+    self       . DoParallelIcons [ ID ] = True
+    ##########################################################################
+    return
+  ############################################################################
+  def FetchIcons                       ( self , UUIDs                      ) :
+    ##########################################################################
+    TOTAL      = len                   ( UUIDs                               )
+    ##########################################################################
+    if                                 ( TOTAL  <= 0                       ) :
+      return
+    ##########################################################################
+    SLOTS      = 1
+    if                                 ( TOTAL > 200                       ) :
+      SLOTS    = 5
+    elif                               ( TOTAL > 100                       ) :
+      SLOTS    = 3
+    elif                               ( TOTAL >  50                       ) :
+      SLOTS    = 2
+    ##########################################################################
+    PART       = int                   ( TOTAL / SLOTS                       )
+    ##########################################################################
+    ZUIDs      =                       {                                     }
+    for ID in range                    ( 0 , SLOTS                         ) :
+      self     . DoParallelIcons [ ID ] = False
+      ZUIDs [ ID ] =                   [                                     ]
+    ##########################################################################
+    if                                 ( SLOTS == 1                        ) :
+      ########################################################################
+      VAL      =                       ( ID , UUIDs ,                        )
+      self     . Go                    ( self . ParallelFetchIcons , VAL     )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      REMAINS  = TOTAL - int           ( PART * ( SLOTS - 1 )                )
+      ########################################################################
+      for i in range                   ( 0 , REMAINS                       ) :
+        ZUIDs [ 0 ] . append           ( UUIDs [ i ]                         )
+      ########################################################################
+      for ID in range                  ( 1 , SLOTS                         ) :
+        ######################################################################
+        AT     = REMAINS +             ( ( ID - 1 ) * PART                   )
+        ######################################################################
+        for i in range                 ( 0 , PART                          ) :
+           ZUIDs [ ID ] . append       ( UUIDs [ AT + i ]                    )
+      ########################################################################
+      for ID in range                  ( 0 , SLOTS                         ) :
+        VAL    =                       ( ID , ZUIDs [ ID ] ,                 )
+        self   . Go                    ( self . ParallelFetchIcons , VAL     )
+    ##########################################################################
+    DONE       = False
+    while                              ( not DONE                          ) :
+      ########################################################################
+      if                               ( not self . LoopRunning            ) :
+        DONE   = True
+        continue
+      ########################################################################
+      DONE     = True
+      for i in SLOTS                                                         :
+        ######################################################################
+        if                             ( not self . DoParallelIcons [ ID ] ) :
+          ####################################################################
+          DONE = False
     ##########################################################################
     self       . Notify                ( 2                                   )
     self       . ShowStatus            ( ""                                  )
