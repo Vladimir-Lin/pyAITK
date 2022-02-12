@@ -679,12 +679,13 @@ class PeopleView                   ( IconDock                              ) :
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     mm     = self . AppendRenameAction  ( mm , 1102                          )
     ##########################################################################
+    mm     . addSeparator          (                                         )
+    ##########################################################################
     if                             ( self . isSubordination ( )            ) :
       ########################################################################
       msg  = self . getMenuItem    ( "AssignTables"                          )
       mm   . addAction             ( 1301 , msg                              )
     ##########################################################################
-    mm     . addSeparator          (                                         )
     if                             ( atItem != None                        ) :
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
