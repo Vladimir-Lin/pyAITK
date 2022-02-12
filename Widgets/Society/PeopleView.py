@@ -107,21 +107,11 @@ class PeopleView                   ( IconDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def GetUuidIcon                ( self , DB , Uuid                        ) :
+  def GetUuidIcon                    ( self , DB , UUID                    ) :
     ##########################################################################
-    RELTAB = self . Tables       [ "Relation"                                ]
-    REL    = Relation            (                                           )
-    REL    . set                 ( "first" , Uuid                            )
-    REL    . setT1               ( "People"                                  )
-    REL    . setT2               ( "Picture"                                 )
-    REL    . setRelation         ( "Using"                                   )
+    RELTAB = self . Tables           [ "Relation"                            ]
     ##########################################################################
-    PICS   = REL . Subordination ( DB , RELTAB                               )
-    ##########################################################################
-    if                           ( len ( PICS ) > 0                        ) :
-      return PICS                [ 0                                         ]
-    ##########################################################################
-    return 0
+    return self . defaultGetUuidIcon ( DB , RELTAB , "People" , UUID         )
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################

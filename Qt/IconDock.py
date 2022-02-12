@@ -1619,6 +1619,7 @@ class IconDock                      ( ListDock                             ) :
                                           int ( TYPE )                     , \
                                           "Tables"                         , \
                                           self . Tables                      )
+      print(self.Tables)
       ########################################################################
       self . Total = self . FetchGroupMembersCount ( DB                      )
       ########################################################################
