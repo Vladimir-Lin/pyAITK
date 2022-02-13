@@ -96,7 +96,7 @@ class Variables ( Columns )                                                  :
              "name"                                                          ,
              "value"                                                         ]
   ############################################################################
-  def GetValue    ( self , DB , TABLE )                                      :
+  def GetValue         ( self , DB , TABLE                                 ) :
     ##########################################################################
     U  = self . Uuid
     T  = self . Type
@@ -108,19 +108,26 @@ class Variables ( Columns )                                                  :
              and ( `name` = '{N}' )
              order by `id` desc
              limit 0,1 ;"""
-    DB . Query ( QQ )
+    DB . Query         ( QQ                                                  )
     ##########################################################################
-    RR = DB . FetchOne ( )
-    if ( RR == None ) :
+    RR = DB . FetchOne (                                                     )
+    if                 ( RR in [ False , None ]                            ) :
       return None
-    if ( len ( RR ) <= 0 ) :
+    if                 ( len ( RR ) <= 0                                   ) :
       return None
     ##########################################################################
-    return RR [ 0 ]
+    return RR          [ 0                                                   ]
   ############################################################################
-  def AssureValue ( self , DB , TABLE )                                      :
+  def AssureValue            ( self , DB , TABLE                           ) :
     ##########################################################################
-    VAL = ( self . Uuid , self . Type , self . Name , self . Value , )
-    QQ  = f"replace into {TABLE} ( `uuid`,`type`,`name`,`value` ) values ( %s,%s,%s,%s ) ;"
-    return DB  . QueryValues ( QQ , VAL )
+    VAL =                    ( self . Uuid                                 , \
+                               self . Type                                 , \
+                               self . Name                                 , \
+                               self . Value                                , )
+    QQ  = f"""replace into {TABLE}
+              ( `uuid`,`type`,`name`,`value` )
+              values
+              ( %s,%s,%s,%s ) ;"""
+    QQ  = " " . join         ( QQ . split ( )                                )
+    return DB  . QueryValues ( QQ , VAL                                      )
 ##############################################################################

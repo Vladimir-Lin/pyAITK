@@ -56,7 +56,7 @@ class Connection ( )                                                         :
   ## Connect to SQL Database
   ## 連線到指定資料庫
   ############################################################################
-  def ConnectTo ( self , DB , ForcePure = False )                                                :
+  def ConnectTo ( self , DB , ForcePure = False )                            :
     ##########################################################################
     if ( not self . db )                                                     :
       pass
