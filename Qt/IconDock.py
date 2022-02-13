@@ -90,6 +90,7 @@ class IconDock                      ( ListDock                             ) :
     self . SpinStartId     = None
     self . SpinAmount      = None
     self . UuidItemMaps    =        {                                        }
+    self . FetchingIcons   = False
     self . DoParallelIcons =        {                                        }
     ##########################################################################
     self . Method          = "Original"
@@ -110,7 +111,7 @@ class IconDock                      ( ListDock                             ) :
     self . setVerticalScrollBarPolicy   ( Qt . ScrollBarAsNeeded             )
     self . setMinimumSize           ( QSize ( 144 , 200 )                    )
     ##########################################################################
-    self . emitIconsShow  . connect ( self . show                            )
+    self . emitIconsShow  . connect ( self . ShowIconDock                    )
     self . emitAllIcons   . connect ( self . refresh                         )
     self . emitAssignIcon . connect ( self . AssignIcon                      )
     self . emitEmptySelections . connect ( self . doEmptySelections          )
@@ -174,6 +175,13 @@ class IconDock                      ( ListDock                             ) :
         UUIDs . append               ( UUID                                  )
     ##########################################################################
     return UUIDs
+  ############################################################################
+  def ShowIconDock       ( self                                            ) :
+    ##########################################################################
+    self . show          (                                                   )
+    qApp . processEvents (                                                   )
+    ##########################################################################
+    return
   ############################################################################
   def FocusIn                    ( self                                    ) :
     ##########################################################################
@@ -406,9 +414,13 @@ class IconDock                      ( ListDock                             ) :
           MSG  = FMT . format          ( title                               )
           self . ShowStatus            ( MSG                                 )
       ########################################################################
+      if                               ( not self . LoopRunning            ) :
+        continue
+      ########################################################################
       icon     = self . FetchIcon      ( DB , PUID                           )
       if                               ( icon not in [ False , None ]      ) :
-        self   . emitAssignIcon . emit ( item , icon                         )
+        if                             ( self . LoopRunning                ) :
+          self . emitAssignIcon . emit ( item , icon                         )
     ##########################################################################
     DB         . Close                 (                                     )
     ##########################################################################
@@ -422,6 +434,8 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     if                                 ( TOTAL  <= 0                       ) :
       return
+    ##########################################################################
+    self . FetchingIcons = True
     ##########################################################################
     SLOTS      = 1
     if                                 ( TOTAL > 200                       ) :
@@ -474,6 +488,8 @@ class IconDock                      ( ListDock                             ) :
         if                             ( not self . DoParallelIcons [ ID ] ) :
           ####################################################################
           DONE = False
+    ##########################################################################
+    self       . FetchingIcons = False
     ##########################################################################
     self       . Notify                ( 2                                   )
     self       . ShowStatus            ( ""                                  )
