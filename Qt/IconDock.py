@@ -83,6 +83,7 @@ class IconDock                      ( ListDock                             ) :
     self . StartId         = 0
     self . Amount          = 60
     self . AssignedAmount  = 0
+    self . FetchTableKey   = "Tables"
     self . PrivateIcon     = False
     self . PrivateGroup    = False
     self . ExtraINFOs      = False
@@ -1703,7 +1704,7 @@ class IconDock                      ( ListDock                             ) :
                                           DB                               , \
                                           str ( UUID )                     , \
                                           int ( TYPE )                     , \
-                                          "Tables"                         , \
+                                          self . FetchTableKey             , \
                                           self . Tables                      )
       ########################################################################
       self . Total = self . FetchGroupMembersCount ( DB                      )
