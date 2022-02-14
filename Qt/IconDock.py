@@ -1700,15 +1700,12 @@ class IconDock                      ( ListDock                             ) :
       ########################################################################
       UUID   = self . Relation . get ( "first"                               )
       TYPE   = self . Relation . get ( "t1"                                  )
-      print(UUID,TYPE,self . FetchTableKey)
-      print(self.Tables)
       self   . Tables = self . ObtainsOwnerVariantTables                   ( \
                                           DB                               , \
                                           str ( UUID )                     , \
                                           int ( TYPE )                     , \
                                           self . FetchTableKey             , \
                                           self . Tables                      )
-      print(self.Tables)
       ########################################################################
       self . Total = self . FetchGroupMembersCount ( DB                      )
       ########################################################################
