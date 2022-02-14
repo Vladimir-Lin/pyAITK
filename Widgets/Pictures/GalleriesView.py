@@ -613,7 +613,7 @@ class GalleriesView                ( IconDock                              ) :
       self  . OpenVariantTables . emit ( str ( TITLE )                     , \
                                          str ( UUID  )                     , \
                                          TYPE                              , \
-                                         "Tables"                          , \
+                                         self . FetchTableKey              , \
                                          self . Tables                       )
       ########################################################################
       return True
