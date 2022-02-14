@@ -1578,6 +1578,7 @@ class AbstractGui        (                                                 ) :
                                NAME                                        , \
                                JSON                                        ) :
     ##########################################################################
+    print(VARTAB,UUID,TYPE,NAME)
     VARI   = VariableItem    (                                               )
     VARI   . Uuid = UUID
     VARI   . Type = TYPE
