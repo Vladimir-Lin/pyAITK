@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
 from . PeopleView            import PeopleView            as PeopleView
+from . PeopleMerger          import PeopleMerger          as PeopleMerger
 from . CrowdView             import CrowdView             as CrowdView
 from . NationTypeListings    import NationTypeListings    as NationTypeListings
 from . CountryListings       import CountryListings       as CountryListings
@@ -14,6 +15,7 @@ from . PlaceListings         import PlaceListings         as PlaceListings
 from . PositionListings      import PositionListings      as PositionListings
 ##############################################################################
 __all__ = [ "PeopleView"                                                   , \
+            "PeopleMerger"                                                 , \
             "CrowdView"                                                    , \
             "NationTypeListings"                                           , \
             "CountryListings"                                              , \
