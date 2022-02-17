@@ -444,7 +444,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(QTreeWidgetItem)
+  @pyqtSlot                     ( QTreeWidgetItem                            )
   def acceptPendingTopLevelItem ( self , item                              ) :
     self . addTopLevelItem      (        item                                )
     return

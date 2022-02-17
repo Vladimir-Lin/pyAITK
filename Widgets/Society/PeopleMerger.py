@@ -54,9 +54,10 @@ from   AITK . People    . People      import People      as PeopleItem
 ##############################################################################
 class PeopleMerger                 ( TreeDock                              ) :
   ############################################################################
-  HavingMenu    = 1371434312
+  HavingMenu       = 1371434312
   ############################################################################
-  emitNamesShow = pyqtSignal       (                                         )
+  emitNamesShow    = pyqtSignal    (                                         )
+  emitAppendPeople = pyqtSignal    ( dict                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -79,6 +80,7 @@ class PeopleMerger                 ( TreeDock                              ) :
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
+    self . emitAppendPeople  . connect ( self . appending                    )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -132,14 +134,14 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
+  def PrepareItem           ( self , UUID , NAME                           ) :
     ##########################################################################
-    UXID = str                   ( UUID                                      )
-    IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , NAME                                  )
-    IT   . setToolTip            ( 0 , UXID                                  )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    UXID = str              ( UUID                                           )
+    IT   = QTreeWidgetItem  (                                                )
+    IT   . setText          ( 0 , NAME                                       )
+    IT   . setToolTip       ( 0 , UXID                                       )
+    IT   . setData          ( 0 , Qt . UserRole , UUID                       )
+    IT   . setTextAlignment ( 1 , Qt.AlignRight                              )
     ##########################################################################
     return IT
   ############################################################################
@@ -153,6 +155,23 @@ class PeopleMerger                 ( TreeDock                              ) :
     items  = self . selectedItems    (                                       )
     for item in items                                                        :
       self . pendingRemoveItem       ( item                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      ( dict                                      )
+  ############################################################################
+  def appending                  ( self , JSON                             ) :
+    ##########################################################################
+    UUIDs = JSON                 [ "Uuids"                                   ]
+    NAMEs = JSON                 [ "Names"                                   ]
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      NAME  = NAMEs              [ UUID                                      ]
+      IT    = self . PrepareItem ( UUID , NAME                               )
+      self  . addTopLevelItem    ( IT                                        )
+    ##########################################################################
+    self    . Notify             ( 5                                         )
     ##########################################################################
     return
   ############################################################################
@@ -214,47 +233,42 @@ class PeopleMerger                 ( TreeDock                              ) :
                                       JSON                                 , \
                                       self . PeopleToMerge                   )
   ############################################################################
-  def PeopleToMerge              ( self , UUIDs                            ) :
+  def PeopleToMerge                  ( self , UUIDs                        ) :
     ##########################################################################
-    COUNT   = len                ( UUIDs                                     )
-    if                           ( COUNT <= 0                              ) :
+    COUNT  = len                     ( UUIDs                                 )
+    if                               ( COUNT <= 0                          ) :
       return
     ##########################################################################
-    DB      = self . ConnectDB   ( UsePure = True                            )
-    if                           ( DB in [ False , None ]                  ) :
+    DB     = self . ConnectDB        ( UsePure = True                        )
+    if                               ( DB in [ False , None ]              ) :
       return
     ##########################################################################
-    self    . setDroppingAction  ( True                                      )
-    self    . OnBusy  . emit     (                                           )
-    self    . setBustle          (                                           )
+    self   . setDroppingAction       ( True                                  )
+    self   . OnBusy  . emit          (                                       )
+    self   . setBustle               (                                       )
     ##########################################################################
-    FMT     = self . getMenuItem ( "Joining"                                 )
-    MSG     = FMT  . format      ( COUNT                                     )
-    self    . ShowStatus         ( MSG                                       )
-    self    . TtsTalk            ( MSG , 1002                                )
+    FMT    = self . getMenuItem      ( "Joining"                             )
+    MSG    = FMT  . format           ( COUNT                                 )
+    self   . ShowStatus              ( MSG                                   )
+    self   . TtsTalk                 ( MSG , 1002                            )
     ##########################################################################
-    NAMTAB  = self . Tables      [ "Names"                                   ]
+    NAMTAB = self . Tables           [ "Names"                               ]
     ##########################################################################
-    NAMEs   = self . GetNames    ( DB , NAMTAB , UUIDs                       )
+    NAMEs  = self . GetNames         ( DB , NAMTAB , UUIDs                   )
     for UUID in UUIDs                                                        :
       ########################################################################
-      NAME  = NAMEs              [ UUID                                      ]
-      if                         ( len ( NAME ) <= 0                       ) :
+      NAME = NAMEs                   [ UUID                                  ]
+      if                             ( len ( NAME ) <= 0                   ) :
         NAMEs [ UUID ] = f"{UUID}"
     ##########################################################################
-    self    . setVacancy         (                                           )
-    self    . GoRelax . emit     (                                           )
-    self    . setDroppingAction  ( False                                     )
-    self    . ShowStatus         ( ""                                        )
-    DB      . Close              (                                           )
+    self   . setVacancy              (                                       )
+    self   . GoRelax . emit          (                                       )
+    self   . setDroppingAction       ( False                                 )
+    self   . ShowStatus              ( ""                                    )
+    DB     . Close                   (                                       )
     ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      NAME  = NAMEs              [ UUID                                      ]
-      IT    = self . PrepareItem ( UUID , NAME                               )
-      self  . emitPendingTopLevelItem . emit ( IT                            )
-    ##########################################################################
-    self    . Notify             ( 5                                         )
+    JSON   =                         { "Uuids" : UUIDs , "Names" : NAMEs     }
+    self   . emitAppendPeople . emit ( JSON                                  )
     ##########################################################################
     return
   ############################################################################
