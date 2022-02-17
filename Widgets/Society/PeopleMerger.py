@@ -214,47 +214,47 @@ class PeopleMerger                 ( TreeDock                              ) :
                                       JSON                                 , \
                                       self . PeopleToMerge                   )
   ############################################################################
-  def PeopleToMerge                   ( self , UUIDs                       ) :
+  def PeopleToMerge              ( self , UUIDs                            ) :
     ##########################################################################
-    COUNT   = len                     ( UUIDs                                )
-    if                                ( COUNT <= 0                         ) :
+    COUNT   = len                ( UUIDs                                     )
+    if                           ( COUNT <= 0                              ) :
       return
     ##########################################################################
-    DB      = self . ConnectDB        ( UsePure = True                       )
-    if                                ( DB == None                         ) :
+    DB      = self . ConnectDB   ( UsePure = True                            )
+    if                           ( DB in [ False , None ]                  ) :
       return
     ##########################################################################
-    self    . setDroppingAction       ( True                                 )
-    self    . OnBusy  . emit          (                                      )
-    self    . setBustle               (                                      )
+    self    . setDroppingAction  ( True                                      )
+    self    . OnBusy  . emit     (                                           )
+    self    . setBustle          (                                           )
     ##########################################################################
-    FMT     = self . getMenuItem      ( "Joining"                            )
-    MSG     = FMT  . format           ( COUNT                                )
-    self    . ShowStatus              ( MSG                                  )
-    self    . TtsTalk                 ( MSG , 1002                           )
+    FMT     = self . getMenuItem ( "Joining"                                 )
+    MSG     = FMT  . format      ( COUNT                                     )
+    self    . ShowStatus         ( MSG                                       )
+    self    . TtsTalk            ( MSG , 1002                                )
     ##########################################################################
-    NAMTAB  = self . Tables           [ "Names"                              ]
+    NAMTAB  = self . Tables      [ "Names"                                   ]
     ##########################################################################
-    NAMEs   = self . GetNames         ( DB , NAMTAB , UUIDs                  )
+    NAMEs   = self . GetNames    ( DB , NAMTAB , UUIDs                       )
     for UUID in UUIDs                                                        :
       ########################################################################
-      NAME  = NAMEs                   [ UUID                                 ]
-      if                              ( len ( NAME ) <= 0                  ) :
+      NAME  = NAMEs              [ UUID                                      ]
+      if                         ( len ( NAME ) <= 0                       ) :
         NAMEs [ UUID ] = f"{UUID}"
     ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . GoRelax . emit          (                                      )
-    self    . setDroppingAction       ( False                                )
-    self    . ShowStatus              ( ""                                   )
-    DB      . Close                   (                                      )
+    self    . setVacancy         (                                           )
+    self    . GoRelax . emit     (                                           )
+    self    . setDroppingAction  ( False                                     )
+    self    . ShowStatus         ( ""                                        )
+    DB      . Close              (                                           )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      NAME  = NAMEs                   [ UUID                                 ]
-      IT    = self . PrepareItem      ( UUID , NAME                          )
-      self  . emitPendingTopLevelItem ( IT                                   )
+      NAME  = NAMEs              [ UUID                                      ]
+      IT    = self . PrepareItem ( UUID , NAME                               )
+      self  . emitPendingTopLevelItem . emit ( IT                            )
     ##########################################################################
-    self    . Notify                  ( 5                                    )
+    self    . Notify             ( 5                                         )
     ##########################################################################
     return
   ############################################################################
