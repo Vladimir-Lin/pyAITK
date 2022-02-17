@@ -58,6 +58,7 @@ class PeopleMerger                 ( TreeDock                              ) :
   ############################################################################
   emitNamesShow    = pyqtSignal    (                                         )
   emitAppendPeople = pyqtSignal    ( dict                                    )
+  emitComplete     = pyqtSignal    (                                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -81,6 +82,7 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAppendPeople  . connect ( self . appending                    )
+    self . emitComplete      . connect ( self . CompleteMerge                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -145,16 +147,12 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                          (                                       )
-  def DeleteItems                    ( self                                ) :
+  @pyqtSlot                           (                                      )
+  def DeleteItems                     ( self                               ) :
     ##########################################################################
-    UUIDs  = self . getSelectedUuids ( 0                                     )
-    if                               ( len ( UUIDs ) <= 0                  ) :
-      return
-    ##########################################################################
-    items  = self . selectedItems    (                                       )
+    items  = self . selectedItems     (                                      )
     for item in items                                                        :
-      self . pendingRemoveItem       ( item                                  )
+      self . pendingRemoveItem . emit ( item                                 )
     ##########################################################################
     return
   ############################################################################
@@ -284,55 +282,126 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def ExecuteMerge             ( self , UUID , PUIDs                       ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    DB   = self . ConnectDB    ( UsePure = True                              )
+    if                         ( DB in [ False , None ]                    ) :
+      return
+    ##########################################################################
+    PIT  = PeopleItem          (                                             )
+    PIT  . Settings = self . Settings
+    PIT  . Tables   = self . Tables
+    ##########################################################################
+    PIT  . MergeAll            ( DB   , UUID , PUIDs                         )
+    ##########################################################################
+    DB   . Close               (                                             )
+    ##########################################################################
+    self . emitComplete . emit (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def CompleteMerge           ( self                                       ) :
+    ##########################################################################
+    self . setEnabled         ( True                                         )
+    ##########################################################################
+    msg  = self . getMenuItem ( "FinishMerge"                                )
+    self . ShowStatus         ( msg                                          )
+    self . Notify             ( 5                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def ExecuteMergePeople              ( self                               ) :
+    ##########################################################################
+    Total  = self . topLevelItemCount (                                      )
+    IT     = self . topLevelItem      ( 0                                    )
+    UUID   = self . itemUuid          ( IT                                   )
+    UUIDs  =                          [ UUID                                 ]
+    PUIDs  =                          [                                      ]
+    ##########################################################################
+    for i in range                    ( 1 , Total                          ) :
+      ########################################################################
+      IT   = self . topLevelItem      ( i                                    )
+      PUID = self . itemUuid          ( IT                                   )
+      ########################################################################
+      if                              ( PUID not in UUIDs                  ) :
+        UUIDs . append                ( PUID                                 )
+        PUIDs . append                ( PUID                                 )
+    ##########################################################################
+    if                                ( len ( PUIDs ) <= 0                 ) :
+      self . Notify                   ( 1                                    )
+      return
+    ##########################################################################
+    msg    = self . getMenuItem       ( "StartMerge"                         )
+    self   . ShowStatus               ( msg                                  )
+    ##########################################################################
+    self   . setEnabled               ( False                                )
+    VAL    =                          ( UUID , PUIDs ,                       )
+    self   . Go                       ( self . ExecuteMerge , VAL            )
+    ##########################################################################
+    return
+  ############################################################################
+  def Menu                            ( self , pos                         ) :
+    ##########################################################################
+    if                                ( not self . isPrepared ( )          ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction        ( self . HavingMenu                    )
+    if                                ( not doMenu                         ) :
       return False
     ##########################################################################
-    self   . Notify                ( 0                                       )
+    self   . Notify                   ( 0                                    )
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . currentItem    (                                         )
+    Total  = self . topLevelItemCount (                                      )
+    items  = self . selectedItems     (                                      )
+    atItem = self . currentItem       (                                      )
     uuid   = 0
     ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
+    if                                ( atItem != None                     ) :
+      uuid = atItem . data            ( 0 , Qt . UserRole                    )
+      uuid = int                      ( uuid                                 )
     ##########################################################################
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager              ( self                                 )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    self   . AppendRefreshAction   ( mm , 1001                               )
+    if                                ( Total > 1                          ) :
+      ########################################################################
+      msg  = self . getMenuItem       ( "Merge"                              )
+      mm   . addAction                ( 7001 , msg                           )
+      mm   . addSeparator             (                                      )
     ##########################################################################
-    if                             ( len ( items ) > 0                     ) :
-      self . AppendDeleteAction    ( mm , 1102                               )
+    self   . AppendRefreshAction      ( mm , 1001                            )
     ##########################################################################
-    mm     . addSeparator          (                                         )
+    if                                ( len ( items ) > 0                  ) :
+      self . AppendDeleteAction       ( mm , 1102                            )
     ##########################################################################
-    mm     = self . LocalityMenu   ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    mm     . addSeparator             (                                      )
     ##########################################################################
-    mm     . setFont               ( self    . menuFont ( )                  )
-    aa     = mm . exec_            ( QCursor . pos      ( )                  )
-    at     = mm . at               ( aa                                      )
+    mm     = self . LocalityMenu      ( mm                                   )
+    self   . DockingMenu              ( mm                                   )
     ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
+    mm     . setFont                  ( self    . menuFont ( )               )
+    aa     = mm . exec_               ( QCursor . pos      ( )               )
+    at     = mm . at                  ( aa                                   )
+    ##########################################################################
+    if                                ( self . RunDocking   ( mm , aa )    ) :
       return True
     ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
+    if                                ( self . HandleLocalityMenu ( at )   ) :
       return True
     ##########################################################################
-    if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+    if                                ( at == 1001                         ) :
+      self . startup                  (                                      )
       return True
     ##########################################################################
-    if                             ( at == 1102                            ) :
-      self . DeleteItems           (                                         )
+    if                                ( at == 1102                         ) :
+      self . DeleteItems              (                                      )
+      return True
+    ##########################################################################
+    if                                ( at == 7001                         ) :
+      ########################################################################
+      self . ExecuteMergePeople       (                                      )
+      ########################################################################
       return True
     ##########################################################################
     return True
