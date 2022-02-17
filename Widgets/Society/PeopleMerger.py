@@ -50,6 +50,7 @@ from   AITK  . Essentials . Relation  import Relation
 ##############################################################################
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
+from   AITK . People    . People      import People      as PeopleItem
 ##############################################################################
 class PeopleMerger                 ( TreeDock                              ) :
   ############################################################################
@@ -91,27 +92,39 @@ class PeopleMerger                 ( TreeDock                              ) :
   def sizeHint                     ( self                                  ) :
     return QSize                   ( 320 , 640                               )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def FocusIn              ( self                                          ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if                     ( not self . isPrepared ( )                     ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
+    self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
+    self . LinkAction      ( "Refresh"    , self . startup                   )
     ##########################################################################
-    self . LinkAction              ( "Delete"     , self . DeleteItems       )
+    self . LinkAction      ( "Delete"     , self . DeleteItems               )
     ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
+    self . LinkAction      ( "SelectNone" , self . SelectNone                )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
+    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
+    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
+    ##########################################################################
+    self . Leave . emit    ( self                                            )
+    super ( ) . closeEvent ( event                                           )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################
@@ -141,8 +154,6 @@ class PeopleMerger                 ( TreeDock                              ) :
     for item in items                                                        :
       self . pendingRemoveItem       ( item                                  )
     ##########################################################################
-    self   . Go                      ( self . RemoveItems , ( UUIDs , )      )
-    ##########################################################################
     return
   ############################################################################
   @pyqtSlot          (                                                       )
@@ -153,18 +164,6 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     self . clear     (                                                       )
     self . show      (                                                       )
-    ##########################################################################
-    return
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
     ##########################################################################
     return
   ############################################################################
@@ -179,28 +178,28 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def dropNew                            ( self                            , \
+                                           sourceWidget                    , \
+                                           mimeData                        , \
+                                           mousePos                        ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
+    if                                   ( self == sourceWidget            ) :
       return False
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
+    RDN     = self . RegularDropNew      ( mimeData                          )
+    if                                   ( not RDN                         ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    mtype   = self . DropInJSON          [ "Mime"                            ]
+    UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    if                                   ( mtype in [ "people/uuids" ]     ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      FMT   = self . getMenuItem    ( "Copying"                              )
-      MSG   = FMT  . format         ( title , CNT                            )
-      self  . ShowStatus            ( MSG                                    )
+      title = sourceWidget . windowTitle (                                   )
+      CNT   = len                        ( UUIDs                             )
+      FMT   = self . getMenuItem         ( "Copying"                         )
+      MSG   = FMT  . format              ( title , CNT                       )
+      self  . ShowStatus                 ( MSG                               )
     ##########################################################################
     return RDN
   ############################################################################
@@ -210,65 +209,52 @@ class PeopleMerger                 ( TreeDock                              ) :
   def acceptPeopleDrop         ( self                                      ) :
     return True
   ############################################################################
-  def dropPeople                       ( self , source , pos , JSON        ) :
-    return self . defaultDropInObjects ( source                            , \
-                                         pos                               , \
-                                         JSON                              , \
-                                         0                                 , \
-                                         self . PeopleJoinPlace              )
+  def dropPeople                    ( self , source , pos , JSON           ) :
+    return self . defaultDropInside ( source                               , \
+                                      JSON                                 , \
+                                      self . PeopleToMerge                   )
   ############################################################################
-  def PeopleJoinPlace               ( self , UUID , UUIDs                  ) :
+  def PeopleToMerge                   ( self , UUIDs                       ) :
     ##########################################################################
-    if                              ( UUID <= 0                            ) :
+    COUNT   = len                     ( UUIDs                                )
+    if                                ( COUNT <= 0                         ) :
       return
     ##########################################################################
-    COUNT   = len                   ( UUIDs                                  )
-    if                              ( COUNT <= 0                           ) :
+    DB      = self . ConnectDB        ( UsePure = True                       )
+    if                                ( DB == None                         ) :
       return
     ##########################################################################
-    Hide    = self . isColumnHidden ( 1                                      )
+    self    . setDroppingAction       ( True                                 )
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return
+    FMT     = self . getMenuItem      ( "Joining"                            )
+    MSG     = FMT  . format           ( COUNT                                )
+    self    . ShowStatus              ( MSG                                  )
+    self    . TtsTalk                 ( MSG , 1002                           )
     ##########################################################################
-    self    . setDroppingAction     ( True                                   )
-    self    . OnBusy  . emit        (                                        )
-    self    . setBustle             (                                        )
+    NAMTAB  = self . Tables           [ "Names"                              ]
     ##########################################################################
-    FMT     = self . getMenuItem    ( "Joining"                              )
-    MSG     = FMT  . format         ( COUNT                                  )
-    self    . ShowStatus            ( MSG                                    )
-    self    . TtsTalk               ( MSG , 1002                             )
+    NAMEs   = self . GetNames         ( DB , NAMTAB , UUIDs                  )
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      NAME  = NAMEs                   [ UUID                                 ]
+      if                              ( len ( NAME ) <= 0                  ) :
+        NAMEs [ UUID ] = f"{UUID}"
     ##########################################################################
-    RELTAB  = self . Tables         [ "RelationPeople"                       ]
-    REL     = Relation              (                                        )
-    REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Place"                                )
-    REL     . setT2                 ( "People"                               )
-    REL     . setRelation           ( "Subordination"                        )
-    DB      . LockWrites            ( [ RELTAB ]                             )
-    REL     . Joins                 ( DB , RELTAB , UUIDs                    )
-    DB      . UnlockTables          (                                        )
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    self    . setDroppingAction       ( False                                )
+    self    . ShowStatus              ( ""                                   )
+    DB      . Close                   (                                      )
     ##########################################################################
-    if                              ( not Hide                             ) :
-      TOTAL = REL . CountSecond     ( DB , RELTAB                            )
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      NAME  = NAMEs                   [ UUID                                 ]
+      IT    = self . PrepareItem      ( UUID , NAME                          )
+      self  . emitPendingTopLevelItem ( IT                                   )
     ##########################################################################
-    self    . setVacancy            (                                        )
-    self    . GoRelax . emit        (                                        )
-    self    . setDroppingAction     ( False                                  )
-    self    . ShowStatus            ( ""                                     )
-    DB      . Close                 (                                        )
-    ##########################################################################
-    if                              ( Hide                                 ) :
-      return
-    ##########################################################################
-    IT      = self . uuidAtItem     ( UUID , 0                               )
-    if                              ( IT is None                           ) :
-      return
-    ##########################################################################
-    IT      . setText               ( 1 , str ( TOTAL )                      )
-    self    . DoUpdate              (                                        )
+    self    . Notify                  ( 5                                    )
     ##########################################################################
     return
   ############################################################################
