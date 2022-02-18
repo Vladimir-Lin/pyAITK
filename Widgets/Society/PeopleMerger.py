@@ -104,6 +104,7 @@ class PeopleMerger                 ( TreeDock                              ) :
     self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
     self . LinkAction      ( "Refresh"    , self . startup                   )
     ##########################################################################
+    self . LinkAction      ( "Paste"      , self . PasteItems                )
     self . LinkAction      ( "Delete"     , self . DeleteItems               )
     ##########################################################################
     self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
@@ -121,6 +122,7 @@ class PeopleMerger                 ( TreeDock                              ) :
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
     self . LinkAction      ( "Refresh"    , self . startup         , False   )
+    self . LinkAction      ( "Paste"      , self . PasteItems      , False   )
     self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
     self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
     self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
@@ -273,6 +275,31 @@ class PeopleMerger                 ( TreeDock                              ) :
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( "PeopleMerger" , 2                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def PasteItems                        ( self                             ) :
+    ##########################################################################
+    T     = qApp . clipboard ( ) . text (                                    )
+    ##########################################################################
+    if                                  ( len ( T ) <= 0                   ) :
+      return
+    ##########################################################################
+    L     = T . split                   (                                    )
+    UUIDs =                             [                                    ]
+    for U in L                                                               :
+      ########################################################################
+      UX  = f"{U}"
+      UX  = UX . strip                  (                                    )
+      UX  = UX . rstrip                 (                                    )
+      UX  = int                         ( UX                                 )
+      if                                ( UX not in UUIDs                  ) :
+        UUIDs . append                  ( UX                                 )
+    ##########################################################################
+    if                                  ( len ( UUIDs ) <= 0               ) :
+      return
+    ##########################################################################
+    self  . Go                          ( self . PeopleToMerge , ( UUIDs , ) )
     ##########################################################################
     return
   ############################################################################

@@ -266,8 +266,10 @@ class People          (                                                    ) :
       AT   = AT + 1
     ##########################################################################
     if                               ( len ( PURGEs ) <= 0                 ) :
+      return
     ##########################################################################
     DB     . LockWrites              ( [ NAMTAB                            ] )
+    ##########################################################################
     for ID in PURGEs                                                         :
       ########################################################################
       QQ   = f"delete from {NAMTAB} where ( `id` = {ID} ) ;"
@@ -359,9 +361,10 @@ class People          (                                                    ) :
     ##########################################################################
     RELTAB = self . Tables    [ "Relation"                                   ]
     ##########################################################################
-    DB     . LockWrites       ( [ RELTAB                                   ] )
+    QQ     = f"lock tables {RELTAB} write , {RELTAB} as TT read ;"
+    DB     . Query            ( QQ                                           )
     ##########################################################################
-    FF     = f"""select `second` from {RELTAB}
+    FF     = f"""select `second` from {RELTAB} as TT
                    where ( `first` = {PUID} )
                    and ( `t1` = 7 )
                    and ( `t2` = {T2} )
@@ -376,7 +379,7 @@ class People          (                                                    ) :
     DB     . Query            ( QQ                                           )
     ##########################################################################
     POS    = -1
-    QQ     = f"""select `position` from {RELTAB}
+    QQ     = f"""select `position` from {RELTAB} as TT
                  where ( `first` = {PUID} )
                    and ( `t1` = 7 )
                    and ( `t2` = {T2} )
@@ -390,7 +393,7 @@ class People          (                                                    ) :
       POS  = RR               [ 0                                            ]
     POS    = POS + 1
     ##########################################################################
-    QQ     = f"""select `second` from {RELTAB}
+    QQ     = f"""select `second` from {RELTAB} as TT
                    where ( `first` = {MERGER} )
                    and ( `t1` = 7 )
                    and ( `t2` = {T2} )
@@ -454,7 +457,7 @@ class People          (                                                    ) :
       ########################################################################
       T1   = R                    [ 0                                        ]
       REL  = R                    [ 1                                        ]
-      J    =                      { "T1" : T2 , "Relation" : REL             }
+      J    =                      { "T1" : T1 , "Relation" : REL             }
       RELs . append               ( J                                        )
     ##########################################################################
     return RELs
@@ -463,9 +466,10 @@ class People          (                                                    ) :
     ##########################################################################
     RELTAB  = self . Tables    [ "Relation"                                  ]
     ##########################################################################
-    DB      . LockWrites       ( [ RELTAB                                  ] )
+    QQ     = f"lock tables {RELTAB} write , {RELTAB} as TT read ;"
+    DB     . Query            ( QQ                                           )
     ##########################################################################
-    FF      = f"""select `first` from {RELTAB}
+    FF      = f"""select `first` from {RELTAB} as TT
                    where ( `second` = {PUID} )
                    and ( `t1` = {T1} )
                    and ( `t2` = 7 )
@@ -479,7 +483,7 @@ class People          (                                                    ) :
     QQ      = " " . join       ( QQ . split ( )                              )
     DB      . Query            ( QQ                                          )
     ##########################################################################
-    QQ      = f"""select `first` from {RELTAB}
+    QQ      = f"""select `first` from {RELTAB} as TT
                    where ( `second` = {MERGER} )
                    and ( `t1` = {T1} )
                    and ( `t2` = 7 )
@@ -491,7 +495,7 @@ class People          (                                                    ) :
     for UUID in UUIDs                                                        :
       ########################################################################
       POS   = -1
-      QQ    = f"""select `position` from {RELTAB}
+      QQ    = f"""select `position` from {RELTAB} as TT
                    where ( `first` = {UUID} )
                      and ( `t1` = {T1} )
                      and ( `t2` = 7 )
@@ -508,8 +512,8 @@ class People          (                                                    ) :
       QQ    = f"""update {RELTAB}
                    set `second` = {PUID} , `position` = {POS}
                    where ( `second` = {MERGER} )
-                   and ( `t1` = 7 )
-                   and ( `t2` = {T2} )
+                   and ( `t1` = {T1} )
+                   and ( `t2` = 7 )
                    and ( `relation` = {REL} )
                    and ( `first` = {UUID} ) ;"""
       QQ    = " " . join       ( QQ . split ( )                              )
