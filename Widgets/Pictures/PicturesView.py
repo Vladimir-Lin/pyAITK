@@ -66,13 +66,14 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . Total      = 0
-    self . StartId    = 0
-    self . Amount     = 60
-    self . SortOrder  = "asc"
-    self . UsingName  = False
+    self . Total         = 0
+    self . StartId       = 0
+    self . Amount        = 60
+    self . SortOrder     = "asc"
+    self . UsingName     = False
+    self . FetchTableKey = "PicturesView"
     ##########################################################################
-    self . Grouping   = "Original"
+    self . Grouping      = "Original"
     ## self . Grouping   = "Subordination"
     ## self . Grouping   = "Reverse"
     ##########################################################################
@@ -194,19 +195,18 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup     , False       )
-    self . LinkAction      ( "Delete"     , self . DeleteItems , False       )
-    self . LinkAction      ( "Home"       , self . PageHome    , False       )
-    self . LinkAction      ( "End"        , self . PageEnd     , False       )
-    self . LinkAction      ( "PageUp"     , self . PageUp      , False       )
-    self . LinkAction      ( "PageDown"   , self . PageDown    , False       )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll   , False       )
-    self . LinkAction      ( "SelectNone" , self . SelectNone  , False       )
+    self . LinkAction        ( "Refresh"    , self . startup     , False     )
+    self . LinkAction        ( "Delete"     , self . DeleteItems , False     )
+    self . LinkAction        ( "Home"       , self . PageHome    , False     )
+    self . LinkAction        ( "End"        , self . PageEnd     , False     )
+    self . LinkAction        ( "PageUp"     , self . PageUp      , False     )
+    self . LinkAction        ( "PageDown"   , self . PageDown    , False     )
+    self . LinkAction        ( "SelectAll"  , self . SelectAll   , False     )
+    self . LinkAction        ( "SelectNone" , self . SelectNone  , False     )
     ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################

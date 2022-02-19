@@ -66,12 +66,13 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
     super ( VirtualGui  , self ) . __init__ (                                )
     self . Initialize                       ( self                           )
     self . setPlanFunction                  ( plan                           )
-    self . Image    = None
-    self . Pictures = [ ]
-    self . LABELs   = [ ]
+    self . Image         = None
+    self . Pictures      =         [                                         ]
+    self . LABELs        =         [                                         ]
     self . Ratio = QSize           ( 100 , 100                               )
-    self . ZoomLevel = 10
-    self . MaxWidth  = 0
+    self . ZoomLevel     = 10
+    self . MaxWidth      = 0
+    self . FetchTableKey = "PicturesView"
     ##########################################################################
     self . setPrepared             ( True                                    )
     ##########################################################################
