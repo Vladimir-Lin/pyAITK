@@ -46,6 +46,7 @@ class Plan                    ( PurePlan                                   ) :
     ##########################################################################
     self . Actions          = {                                              }
     self . Shortcuts        = {                                              }
+    self . SystemVariables  = {                                              }
     self . Stacked          = None
     self . Mdi              = None
     self . statusMessage    = None

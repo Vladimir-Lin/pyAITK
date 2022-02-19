@@ -214,26 +214,25 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup      , False      )
-    self . LinkAction      ( "Insert"     , self . InsertItem   , False      )
-    self . LinkAction      ( "Rename"     , self . RenamePeople , False      )
-    self . LinkAction      ( "Delete"     , self . DeleteItems  , False      )
-    self . LinkAction      ( "Cut"        , self . DeleteItems  , False      )
-    self . LinkAction      ( "Copy"       , self . CopyItems    , False      )
-    self . LinkAction      ( "Paste"      , self . PasteItems   , False      )
-    self . LinkAction      ( "Search"     , self . Search       , False      )
-    self . LinkAction      ( "Home"       , self . PageHome     , False      )
-    self . LinkAction      ( "End"        , self . PageEnd      , False      )
-    self . LinkAction      ( "PageUp"     , self . PageUp       , False      )
-    self . LinkAction      ( "PageDown"   , self . PageDown     , False      )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll    , False      )
-    self . LinkAction      ( "SelectNone" , self . SelectNone   , False      )
-    self . LinkVoice       ( None                                            )
+    self . LinkAction        ( "Refresh"    , self . startup      , False    )
+    self . LinkAction        ( "Insert"     , self . InsertItem   , False    )
+    self . LinkAction        ( "Rename"     , self . RenamePeople , False    )
+    self . LinkAction        ( "Delete"     , self . DeleteItems  , False    )
+    self . LinkAction        ( "Cut"        , self . DeleteItems  , False    )
+    self . LinkAction        ( "Copy"       , self . CopyItems    , False    )
+    self . LinkAction        ( "Paste"      , self . PasteItems   , False    )
+    self . LinkAction        ( "Search"     , self . Search       , False    )
+    self . LinkAction        ( "Home"       , self . PageHome     , False    )
+    self . LinkAction        ( "End"        , self . PageEnd      , False    )
+    self . LinkAction        ( "PageUp"     , self . PageUp       , False    )
+    self . LinkAction        ( "PageDown"   , self . PageDown     , False    )
+    self . LinkAction        ( "SelectAll"  , self . SelectAll    , False    )
+    self . LinkAction        ( "SelectNone" , self . SelectNone   , False    )
+    self . LinkVoice         ( None                                          )
     ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################

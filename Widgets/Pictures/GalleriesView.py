@@ -70,6 +70,7 @@ class GalleriesView                ( IconDock                              ) :
   ViewFullGallery     = pyqtSignal ( str , int , str , int , QIcon           )
   ShowWebPages        = pyqtSignal ( str , int , str , str , QIcon           )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
+  emitOpenSmartNote   = pyqtSignal ( str                                     )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -233,21 +234,20 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup      , False      )
-    self . LinkAction      ( "Insert"     , self . InsertItem   , False      )
-    self . LinkAction      ( "Delete"     , self . DeleteItems  , False      )
-    self . LinkAction      ( "Rename"     , self . RenameItem   , False      )
-    self . LinkAction      ( "Home"       , self . PageHome     , False      )
-    self . LinkAction      ( "End"        , self . PageEnd      , False      )
-    self . LinkAction      ( "PageUp"     , self . PageUp       , False      )
-    self . LinkAction      ( "PageDown"   , self . PageDown     , False      )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll    , False      )
-    self . LinkAction      ( "SelectNone" , self . SelectNone   , False      )
+    self . LinkAction        ( "Refresh"    , self . startup      , False    )
+    self . LinkAction        ( "Insert"     , self . InsertItem   , False    )
+    self . LinkAction        ( "Delete"     , self . DeleteItems  , False    )
+    self . LinkAction        ( "Rename"     , self . RenameItem   , False    )
+    self . LinkAction        ( "Home"       , self . PageHome     , False    )
+    self . LinkAction        ( "End"        , self . PageEnd      , False    )
+    self . LinkAction        ( "PageUp"     , self . PageUp       , False    )
+    self . LinkAction        ( "PageDown"   , self . PageDown     , False    )
+    self . LinkAction        ( "SelectAll"  , self . SelectAll    , False    )
+    self . LinkAction        ( "SelectNone" , self . SelectNone   , False    )
     ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
@@ -597,6 +597,33 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
+  def ExportUUIDs              ( self                                      ) :
+    ##########################################################################
+    if                         ( not self . isSubordination ( )            ) :
+      return
+    ##########################################################################
+    DB      = self . ConnectDB (                                             )
+    if                         ( DB == None                                ) :
+      return False
+    ##########################################################################
+    RELTAB  = self . Tables    [ "Relation"                                  ]
+    ##########################################################################
+    UUIDs   = self . Relation . Subordination ( DB , RELTAB                  )
+    ##########################################################################
+    DB      . UnlockTables     (                                             )
+    DB      . Close            (                                             )
+    ##########################################################################
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    UXIDs   =                  [                                             ]
+    for UUID in UUIDs                                                        :
+      UXIDs . append           ( f"{UUID}"                                   )
+    ##########################################################################
+    self . emitOpenSmartNote . emit ( "\n" . join ( UXIDs )                  )
+    ##########################################################################
+    return
+  ############################################################################
   def ReloadLocality                ( self , DB                            ) :
     ##########################################################################
     SCOPE   = self . Grouping
@@ -622,6 +649,38 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenWebPageListings      ( self , item , Related                     ) :
+    ##########################################################################
+    text = item . text         (                                             )
+    uuid = item . data         ( Qt . UserRole                               )
+    uuid = int                 ( uuid                                        )
+    icon = item . icon         (                                             )
+    xsid = str                 ( uuid                                        )
+    ##########################################################################
+    self . ShowWebPages . emit ( text , 64 , xsid , Related , icon           )
+    ##########################################################################
+    return
+  ############################################################################
+  def BlocMenu               ( self , mm , item                            ) :
+    ##########################################################################
+    MSG = self . getMenuItem ( "Bloc"                                        )
+    LOM = mm   . addMenu     ( MSG                                           )
+    ##########################################################################
+    MSG = self . getMenuItem ( "ExportUUIDs"                                 )
+    mm  . addActionFromMenu  ( LOM , 8831001 , MSG                           )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunBlocMenu ( self , at , item                                       ) :
+    ##########################################################################
+    if            ( at == 8831001                                          ) :
+      ########################################################################
+      self . Go   ( self . ExportUUIDs                                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
   def PropertiesMenu             ( self , mm , item                        ) :
     ##########################################################################
     MSG   = self . getMenuItem   ( "Properties"                              )
@@ -642,10 +701,10 @@ class GalleriesView                ( IconDock                              ) :
     mm    . addSeparatorFromMenu ( COL                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "WebPages"                                )
-    mm    . addActionFromMenu    ( COL , 1321 , MSG                          )
+    mm    . addActionFromMenu    ( COL , 62231321 , MSG                      )
     ##########################################################################
     MSG   = self . getMenuItem   ( "IdentWebPage"                            )
-    mm    . addActionFromMenu    ( COL , 1322 , MSG                          )
+    mm    . addActionFromMenu    ( COL , 62231322 , MSG                      )
     ##########################################################################
     return mm
   ############################################################################
@@ -675,29 +734,15 @@ class GalleriesView                ( IconDock                              ) :
       self   . clear    (                                                    )
       self   . startup  (                                                    )
     ##########################################################################
-    if                                  ( at == 1321                       ) :
+    if                           ( at == 62231321                          ) :
       ########################################################################
-      text = item . text                (                                    )
-      uuid = item . data                ( Qt . UserRole                      )
-      uuid = int                        ( uuid                               )
-      icon = item . icon                (                                    )
-      xsid = str                        ( uuid                               )
-      rela = "Subordination"
-      ########################################################################
-      self . ShowWebPages        . emit ( text , 64 , xsid , rela , icon     )
+      self . OpenWebPageListings ( item , "Subordination"                    )
       ########################################################################
       return True
     ##########################################################################
-    if                                  ( at == 1322                       ) :
+    if                           ( at == 62231322                          ) :
       ########################################################################
-      text = item . text                (                                    )
-      uuid = item . data                ( Qt . UserRole                      )
-      uuid = int                        ( uuid                               )
-      icon = item . icon                (                                    )
-      xsid = str                        ( uuid                               )
-      rela = "Equivalent"
-      ########################################################################
-      self . ShowWebPages        . emit ( text , 64 , xsid , rela , icon     )
+      self . OpenWebPageListings ( item , "Equivalent"                       )
       ########################################################################
       return True
     ##########################################################################
@@ -748,6 +793,7 @@ class GalleriesView                ( IconDock                              ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
         mm . addSeparator           (                                        )
     ##########################################################################
+    self   . BlocMenu               ( mm , atItem                            )
     self   . PropertiesMenu         ( mm , atItem                            )
     self   . SortingMenu            ( mm                                     )
     self   . LocalityMenu           ( mm                                     )
@@ -772,6 +818,9 @@ class GalleriesView                ( IconDock                              ) :
       self . clear                  (                                        )
       self . startup                (                                        )
       ########################################################################
+      return True
+    ##########################################################################
+    if                              ( self . RunBlocMenu ( at , atItem )   ) :
       return True
     ##########################################################################
     if                              ( self . RunPropertiesMenu (at,atItem) ) :
