@@ -68,6 +68,7 @@ class GalleriesView                ( IconDock                              ) :
   ############################################################################
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
   ViewFullGallery     = pyqtSignal ( str , int , str , int , QIcon           )
+  ShowWebPages        = pyqtSignal ( str , int , str , str , QIcon           )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
@@ -621,18 +622,30 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PropertiesMenu           ( self , mm                                 ) :
+  def PropertiesMenu             ( self , mm                               ) :
     ##########################################################################
-    MSG   = self . getMenuItem ( "Properties"                                )
-    COL   = mm   . addMenu     ( MSG                                         )
+    MSG   = self . getMenuItem   ( "Properties"                              )
+    COL   = mm   . addMenu       ( MSG                                       )
     ##########################################################################
-    if                         ( self . isSubordination ( )                ) :
+    if                           ( self . isSubordination ( )              ) :
       ########################################################################
-      msg = self . getMenuItem ( "AssignTables"                              )
-      mm  . addActionFromMenu  ( COL , 1301 , msg                            )
+      msg = self . getMenuItem   ( "AssignTables"                            )
+      mm  . addActionFromMenu    ( COL , 1301 , msg                          )
     ##########################################################################
-    msg   = self . getMenuItem ( "SortByName"                                )
-    mm    . addActionFromMenu  ( COL , 1302 , msg , True , self . SortByName )
+    msg   = self . getMenuItem   ( "SortByName"                              )
+    mm    . addActionFromMenu    ( COL                                     , \
+                                   1302                                    , \
+                                   msg                                     , \
+                                   True                                    , \
+                                   self . SortByName                         )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( COL                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "WebPages"                                )
+    mm    . addActionFromMenu    ( COL , 1321 , MSG                          )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "IdentWebPage"                            )
+    mm    . addActionFromMenu    ( COL , 1322 , MSG                          )
     ##########################################################################
     return mm
   ############################################################################
@@ -661,6 +674,28 @@ class GalleriesView                ( IconDock                              ) :
       ########################################################################
       self   . clear    (                                                    )
       self   . startup  (                                                    )
+    ##########################################################################
+    if                                  ( at == 1321                       ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      rela = "Subordination"
+      ########################################################################
+      self . ShowWebPages        . emit ( text , 64 , xsid , rela , icon     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 1322                       ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      rela = "Equivalent"
+      ########################################################################
+      self . ShowWebPages        . emit ( text , 64 , xsid , rela , icon     )
+      ########################################################################
+      return True
     ##########################################################################
     return False
   ############################################################################
@@ -735,7 +770,7 @@ class GalleriesView                ( IconDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                              ( self . RunPropertiesMenu  ( at )     ) :
+    if                              ( self . RunPropertiesMenu (at,atItem) ) :
       return True
     ##########################################################################
     if                              ( self . RunSortingMenu     ( at )     ) :
