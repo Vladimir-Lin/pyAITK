@@ -385,7 +385,7 @@ class Picture     (                                                        ) :
       ########################################################################
       UUIX = BASE
       ########################################################################
-      QQ   = f"select `uuid` from {MASTER} order by `id` desc limit 0,1 ;"
+      QQ   = f"select `uuid` from {MASTER} order by `uuid` desc limit 0,1 ;"
       DB   . Query ( QQ )
       LX   = DB . FetchOne ( )
       ########################################################################
