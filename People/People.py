@@ -166,19 +166,43 @@ class People          (                                                    ) :
     ##########################################################################
     return REL . GetOwners   (        DB , TABLE                             )
   ############################################################################
-  def MergeVariables                 ( self , DB , PUID , MERGER           ) :
+  def MergeVariables          ( self , DB , PUID , MERGER                  ) :
     ##########################################################################
-    VARTAB = self . Tables           [ "Variables"                           ]
+    VARTAB = self . Tables    [ "Variables"                                  ]
     ##########################################################################
-    DB     . LockWrites              ( [ VARTAB                            ] )
+    QQ     = f"lock tables {VARTAB} write , {VARTAB} as TT read ;"
+    DB     . Query            ( QQ                                           )
+    ##########################################################################
+    QQ     = f"""select `type`,`name` from {VARTAB} as TT
+                 where ( `uuid` = {PUID} ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    DB     . Query            ( QQ                                           )
+    ALL    = DB . FetchAll    (                                              )
+    ##########################################################################
+    for RR in ALL                                                            :
+      ########################################################################
+      TT   = RR               [ 0                                            ]
+      NA   = RR               [ 1                                            ]
+      ########################################################################
+      try                                                                    :
+        NA = NA . decode      ( "utf-8"                                      )
+      except                                                                 :
+        pass
+      ########################################################################
+      QQ   = f"""delete from {VARTAB}
+                 where ( `uuid` = {MERGER} )
+                 and ( `type` = {TT} )
+                 and ( `name` = '{NA}' ) ;"""
+      QQ   = " " . join       ( QQ . split ( )                               )
+      DB   . Query            ( QQ                                           )
     ##########################################################################
     QQ     = f"""update {VARTAB}
                  set `uuid` = {PUID}
                  where ( `uuid` = {MERGER} ) ;"""
-    QQ     = " " . join              ( QQ . split ( )                        )
-    DB     . Query                   ( QQ                                    )
+    QQ     = " " . join       ( QQ . split ( )                               )
+    DB     . Query            ( QQ                                           )
     ##########################################################################
-    DB     . UnlockTables            (                                       )
+    DB     . UnlockTables     (                                              )
     ##########################################################################
     return
   ############################################################################
