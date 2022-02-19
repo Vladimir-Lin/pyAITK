@@ -527,6 +527,7 @@ class PeopleView                   ( IconDock                              ) :
                  and ( `relation` = {REL} )"""
     QQ     = f"""select `uuid`,`name` from {NAMTAB}
                  where ( `uuid` in ( {FF} ) )
+                 and ( `relevance` = 0 )
                  order by `name` asc ;"""
     QQ     = " " . join            ( QQ . split ( )                          )
     DB     . Query                 ( QQ                                      )

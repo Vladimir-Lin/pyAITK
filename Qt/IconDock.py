@@ -120,7 +120,8 @@ class IconDock                      ( ListDock                             ) :
     return
   ############################################################################
   def setGrouping ( self , group                                           ) :
-    self . Grouping = group
+    self . Grouping    = group
+    self . OldGrouping = group
     return self . Grouping
   ############################################################################
   def getGrouping ( self                                                   ) :
