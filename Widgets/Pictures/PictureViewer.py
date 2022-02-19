@@ -393,6 +393,13 @@ class PictureViewer               ( QScrollArea , VirtualGui               ) :
     if                               ( DB == None                          ) :
       return
     ##########################################################################
+    self        . Tables = self . ObtainsOwnerVariantTables                ( \
+                                       DB                                  , \
+                                       str ( UUID )                        , \
+                                       int ( T1 )                          , \
+                                       "PicturesView"                      , \
+                                       self . Tables                         )
+    ##########################################################################
     PICTAB      = self . Tables      [ "Information"                         ]
     DPTTAB      = self . Tables      [ "Depot"                               ]
     RELTAB      = self . Tables      [ "Relation"                            ]
