@@ -323,6 +323,13 @@ class WebPageListings              ( TreeDock                              ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
+    ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
+    ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
@@ -330,6 +337,9 @@ class WebPageListings              ( TreeDock                              ) :
     if                                ( len ( UUIDs ) > 0                  ) :
       URLs  = self . ObtainsUuidURLs  ( DB , UUIDs                           )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :

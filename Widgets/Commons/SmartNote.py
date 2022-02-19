@@ -625,8 +625,8 @@ class SmartNote                     ( TextEdit                             ) :
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     self   . Notify                ( 0                                       )
-    mm     . setFont               ( self    . font ( )                      )
-    aa     = mm . exec_            ( QCursor . pos  ( )                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking      ( mm , aa )    ) :

@@ -622,7 +622,7 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PropertiesMenu             ( self , mm                               ) :
+  def PropertiesMenu             ( self , mm , item                        ) :
     ##########################################################################
     MSG   = self . getMenuItem   ( "Properties"                              )
     COL   = mm   . addMenu       ( MSG                                       )
@@ -649,7 +649,7 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return mm
   ############################################################################
-  def RunPropertiesMenu ( self , at                                        ) :
+  def RunPropertiesMenu ( self , at , item                                 ) :
     ##########################################################################
     if                  ( at == 1301                                       ) :
       ########################################################################
@@ -678,6 +678,8 @@ class GalleriesView                ( IconDock                              ) :
     if                                  ( at == 1321                       ) :
       ########################################################################
       text = item . text                (                                    )
+      uuid = item . data                ( Qt . UserRole                      )
+      uuid = int                        ( uuid                               )
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       rela = "Subordination"
@@ -689,6 +691,8 @@ class GalleriesView                ( IconDock                              ) :
     if                                  ( at == 1322                       ) :
       ########################################################################
       text = item . text                (                                    )
+      uuid = item . data                ( Qt . UserRole                      )
+      uuid = int                        ( uuid                               )
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       rela = "Equivalent"
@@ -744,9 +748,9 @@ class GalleriesView                ( IconDock                              ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
         mm . addSeparator           (                                        )
     ##########################################################################
-    mm     = self . PropertiesMenu  ( mm                                     )
-    mm     = self . SortingMenu     ( mm                                     )
-    mm     = self . LocalityMenu    ( mm                                     )
+    self   . PropertiesMenu         ( mm , atItem                            )
+    self   . SortingMenu            ( mm                                     )
+    self   . LocalityMenu           ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
     mm     . setFont                ( self    . menuFont ( )                 )
