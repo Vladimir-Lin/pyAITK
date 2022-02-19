@@ -259,14 +259,14 @@ class Connection ( )                                                         :
     ##########################################################################
     return self . db . is_connected (                                        )
   ############################################################################
-  def Optimize                     ( self , table                          ) :
+  def Optimize              ( self , table                                 ) :
     ##########################################################################
-    SQ = Query                     (                                         )
-    QQ = SQ . OptimizeTable        ( table                                   )
-    if                             ( len ( QQ ) > 0                        ) :
-      answer = self . mc . execute ( QQ                                      )
+    SQ = Query              (                                                )
+    QQ = SQ . OptimizeTable ( table                                          )
+    if                      ( len ( QQ ) > 0                               ) :
+      self . mc . execute   ( QQ                                             )
     ##########################################################################
-    return answer
+    return self . FetchOne  (                                                )
   ############################################################################
   def LockWrite                    ( self , table                          ) :
     ##########################################################################
