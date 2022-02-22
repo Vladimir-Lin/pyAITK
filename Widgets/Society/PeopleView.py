@@ -187,30 +187,30 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn             ( self                                           ) :
+  def FocusIn                ( self                                        ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
-    self . LinkAction     ( "Refresh"    , self . startup                    )
+    self . setActionLabel    ( "Label"      , self . windowTitle ( )         )
+    self . LinkAction        ( "Refresh"    , self . startup                 )
     ##########################################################################
-    self . LinkAction     ( "Insert"     , self . InsertItem                 )
-    self . LinkAction     ( "Rename"     , self . RenamePeople               )
-    self . LinkAction     ( "Delete"     , self . DeleteItems                )
-    self . LinkAction     ( "Cut"        , self . DeleteItems                )
-    self . LinkAction     ( "Copy"       , self . CopyItems                  )
-    self . LinkAction     ( "Paste"      , self . PasteItems                 )
-    self . LinkAction     ( "Search"     , self . Search                     )
-    self . LinkAction     ( "Home"       , self . PageHome                   )
-    self . LinkAction     ( "End"        , self . PageEnd                    )
-    self . LinkAction     ( "PageUp"     , self . PageUp                     )
-    self . LinkAction     ( "PageDown"   , self . PageDown                   )
+    self . LinkAction        ( "Insert"     , self . InsertItem              )
+    self . LinkAction        ( "Rename"     , self . RenamePeople            )
+    self . LinkAction        ( "Delete"     , self . DeleteItems             )
+    self . LinkAction        ( "Cut"        , self . DeleteItems             )
+    self . LinkAction        ( "Copy"       , self . CopyItems               )
+    self . LinkAction        ( "Paste"      , self . PasteItems              )
+    self . LinkAction        ( "Search"     , self . Search                  )
+    self . LinkAction        ( "Home"       , self . PageHome                )
+    self . LinkAction        ( "End"        , self . PageEnd                 )
+    self . LinkAction        ( "PageUp"     , self . PageUp                  )
+    self . LinkAction        ( "PageDown"   , self . PageDown                )
     ##########################################################################
-    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
-    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
+    self . LinkAction        ( "SelectAll"  , self . SelectAll               )
+    self . LinkAction        ( "SelectNone" , self . SelectNone              )
     ##########################################################################
-    self . LinkVoice      ( self . CommandParser                             )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
@@ -376,7 +376,7 @@ class PeopleView                   ( IconDock                              ) :
     LAST   = self . GetLastestPosition ( DB     , LUID                       )
     PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
     SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    self   . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100         )
     ##########################################################################
     DB     . UnlockTables     (                                              )
     ##########################################################################
@@ -412,7 +412,7 @@ class PeopleView                   ( IconDock                              ) :
     LAST   = self . GetLastestPosition ( DB     , LUID                       )
     PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
     SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizatPositions" , DB , SQLs , 100     )
+    self   . ExecuteSqlCommands ( "OrganizePeople" , DB , SQLs , 100         )
     ##########################################################################
     DB     . UnlockTables      (                                             )
     self   . setVacancy        (                                             )
@@ -459,8 +459,9 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def RenamePeople                 ( self                                  ) :
+  def RenamePeople    ( self                                               ) :
     ##########################################################################
+    self . RenameItem (                                                      )
     ##########################################################################
     return
   ############################################################################
@@ -486,7 +487,7 @@ class PeopleView                   ( IconDock                              ) :
     self   . setBustle                (                                      )
     DB     . LockWrites               ( [ RELTAB                           ] )
     ##########################################################################
-    TITLE  = "RemovePictureItems"
+    TITLE  = "RemovePeopleItems"
     self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
     ##########################################################################
     DB     . UnlockTables             (                                      )
@@ -496,6 +497,71 @@ class PeopleView                   ( IconDock                              ) :
     DB     . Close                    (                                      )
     ##########################################################################
     self   . loading                  (                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def AppendItemName                     ( self , item , name              ) :
+    ##########################################################################
+    DB       = self . ConnectDB          ( UsePure = True                    )
+    if                                   ( DB == None                      ) :
+      return
+    ##########################################################################
+    uuid     = item . data               ( Qt . UserRole                     )
+    uuid     = int                       ( uuid                              )
+    ##########################################################################
+    PEOTAB   = self . Tables             [ "People"                          ]
+    NAMTAB   = self . Tables             [ "NamesEditing"                    ]
+    RELTAB   = self . Tables             [ "RelationPeople"                  ]
+    TABLES   =                           [ PEOTAB , NAMTAB                   ]
+    ##########################################################################
+    if                                   (  self . isGrouping ( )          ) :
+      TABLES . append                    ( RELTAB                            )
+      T1     = self . Relation . get     ( "t1"                              )
+      T2     = self . Relation . get     ( "t2"                              )
+      RR     = self . Relation . get     ( "relation"                        )
+    ##########################################################################
+    DB       . LockWrites                ( TABLES                            )
+    ##########################################################################
+    if                                   ( uuid <= 0                       ) :
+      ########################################################################
+      PI     = PeopleItem                (                                   )
+      PI     . Settings [ "Head"   ] = 1400000000000000000
+      PI     . Tables   [ "People" ] = PEOTAB
+      ########################################################################
+      uuid   = PI . NewPeople            ( DB                                )
+    ##########################################################################
+    REL      = Relation                  (                                   )
+    REL      . set                       ( "relation" , RR                   )
+    ##########################################################################
+    if                                   ( self . isSubordination ( )      ) :
+      ########################################################################
+      PUID   = self . Relation . get     ( "first"                           )
+      REL    . set                       ( "first"    , PUID                 )
+      REL    . set                       ( "second"   , uuid                 )
+      REL    . set                       ( "t1"       , T1                   )
+      REL    . setT2                     ( "People"                          )
+      REL    . Join                      ( DB , RELTAB                       )
+      ########################################################################
+    elif                                 ( self . isReverse       ( )      ) :
+      ########################################################################
+      PUID   = self . Relation . get     ( "second"                          )
+      REL    . set                       ( "first"    , uuid                 )
+      REL    . set                       ( "second"   , PUID                 )
+      REL    . setT1                     ( "People"                          )
+      REL    . set                       ( "t2"       , T2                   )
+      REL    . Join                      ( DB , RELTAB                       )
+    ##########################################################################
+    self     . AssureUuidNameByLocality  ( DB                              , \
+                                           NAMTAB                          , \
+                                           uuid                            , \
+                                           name                            , \
+                                           self . getLocality ( )            )
+    ##########################################################################
+    DB       . UnlockTables              (                                   )
+    DB       . Close                     (                                   )
+    ##########################################################################
+    self     . PrepareItemContent        ( item , uuid , name                )
+    self     . assignToolTip             ( item , str ( uuid )               )
     ##########################################################################
     return
   ############################################################################
@@ -572,61 +638,57 @@ class PeopleView                   ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage           ( self                                 ) :
+  def UpdateLocalityUsage          ( self                                  ) :
     ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subordination" , "Reverse"            ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
+    if                             ( not self . isGrouping ( )             ) :
       return False
     ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
+    DB     = self . ConnectDB      (                                         )
+    if                             ( DB == None                            ) :
       return False
     ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
-    DB      . LockWrites            ( [ PAMTAB ]                             )
+    PAMTAB = self . Tables         [ "Parameters"                            ]
+    DB     . LockWrites            ( [ PAMTAB ]                              )
     ##########################################################################
-    if                              ( SCOPE == "Subordination"             ) :
+    if                             ( self . isSubordination ( )            ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
+      TYPE = self . Relation . get ( "t1"                                    )
+      UUID = self . Relation . get ( "first"                                 )
       ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
+    elif                           ( self . isReverse       ( )            ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
+      TYPE = self . Relation . get ( "t2"                                    )
+      UUID = self . Relation . get ( "second"                                )
     ##########################################################################
-    SCOPE   = f"PeopleView-{SCOPE}"
-    self    . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    SCOPE  = self . Grouping
+    SCOPE  = f"PeopleView-{SCOPE}"
+    self   . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
     ##########################################################################
-    DB      . UnlockTables          (                                        )
-    DB      . Close                 (                                        )
+    DB     . UnlockTables          (                                         )
+    DB     . Close                 (                                         )
     ##########################################################################
     return True
   ############################################################################
-  def ReloadLocality                ( self , DB                            ) :
+  def ReloadLocality               ( self , DB                             ) :
     ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subordination" , "Reverse"            ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
+    if                             ( not self . isGrouping ( )             ) :
       return
     ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    PAMTAB = self . Tables         [ "Parameters"                            ]
     ##########################################################################
-    if                              ( SCOPE == "Subordination"             ) :
+    if                             ( self . isSubordination ( )            ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
+      TYPE = self . Relation . get ( "t1"                                    )
+      UUID = self . Relation . get ( "first"                                 )
       ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
+    elif                            ( self . isReverse       ( )           ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
+      TYPE = self . Relation . get ( "t2"                                    )
+      UUID = self . Relation . get ( "second"                                )
     ##########################################################################
-    SCOPE   = f"PeopleView-{SCOPE}"
-    self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    SCOPE  = self . Grouping
+    SCOPE  = f"PeopleView-{SCOPE}"
+    self   . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
     ##########################################################################
     return
   ############################################################################
@@ -782,9 +844,9 @@ class PeopleView                   ( IconDock                              ) :
         mm . addSeparator          (                                         )
     ##########################################################################
     if                             ( uuid > 0                              ) :
-      mm   = self . GroupsMenu     ( mm , uuid , atItem                      )
-    mm     = self . SortingMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
+      self . GroupsMenu            ( mm , uuid , atItem                      )
+    self   . SortingMenu           ( mm                                      )
+    self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
