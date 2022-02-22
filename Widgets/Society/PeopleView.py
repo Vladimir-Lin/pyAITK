@@ -509,6 +509,12 @@ class PeopleView                   ( IconDock                              ) :
     uuid     = item . data               ( Qt . UserRole                     )
     uuid     = int                       ( uuid                              )
     ##########################################################################
+    PHID     = 1400000000000000000
+    if                                   ( "Heading" in self . Tables      ) :
+      ########################################################################
+      PHID   = self . Tables             [ "Heading"                         ]
+      PHID   = int                       ( PHID                              )
+    ##########################################################################
     PEOTAB   = self . Tables             [ "People"                          ]
     NAMTAB   = self . Tables             [ "NamesEditing"                    ]
     RELTAB   = self . Tables             [ "RelationPeople"                  ]
@@ -525,7 +531,7 @@ class PeopleView                   ( IconDock                              ) :
     if                                   ( uuid <= 0                       ) :
       ########################################################################
       PI     = PeopleItem                (                                   )
-      PI     . Settings [ "Head"   ] = 1400000000000000000
+      PI     . Settings [ "Head"   ] = PHID
       PI     . Tables   [ "People" ] = PEOTAB
       ########################################################################
       uuid   = PI . NewPeople            ( DB                                )
