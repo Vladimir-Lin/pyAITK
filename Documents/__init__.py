@@ -8,6 +8,7 @@ from . Name           import Name           as Name
 from . Notes          import Notes          as Notes
 from . ParameterQuery import ParameterQuery as ParameterQuery
 from . Variables      import Variables      as Variables
+from . Identifier     import Identifier     as Identifier
 from . MIME           import MIME           as MIME
 ##############################################################################
 __all__ = [ "JSON"                                                         , \
@@ -16,6 +17,7 @@ __all__ = [ "JSON"                                                         , \
             "Notes"                                                        , \
             "ParameterQuery"                                               , \
             "Variables"                                                    , \
+            "Identifier"                                                   , \
             "MIME"                                                         , \
             "Widgets"                                                        ]
 ##############################################################################
