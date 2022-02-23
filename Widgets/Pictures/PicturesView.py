@@ -60,6 +60,7 @@ class PicturesView                 ( IconDock                              ) :
   HavingMenu        = 1371434312
   ############################################################################
   ShowPicture       = pyqtSignal   ( str                                     )
+  OpenPictureEditor = pyqtSignal   ( str , dict                              )
   OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
@@ -626,11 +627,14 @@ class PicturesView                 ( IconDock                              ) :
       ########################################################################
       mm   . addSeparator               (                                    )
       ########################################################################
-      msg  = self . getMenuItem         ( "ViewPicture"                      )
+      msg  = self . getMenuItem         ( "EditPicture"                      )
       mm   . addAction                  ( 1101 , msg                         )
       ########################################################################
-      msg  = self . getMenuItem         ( "AssignIcon"                       )
+      msg  = self . getMenuItem         ( "ViewPicture"                      )
       mm   . addAction                  ( 1102 , msg                         )
+      ########################################################################
+      msg  = self . getMenuItem         ( "AssignIcon"                       )
+      mm   . addAction                  ( 1103 , msg                         )
     ##########################################################################
     mm     . addSeparator               (                                    )
     mm     = self . PropertiesMenu      ( mm                                 )
@@ -669,10 +673,14 @@ class PicturesView                 ( IconDock                              ) :
       return True
     ##########################################################################
     if                                  ( at == 1101                       ) :
-      self . ShowPicture . emit         ( str ( uuid )                       )
+      self . OpenPictureEditor . emit   ( str ( uuid ) , self . Tables       )
       return True
     ##########################################################################
     if                                  ( at == 1102                       ) :
+      self . ShowPicture       . emit   ( str ( uuid )                       )
+      return True
+    ##########################################################################
+    if                                  ( at == 1103                       ) :
       self . Go                         ( self . AssignAsIcon , ( uuid , )   )
       return True
     ##########################################################################
