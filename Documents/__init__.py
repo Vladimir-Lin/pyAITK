@@ -10,6 +10,7 @@ from . ParameterQuery import ParameterQuery as ParameterQuery
 from . Variables      import Variables      as Variables
 from . Identifier     import Identifier     as Identifier
 from . MIME           import MIME           as MIME
+from . FileExtension  import FileExtension  as FileExtension
 ##############################################################################
 __all__ = [ "JSON"                                                         , \
             "Commands"                                                     , \
@@ -19,5 +20,6 @@ __all__ = [ "JSON"                                                         , \
             "Variables"                                                    , \
             "Identifier"                                                   , \
             "MIME"                                                         , \
+            "FileExtension"                                                , \
             "Widgets"                                                        ]
 ##############################################################################

@@ -15,105 +15,143 @@ from   AITK . Database  . Query       import Query
 from   AITK . Database  . Connection  import Connection
 from   AITK . Database  . Columns     import Columns
 ##############################################################################
-## 附記元件
+## MIME元件
 ##############################################################################
-class MIME ( Columns )                                                     :
+class MIME               ( Columns                                         ) :
   ############################################################################
-  def __init__ ( self )                                                      :
-    super ( Columns , self ) . __init__ ( )
-    self                     . Clear    ( )
+  def __init__           ( self                                            ) :
+    ##########################################################################
+    super ( ) . __init__ (                                                   )
+    self      . Clear    (                                                   )
+    ##########################################################################
+    return
   ############################################################################
-  def __del__  ( self )                                                      :
-    pass
+  def __del__ ( self                                                       ) :
+    return
   ############################################################################
-  def Clear    ( self )                                                      :
-    self . Columns = [ ]
-    self . Id      = -1
-    self . Uuid    =  0
-    self . Name    =  ""
-    self . Prefer  =  0
-    self . Note    =  ""
-    self . Title   =  ""
-    self . Comment =  ""
-    self . Extra   =  ""
-    self . ltime   =  0
+  def Clear             ( self                                             ) :
+    ##########################################################################
+    self . Columns    = [                                                    ]
+    self . Id         = -1
+    self . Uuid       =  0
+    self . MIME       =  ""
+    self . Type       =  ""
+    self . SubType    =  ""
+    self . Comment    =  ""
+    self . Wiki       =  ""
+    self . ltime      =  0
+    self . Extensions = [                                                    ]
+    ##########################################################################
+    return
   ############################################################################
-  def assign ( self , item )                                                 :
-    self . Columns = item . Columns
-    self . Id      = item . Id
-    self . Uuid    = item . Uuid
-    self . Name    = item . Name
-    self . Prefer  = item . Prefer
-    self . Note    = item . Note
-    self . Title   = item . Title
-    self . Comment = item . Comment
-    self . Extra   = item . Extra
-    self . ltime   = item . ltime
+  def assign ( self , item                                                 ) :
+    ##########################################################################
+    self . Columns    = item . Columns
+    self . Id         = item . Id
+    self . Uuid       = item . Uuid
+    self . MIME       = item . MIME
+    self . Type       = item . Type
+    self . SubType    = item . SubType
+    self . Comment    = item . Comment
+    self . Wiki       = item . Wiki
+    self . ltime      = item . ltime
+    self . Extensions = item . Extensions
+    ##########################################################################
+    return
   ############################################################################
-  def set ( self , item , value )                                            :
-    a = item . lower ( )
-    if ( "id"     == a ) :
-      self . Id      = value
-    if ( "uuid"   == a ) :
-      self . Uuid    = value
-    if ( "name"   == a ) :
-      self . Name    = str ( value )
-    if ( "prefer"   == a ) :
-      self . Prefer  = value
-    if ( "note"  == a ) :
-      self . Note    = str ( value )
-    if ( "title"    == a ) :
-      self . Title   = str ( value )
-    if ( "comment" == a ) :
-      self . Comment = str ( value )
-    if ( "extra" == a ) :
-      self . Extra   = str ( value )
-    if ( "ltime"  == a ) :
+  def set                  ( self , item , value                           ) :
+    ##########################################################################
+    a = item . lower       (                                                 )
+    ##########################################################################
+    if                     ( "id"      == a                                ) :
+      self . Id      = int ( value                                           )
+    if                     ( "uuid"    == a                                ) :
+      self . Uuid    = int ( value                                           )
+    if                     ( "mime"    == a                                ) :
+      self . MIME    = str ( value                                           )
+    if                     ( "type"    == a                                ) :
+      self . Type    = str ( value                                           )
+    if                     ( "subtype" == a                                ) :
+      self . SubType = str ( value                                           )
+    if                     ( "comment" == a                                ) :
+      self . Comment = str ( value                                           )
+    if                     ( "wiki"    == a                                ) :
+      self . Wiki    = str ( value                                           )
+    if                     ( "ltime"   == a                                ) :
       self . ltime   = value
+    ##########################################################################
+    return
   ############################################################################
-  def get ( self , item )                                                    :
-    a = item.lower()
-    if ( "id"     == a ) :
-      return self . Id
-    if ( "uuid"   == a ) :
-      return self . Uuid
-    if ( "name"   == a ) :
-      return self . Name
-    if ( "prefer"   == a ) :
-      return self . Prefer
-    if ( "note"  == a ) :
-      return self . Note
-    if ( "title"    == a ) :
-      return self . Title
-    if ( "comment" == a ) :
-      return self . Comment
-    if ( "extra" == a ) :
-      return self . Extra
-    if ( "ltime"  == a ) :
+  def get            ( self , item                                         ) :
+    ##########################################################################
+    a = item . lower (                                                       )
+    ##########################################################################
+    if               ( "id"      == a                                      ) :
+      return int     ( self . Id                                             )
+    if               ( "uuid"    == a                                      ) :
+      return int     ( self . Uuid                                           )
+    if               ( "mime"    == a                                      ) :
+      return str     ( self . MIME                                           )
+    if               ( "type"    == a                                      ) :
+      return str     ( self . Type                                           )
+    if               ( "subtype" == a                                      ) :
+      return str     ( self . SubType                                        )
+    if               ( "comment" == a                                      ) :
+      return str     ( self . Comment                                        )
+    if               ( "wiki"    == a                                      ) :
+      return str     ( self . Wiki                                           )
+    if               ( "ltime"   == a                                      ) :
       return self . ltime
+    ##########################################################################
     return ""
   ############################################################################
-  def tableItems ( self )                                                    :
-    return [ "id"                                                            ,
-             "uuid"                                                          ,
-             "name"                                                          ,
-             "prefer"                                                        ,
-             "note"                                                          ,
-             "title"                                                         ,
-             "comment"                                                       ,
-             "extra"                                                         ,
-             "ltime"                                                         ]
+  def tableItems ( self                                                    ) :
+    return       [ "id"                                                    , \
+                   "uuid"                                                  , \
+                   "mime"                                                  , \
+                   "type"                                                  , \
+                   "subtype"                                               , \
+                   "comment"                                               , \
+                   "wiki"                                                  , \
+                   "ltime"                                                   ]
   ############################################################################
   def pair ( self , item )                                                   :
     v = self . get ( item )
     return f"`{item}` = {v}"
   ############################################################################
   def valueItems ( self                                                    ) :
-    return [ "uuid"                                                          ,
-             "name"                                                          ,
-             "prefer"                                                        ,
-             "note"                                                          ,
-             "title"                                                         ,
-             "comment"                                                       ,
-             "extra"                                                         ]
+    return       [ "uuid"                                                  , \
+                   "mime"                                                  , \
+                   "type"                                                  , \
+                   "subtype"                                               , \
+                   "comment"                                               , \
+                   "wiki"                                                    ]
+  ############################################################################
+  def GetExtensions       ( self , DB , TABLE                              ) :
+    ##########################################################################
+    MIME  = self . Id
+    ##########################################################################
+    QQ    = f"""select `extension` from {TABLE}
+                where ( `mime` = {MIME} )
+                order by `id` asc ;"""
+    QQ    = " " . join    ( QQ . split ( )                                   )
+    DB    . Query         ( QQ                                               )
+    ##########################################################################
+    RR    = DB . FetchAll (                                                  )
+    if                    ( RR in [ False , None ]                         ) :
+      return              [                                                  ]
+    ##########################################################################
+    if                    ( len ( RR ) <= 0                                ) :
+      return              [                                                  ]
+    ##########################################################################
+    ALL   =               [                                                  ]
+    ##########################################################################
+    for R in RR                                                              :
+      ########################################################################
+      E   = int           ( R [ 0 ]                                          )
+      ALL . append        ( E                                                )
+    ##########################################################################
+    self  . Extensions = E
+    ##########################################################################
+    return E
 ##############################################################################
