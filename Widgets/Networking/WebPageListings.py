@@ -89,7 +89,8 @@ class WebPageListings              ( TreeDock                              ) :
     self . Relation . setT2        ( "WebPage"                               )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 1                                       )
+    self . setColumnCount          ( 2                                       )
+    self . setColumnHidden         ( 1 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -278,7 +279,7 @@ class WebPageListings              ( TreeDock                              ) :
     URLs    =                         {                                      }
     ##########################################################################
     if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "WebPages"                           ]
+      TABLE = self . Tables           [ "Webpages"                           ]
       for UUID in UUIDs                                                      :
         ######################################################################
         QQ  = f"select `name` from {TABLE} where ( `uuid` = {UUID} ) ;"
@@ -349,7 +350,7 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     self    . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "WebPages"                           ]
+    TABLE   = self . Tables           [ "Webpages"                           ]
     ##########################################################################
     QQ      = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
     DB      . Query                   ( QQ                                   )
@@ -364,7 +365,7 @@ class WebPageListings              ( TreeDock                              ) :
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
-    TABLE  = self . Tables     [ "WebPages"                                  ]
+    TABLE  = self . Tables     [ "Webpages"                                  ]
     QQ     = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
     DB     . Query             ( QQ                                          )
     ONE    = DB . FetchOne     (                                             )
@@ -391,7 +392,7 @@ class WebPageListings              ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery               ( self                                ) :
     ##########################################################################
-    TABLE   = self . Tables          [ "WebPages"                            ]
+    TABLE   = self . Tables          [ "Webpages"                            ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . getSortingOrder (                                       )
@@ -635,7 +636,7 @@ class WebPageListings              ( TreeDock                              ) :
       return False
     ##########################################################################
     self   . Notify                ( 0                                       )
-    items , atItem , uuid = GetMenuDetails ( 0                               )
+    items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
