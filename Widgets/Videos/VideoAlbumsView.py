@@ -111,6 +111,45 @@ class VideoAlbumsView              ( IconDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
+      return False
+    ##########################################################################
+    self . setActionLabel    ( "Label"      , self . windowTitle ( )         )
+    self . LinkAction        ( "Refresh"    , self . startup                 )
+    ##########################################################################
+    self . LinkAction        ( "Insert"     , self . InsertItem              )
+    self . LinkAction        ( "Delete"     , self . DeleteItems             )
+    self . LinkAction        ( "Home"       , self . PageHome                )
+    self . LinkAction        ( "End"        , self . PageEnd                 )
+    self . LinkAction        ( "PageUp"     , self . PageUp                  )
+    self . LinkAction        ( "PageDown"   , self . PageDown                )
+    ##########################################################################
+    self . LinkAction        ( "SelectAll"  , self . SelectAll               )
+    self . LinkAction        ( "SelectNone" , self . SelectNone              )
+    ##########################################################################
+    self . LinkAction        ( "Rename"     , self . RenamePeople            )
+    ##########################################################################
+    return True
+  ############################################################################
+  def closeEvent             ( self , event                                ) :
+    ##########################################################################
+    self . LinkAction        ( "Refresh"    , self . startup      , False    )
+    self . LinkAction        ( "Insert"     , self . InsertItem   , False    )
+    self . LinkAction        ( "Rename"     , self . RenamePeople , False    )
+    self . LinkAction        ( "Delete"     , self . DeleteItems  , False    )
+    self . LinkAction        ( "Home"       , self . PageHome     , False    )
+    self . LinkAction        ( "End"        , self . PageEnd      , False    )
+    self . LinkAction        ( "PageUp"     , self . PageUp       , False    )
+    self . LinkAction        ( "PageDown"   , self . PageDown     , False    )
+    self . LinkAction        ( "SelectAll"  , self . SelectAll    , False    )
+    self . LinkAction        ( "SelectNone" , self . SelectNone   , False    )
+    ##########################################################################
+    self . defaultCloseEvent ( event                                         )
+    ##########################################################################
+    return
+  ############################################################################
   def GetUuidIcon                    ( self , DB , UUID                    ) :
     ##########################################################################
     RELTAB = self . Tables           [ "Relation"                            ]
@@ -185,45 +224,6 @@ class VideoAlbumsView              ( IconDock                              ) :
   def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
     self . defaultFetchSessionInformation (        DB                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def FocusIn                ( self                                        ) :
-    ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
-      return False
-    ##########################################################################
-    self . setActionLabel    ( "Label"      , self . windowTitle ( )         )
-    self . LinkAction        ( "Refresh"    , self . startup                 )
-    ##########################################################################
-    self . LinkAction        ( "Insert"     , self . InsertItem              )
-    self . LinkAction        ( "Delete"     , self . DeleteItems             )
-    self . LinkAction        ( "Home"       , self . PageHome                )
-    self . LinkAction        ( "End"        , self . PageEnd                 )
-    self . LinkAction        ( "PageUp"     , self . PageUp                  )
-    self . LinkAction        ( "PageDown"   , self . PageDown                )
-    ##########################################################################
-    self . LinkAction        ( "SelectAll"  , self . SelectAll               )
-    self . LinkAction        ( "SelectNone" , self . SelectNone              )
-    ##########################################################################
-    self . LinkAction        ( "Rename"     , self . RenamePeople            )
-    ##########################################################################
-    return True
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
-    ##########################################################################
-    self . LinkAction        ( "Refresh"    , self . startup      , False    )
-    self . LinkAction        ( "Insert"     , self . InsertItem   , False    )
-    self . LinkAction        ( "Rename"     , self . RenamePeople , False    )
-    self . LinkAction        ( "Delete"     , self . DeleteItems  , False    )
-    self . LinkAction        ( "Home"       , self . PageHome     , False    )
-    self . LinkAction        ( "End"        , self . PageEnd      , False    )
-    self . LinkAction        ( "PageUp"     , self . PageUp       , False    )
-    self . LinkAction        ( "PageDown"   , self . PageDown     , False    )
-    self . LinkAction        ( "SelectAll"  , self . SelectAll    , False    )
-    self . LinkAction        ( "SelectNone" , self . SelectNone   , False    )
-    ##########################################################################
-    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
@@ -417,7 +417,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def ReloadLocality                ( self , DB                            ) :
+  def ReloadLocality               ( self , DB                             ) :
     ##########################################################################
     if                             ( not self . isGrouping ( )             ) :
       return
@@ -440,98 +440,28 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  """
-  @pyqtSlot                           (        dict                          )
-  def refresh                         ( self , JSON                        ) :
+  def FunctionsMenu           ( self , mm , uuid , item                    ) :
     ##########################################################################
-    self    . clear                   (                                      )
+    MSG  = self . getMenuItem ( "Functions"                                  )
+    LOM  = mm   . addMenu     ( MSG                                          )
     ##########################################################################
-    UUIDs   = JSON                    [ "UUIDs"                              ]
-    if                                ( self . UsingName                   ) :
-      NAMEs = JSON                    [ "NAMEs"                              ]
     ##########################################################################
-    for U in UUIDs                                                           :
-      ########################################################################
-      if                              ( self . UsingName                   ) :
-        IT  = self . PrepareItem      ( U , NAMEs [ U ]                      )
-      else                                                                   :
-        IT  = self . PrepareItem      ( U , ""                               )
-      self  . addItem                 ( IT                                   )
-      self  . UuidItemMaps [ U ] = IT
-    ##########################################################################
-    self    . emitIconsShow . emit    (                                      )
-    ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      self . Go                       ( self . FetchIcons , ( UUIDs , )      )
-    ##########################################################################
-    return
+    return mm
   ############################################################################
-  def loading                         ( self                               ) :
+  def RunFunctionsMenu        ( self , at , uuid , item                    ) :
     ##########################################################################
-    self    . LoopRunning = False
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      self . emitIconsShow . emit     (                                      )
-      return
-    ##########################################################################
-    self    . Notify                  ( 3                                    )
-    ##########################################################################
-    FMT     = self . Translations     [ "UI::StartLoading"                   ]
-    MSG     = FMT . format            ( self . windowTitle ( )               )
-    self    . ShowStatus              ( MSG                                  )
-    self    . setBustle               (                                      )
-    ##########################################################################
-    self    . FetchSessionInformation ( DB                                   )
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    if                                ( self . UsingName                   ) :
-      NAMEs = self . ObtainAlbumNames ( DB , UUIDs                           )
-    ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . ShowStatus              ( ""                                   )
-    DB      . Close                   (                                      )
-    ##########################################################################
-    self    . LoopRunning = True
-    ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
-      self  . emitIconsShow . emit    (                                      )
-    ##########################################################################
-    JSON               =              {                                      }
-    JSON   [ "UUIDs" ] = UUIDs
-    if                                ( self . UsingName                   ) :
-      JSON [ "NAMEs" ] = NAMEs
-    ##########################################################################
-    self    . Notify                  ( 0                                    )
-    self    . emitAllIcons . emit     ( JSON                                 )
-    ##########################################################################
-    return
+    return False
   ############################################################################
-  @pyqtSlot                        (        int                              )
-  def GotoId                       ( self , Id                             ) :
+  def GroupsMenu              ( self , mm , uuid , item                    ) :
     ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    TRX  = self . Translations
+    NAME = item . text        (                                              )
+    MSG  = self . getMenuItem ( "Belongs"                                    )
+    LOM  = mm   . addMenu     ( MSG                                          )
     ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                        (        int                              )
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  """
-  ############################################################################
-  def GroupsMenu                ( self , mm , uuid , item                  ) :
-    ##########################################################################
-    TRX = self  . Translations
-    LOM = mm    . addMenu       ( "附屬關聯群組" )
-    ##########################################################################
-    mm  . addActionFromMenu     ( LOM , 1201 , TRX [ "UI::PersonalGallery" ] )
-    mm  . addActionFromMenu     ( LOM , 1202 , TRX [ "UI::Galleries"       ] )
+    mm   . addActionFromMenu  ( LOM , 1201 , TRX [ "UI::PersonalGallery" ]   )
+    mm   . addActionFromMenu  ( LOM , 1202 , TRX [ "UI::Galleries"       ]   )
     ##########################################################################
     return mm
   ############################################################################
@@ -567,13 +497,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     self . Notify                  ( 0                                       )
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . itemAt         ( pos                                     )
-    uuid   = 0
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( Qt . UserRole                           )
-      uuid = int                   ( uuid                                    )
+    items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
@@ -589,17 +513,17 @@ class VideoAlbumsView              ( IconDock                              ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
         mm . addSeparator          (                                         )
     ##########################################################################
-    if                             ( uuid > 0                              ) :
-      mm   = self . GroupsMenu     ( mm , uuid , atItem                      )
+    self   . FunctionsMenu         ( mm , uuid , atItem                      )
     ##########################################################################
-    mm     = self . LocalityMenu   ( mm                                      )
+    if                             ( uuid > 0                              ) :
+      self . GroupsMenu            ( mm , uuid , atItem                      )
+    ##########################################################################
+    self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
-    fnt    = self . font           (                                         )
-    fnt    . setPointSize          ( 10                                      )
-    mm     . setFont               ( fnt                                     )
-    aa     = mm   . exec_          ( QCursor . pos  ( )                      )
-    at     = mm   . at             ( aa                                      )
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
+    at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunAmountIndexMenu ( )         ) :
       ########################################################################
@@ -611,7 +535,10 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
-    if ( self . RunGroupsMenu ( at , uuid , atItem ) )                       :
+    if ( self . RunGroupsMenu    ( at , uuid , atItem ) )                    :
+      return True
+    ##########################################################################
+    if ( self . RunFunctionsMenu ( at , uuid , atItem ) )                    :
       return True
     ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
@@ -630,7 +557,7 @@ class VideoAlbumsView              ( IconDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
-      NAM  = self . Tables         [ "Names"                                 ]
+      NAM  = self . Tables         [ "NamesEditing"                          ]
       self . EditAllNames          ( self , "Albums" , uuid , NAM            )
       return True
     ##########################################################################
