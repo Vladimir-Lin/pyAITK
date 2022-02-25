@@ -353,7 +353,7 @@ class VideoAlbumsView              ( IconDock                              ) :
   ############################################################################
   def ObtainAlbumNames                 ( self , DB , UUIDs                 ) :
     ##########################################################################
-    IDFTAB   = "`cios`.`identifiers`"
+    IDFTAB   = self . Tables           [ "Identifiers"                       ]
     NAMTAB   = self . Tables           [ "Names"                             ]
     ##########################################################################
     NAMEs    =                         {                                     }
@@ -525,6 +525,11 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
+    if                             ( self . isSearching ( )                ) :
+      ########################################################################
+      msg  = self . getMenuItem    ( "NotSearch"                             )
+      mm   . addAction             ( 7401 , msg                              )
+    ##########################################################################
     self   . AmountIndexMenu       ( mm                                      )
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
@@ -593,6 +598,14 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                             ( at == 1601                            ) :
       NAM  = self . Tables         [ "NamesEditing"                          ]
       self . EditAllNames          ( self , "Albums" , uuid , NAM            )
+      return True
+    ##########################################################################
+    if                             ( at == 7401                            ) :
+      ########################################################################
+      self . Grouping = self . OldGrouping
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     return True
