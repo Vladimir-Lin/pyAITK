@@ -147,6 +147,7 @@ class PeopleView                   ( IconDock                              ) :
     SID    = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
+    ##########################################################################
     QQ     = f"""select `uuid` from {TABLE}
                  where ( `used` = 1 )
                  order by `id` {ORDER}

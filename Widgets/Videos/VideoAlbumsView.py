@@ -66,24 +66,30 @@ from   AITK  . Videos     . Album     import Album       as AlbumItem
 ##############################################################################
 class VideoAlbumsView              ( IconDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
   GalleryGroup        = pyqtSignal ( str , int , str                         )
+  ShowWebPages        = pyqtSignal ( str , int , str , str , QIcon           )
+  OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
+  emitOpenSmartNote   = pyqtSignal ( str                                     )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 60
+    self . Total              = 0
+    self . StartId            = 0
+    self . Amount             = 60
+    self . SortOrder          = "asc"
+    self . SearchLine         = None
+    self . SearchKey          = ""
+    self . UUIDs              = [                                            ]
     ##########################################################################
-    self . Grouping = "Original"
-    ## self . Grouping = "Subordination"
-    ## self . Grouping = "Reverse"
-    ##########################################################################
-    self . GroupOrder = "asc"
+    self . Grouping           = "Original"
+    self . OldGrouping        = "Original"
+    ## self . Grouping           = "Subordination"
+    ## self . Grouping           = "Reverse"
     ##########################################################################
     self . dockingPlace       = Qt . BottomDockWidgetArea
     ##########################################################################
@@ -102,43 +108,19 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                ( self                                       ) :
-    return QSize              ( 840 , 800                                    )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def setGrouping             ( self , group                               ) :
-    self . Grouping = group
-    return self . Grouping
-  ############################################################################
-  def getGrouping             ( self                                       ) :
-    return self . Grouping
-  ############################################################################
-  def setGroupOrder           ( self , order                               ) :
-    self . GroupOrder = order
-    return self . GroupOrder
-  ############################################################################
-  def getGroupOrder           ( self                                       ) :
-    return self . GroupOrder
-  ############################################################################
-  def GetUuidIcon                ( self , DB , Uuid                        ) :
+  def GetUuidIcon                    ( self , DB , UUID                    ) :
     ##########################################################################
-    RELTAB = self . Tables       [ "Relation"                                ]
-    REL    = Relation            (                                           )
-    REL    . set                 ( "first" , Uuid                            )
-    REL    . setT1               ( "Album"                                   )
-    REL    . setT2               ( "Picture"                                 )
-    REL    . setRelation         ( "Using"                                   )
+    RELTAB = self . Tables           [ "Relation"                            ]
     ##########################################################################
-    PICS   = REL . Subordination ( DB , RELTAB                               )
-    ##########################################################################
-    if                           ( len ( PICS ) > 0                        ) :
-      return PICS                [ 0                                         ]
-    ##########################################################################
-    return 0
+    return self . defaultGetUuidIcon ( DB , RELTAB , "Album" , UUID          )
   ############################################################################
   def FetchRegularDepotCount   ( self , DB                                 ) :
     ##########################################################################
     TABLE  = self . Tables     [ "Albums"                                    ]
-    QQ     = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
+    QQ     = f"select count(*) from {TABLE} where ( `used` = 1 ) ;"
     DB     . Query             ( QQ                                          )
     ONE    = DB . FetchOne     (                                             )
     ##########################################################################
@@ -162,88 +144,88 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery            ( self                                   ) :
+  def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    TABLE  = self . Tables        [ "Albums"                                 ]
+    TABLE  = self . Tables          [ "Albums"                               ]
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder (                                          )
+    ORDER  = self . getSortingOrder (                                        )
+    ##########################################################################
     QQ     = f"""select `uuid` from {TABLE}
-                 where ( `used` > 0 )
+                 where ( `used` = 1 )
                  order by `id` {ORDER}
                  limit {SID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join             ( QQ . split ( ) )
+    return " " . join               ( QQ . split ( )                         )
   ############################################################################
-  def ObtainSubgroupUuids      ( self , DB                                 ) :
+  def ObtainSubgroupUuids                    ( self , DB                   ) :
     ##########################################################################
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder ( )
+    ORDER  = self . getSortingOrder          (                               )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                   [ "Relation"                    ]
     ##########################################################################
-    if                         ( self . Grouping == "Subordination"        ) :
+    if                                       ( self . isSubordination ( )  ) :
       OPTS = f"order by `position` {ORDER}"
       return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
-    if                         ( self . Grouping == "Reverse"              ) :
+    if                                       ( self . isReverse       ( )  ) :
       OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
       return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
     ##########################################################################
-    return                     [                                             ]
+    return                                   [                               ]
   ############################################################################
-  def ObtainsItemUuids                ( self , DB                          ) :
+  def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                                ( self . Grouping == "Original"      ) :
+    if                                      ( self . isOriginal ( )        ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
-  def FetchSessionInformation         ( self , DB                          ) :
+  def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
-    self . ReloadLocality             (        DB                            )
-    ##########################################################################
-    if                                ( self . Grouping == "Original"      ) :
-      ########################################################################
-      self . Total = self . FetchRegularDepotCount ( DB                      )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                ( self . Grouping == "Subordination" ) :
-      ########################################################################
-      self . Total = self . FetchGroupMembersCount ( DB                      )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                ( self . Grouping == "Reverse"       ) :
-      ########################################################################
-      self . Total = self . FetchGroupOwnersCount  ( DB                      )
-      ########################################################################
-      return
+    self . defaultFetchSessionInformation (        DB                        )
     ##########################################################################
     return
   ############################################################################
-  def FocusIn                    ( self                                    ) :
+  def FocusIn                ( self                                        ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel        ( "Label"      , self . windowTitle ( )     )
-    self . LinkAction            ( "Refresh"    , self . startup             )
+    self . setActionLabel    ( "Label"      , self . windowTitle ( )         )
+    self . LinkAction        ( "Refresh"    , self . startup                 )
     ##########################################################################
-    self . LinkAction            ( "Insert"     , self . InsertItem          )
-    self . LinkAction            ( "Delete"     , self . DeleteItems         )
-    self . LinkAction            ( "Home"       , self . PageHome            )
-    self . LinkAction            ( "End"        , self . PageEnd             )
-    self . LinkAction            ( "PageUp"     , self . PageUp              )
-    self . LinkAction            ( "PageDown"   , self . PageDown            )
+    self . LinkAction        ( "Insert"     , self . InsertItem              )
+    self . LinkAction        ( "Delete"     , self . DeleteItems             )
+    self . LinkAction        ( "Home"       , self . PageHome                )
+    self . LinkAction        ( "End"        , self . PageEnd                 )
+    self . LinkAction        ( "PageUp"     , self . PageUp                  )
+    self . LinkAction        ( "PageDown"   , self . PageDown                )
     ##########################################################################
-    self . LinkAction            ( "SelectAll"  , self . SelectAll           )
-    self . LinkAction            ( "SelectNone" , self . SelectNone          )
+    self . LinkAction        ( "SelectAll"  , self . SelectAll               )
+    self . LinkAction        ( "SelectNone" , self . SelectNone              )
     ##########################################################################
-    self . LinkAction            ( "Rename"     , self . RenamePeople        )
+    self . LinkAction        ( "Rename"     , self . RenamePeople            )
     ##########################################################################
     return True
+  ############################################################################
+  def closeEvent             ( self , event                                ) :
+    ##########################################################################
+    self . LinkAction        ( "Refresh"    , self . startup      , False    )
+    self . LinkAction        ( "Insert"     , self . InsertItem   , False    )
+    self . LinkAction        ( "Rename"     , self . RenamePeople , False    )
+    self . LinkAction        ( "Delete"     , self . DeleteItems  , False    )
+    self . LinkAction        ( "Home"       , self . PageHome     , False    )
+    self . LinkAction        ( "End"        , self . PageEnd      , False    )
+    self . LinkAction        ( "PageUp"     , self . PageUp       , False    )
+    self . LinkAction        ( "PageDown"   , self . PageDown     , False    )
+    self . LinkAction        ( "SelectAll"  , self . SelectAll    , False    )
+    self . LinkAction        ( "SelectNone" , self . SelectNone   , False    )
+    ##########################################################################
+    self . defaultCloseEvent ( event                                         )
+    ##########################################################################
+    return
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
@@ -258,21 +240,8 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def dragMime                   ( self                                    ) :
-    ##########################################################################
-    mtype   = "album/uuids"
-    message = "選擇了{0}個影片"
-    ##########################################################################
-    return self . CreateDragMime ( self , mtype , message                    )
-  ############################################################################
-  def startDrag         ( self , dropActions                               ) :
-    ##########################################################################
-    self . StartingDrag (                                                    )
-    ##########################################################################
-    return
-  ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids;picture/uuids"
+    formats = "album/uuids;people/uuids;picture/uuids"
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
@@ -375,48 +344,6 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
   def RenamePeople                 ( self                                  ) :
     ##########################################################################
     ##########################################################################
@@ -459,62 +386,61 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  def UpdateLocalityUsage           ( self                                 ) :
+  def UpdateLocalityUsage          ( self                                  ) :
     ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subordination" , "Reverse"            ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
+    if                             ( not self . isGrouping ( )             ) :
       return False
     ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
+    DB     = self . ConnectDB      (                                         )
+    if                             ( DB == None                            ) :
       return False
     ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
-    DB      . LockWrites            ( [ PAMTAB ]                             )
+    PAMTAB = self . Tables         [ "Parameters"                            ]
+    DB     . LockWrites            ( [ PAMTAB ]                              )
     ##########################################################################
-    if                              ( SCOPE == "Subordination"             ) :
+    if                             ( self . isSubordination ( )            ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
+      TYPE = self . Relation . get ( "t1"                                    )
+      UUID = self . Relation . get ( "first"                                 )
       ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
+    elif                           ( self . isReverse       ( )            ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
+      TYPE = self . Relation . get ( "t2"                                    )
+      UUID = self . Relation . get ( "second"                                )
     ##########################################################################
-    self    . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    SCOPE  = self . Grouping
+    SCOPE  = f"ViewAlbums-{SCOPE}"
+    self   . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
     ##########################################################################
-    DB      . UnlockTables          (                                        )
-    DB      . Close                 (                                        )
+    DB     . UnlockTables          (                                         )
+    DB     . Close                 (                                         )
     ##########################################################################
     return True
   ############################################################################
   def ReloadLocality                ( self , DB                            ) :
     ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subordination" , "Reverse"            ]
-    ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
+    if                             ( not self . isGrouping ( )             ) :
       return
     ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    PAMTAB = self . Tables         [ "Parameters"                            ]
     ##########################################################################
-    if                              ( SCOPE == "Subordination"             ) :
+    if                             ( self . isSubordination ( )            ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
+      TYPE = self . Relation . get ( "t1"                                    )
+      UUID = self . Relation . get ( "first"                                 )
       ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
+    elif                            ( self . isReverse       ( )           ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
+      TYPE = self . Relation . get ( "t2"                                    )
+      UUID = self . Relation . get ( "second"                                )
     ##########################################################################
-    self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    SCOPE  = self . Grouping
+    SCOPE  = f"ViewAlbums-{SCOPE}"
+    self   . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
     ##########################################################################
     return
   ############################################################################
+  """
   @pyqtSlot                           (        dict                          )
   def refresh                         ( self , JSON                        ) :
     ##########################################################################
@@ -597,6 +523,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     self . startup                 (                                         )
     ##########################################################################
     return
+  """
   ############################################################################
   def GroupsMenu                ( self , mm , uuid , item                  ) :
     ##########################################################################
@@ -653,6 +580,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     TRX    = self . Translations
     ##########################################################################
     mm     = self . AmountIndexMenu     ( mm                                 )
+    ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     ##########################################################################
@@ -683,6 +611,9 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
+    if ( self . RunGroupsMenu ( at , uuid , atItem ) )                       :
+      return True
+    ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
       ########################################################################
       self . clear                 (                                         )
@@ -696,9 +627,6 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . InsertItem            (                                         )
-      return True
-    ##########################################################################
-    if ( self . RunGroupsMenu ( at , uuid , atItem ) )                       :
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
