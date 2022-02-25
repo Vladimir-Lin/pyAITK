@@ -518,6 +518,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                             ( uuid > 0                              ) :
       self . GroupsMenu            ( mm , uuid , atItem                      )
     ##########################################################################
+    self   . SortingMenu           ( mm                                      )
     self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
@@ -539,6 +540,13 @@ class VideoAlbumsView              ( IconDock                              ) :
       return True
     ##########################################################################
     if ( self . RunFunctionsMenu ( at , uuid , atItem ) )                    :
+      return True
+    ##########################################################################
+    if                             ( self . RunSortingMenu     ( at )      ) :
+      ########################################################################
+      self . clear                 (                                         )
+      self . startup               (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( self . HandleLocalityMenu ( at )      ) :
