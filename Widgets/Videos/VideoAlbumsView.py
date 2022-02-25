@@ -112,43 +112,39 @@ class VideoAlbumsView              ( IconDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
+  def AttachActions   ( self         ,                       Enabled       ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup      , Enabled         )
+    self . LinkAction ( "Insert"     , self . InsertItem   , Enabled         )
+    self . LinkAction ( "Rename"     , self . RenameVideo  , Enabled         )
+    self . LinkAction ( "Delete"     , self . DeleteItems  , Enabled         )
+    self . LinkAction ( "Cut"        , self . DeleteItems  , Enabled         )
+    self . LinkAction ( "Copy"       , self . CopyItems    , Enabled         )
+    self . LinkAction ( "Paste"      , self . PasteItems   , Enabled         )
+    self . LinkAction ( "Search"     , self . Search       , Enabled         )
+    self . LinkAction ( "Home"       , self . PageHome     , Enabled         )
+    self . LinkAction ( "End"        , self . PageEnd      , Enabled         )
+    self . LinkAction ( "PageUp"     , self . PageUp       , Enabled         )
+    self . LinkAction ( "PageDown"   , self . PageDown     , Enabled         )
+    self . LinkAction ( "SelectAll"  , self . SelectAll    , Enabled         )
+    self . LinkAction ( "SelectNone" , self . SelectNone   , Enabled         )
+    ##########################################################################
+    return
+  ############################################################################
   def FocusIn                ( self                                        ) :
     ##########################################################################
     if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
     self . setActionLabel    ( "Label"      , self . windowTitle ( )         )
-    self . LinkAction        ( "Refresh"    , self . startup                 )
-    ##########################################################################
-    self . LinkAction        ( "Insert"     , self . InsertItem              )
-    self . LinkAction        ( "Delete"     , self . DeleteItems             )
-    self . LinkAction        ( "Rename"     , self . RenameVideo             )
-    self . LinkAction        ( "Home"       , self . PageHome                )
-    self . LinkAction        ( "End"        , self . PageEnd                 )
-    self . LinkAction        ( "PageUp"     , self . PageUp                  )
-    self . LinkAction        ( "PageDown"   , self . PageDown                )
-    ##########################################################################
-    self . LinkAction        ( "SelectAll"  , self . SelectAll               )
-    self . LinkAction        ( "SelectNone" , self . SelectNone              )
-    ##########################################################################
-    self . LinkAction        ( "Rename"     , self . RenamePeople            )
+    self . AttachActions     ( True                                          )
     ##########################################################################
     return True
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction        ( "Refresh"    , self . startup      , False    )
-    self . LinkAction        ( "Insert"     , self . InsertItem   , False    )
-    self . LinkAction        ( "Delete"     , self . DeleteItems  , False    )
-    self . LinkAction        ( "Rename"     , self . RenameVideo  , False    )
-    self . LinkAction        ( "Home"       , self . PageHome     , False    )
-    self . LinkAction        ( "End"        , self . PageEnd      , False    )
-    self . LinkAction        ( "PageUp"     , self . PageUp       , False    )
-    self . LinkAction        ( "PageDown"   , self . PageDown     , False    )
-    self . LinkAction        ( "SelectAll"  , self . SelectAll    , False    )
-    self . LinkAction        ( "SelectNone" , self . SelectNone   , False    )
-    ##########################################################################
-    self . defaultCloseEvent ( event                                         )
+    self . AttachActions     ( False                                         )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
@@ -345,6 +341,16 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     ##########################################################################
     return True
+  ############################################################################
+  def CopyItems                    ( self                                  ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def PasteItems                   ( self                                  ) :
+    ##########################################################################
+    ##########################################################################
+    return
   ############################################################################
   def RenameVideo                  ( self                                  ) :
     ##########################################################################
