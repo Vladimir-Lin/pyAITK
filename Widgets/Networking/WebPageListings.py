@@ -56,27 +56,27 @@ from   AITK . Calendars . Periode     import Periode
 ##############################################################################
 class WebPageListings              ( TreeDock                              ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu        = 1371434312
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
-  PeopleGroup       = pyqtSignal   ( int , str                               )
   ############################################################################
-  def __init__             ( self , parent = None , plan = None            ) :
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . EditAllNames       = None
+    self . EditAllNames = None
+    self . ClassTag     = "WebPageListings"
     ##########################################################################
-    self . Total    = 0
-    self . StartId  = 0
-    self . Amount   = 28
-    self . Order    = "asc"
+    self . Total        = 0
+    self . StartId      = 0
+    self . Amount       = 40
+    self . Order        = "asc"
     ##########################################################################
-    self . Grouping = "Original"
-    ## self . Grouping = "Subordination"
-    ## self . Grouping = "Reverse"
+    self . Grouping     = "Original"
+    self . OldGrouping  = "Original"
+    ## self . Grouping     = "Subordination"
+    ## self . Grouping     = "Reverse"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -98,69 +98,67 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
-    self . emitNamesShow     . connect ( self . show                         )
-    self . emitAllNames      . connect ( self . refresh                      )
-    self . emitAssignAmounts . connect ( self . AssignAmounts                )
+    self . emitNamesShow . connect ( self . show                             )
+    self . emitAllNames  . connect ( self . refresh                          )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
+    self . setAcceptDrops          ( True                                    )
+    self . setDragEnabled          ( True                                    )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 640 , 1024                              )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 640 , 1024 )                      )
   ############################################################################
-  def setGrouping             ( self , group                               ) :
-    self . Grouping = group
-    return self . Grouping
-  ############################################################################
-  def getGrouping             ( self                                       ) :
-    return self . Grouping
-  ############################################################################
-  def setGroupOrder           ( self , order                               ) :
-    self . Order = order
-    return self . Order
-  ############################################################################
-  def getGroupOrder           ( self                                       ) :
-    return self . Order
-  ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def AttachActions   ( self                                  , Enabled    ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn             ( self                                           ) :
+    ##########################################################################
+    if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
-    ##########################################################################
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
-    ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
-    ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
+    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
+    self . AttachActions  ( True                                             )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    self . AttachActions     ( False                                         )
+    self . defaultCloseEvent (        event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked         ( self , item , column                         ) :
+    ##########################################################################
+    if                      ( self . isItemPicked ( )                      ) :
+      if                    ( column != self . CurrentItem [ "Column" ]    ) :
+        self . removeParked (                                                )
     ##########################################################################
     return
   ############################################################################
@@ -177,14 +175,14 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
+  def PrepareItem           ( self , UUID , NAME                           ) :
     ##########################################################################
-    UXID = str                   ( UUID                                      )
-    IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , NAME                                  )
-    IT   . setToolTip            ( 0 , UXID                                  )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    UXID = str              ( UUID                                           )
+    IT   = QTreeWidgetItem  (                                                )
+    IT   . setText          ( 0 , NAME                                       )
+    IT   . setToolTip       ( 0 , UXID                                       )
+    IT   . setData          ( 0 , Qt . UserRole , UUID                       )
+    IT   . setTextAlignment ( 1 , Qt . AlignRight                            )
     ##########################################################################
     return IT
   ############################################################################
@@ -202,81 +200,75 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  @pyqtSlot                  (                                               )
+  def RenameItem             ( self                                        ) :
     ##########################################################################
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
-      return
-    ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
+    self . defaultRenameItem ( [ 0                                         ] )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def nameChanged                ( self                                    ) :
+  @pyqtSlot                     (                                            )
+  def nameChanged               ( self                                     ) :
     ##########################################################################
-    if                           ( not self . isItemPicked ( )             ) :
+    if                          ( not self . isItemPicked ( )              ) :
       return False
     ##########################################################################
-    item   = self . CurrentItem  [ "Item"                                    ]
-    column = self . CurrentItem  [ "Column"                                  ]
-    line   = self . CurrentItem  [ "Widget"                                  ]
-    text   = self . CurrentItem  [ "Text"                                    ]
-    msg    = line . text         (                                           )
-    uuid   = self . itemUuid     ( item , 0                                  )
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    line   = self . CurrentItem [ "Widget"                                   ]
+    text   = self . CurrentItem [ "Text"                                     ]
+    msg    = line . text        (                                            )
+    uuid   = self . itemUuid    ( item , 0                                   )
     ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
+    if                          ( len ( msg ) <= 0                         ) :
+      self . removeTopLevelItem ( item                                       )
       return
     ##########################################################################
-    item   . setText             ( column ,              msg                 )
+    item   . setText            ( column ,              msg                  )
     ##########################################################################
-    self   . removeParked        (                                           )
-    """
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
-    """
+    self   . removeParked       (                                            )
+    VAL    =                    ( item , uuid , msg ,                        )
+    self   . Go                 ( self . AssureUrlItem , VAL                 )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot(dict)
-  def refresh                         ( self , JSON                        ) :
+  @pyqtSlot                       ( dict                                     )
+  def refresh                     ( self , JSON                            ) :
     ##########################################################################
-    self    . clear                   (                                      )
+    self   . clear                (                                          )
     ##########################################################################
-    UUIDs   = JSON                    [ "UUIDs"                              ]
-    URLs    = JSON                    [ "URLs"                               ]
+    UUIDs  = JSON                 [ "UUIDs"                                  ]
+    URLs   = JSON                 [ "URLs"                                   ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , URLs [ U ]                       )
-      self  . addTopLevelItem         ( IT                                   )
+      IT   = self . PrepareItem   ( U , URLs [ U ]                           )
+      self . addTopLevelItem      ( IT                                       )
     ##########################################################################
-    self    . emitNamesShow . emit    (                                      )
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
-  def ObtainSubgroupUuids      ( self , DB                                 ) :
+  def ObtainSubgroupUuids                    ( self , DB                   ) :
     ##########################################################################
     SID    = self . StartId
     AMOUNT = self . Amount
-    ORDER  = self . getGroupOrder ( )
+    ORDER  = self . getSortingOrder          (                               )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                   [ "Relation"                    ]
     ##########################################################################
-    if                         ( self . Grouping == "Subordination"        ) :
+    if                                       ( self . isSubordination ( )  ) :
       OPTS = f"order by `position` {ORDER}"
       return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
-    if                         ( self . Grouping == "Reverse"              ) :
+    if                                       ( self . isReverse       ( )  ) :
       OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
       return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
     ##########################################################################
     return                     [                                             ]
   ############################################################################
-  def ObtainsItemUuids                ( self , DB                          ) :
+  def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                                ( self . Grouping == "Original"      ) :
+    if                                      ( self . isOriginal ( )        ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
@@ -304,17 +296,6 @@ class WebPageListings              ( TreeDock                              ) :
           URLs [ UUID ] = SS
     ##########################################################################
     return URLs
-  ############################################################################
-  @pyqtSlot                           (        str  , int                    )
-  def AssignAmounts                   ( self , UUID , Amounts              ) :
-    ##########################################################################
-    IT    = self . uuidAtItem         ( UUID , 0                             )
-    if                                ( IT is None                         ) :
-      return
-    ##########################################################################
-    IT . setText                      ( 1 , str ( Amounts )                  )
-    ##########################################################################
-    return
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
@@ -354,20 +335,13 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot()
-  def startup                    ( self                                    ) :
+  @pyqtSlot          (                                                       )
+  def startup        ( self                                                ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
     ##########################################################################
-    self   . Go                  ( self . loading                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
   ############################################################################
@@ -415,39 +389,52 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
-  def ObtainUuidsQuery        ( self                                       ) :
+  def ObtainUuidsQuery               ( self                                ) :
     ##########################################################################
-    TABLE   = self . Tables   [ "WebPages"                                   ]
+    TABLE   = self . Tables          [ "WebPages"                            ]
     STID    = self . StartId
     AMOUNT  = self . Amount
-    ORDER   = self . Order
+    ORDER   = self . getSortingOrder (                                       )
     ##########################################################################
     QQ      = f"""select `uuid` from {TABLE}
                   where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
-    return " " . join         ( QQ . split ( )                               )
+    return " " . join                ( QQ . split ( )                        )
   ############################################################################
   def FetchSessionInformation         ( self , DB                          ) :
     ##########################################################################
-    if                                ( self . Grouping == "Original"      ) :
+    if                                ( self . isOriginal      ( )         ) :
       ########################################################################
       self . Total = self . FetchRegularDepotCount ( DB                      )
       ########################################################################
       return
     ##########################################################################
-    if                                ( self . Grouping == "Subordination" ) :
+    if                                ( self . isSubordination ( )         ) :
       ########################################################################
       self . Total = self . FetchGroupMembersCount ( DB                      )
       ########################################################################
       return
     ##########################################################################
-    if                                ( self . Grouping == "Reverse"       ) :
+    if                                ( self . isReverse       ( )         ) :
       ########################################################################
       self . Total = self . FetchGroupOwnersCount  ( DB                      )
       ########################################################################
       return
+    ##########################################################################
+    return
+  ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "url/uuids"
+    message = "kk"
+    ##########################################################################
+    return self . CreateDragMime ( self , 0 , mtype , message                )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
     ##########################################################################
     return
   ############################################################################
@@ -578,64 +565,26 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def Prepare                 ( self                                       ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
+    self . defaultPrepare ( "WebPageListings" , 1                            )
+    """
     TRX    = self . Translations
     LABELs = [ "網頁" ]
     self   . setCentralLabels ( LABELs                                       )
+    """
     ##########################################################################
     self   . setPrepared      ( True                                         )
     ##########################################################################
     return
   ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def AssureUrlItem                ( self , item , uuid , name             ) :
     ##########################################################################
     DB      = self . ConnectDB     (                                         )
     if                             ( DB == None                            ) :
       return
     ##########################################################################
+    """
     OCPTAB  = self . Tables        [ "Organizations"                         ]
     NAMTAB  = self . Tables        [ "Names"                                 ]
     ##########################################################################
@@ -652,38 +601,13 @@ class WebPageListings              ( TreeDock                              ) :
     DB      . Close                (                                         )
     ##########################################################################
     item    . setData              ( 0 , Qt . UserRole , uuid                )
+    """
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . TtsTalk                ( MSG , LID                                )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                        (        int                              )
-  def GotoId                       ( self , Id                             ) :
-    ##########################################################################
-    self . StartId    = Id
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot(int)
-  def AssignAmount                 ( self , Amount                         ) :
-    ##########################################################################
-    self . Amount    = Amount
-    self . clear                   (                                         )
-    self . startup                 (                                         )
+    self . DoCopyToClipboard (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -693,44 +617,24 @@ class WebPageListings              ( TreeDock                              ) :
     if                             ( not doMenu                            ) :
       return False
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . currentItem    (                                         )
-    uuid   = 0
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
+    self   . Notify                ( 0                                       )
+    items , atItem , uuid = GetMenuDetails ( 0                               )
     ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
     if                             ( atItem != None                        ) :
-      mm   . addAction             ( 7001 , "打開網址" )
-      mm   . addSeparator          (                                         )
+      msg  = self . getMenuItem    ( "OpenUrl"                               )
+      mm   . addAction             ( 7001 , msg                              )
     ##########################################################################
-    T      = self . Total
-    MSG    = f"總數量:{T}"
-    mm     . addAction             ( 9999991 , MSG                           )
-    ##########################################################################
-    SIDB   = SpinBox               ( None , self . PlanFunc                  )
-    SIDB   . setRange              ( 0 , self . Total                        )
-    SIDB   . setValue              ( self . StartId                          )
-    SIDB   . setPrefix             ( "本頁開始:" )
-    mm     . addWidget             ( 9999992 , SIDB                          )
-    SIDB   . valueChanged . connect ( self . GotoId                          )
-    ##########################################################################
-    SIDP   = SpinBox               ( None , self . PlanFunc                  )
-    SIDP   . setRange              ( 0 , self . Total                        )
-    SIDP   . setValue              ( self . Amount                           )
-    SIDP   . setPrefix             ( "每頁數量:" )
-    mm     . addWidget             ( 9999993 , SIDP                          )
-    SIDP   . valueChanged . connect ( self . AssignAmount                    )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     . addAction             ( 1001 , TRX [ "UI::Refresh" ]            )
-    mm     . addAction             ( 1101 , TRX [ "UI::Insert"  ]            )
+    self   . AmountIndexMenu       ( mm                                      )
+    self   . AppendRefreshAction   ( mm , 1001                               )
+    self   . AppendInsertAction    ( mm , 1101                               )
+    if                             ( uuid > 0                              ) :
+      ########################################################################
+      self . AppendRenameAction    ( mm , 1102                               )
+      self . AppendDeleteAction    ( mm , 1103                               )
     ##########################################################################
     mm     . addSeparator          (                                         )
     self   . DockingMenu           ( mm                                      )
@@ -748,6 +652,14 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . InsertItem            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1102                            ) :
+      self . RenameItem            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1103                            ) :
+      self . DeleteItems           (                                         )
       return True
     ##########################################################################
     if                             ( at == 7001                            ) :

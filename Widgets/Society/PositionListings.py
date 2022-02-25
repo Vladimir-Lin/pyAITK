@@ -870,8 +870,7 @@ class PositionListings             ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    mm     . addSeparator           (                                        )
+    self   . AmountIndexMenu        ( mm                                     )
     ##########################################################################
     self   . AppendRefreshAction    ( mm , 1001                              )
     ##########################################################################
@@ -882,8 +881,8 @@ class PositionListings             ( TreeDock                              ) :
     self   . AppendDeleteAction     ( mm , 1103                              )
     ##########################################################################
     mm     . addSeparator           (                                        )
-    mm     = self . ColumnsMenu     ( mm                                     )
-    mm     = self . SortingMenu     ( mm                                     )
+    self   . ColumnsMenu            ( mm                                     )
+    self   . SortingMenu            ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
     mm     . setFont                ( self    . menuFont ( )                 )
