@@ -448,15 +448,15 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FunctionsMenu             ( self , mm , uuid , item                  ) :
+  def FunctionsMenu            ( self , mm , uuid , item                   ) :
     ##########################################################################
-    MSG    = self . getMenuItem ( "Functions"                                )
-    LOM    = mm   . addMenu     ( MSG                                        )
+    MSG   = self . getMenuItem ( "Functions"                                 )
+    LOM   = mm   . addMenu     ( MSG                                         )
     ##########################################################################
-    if                          ( self . isSubordination ( )               ) :
+    if                         ( self . isSubordination ( )                ) :
       ########################################################################
-      msg  = self . getMenuItem ( "AssignTables"                             )
-      mm   . addActionFromMenu  ( 34621301 , msg                             )
+      msg = self . getMenuItem ( "AssignTables"                              )
+      mm  . addActionFromMenu  ( LOM , 34621301 , msg                        )
     ##########################################################################
     return mm
   ############################################################################
@@ -488,14 +488,22 @@ class VideoAlbumsView              ( IconDock                              ) :
     MSG  = self . getMenuItem ( "Belongs"                                    )
     LOM  = mm   . addMenu     ( MSG                                          )
     ##########################################################################
-    mm   . addActionFromMenu  ( LOM , 1201 , TRX [ "UI::PersonalGallery" ]   )
-    mm   . addActionFromMenu  ( LOM , 1202 , TRX [ "UI::Galleries"       ]   )
+    MSG  = self . getMenuItem ( "IconGroups"                                 )
+    mm   . addActionFromMenu  ( LOM , 1201 , MSG                             )
+    ##########################################################################
+    mm   . addActionFromMenu  ( LOM , 1202 , TRX [ "UI::PersonalGallery" ]   )
+    mm   . addActionFromMenu  ( LOM , 1203 , TRX [ "UI::Galleries"       ]   )
     ##########################################################################
     return mm
   ############################################################################
   def RunGroupsMenu                ( self , at , uuid , item               ) :
     ##########################################################################
     if                             ( at == 1201                            ) :
+      ########################################################################
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 1202                            ) :
       ########################################################################
       text = item . text           (                                         )
       icon = item . icon           (                                         )
@@ -505,7 +513,7 @@ class VideoAlbumsView              ( IconDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1202                            ) :
+    if                             ( at == 1203                            ) :
       ########################################################################
       text = item . text           (                                         )
       icon = item . icon           (                                         )
@@ -542,6 +550,8 @@ class VideoAlbumsView              ( IconDock                              ) :
     self   . AppendSearchAction    ( mm , 1102                               )
     self   . AppendRenameAction    ( mm , 1103                               )
     self   . AssureEditNamesAction ( mm , 1601 , atItem                      )
+    ##########################################################################
+    mm     . addSeparator          (                                         )
     ##########################################################################
     self   . FunctionsMenu         ( mm , uuid , atItem                      )
     self   . GroupsMenu            ( mm , uuid , atItem                      )
