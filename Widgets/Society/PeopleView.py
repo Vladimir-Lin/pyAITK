@@ -713,6 +713,9 @@ class PeopleView                   ( IconDock                              ) :
   ############################################################################
   def GroupsMenu               ( self , mm , uuid , item                   ) :
     ##########################################################################
+    if                         ( uuid <= 0                                 ) :
+      return mm
+    ##########################################################################
     TRX = self . Translations
     FMT = self . getMenuItem   ( "Belongs"                                   )
     MSG = FMT  . format        ( item . text ( )                             )
@@ -815,17 +818,11 @@ class PeopleView                   ( IconDock                              ) :
       msg  = self . getMenuItem    ( "NotSearch"                             )
       mm   . addAction             ( 7401 , msg                              )
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     = self . AppendInsertAction  ( mm , 1101                          )
-    ##########################################################################
-    msg    = self . getMenuItem    ( "Search"                                )
-    mm     . addAction             ( 1103 , msg                              )
-    ##########################################################################
-    mm     = self . AppendRenameAction  ( mm , 1102                          )
+    self   . AmountIndexMenu       ( mm                                      )
+    self   . AppendRefreshAction   ( mm , 1001                               )
+    self   . AppendInsertAction    ( mm , 1101                               )
+    self   . AppendSearchAction    ( mm , 1102                               )
+    self   . AppendRenameAction    ( mm , 1103                               )
     ##########################################################################
     msg    = self . getMenuItem    ( "AllNames"                              )
     mm     . addAction             ( 1401 , msg                              )
@@ -839,13 +836,9 @@ class PeopleView                   ( IconDock                              ) :
       msg  = self . getMenuItem    ( "AssignTables"                          )
       mm   . addAction             ( 1301 , msg                              )
     ##########################################################################
-    if                             ( atItem != None                        ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
+    self   . AssureEditNamesAction ( mm , 1601 , atItem                      )
     ##########################################################################
-    if                             ( uuid > 0                              ) :
-      self . GroupsMenu            ( mm , uuid , atItem                      )
+    self   . GroupsMenu            ( mm , uuid , atItem                      )
     self   . SortingMenu           ( mm                                      )
     self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
@@ -895,13 +888,13 @@ class PeopleView                   ( IconDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1102                            ) :
-      ########################################################################
-      self . RenamePeople          (                                         )
-      ########################################################################
+      self . Search                (                                         )
       return True
     ##########################################################################
     if                             ( at == 1103                            ) :
-      self . Search                (                                         )
+      ########################################################################
+      self . RenamePeople          (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1301                            ) :

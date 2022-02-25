@@ -82,6 +82,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     self . StartId            = 0
     self . Amount             = 60
     self . SortOrder          = "asc"
+    self . FetchTableKey      = "VideoAlbums"
     self . SearchLine         = None
     self . SearchKey          = ""
     self . UUIDs              = [                                            ]
@@ -121,6 +122,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     self . LinkAction        ( "Insert"     , self . InsertItem              )
     self . LinkAction        ( "Delete"     , self . DeleteItems             )
+    self . LinkAction        ( "Rename"     , self . RenameVideo             )
     self . LinkAction        ( "Home"       , self . PageHome                )
     self . LinkAction        ( "End"        , self . PageEnd                 )
     self . LinkAction        ( "PageUp"     , self . PageUp                  )
@@ -137,8 +139,8 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     self . LinkAction        ( "Refresh"    , self . startup      , False    )
     self . LinkAction        ( "Insert"     , self . InsertItem   , False    )
-    self . LinkAction        ( "Rename"     , self . RenamePeople , False    )
     self . LinkAction        ( "Delete"     , self . DeleteItems  , False    )
+    self . LinkAction        ( "Rename"     , self . RenameVideo  , False    )
     self . LinkAction        ( "Home"       , self . PageHome     , False    )
     self . LinkAction        ( "End"        , self . PageEnd      , False    )
     self . LinkAction        ( "PageUp"     , self . PageUp       , False    )
@@ -344,7 +346,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def RenamePeople                 ( self                                  ) :
+  def RenameVideo                  ( self                                  ) :
     ##########################################################################
     ##########################################################################
     return
@@ -440,20 +442,40 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FunctionsMenu           ( self , mm , uuid , item                    ) :
+  def FunctionsMenu             ( self , mm , uuid , item                  ) :
     ##########################################################################
-    MSG  = self . getMenuItem ( "Functions"                                  )
-    LOM  = mm   . addMenu     ( MSG                                          )
+    MSG    = self . getMenuItem ( "Functions"                                )
+    LOM    = mm   . addMenu     ( MSG                                        )
     ##########################################################################
+    if                          ( self . isSubordination ( )               ) :
+      ########################################################################
+      msg  = self . getMenuItem ( "AssignTables"                             )
+      mm   . addActionFromMenu  ( 34621301 , msg                             )
     ##########################################################################
     return mm
   ############################################################################
-  def RunFunctionsMenu        ( self , at , uuid , item                    ) :
+  def RunFunctionsMenu                 ( self , at , uuid , item           ) :
     ##########################################################################
+    if                                 ( at == 34621301                    ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      UUID  = self . Relation  . get   ( "first"                             )
+      TYPE  = self . Relation  . get   ( "t1"                                )
+      TYPE  = int                      ( TYPE                                )
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         self . FetchTableKey              , \
+                                         self . Tables                       )
+      ########################################################################
+      return True
     ##########################################################################
     return False
   ############################################################################
   def GroupsMenu              ( self , mm , uuid , item                    ) :
+    ##########################################################################
+    if                        ( uuid <= 0                                  ) :
+      return mm
     ##########################################################################
     TRX  = self . Translations
     NAME = item . text        (                                              )
@@ -503,21 +525,15 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu     ( mm                                 )
-    ##########################################################################
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     = self . AppendInsertAction  ( mm , 1101                          )
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
+    self   . AmountIndexMenu       ( mm                                      )
+    self   . AppendRefreshAction   ( mm , 1001                               )
+    self   . AppendInsertAction    ( mm , 1101                               )
+    self   . AppendSearchAction    ( mm , 1102                               )
+    self   . AppendRenameAction    ( mm , 1103                               )
+    self   . AssureEditNamesAction ( mm , 1601 , atItem                      )
     ##########################################################################
     self   . FunctionsMenu         ( mm , uuid , atItem                      )
-    ##########################################################################
-    if                             ( uuid > 0                              ) :
-      self . GroupsMenu            ( mm , uuid , atItem                      )
-    ##########################################################################
+    self   . GroupsMenu            ( mm , uuid , atItem                      )
     self   . SortingMenu           ( mm                                      )
     self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
@@ -562,6 +578,16 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . InsertItem            (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1102                            ) :
+      self . Search                (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1103                            ) :
+      ########################################################################
+      self . RenameVideo           (                                         )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
