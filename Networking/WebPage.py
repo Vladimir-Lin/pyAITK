@@ -325,7 +325,7 @@ class WebPage         (                                                    ) :
   ############################################################################
   def AppendPage             ( self , DB                                   ) :
     ##########################################################################
-    WPGTAB      = self . Tables      [ "Webpages"                            ]
+    WPGTAB   = self . Tables [ "Webpages"                                    ]
     UUID     = DB . LastUuid ( WPGTAB , "uuid" , 8380000000000000000         )
     URID     = self . UrlUuid
     NAME     = self . Page
@@ -340,6 +340,80 @@ class WebPage         (                                                    ) :
     DB       . QueryValues   ( QQ , W                                        )
     ##########################################################################
     return UUID
+  ############################################################################
+  def UpdatePage            ( self , DB , UUID                             ) :
+    ##########################################################################
+    WPGTAB  = self . Tables [ "Webpages"                                     ]
+    URID    = self . UrlUuid
+    NAME    = self . Page
+    REVERSE = self . Reverse
+    PATH    = self . Path
+    W       =               ( URID , NAME , REVERSE , PATH ,                 )
+    ##########################################################################
+    QQ      = f"""update {WPGTAB}
+                   set `url` = %s ,
+                      `name` = %s ,
+                   `reverse` = %s ,
+                      `path` = %s
+                   where ( `uuid` = {UUID} ) ;"""
+    DB      . QueryValues   ( QQ , W                                         )
+    ##########################################################################
+    return UUID
+  ############################################################################
+  def Update                         ( self , DB                           ) :
+    ##########################################################################
+    Answer = False
+    ##########################################################################
+    TLDTAB      = self . Tables      [ "TLD"                                 ]
+    SLDTAB      = self . Tables      [ "SLD"                                 ]
+    DOMTAB      = self . Tables      [ "Domains"                             ]
+    HSTTAB      = self . Tables      [ "Hosts"                               ]
+    URLTAB      = self . Tables      [ "URLs"                                ]
+    WPGTAB      = self . Tables      [ "Webpages"                            ]
+    ##########################################################################
+    DB          . LockWrites         ( [ TLDTAB                            , \
+                                         SLDTAB                            , \
+                                         DOMTAB                            , \
+                                         HSTTAB                            , \
+                                         URLTAB                            , \
+                                         WPGTAB                            ] )
+    ##########################################################################
+    R           = self . LookForTLD  ( DB                                    )
+    if                               ( R != None                           ) :
+      self      . TLD = R            [ "Id"                                  ]
+      if                             ( R [ "Type" ] == 7                   ) :
+        self . SLD = self . LookForSLD ( DB                                  )
+    ##########################################################################
+    D   = self . LookForDomain       ( DB                                    )
+    if                               ( D > 0                               ) :
+      self . DomainUuid = D
+    else                                                                     :
+      self . DomainUuid = self . AppendDomain ( DB                           )
+    ##########################################################################
+    if                               ( self . DomainUuid > 0               ) :
+      ########################################################################
+      H = self . LookForHost         ( DB                                    )
+      if                             ( H > 0                               ) :
+        self . HostUuid = H
+      else                                                                   :
+        self . HostUuid = self . AppendHost ( DB                             )
+    ##########################################################################
+    if                               ( self . HostUuid > 0                 ) :
+      ########################################################################
+      U = self . LookForURL          ( DB                                    )
+      if                             ( U > 0                               ) :
+        self . UrlUuid = U
+      else                                                                   :
+        self . UrlUuid = self . AppendURL ( DB                               )
+    ##########################################################################
+    if                               ( self . UrlUuid > 0                  ) :
+      ########################################################################
+      self . UpdatePage              ( DB , self . Uuid                      )
+      Answer = True
+    ##########################################################################
+    DB          . UnlockTables       (                                       )
+    ##########################################################################
+    return Answer
   ############################################################################
   def Assure                         ( self , DB                           ) :
     ##########################################################################

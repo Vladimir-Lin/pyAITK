@@ -49,10 +49,10 @@ from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
 from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
-from   AITK  . Essentials . Relation  import Relation
-##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
+from   AITK  . Essentials . Relation  import Relation    as Relation
+from   AITK  . Calendars  . StarDate  import StarDate    as StarDate
+from   AITK  . Calendars  . Periode   import Periode     as Periode
+from   AITK  . Networking . WebPage   import WebPage     as WebPage
 ##############################################################################
 class WebPageListings              ( TreeDock                              ) :
   ############################################################################
@@ -104,9 +104,9 @@ class WebPageListings              ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setAcceptDrops          ( False                                   )
+    self . setDragEnabled          ( False                                   )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
     return
   ############################################################################
@@ -424,6 +424,7 @@ class WebPageListings              ( TreeDock                              ) :
       return
     ##########################################################################
     return
+  """
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
@@ -564,6 +565,7 @@ class WebPageListings              ( TreeDock                              ) :
     self    . DoUpdate              (                                        )
     ##########################################################################
     return
+  """
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
@@ -578,30 +580,45 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUrlItem                ( self , item , uuid , name             ) :
+  def AssureUrlItem                  ( self , item , uuid , URL            ) :
     ##########################################################################
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    DB            = self . ConnectDB ( UsePure = True                        )
+    if                               ( DB in [ False , None ]              ) :
       return
     ##########################################################################
-    """
-    OCPTAB  = self . Tables        [ "Organizations"                         ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
+    RELTAB        = self . Tables    [ "Relation"                            ]
+    WP            = WebPage          ( URL                                   )
+    WP   . Tables = self . Tables
     ##########################################################################
-    DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
-    ##########################################################################
-    uuid    = int                  ( uuid                                    )
-    if                             ( uuid <= 0                             ) :
+    if                               ( uuid > 0                            ) :
       ########################################################################
-      uuid  = DB . LastUuid        ( OCPTAB , "uuid" , 1600000000000000000   )
-      DB    . AppendUuid           ( OCPTAB , uuid                           )
+      WP . Uuid   = uuid
+      if                             ( WP . isProtocol (                 ) ) :
+        WP        . Update           ( DB                                    )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      if                             ( WP . isProtocol (                 ) ) :
+        if                           ( WP . Assure     ( DB              ) ) :
+          uuid    = WP . Uuid
     ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    if                               ( self . isSubordination ( )          ) :
+      ########################################################################
+      self        . Relation . set   ( "second" , uuid                       )
+      DB          . LockWrites       ( [ RELTAB                            ] )
+      self        . Relation . Join  ( DB , RELTAB                           )
+      DB          . UnlockTables     (                                       )
+      ########################################################################
+    elif                             ( self . isReverse       ( )          ) :
+      ########################################################################
+      self        . Relation . set   ( "first"  , uuid                       )
+      DB          . LockWrites       ( [ RELTAB                            ] )
+      self        . Relation . Join  ( DB , RELTAB                           )
+      DB          . UnlockTables     (                                       )
     ##########################################################################
-    DB      . Close                (                                         )
+    DB            . Close            (                                       )
     ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
-    """
+    item          . setData          ( 0 , Qt . UserRole , uuid              )
     ##########################################################################
     return
   ############################################################################
