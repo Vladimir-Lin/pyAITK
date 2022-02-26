@@ -172,11 +172,11 @@ class VariantTables                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def setOwner                   ( self , UUID , TYPE , NAME , JSON        ) :
+  def setOwner        ( self , UUID , TYPE , NAME , JSON                   ) :
     ##########################################################################
-    self . Uuid = UUID
-    self . Type = TYPE
-    self . Name = NAME
+    self . Uuid = int ( UUID                                                 )
+    self . Type = int ( TYPE                                                 )
+    self . Name = str ( NAME                                                 )
     self . JSON = JSON
     ##########################################################################
     return
