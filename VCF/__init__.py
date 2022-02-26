@@ -23,6 +23,7 @@ from . VcfPath         import VcfPath         as VcfPath
 from . VcfRectangle    import VcfRectangle    as VcfRectangle
 from . VcfRuler        import VcfRuler        as VcfRuler
 from . VcfShape        import VcfShape        as VcfShape
+from . VcfPicture      import VcfPicture      as VcfPicture
 from . VcfSlider       import VcfSlider       as VcfSlider
 from . VcfWidget       import VcfWidget       as VcfWidget
 ##############################################################################
@@ -49,6 +50,7 @@ __all__ = [ "VcfBlock"                                                     , \
             "VcfRectangle"                                                 , \
             "VcfRuler"                                                     , \
             "VcfShape"                                                     , \
+            "VcfPicture"                                                   , \
             "VcfSlider"                                                    , \
             "VcfWidget"                                                      ]
 ##############################################################################
