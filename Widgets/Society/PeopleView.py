@@ -63,20 +63,21 @@ from   AITK  . Calendars  . Periode   import Periode     as Periode
 from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
 from   AITK  . People     . People    import People      as PeopleItem
 ##############################################################################
-class PeopleView                   ( IconDock                              ) :
+class PeopleView                     ( IconDock                            ) :
   ############################################################################
-  HavingMenu          = 1371434312
+  HavingMenu            = 1371434312
   ############################################################################
-  ShowPersonalGallery = pyqtSignal ( str , int , str ,       QIcon           )
-  ShowGalleries       = pyqtSignal ( str , int , str ,       QIcon           )
-  ShowWebPages        = pyqtSignal ( str , int , str , str , QIcon           )
-  OwnedOccupation     = pyqtSignal ( str , int , str , str , QIcon           )
-  OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
-  emitOpenSmartNote   = pyqtSignal ( str                                     )
+  ShowPersonalGallery   = pyqtSignal ( str , int , str ,       QIcon         )
+  ShowGalleries         = pyqtSignal ( str , int , str ,       QIcon         )
+  ShowGalleriesRelation = pyqtSignal ( str , int , str , str , QIcon         )
+  ShowWebPages          = pyqtSignal ( str , int , str , str , QIcon         )
+  OwnedOccupation       = pyqtSignal ( str , int , str , str , QIcon         )
+  OpenVariantTables     = pyqtSignal ( str , str , int , str , dict          )
+  emitOpenSmartNote     = pyqtSignal ( str                                   )
   ############################################################################
-  def __init__                     ( self , parent = None , plan = None    ) :
+  def __init__                       ( self , parent = None , plan = None  ) :
     ##########################################################################
-    super ( ) . __init__           (        parent        , plan             )
+    super ( ) . __init__             (        parent        , plan           )
     ##########################################################################
     self . Total              = 0
     self . StartId            = 0
@@ -821,15 +822,18 @@ class PeopleView                   ( IconDock                              ) :
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
     MSG = self . getMenuItem   ( "Occupations"                               )
-    mm  . addActionFromMenu    ( LOM , 1201 , MSG                            )
+    mm  . addActionFromMenu    ( LOM , 24231201 , MSG                        )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
     MSG = self . getMenuItem   ( "PersonalGallery"                           )
-    mm  . addActionFromMenu    ( LOM , 1211 , MSG                            )
+    mm  . addActionFromMenu    ( LOM , 24231211 , MSG                        )
     ##########################################################################
     MSG = self . getMenuItem   ( "Galleries"                                 )
-    mm  . addActionFromMenu    ( LOM , 1212 , MSG                            )
+    mm  . addActionFromMenu    ( LOM , 24231212 , MSG                        )
+    ##########################################################################
+    MSG = self . getMenuItem   ( "Icons"                                     )
+    mm  . addActionFromMenu    ( LOM , 24231213 , MSG                        )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
@@ -843,7 +847,7 @@ class PeopleView                   ( IconDock                              ) :
   ############################################################################
   def RunGroupsMenu                     ( self , at , uuid , item          ) :
     ##########################################################################
-    if                                  ( at == 1201                       ) :
+    if                                  ( at == 24231201                   ) :
       ########################################################################
       text = item . text                (                                    )
       icon = item . icon                (                                    )
@@ -854,7 +858,7 @@ class PeopleView                   ( IconDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                                  ( at == 1211                       ) :
+    if                                  ( at == 24231211                   ) :
       ########################################################################
       text = item . text                (                                    )
       icon = item . icon                (                                    )
@@ -864,13 +868,24 @@ class PeopleView                   ( IconDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                                  ( at == 1212                       ) :
+    if                                  ( at == 24231212                   ) :
       ########################################################################
       text = item . text                (                                    )
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       ########################################################################
       self . ShowGalleries       . emit ( text , 7 , xsid , icon             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231213                   ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      relz = "Using"
+      ########################################################################
+      self . ShowGalleriesRelation . emit ( text , 7 , relz , xsid , icon    )
       ########################################################################
       return True
     ##########################################################################
