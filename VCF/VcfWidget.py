@@ -57,9 +57,10 @@ class VcfWidget           ( QGraphicsView                                  , \
                             VcfDisplay                                     , \
                             VcfManager                                     ) :
   ############################################################################
-  attachNone = pyqtSignal ( QWidget                                          )
-  attachDock = pyqtSignal ( QWidget , str , int , int                        )
-  attachMdi  = pyqtSignal ( QWidget , int                                    )
+  attachNone     = pyqtSignal ( QWidget                                      )
+  attachDock     = pyqtSignal ( QWidget , str , int , int                    )
+  attachMdi      = pyqtSignal ( QWidget , int                                )
+  emitMenuCaller = pyqtSignal ( dict                                         )
   ############################################################################
   def __init__            ( self , parent = None , plan = None             ) :
     ##########################################################################
@@ -70,7 +71,7 @@ class VcfWidget           ( QGraphicsView                                  , \
     self . setPlanFunction                 ( plan                            )
     self . InitializeDock                  ( plan                            )
     self . InitializeDisplay               (                                 )
-    self . InitializeManager               (                                 )
+    self . InitializeManager               ( self                            )
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -86,6 +87,8 @@ class VcfWidget           ( QGraphicsView                                  , \
     self . setRenderHint         ( QPainter . Antialiasing           , True  )
     self . setRenderHint         ( QPainter . TextAntialiasing       , True  )
     ## self . setRenderHint         ( QPainter . LosslessImageRendering , True  )
+    ##########################################################################
+    self . emitMenuCaller . connect ( self . acceptMenuCaller                )
     ##########################################################################
     return
   ############################################################################
@@ -224,6 +227,30 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     return True
   ############################################################################
+  def acceptMenuCaller ( self , JSON                                       ) :
+    ##########################################################################
+    if                 ( "Item"     not in JSON                            ) :
+      return
+    ##########################################################################
+    if                 ( "Position" not in JSON                            ) :
+      return
+    ##########################################################################
+    item   = JSON      [ "Item"                                              ]
+    pos    = JSON      [ "Position"                                          ]
+    ##########################################################################
+    Caller = getattr   ( item , "Menu" , None                                )
+    if                 ( callable ( Caller )                               ) :
+      Caller           ( self , pos                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def MenuCallerEmitter          ( self , item , pos                       ) :
+    ##########################################################################
+    JSON =                       { "Item" : item , "Position" : pos          }
+    self . emitMenuCaller . emit ( JSON                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def startup                ( self                                        ) :
     ##########################################################################
     self . PerfectView       (                                               )
@@ -234,9 +261,11 @@ class VcfWidget           ( QGraphicsView                                  , \
     VRIT  . setOptions       ( self . Options , False                        )
     VRIT  . Mode = 1
     VRIT  . setRange         ( QRectF ( 1.0 , 1.0 , 5.0 , 5.0 )              )
+    VRIT  . setMenuCaller    ( self . MenuCallerEmitter                      )
     ##########################################################################
-    self   . Scene . addItem ( VRIT                                          )
-    self   . setPrepared     ( True                                          )
+    self  . addItem          ( VRIT                                          )
+    self  . Scene . addItem  ( VRIT                                          )
+    self  . setPrepared      ( True                                          )
     ##########################################################################
     return
 ##############################################################################

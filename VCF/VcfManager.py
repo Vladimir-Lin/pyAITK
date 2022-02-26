@@ -48,14 +48,15 @@ class VcfManager      (                                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def InitializeManager ( self                                             ) :
+  def InitializeManager   ( self , widget                                  ) :
     ##########################################################################
-    self . vcfItems =   [                                                    ]
-    self . vcfMaps  =   {                                                    }
+    self . vcfItems     = [                                                  ]
+    self . vcfMaps      = {                                                  }
+    self . MasterWidget = widget
     ##########################################################################
     return
   ############################################################################
-  def addItem                ( self , item , parent                        ) :
+  def addItem                ( self , item , parent = None                 ) :
     ##########################################################################
     if                       ( item in [ False , None ]                    ) :
       return len             ( self . vcfItems                               )
@@ -65,6 +66,8 @@ class VcfManager      (                                                    ) :
       self . vcfMaps [ item ] = parent
       ########################################################################
       return len             ( self . vcfItems                               )
+    ##########################################################################
+    item . setMenuCaller     ( MasterWidget . MenuCallerEmitter              )
     ##########################################################################
     self . vcfItems . append ( item                                          )
     self . vcfMaps [ item ] = parent

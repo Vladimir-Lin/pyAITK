@@ -22,6 +22,7 @@ from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QImage
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QFont
 from   PyQt5 . QtGui                  import QFontMetricsF
@@ -41,33 +42,142 @@ from   AITK  . Essentials . Object    import Object       as Object
 from         . VcfItem                import VcfItem      as VcfItem
 from         . VcfRectangle           import VcfRectangle as VcfRectangle
 ##############################################################################
-class VcfPicture                ( VcfRectangle                             , \
-                                  Object                                   ) :
+class VcfPicture                 ( VcfRectangle                            , \
+                                   Object                                  ) :
   ############################################################################
-  EmptyMode       = 0
-  BorderMode      = 1
-  BoardMode       = 2
-  CustomMode      = 3
   ############################################################################
-  Menu            = pyqtSignal  ( VcfItem , QPointF                          )
-  ShapeName       = pyqtSignal  ( VcfItem , str                              )
-  ############################################################################
-  def __init__                  ( self                                     , \
-                                  parent = None                            , \
-                                  item   = None                            , \
-                                  plan   = None                            ) :
+  def __init__                   ( self                                    , \
+                                   parent = None                           , \
+                                   item   = None                           , \
+                                   plan   = None                           ) :
     ##########################################################################
-    super ( ) . __init__        ( parent , item , plan                       )
-    self . setObjectEmpty       (                                            )
-    self . setVcfCanvasDefaults (                                            )
+    super ( ) . __init__         ( parent , item , plan                      )
+    self . setObjectEmpty        (                                           )
+    self . setVcfCanvasDefaults  (                                           )
+    self . setVcfPictureDefaults (                                           )
     ##########################################################################
     return
   ############################################################################
-  def __del__         ( self                                               ) :
+  def __del__ ( self                                                       ) :
     ##########################################################################
     ##########################################################################
     return
   ############################################################################
+  def setVcfPictureDefaults ( self                                         ) :
+    ##########################################################################
+    self . PictureDPI = 96.0
+    self . Image      = None
+    self . Original   = None
+    self . Printable  = True
+    self . Scaling    = False
+    ##########################################################################
+    self . setFlag ( QGraphicsItem . ItemIsSelectable         , True         )
+    self . setFlag ( QGraphicsItem . ItemIsFocusable          , True         )
+    self . setFlag ( QGraphicsItem . ItemIsMovable            , True         )
+    self . setFlag ( QGraphicsItem . ItemSendsGeometryChanges , True         )
+    self . setFlag ( QGraphicsItem . ItemClipsToShape         , False        )
+    self . setFlag ( QGraphicsItem . ItemClipsChildrenToShape , False        )
+    ##########################################################################
+    self . Painter . addMap ( "Border" , 0                                   )
+    self . Painter . addPen ( 0 , QColor ( 224 , 224 , 224 )                 )
+    self . Painter . pens [ 0 ] . setStyle ( Qt . DotLine                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def PanelRect  ( self ) :
+    ##########################################################################
+    X    = QPointF ( 3.0 , 0.40 )
+    TL   = self . ScreenRect . topLeft ( )
+    TL   = self . mapToScene ( TL )
+    ## TL   = self . Options . Standard ( TL )
+    Z    = QRectF ( TL . x ( ) , TL . y ( ) - X . y ( ) , X . x ( ) , X . y ( ) )
+    ## Z    = self . Options . Region ( Z )
+    Z    = self . mapFromScene ( Z ) . boundingRect ( )
+    R    = QRectF ( self . ScreenRect.left(),Z.top(),self . ScreenRect.width(),Z.height() )
+    ##########################################################################
+    return R
+  ############################################################################
+  def CenterRect ( self ) :
+    ##########################################################################
+    X = QPointF ( 3.0 , 3.0 )
+    H = X / 2
+    C = self . ScreenRect . center ( )
+    C = self . mapToScene ( C )
+    ## C = self . Options . Standard ( C )
+    Z = QRectF ( C . x ( ) - H . x ( ) , C . y ( ) - H . y ( ) , X . x ( ) , X . y ( ) )
+    ## Z = self . Options . Region ( Z )
+    ##########################################################################
+    return Z
+  ############################################################################
+  def setCenter ( self , center ) :
+    ##########################################################################
+    """
+    PaperPos = center                                        ;
+    QGraphicsItem::setPos(Options->position(center))         ;
+    QTransform T                                             ;
+    T.reset()                                                ;
+    qreal sx = Options->DPI                                  ;
+    qreal sy = Options->DPI                                  ;
+    sx /= PictureDPI                                         ;
+    sy /= PictureDPI                                         ;
+    T = T.scale(sx,sy)                                       ;
+    Transform = T                                            ;
+    setTransform(T)                                          ;
+    QSize S(Image.width(),Image.height())                    ;
+    QPointF C(S.width()/2,S.height()/2)                      ;
+    ScreenRect.setLeft     (-C.x     ())                     ;
+    ScreenRect.setTop      (-C.y     ())                     ;
+    ScreenRect.setWidth    (S.width  ())                     ;
+    ScreenRect.setHeight   (S.height ())                     ;
+    QRectF SR = mapToScene (ScreenRect ).boundingRect()      ;
+    PaperRect = Options -> Standard (SR)                     ;
+    setToolTip                                               (
+      tr("Picture UUID : %1\n"
+         "%2 x %3 pixels\n"
+         "%4 DPI\n"
+         "%5 x %6 cm\n"
+         "Center : %7 x %8 cm"                      )
+      .arg(uuid                                     )
+      .arg(S        .width()).arg(S        .height())
+      .arg(PictureDPI                               )
+      .arg(PaperRect.width()).arg(PaperRect.height())
+      .arg(PaperPos .x    ()).arg(PaperPos .y     ())
+    )                                                        ;
+    prepareGeometryChange  (           )                     ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def contextMenuEvent ( self , event                                      ) :
+    ##########################################################################
+    self  . CallMenu   ( self , event . pos ( )                              )
+    event . accept     (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseDoubleClickEvent           ( self , event                       ) :
+    ##########################################################################
+    super ( ) . mouseDoubleClickEvent (        event                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def mousePressEvent      ( self , event                                  ) :
+    ##########################################################################
+    self . scalePressEvent (        event                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseMoveEvent      ( self , event                                   ) :
+    ##########################################################################
+    self . scaleMoveEvent (        event                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseReleaseEvent      ( self , event                                ) :
+    ##########################################################################
+    self . scaleReleaseEvent (        event                                  )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -111,11 +221,6 @@ class Q_VCF_EXPORT VcfPicture : public VcfRectangle
     virtual QVariant itemChange        (GraphicsItemChange change,const QVariant & value);
     virtual void setCornerCursor       (int corner);
 
-    virtual void mouseDoubleClickEvent (QGraphicsSceneMouseEvent * event);
-    virtual void mouseMoveEvent        (QGraphicsSceneMouseEvent * event);
-    virtual void mousePressEvent       (QGraphicsSceneMouseEvent * event);
-    virtual void mouseReleaseEvent     (QGraphicsSceneMouseEvent * event);
-
     virtual void MountZLevel           (QGraphicsProxyWidget * proxy,QSlider * slider);
     virtual void MountOpacity          (QGraphicsProxyWidget * proxy,QSlider * slider);
     virtual void MountRotation         (QGraphicsProxyWidget * proxy,QDial   * dial  );
@@ -125,11 +230,6 @@ class Q_VCF_EXPORT VcfPicture : public VcfRectangle
     virtual void AdjustContrast        (void) ;
     virtual void UnsharpMask           (void) ;
     virtual void SaveAs                (void) ;
-
-  private:
-
-    QRectF       PanelRect             (void);
-    QRectF       CenterRect            (void);
 
   public slots:
 
@@ -171,42 +271,6 @@ class Q_VCF_EXPORT VcfPicture : public VcfRectangle
     void Channel                       (VcfPicture * picture,int Component);
 
 };
-
-
-#include <qtvcf.h>
-
-N::VcfPicture:: VcfPicture   ( VcfHeadParaments  )
-              : VcfRectangle ( parent , item , p )
-              , Object       ( 0 , Types::None   )
-              , PictureDPI   ( 96.0              )
-{
-  Transform . reset ()                                ;
-  Printable = true                                    ;
-  Scaling   = false                                   ;
-  setFlag(ItemIsSelectable        ,true )             ;
-  setFlag(ItemIsFocusable         ,true )             ;
-  setFlag(ItemIsMovable           ,true )             ;
-  setFlag(ItemSendsGeometryChanges,true )             ;
-  setFlag(ItemClipsToShape        ,false)             ;
-  setFlag(ItemClipsChildrenToShape,false)             ;
-  Painter . addMap ( "Border" , 0                   ) ;
-  Painter . addPen ( 0 , QColor ( 224 , 224 , 224 ) ) ;
-  Painter . pens [0] . setStyle ( Qt::DotLine       ) ;
-}
-
-N::VcfPicture::~VcfPicture(void)
-{
-  if (IsNull(Options)  ) return ;
-  if (!Options->Private) return ;
-  delete Options                ;
-  Options = NULL                ;
-}
-
-void N::VcfPicture::contextMenuEvent(QGraphicsSceneContextMenuEvent * event)
-{
-  emit Menu(this,event->pos());
-  event->accept();
-}
 
 void N::VcfPicture::paint(QPainter * painter,const QStyleOptionGraphicsItem * option,QWidget * widget)
 {
@@ -261,43 +325,6 @@ void N::VcfPicture::LoadImage(SUID puid)
   }                                      ;
   SC.remove()                            ;
   Mutex . unlock ()                      ;
-}
-
-void N::VcfPicture::setCenter(QPointF center)
-{
-  if (IsNull(Options)) return                              ;
-  PaperPos = center                                        ;
-  QGraphicsItem::setPos(Options->position(center))         ;
-  QTransform T                                             ;
-  T.reset()                                                ;
-  qreal sx = Options->DPI                                  ;
-  qreal sy = Options->DPI                                  ;
-  sx /= PictureDPI                                         ;
-  sy /= PictureDPI                                         ;
-  T = T.scale(sx,sy)                                       ;
-  Transform = T                                            ;
-  setTransform(T)                                          ;
-  QSize S(Image.width(),Image.height())                    ;
-  QPointF C(S.width()/2,S.height()/2)                      ;
-  ScreenRect.setLeft     (-C.x     ())                     ;
-  ScreenRect.setTop      (-C.y     ())                     ;
-  ScreenRect.setWidth    (S.width  ())                     ;
-  ScreenRect.setHeight   (S.height ())                     ;
-  QRectF SR = mapToScene (ScreenRect ).boundingRect()      ;
-  PaperRect = Options -> Standard (SR)                     ;
-  setToolTip                                               (
-    tr("Picture UUID : %1\n"
-       "%2 x %3 pixels\n"
-       "%4 DPI\n"
-       "%5 x %6 cm\n"
-       "Center : %7 x %8 cm"                      )
-    .arg(uuid                                     )
-    .arg(S        .width()).arg(S        .height())
-    .arg(PictureDPI                               )
-    .arg(PaperRect.width()).arg(PaperRect.height())
-    .arg(PaperPos .x    ()).arg(PaperPos .y     ())
-  )                                                        ;
-  prepareGeometryChange  (           )                     ;
 }
 
 QVariant N::VcfPicture::itemChange(GraphicsItemChange change,const QVariant & value)
@@ -364,26 +391,6 @@ void N::VcfPicture::setCornerCursor(int Corner)
       setCursor(Qt::ClosedHandCursor)  ;
     break                              ;
   }                                    ;
-}
-
-void N::VcfPicture::mouseDoubleClickEvent(QGraphicsSceneMouseEvent * event)
-{
-  QGraphicsItem::mouseDoubleClickEvent(event);
-}
-
-void N::VcfPicture::mousePressEvent(QGraphicsSceneMouseEvent * event)
-{
-  scalePressEvent   ( event ) ;
-}
-
-void N::VcfPicture::mouseMoveEvent(QGraphicsSceneMouseEvent * event)
-{
-  scaleMoveEvent    ( event ) ;
-}
-
-void N::VcfPicture::mouseReleaseEvent(QGraphicsSceneMouseEvent * event)
-{
-  scaleReleaseEvent ( event ) ;
 }
 
 bool N::VcfPicture::showMenu(QGraphicsView * view,QPoint global)
@@ -614,30 +621,6 @@ bool N::VcfPicture::showMenu(QGraphicsView * view,QPoint global)
     break                                            ;
   }                                                  ;
   return true                                        ;
-}
-
-QRectF N::VcfPicture::PanelRect(void)
-{
-  QPointF X(3.0,0.40);
-  QPointF TL = ScreenRect . topLeft () ;
-  TL = mapToScene(TL)        ;
-  TL = Options->Standard(TL) ;
-  QRectF Z (TL.x(),TL.y()-X.y(),X.x(),X.y()) ;
-  Z  = Options->Region(Z) ;
-  Z  = mapFromScene(Z).boundingRect ( ) ;
-  return QRectF(ScreenRect.left(),Z.top(),ScreenRect.width(),Z.height()) ;
-}
-
-QRectF N::VcfPicture::CenterRect(void)
-{
-  QPointF X(3.0,3.0)                             ;
-  QPointF H = X / 2                              ;
-  QPointF C = ScreenRect.center()                ;
-  C = mapToScene(C)                              ;
-  C = Options->Standard(C)                       ;
-  QRectF Z (C.x()-H.x(),C.y()-H.y(),X.x(),X.y()) ;
-  Z  = Options->Region(Z)                        ;
-  return Z                                       ;
 }
 
 void N::VcfPicture::MountZLevel(QGraphicsProxyWidget * proxy,QSlider * slider)
