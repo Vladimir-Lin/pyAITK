@@ -68,6 +68,7 @@ class PeopleView                     ( IconDock                            ) :
   HavingMenu            = 1371434312
   ############################################################################
   ShowPersonalGallery   = pyqtSignal ( str , int , str ,       QIcon         )
+  ShowPersonalIcons     = pyqtSignal ( str , int , str , str , QIcon         )
   ShowGalleries         = pyqtSignal ( str , int , str ,       QIcon         )
   ShowGalleriesRelation = pyqtSignal ( str , int , str , str , QIcon         )
   ShowWebPages          = pyqtSignal ( str , int , str , str , QIcon         )
@@ -885,7 +886,7 @@ class PeopleView                     ( IconDock                            ) :
       xsid = str                        ( uuid                               )
       relz = "Using"
       ########################################################################
-      self . ShowGalleriesRelation . emit ( text , 7 , relz , xsid , icon    )
+      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
       ########################################################################
       return True
     ##########################################################################

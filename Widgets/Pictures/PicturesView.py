@@ -548,7 +548,7 @@ class PicturesView                 ( IconDock                              ) :
       self  . OpenVariantTables . emit ( str ( TITLE )                     , \
                                          str ( UUID  )                     , \
                                          TYPE                              , \
-                                         "Tables"                          , \
+                                         self . FetchTableKey              , \
                                          self . Tables                       )
       ########################################################################
       return True
@@ -618,10 +618,8 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu     ( mm                                 )
-    ##########################################################################
-    mm     . addSeparator               (                                    )
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
+    self   . AmountIndexMenu            ( mm                                 )
+    self   . AppendRefreshAction        ( mm , 1001                          )
     ##########################################################################
     if                                  ( uuid > 0                         ) :
       ########################################################################
@@ -637,8 +635,8 @@ class PicturesView                 ( IconDock                              ) :
       mm   . addAction                  ( 1103 , msg                         )
     ##########################################################################
     mm     . addSeparator               (                                    )
-    mm     = self . PropertiesMenu      ( mm                                 )
-    mm     = self . SortingMenu         ( mm                                 )
+    self   . PropertiesMenu             ( mm                                 )
+    self   . SortingMenu                ( mm                                 )
     self   . DockingMenu                ( mm                                 )
     ##########################################################################
     mm     . setFont                    ( self    . menuFont ( )             )
