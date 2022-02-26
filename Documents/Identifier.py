@@ -172,32 +172,33 @@ class Identifier         ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def Owners                ( self , DB , TABLE                            ) :
+  def Owners                  ( self , DB , TABLE                          ) :
     ##########################################################################
-    T       = self . Type
-    N       = self . Name
+    T         = self . Type
+    VAL       =               ( self . Name ,                                )
     ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
-                  where ( `type` = {T} )
-                    and ( `name` = %s )
-                  group by `uuid` ;"""
-    QQ      = " " . join    ( QQ . split ( )                                 )
-    DB      . Query         ( QQ                                             )
+    QQ        = f"""select `uuid` from {TABLE}
+                    where ( `type` = {T} )
+                      and ( `name` = %s )
+                    group by `uuid` ;"""
+    QQ        = " " . join    ( QQ . split ( )                               )
+    DB        . QueryValues   ( QQ , VAL                                     )
     ##########################################################################
-    RR      = DB . FetchAll (                                                )
-    if                      ( RR in [ False , None ]                       ) :
-      return                [                                                ]
+    RR        = DB . FetchAll (                                              )
+    if                        ( RR in [ False , None ]                     ) :
+      return                  [                                              ]
     ##########################################################################
-    if                      ( len ( RR ) <= 0                              ) :
-      return                [                                                ]
+    if                        ( len ( RR ) <= 0                            ) :
+      return                  [                                              ]
     ##########################################################################
-    UUIDs   =               [                                                ]
+    UUIDs     =               [                                              ]
     ##########################################################################
     for R in RR                                                              :
       ########################################################################
-      U     = R             [ 0                                              ]
-      U     = int           ( U                                              )
-      UUIDs . append        ( f"{N}"                                         )
+      U       = R             [ 0                                            ]
+      U       = int           ( U                                            )
+      if                      ( U not in UUIDs                             ) :
+        UUIDs . append        ( U                                            )
     ##########################################################################
     return UUIDs
   ############################################################################
@@ -234,6 +235,7 @@ class Identifier         ( Columns                                         ) :
     U   = self . Uuid
     T   = self . Type
     VAL =                    ( self . Name                                 , )
+    ##########################################################################
     QQ  = f"""insert into {TABLE}
               ( `uuid`,`type`,`name` )
               values
