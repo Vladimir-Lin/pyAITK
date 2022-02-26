@@ -49,7 +49,7 @@ class Album           (                                                    ) :
     UUID   = DB . LastUuid   ( ALMTAB , "uuid" , HEAD                        )
     ##########################################################################
     QQ     = f"""insert into {ALMTAB}
-                 ( `uuid`,`used`,`state` )
+                 ( `uuid`,`used`,`states` )
                  values
                  ( {UUID} , 1 , 0 ) ;"""
     QQ     = " " . join      ( QQ . split ( )                                )

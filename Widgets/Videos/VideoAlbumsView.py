@@ -457,14 +457,29 @@ class VideoAlbumsView              ( IconDock                              ) :
     icon   = self . windowIcon     (                                         )
     ##########################################################################
     if                             ( self . isSubordination ( )            ) :
+      Typi = self . Relation . get ( "t1"                                    )
       uuid = self . Relation . get ( "first"                                 )
     elif                           ( self . isReverse       ( )            ) :
+      Typi = self . Relation . get ( "t2"                                    )
       uuid = self . Relation . get ( "second"                                )
     ##########################################################################
+    Typi   = int                   ( Typi                                    )
     uuid   = int                   ( uuid                                    )
     xsid   = str                   ( uuid                                    )
     ##########################################################################
-    self   . ShowWebPages . emit   ( text , 76 , xsid , Related , icon       )
+    self   . ShowWebPages . emit   ( text , Typi , xsid , Related , icon     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenWebPageBelongings    ( self , uuid , item , Related              ) :
+    ##########################################################################
+    text = item . text         (                                             )
+    icon = item . icon         (                                             )
+    ##########################################################################
+    uuid = int                 ( uuid                                        )
+    xsid = str                 ( uuid                                        )
+    ##########################################################################
+    self . ShowWebPages . emit ( text , 76 , xsid , Related , icon           )
     ##########################################################################
     return
   ############################################################################
@@ -518,21 +533,32 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def GroupsMenu              ( self , mm , uuid , item                    ) :
+  def GroupsMenu                 ( self , mm , uuid , item                 ) :
     ##########################################################################
-    if                        ( uuid <= 0                                  ) :
+    if                           ( uuid <= 0                               ) :
       return mm
     ##########################################################################
-    TRX  = self . Translations
-    NAME = item . text        (                                              )
-    MSG  = self . getMenuItem ( "Belongs"                                    )
-    LOM  = mm   . addMenu     ( MSG                                          )
+    TRX   = self . Translations
+    NAME  = item . text          (                                           )
+    MSG   = self . getMenuItem   ( "Belongs"                                 )
+    LOM   = mm   . addMenu       ( MSG                                       )
     ##########################################################################
-    MSG  = self . getMenuItem ( "IconGroups"                                 )
-    mm   . addActionFromMenu  ( LOM , 1201 , MSG                             )
+    MSG   = self . getMenuItem   ( "IconGroups"                              )
+    mm    . addActionFromMenu    ( LOM , 1201 , MSG                          )
     ##########################################################################
-    mm   . addActionFromMenu  ( LOM , 1202 , TRX [ "UI::PersonalGallery" ]   )
-    mm   . addActionFromMenu  ( LOM , 1203 , TRX [ "UI::Galleries"       ]   )
+    MSG   = TRX                  [ "UI::PersonalGallery"                     ]
+    mm    . addActionFromMenu    ( LOM , 1202 , MSG                          )
+    ##########################################################################
+    MSG   = TRX                  [ "UI::Galleries"                           ]
+    mm    . addActionFromMenu    ( LOM , 1203 , MSG                          )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "WebPages"                                )
+    mm    . addActionFromMenu    ( LOM , 34631321 , MSG                      )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "IdentWebPage"                            )
+    mm    . addActionFromMenu    ( LOM , 34631322 , MSG                      )
     ##########################################################################
     return mm
   ############################################################################
@@ -560,6 +586,18 @@ class VideoAlbumsView              ( IconDock                              ) :
       xsid = str                   ( uuid                                    )
       ########################################################################
       self . GalleryGroup . emit   ( text , 76 , xsid                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 34631321                        ) :
+      ########################################################################
+      self . OpenWebPageBelongings ( uuid , item , "Subordination"           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 34631322                        ) :
+      ########################################################################
+      self . OpenWebPageBelongings ( uuid , item , "Equivalent"              )
       ########################################################################
       return True
     ##########################################################################
