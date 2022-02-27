@@ -214,7 +214,7 @@ class People          (                                                    ) :
     REL . setT1             ( "People"                                       )
     REL . setT2             ( "Picture"                                      )
     REL . setRelation       ( "Using"                                        )
-    REL . RepositionByFirst ( DB , Table , UUIDs                             )
+    REL . RepositionByFirst ( DB , TABLE , UUIDs                             )
     ##########################################################################
     return
   ############################################################################

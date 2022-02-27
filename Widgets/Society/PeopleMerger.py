@@ -368,7 +368,7 @@ class PeopleMerger                 ( TreeDock                              ) :
       ########################################################################
       IT   = self . topLevelItem      ( i                                    )
       PUID = self . itemUuid          ( IT                                   )
-      CHK  = IT   . checkState        (                                      )
+      CHK  = IT   . checkState        ( 0                                    )
       ########################################################################
       if                              ( CHK == Qt . Checked                ) :
         ICON = PUID
