@@ -675,7 +675,7 @@ class PeopleView                     ( IconDock                            ) :
     QQ     = f"""select `uuid`,`name` from {NAMTAB}
                  where ( `uuid` in ( {FF} ) )
                  and ( `relevance` = 0 )
-                 order by `name` asc ;"""
+                 order by `name` asc , `uuid` asc ;"""
     QQ     = " " . join            ( QQ . split ( )                          )
     DB     . Query                 ( QQ                                      )
     ALL    = DB . FetchAll         (                                         )
@@ -743,7 +743,7 @@ class PeopleView                     ( IconDock                            ) :
     QQ     = f"""select `uuid`,`name` from {NAMTAB}
                  where ( `uuid` in ( {FF} ) )
                  and ( `relevance` = 0 )
-                 order by `name` asc ;"""
+                 order by `name` asc , `uuid` asc ;"""
     QQ     = " " . join            ( QQ . split ( )                          )
     DB     . Query                 ( QQ                                      )
     ALL    = DB . FetchAll         (                                         )
