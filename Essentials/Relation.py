@@ -668,7 +668,7 @@ class Relation           ( Columns                                         ) :
     for UUID in UUIDs                                                        :
       ########################################################################
       QQ  = f"""update {Table} set `position` = {POS}
-                where ( `first` = {iv} )
+                where ( `first` = {FIRST} )
                   and ( `t1` = {T1} )
                   and ( `t2` = {T2} )
                   and ( `relation` = {REL} )
