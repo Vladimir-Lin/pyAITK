@@ -628,9 +628,12 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     for L in LISTS                                                           :
       ########################################################################
-      U      = int           ( L                                             )
-      if                     ( U not in UUIDs                              ) :
-        UUIDs . append       ( U                                             )
+      L      = L .  strip    (                                               )
+      L      = L . rstrip    (                                               )
+      if                     ( len ( L ) == 19                             ) :
+        U    = int           ( L                                             )
+        if                   ( U not in UUIDs                              ) :
+          UUIDs . append     ( U                                             )
     ##########################################################################
     if                       ( len ( UUIDs ) <= 0                          ) :
       return False
