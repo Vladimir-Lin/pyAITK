@@ -142,13 +142,14 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     TOTAL = self . topLevelItemCount (                                       )
     ##########################################################################
+    UXID  = str                      ( UUID                                  )
+    IT    = QTreeWidgetItem          (                                       )
+    ##########################################################################
     if                               ( TOTAL == 0                          ) :
       IT  . setCheckState            ( Qt . Checked                          )
     else                                                                     :
       IT  . setCheckState            ( Qt . Unchecked                        )
     ##########################################################################
-    UXID  = str                      ( UUID                                  )
-    IT    = QTreeWidgetItem          (                                       )
     IT    . setText                  ( 0 , NAME                              )
     IT    . setToolTip               ( 0 , UXID                              )
     IT    . setData                  ( 0 , Qt . UserRole , UUID              )
