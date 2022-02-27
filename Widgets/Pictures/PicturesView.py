@@ -454,23 +454,31 @@ class PicturesView                 ( IconDock                              ) :
   ############################################################################
   def AssignAsIcon                 ( self , UUID                           ) :
     ##########################################################################
-    DB     = self . ConnectDB      (                                         )
-    if                             ( DB == None                            ) :
+    DB     = self . ConnectDB      ( UsePure = True                          )
+    if                             ( DB in [ False , None ]                ) :
       return
     ##########################################################################
     RELTAB = self . Tables         [ "Relation"                              ]
-    DB     . LockWrites            ( [ RELTAB                              ] )
     ##########################################################################
     FIRST  = self . Relation . get ( "first"                                 )
     T1     = self . Relation . get ( "t1"                                    )
     REL    = Relation              (                                         )
     REL    . set                   ( "first"  , FIRST                        )
-    REL    . set                   ( "second" , UUID                         )
     REL    . set                   ( "t1"     , T1                           )
     REL    . setT2                 ( "Picture"                               )
     REL    . setRelation           ( "Using"                                 )
-    REL    . Assure                ( DB , RELTAB                             )
+    ICONs  = REL . Subordination   ( DB , RELTAB                             )
     ##########################################################################
+    UUIDs  =                       [ UUID                                    ]
+    ##########################################################################
+    for ICON in ICONs                                                        :
+      ########################################################################
+      if                           ( ICON not in UUIDs                     ) :
+        ######################################################################
+        UUIDs . append             ( ICON                                    )
+    ##########################################################################
+    DB     . LockWrites            ( [ RELTAB                              ] )
+    REL    . RepositionByFirst     ( DB , RELTAB , UUIDs                     )
     DB     . UnlockTables          (                                         )
     DB     . Close                 (                                         )
     ##########################################################################
