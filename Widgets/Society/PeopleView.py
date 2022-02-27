@@ -623,7 +623,7 @@ class PeopleView                     ( IconDock                            ) :
     except                                                                   :
       return False
     ##########################################################################
-    LISTS    = TEXT . split  ( "\n"                                          )
+    LISTS    = BODY . split  ( "\n"                                          )
     UUIDs    =               [                                               ]
     ##########################################################################
     for L in LISTS                                                           :
