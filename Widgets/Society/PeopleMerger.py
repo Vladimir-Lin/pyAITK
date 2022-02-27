@@ -138,14 +138,21 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem           ( self , UUID , NAME                           ) :
+  def PrepareItem                    ( self , UUID , NAME                  ) :
     ##########################################################################
-    UXID = str              ( UUID                                           )
-    IT   = QTreeWidgetItem  (                                                )
-    IT   . setText          ( 0 , NAME                                       )
-    IT   . setToolTip       ( 0 , UXID                                       )
-    IT   . setData          ( 0 , Qt . UserRole , UUID                       )
-    IT   . setTextAlignment ( 1 , Qt.AlignRight                              )
+    TOTAL = self . topLevelItemCount (                                       )
+    ##########################################################################
+    if                               ( TOTAL == 0                          ) :
+      IT  . setCheckState            ( Qt . Checked                          )
+    else                                                                     :
+      IT  . setCheckState            ( Qt . Unchecked                        )
+    ##########################################################################
+    UXID  = str                      ( UUID                                  )
+    IT    = QTreeWidgetItem          (                                       )
+    IT    . setText                  ( 0 , NAME                              )
+    IT    . setToolTip               ( 0 , UXID                              )
+    IT    . setData                  ( 0 , Qt . UserRole , UUID              )
+    IT    . setTextAlignment         ( 1 , Qt.AlignRight                     )
     ##########################################################################
     return IT
   ############################################################################
@@ -309,7 +316,7 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ExecuteMerge             ( self , UUID , PUIDs                       ) :
+  def ExecuteMerge             ( self , UUID , PUIDs , ICON                ) :
     ##########################################################################
     DB   = self . ConnectDB    ( UsePure = True                              )
     if                         ( DB in [ False , None ]                    ) :
@@ -319,7 +326,7 @@ class PeopleMerger                 ( TreeDock                              ) :
     PIT  . Settings = self . Settings
     PIT  . Tables   = self . Tables
     ##########################################################################
-    PIT  . MergeAll            ( DB   , UUID , PUIDs                         )
+    PIT  . MergeAll            ( DB   , UUID , PUIDs , ICON                  )
     ##########################################################################
     DB   . Close               (                                             )
     ##########################################################################
@@ -354,6 +361,16 @@ class PeopleMerger                 ( TreeDock                              ) :
         UUIDs . append                ( PUID                                 )
         PUIDs . append                ( PUID                                 )
     ##########################################################################
+    ICON   = 0
+    for i in range                    ( 0 , Total                          ) :
+      ########################################################################
+      IT   = self . topLevelItem      ( i                                    )
+      PUID = self . itemUuid          ( IT                                   )
+      CHK  = IT   . checkState        (                                      )
+      ########################################################################
+      if                              ( CHK == Qt . Checked                ) :
+        ICON = PUID
+    ##########################################################################
     if                                ( len ( PUIDs ) <= 0                 ) :
       self . Notify                   ( 1                                    )
       return
@@ -362,7 +379,7 @@ class PeopleMerger                 ( TreeDock                              ) :
     self   . ShowStatus               ( msg                                  )
     ##########################################################################
     self   . setEnabled               ( False                                )
-    VAL    =                          ( UUID , PUIDs ,                       )
+    VAL    =                          ( UUID , PUIDs , ICON ,                )
     self   . Go                       ( self . ExecuteMerge , VAL            )
     ##########################################################################
     return
