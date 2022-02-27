@@ -351,12 +351,12 @@ class VariantTables                ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
-    ##########################################################################
-    mm     = self . AppendInsertAction  ( mm , 1101                          )
+    self   . AppendRefreshAction   ( mm , 1001                               )
+    self   . AppendInsertAction    ( mm , 1101                               )
     ##########################################################################
     msg    = self . getMenuItem    ( "Save"                                  )
-    mm     . addAction             ( 1102 , msg                              )
+    icon   = QIcon                 ( ":/images/save.png"                     )
+    mm     . addActionWithIcon     ( 1102 , icon , msg                       )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
       ########################################################################
