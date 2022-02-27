@@ -71,6 +71,7 @@ class PeopleView                     ( IconDock                            ) :
   ShowPersonalIcons     = pyqtSignal ( str , int , str , str , QIcon         )
   ShowGalleries         = pyqtSignal ( str , int , str ,       QIcon         )
   ShowGalleriesRelation = pyqtSignal ( str , int , str , str , QIcon         )
+  ShowVideoAlbums       = pyqtSignal ( str , int , str ,       QIcon         )
   ShowWebPages          = pyqtSignal ( str , int , str , str , QIcon         )
   OwnedOccupation       = pyqtSignal ( str , int , str , str , QIcon         )
   OpenVariantTables     = pyqtSignal ( str , str , int , str , dict          )
@@ -838,6 +839,11 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
+    MSG = self . getMenuItem   ( "Videos"                                    )
+    mm  . addActionFromMenu    ( LOM , 24231214 , MSG                        )
+    ##########################################################################
+    mm  . addSeparatorFromMenu ( LOM                                         )
+    ##########################################################################
     MSG = self . getMenuItem   ( "WebPages"                                  )
     mm  . addActionFromMenu    ( LOM , 24231221 , MSG                        )
     ##########################################################################
@@ -887,6 +893,16 @@ class PeopleView                     ( IconDock                            ) :
       relz = "Using"
       ########################################################################
       self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231214                   ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      ########################################################################
+      self . ShowVideoAlbums . emit     ( text , 7 , xsid , icon             )
       ########################################################################
       return True
     ##########################################################################
