@@ -742,32 +742,30 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return
   ############################################################################
-  def FunctionsMenu            ( self , mm , uuid , item                   ) :
+  def FunctionsMenu              ( self , mm , uuid , item                 ) :
     ##########################################################################
-    MSG   = self . getMenuItem ( "Functions"                                 )
-    LOM   = mm   . addMenu     ( MSG                                         )
+    MSG   = self . getMenuItem   ( "Functions"                               )
+    LOM   = mm   . addMenu       ( MSG                                       )
     ##########################################################################
-    if                         ( self . isSubordination ( )                ) :
+    if                           ( self . isSubordination ( )              ) :
       ########################################################################
-      msg = self . getMenuItem ( "AssignTables"                              )
-      mm  . addActionFromMenu  ( LOM , 25351301 , msg                        )
+      msg = self . getMenuItem   ( "AssignTables"                            )
+      mm  . addActionFromMenu    ( LOM , 25351301 , msg                      )
+      mm  . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
-    msg   = self . getMenuItem ( "AllNames"                                  )
-    mm    . addActionFromMenu  ( LOM , 25355001 , msg                        )
+    msg   = self . getMenuItem   ( "AllNames"                                )
+    mm    . addActionFromMenu    ( LOM , 25355001 , msg                      )
     ##########################################################################
     msg   = "搜尋同名人物"
-    mm    . addActionFromMenu  ( LOM , 25355002 , msg                        )
+    mm    . addActionFromMenu    ( LOM , 25355002 , msg                      )
     ##########################################################################
-    mm  . addSeparatorFromMenu ( LOM                                         )
+    mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
-    MSG = self . getMenuItem   ( "WebPages"                                  )
-    mm  . addActionFromMenu    ( LOM , 25351221 , MSG                        )
+    MSG   = self . getMenuItem   ( "WebPages"                                )
+    mm    . addActionFromMenu    ( LOM , 25351221 , MSG                      )
     ##########################################################################
-    MSG = self . getMenuItem   ( "IdentWebPage"                              )
-    mm  . addActionFromMenu    ( LOM , 25351222 , MSG                        )
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
+    MSG   = self . getMenuItem   ( "IdentWebPage"                            )
+    mm    . addActionFromMenu    ( LOM , 25351222 , MSG                      )
     ##########################################################################
     return mm
   ############################################################################
