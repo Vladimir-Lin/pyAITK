@@ -145,14 +145,15 @@ class PeopleMerger                 ( TreeDock                              ) :
     UXID  = str                      ( UUID                                  )
     IT    = QTreeWidgetItem          (                                       )
     ##########################################################################
-    if                               ( TOTAL == 0                          ) :
-      IT  . setCheckState            ( Qt . Checked                          )
-    else                                                                     :
-      IT  . setCheckState            ( Qt . Unchecked                        )
-    ##########################################################################
     IT    . setText                  ( 0 , NAME                              )
     IT    . setToolTip               ( 0 , UXID                              )
     IT    . setData                  ( 0 , Qt . UserRole , UUID              )
+    ##########################################################################
+    if                               ( TOTAL == 0                          ) :
+      IT  . setCheckState            ( 0 , Qt . Checked                      )
+    else                                                                     :
+      IT  . setCheckState            ( 0 , Qt . Unchecked                    )
+    ##########################################################################
     IT    . setTextAlignment         ( 1 , Qt.AlignRight                     )
     ##########################################################################
     return IT
