@@ -191,22 +191,25 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                       Enabled       ) :
+  def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup      , Enabled         )
-    self . LinkAction ( "Insert"     , self . InsertItem   , Enabled         )
-    self . LinkAction ( "Rename"     , self . RenamePeople , Enabled         )
-    self . LinkAction ( "Delete"     , self . DeleteItems  , Enabled         )
-    self . LinkAction ( "Cut"        , self . DeleteItems  , Enabled         )
-    self . LinkAction ( "Copy"       , self . CopyItems    , Enabled         )
-    self . LinkAction ( "Paste"      , self . PasteItems   , Enabled         )
-    self . LinkAction ( "Search"     , self . Search       , Enabled         )
-    self . LinkAction ( "Home"       , self . PageHome     , Enabled         )
-    self . LinkAction ( "End"        , self . PageEnd      , Enabled         )
-    self . LinkAction ( "PageUp"     , self . PageUp       , Enabled         )
-    self . LinkAction ( "PageDown"   , self . PageDown     , Enabled         )
-    self . LinkAction ( "SelectAll"  , self . SelectAll    , Enabled         )
-    self . LinkAction ( "SelectNone" , self . SelectNone   , Enabled         )
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Load"       , self . LoadPeople      , Enabled      )
+    self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
+    self . LinkAction ( "Export"     , self . ExportSameNames , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    self . LinkAction ( "Search"     , self . Search          , Enabled      )
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
     return
   ############################################################################
@@ -569,6 +572,139 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return
   ############################################################################
+  def LoadPeople                    ( self                                 ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def ImportPeople                  ( self                                 ) :
+    ##########################################################################
+    Filters  = self . getMenuItem ( "TextFilters"                            )
+    Name , t = QFileDialog . getOpenFileName                                 (
+                                    self                                   , \
+                                    self . windowTitle ( )                 , \
+                                    ""                                     , \
+                                    Filters                                  )
+    ##########################################################################
+    if                            ( len ( Name ) <= 0                      ) :
+      self   . Notify             ( 1                                        )
+      return
+    ##########################################################################
+    VAL      =                    ( Name ,                                   )
+    self     . Go                 ( self . ImportPeopleFromFile , VAL        )
+    ##########################################################################
+    return
+  ############################################################################
+  def ImportPeopleFromFile ( self , Filename ) :
+    ##########################################################################
+    TEXT     = ""
+    BODY     = ""
+    ##########################################################################
+    try                                                                      :
+      with open              ( Filename , "rb" ) as File                     :
+        TEXT = File . read   (                                               )
+    except                                                                   :
+      return False
+    ##########################################################################
+    try                                                                      :
+      BODY   = TEXT . decode ( "utf-8"                                       )
+    except                                                                   :
+      return False
+    ##########################################################################
+    LISTS    = TEXT . split  ( "\n"                                          )
+    UUIDs    =               [                                               ]
+    ##########################################################################
+    for L in LISTS                                                           :
+      ########################################################################
+      U      = int           ( L                                             )
+      if                     ( U not in UUIDs                              ) :
+        UUIDs . append       ( U                                             )
+    ##########################################################################
+    if                       ( len ( UUIDs ) <= 0                          ) :
+      return False
+    ##########################################################################
+    self     . SearchKey = ""
+    self     . UUIDs     = UUIDs
+    self     . Grouping  = "Searching"
+    ##########################################################################
+    self     . loading       (                                               )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ExportSameNames              ( self                                  ) :
+    ##########################################################################
+    self . Go                      ( self . ExportSameNamesListings          )
+    ##########################################################################
+    return
+  ############################################################################
+  def ExportSameNamesListings      ( self                                  ) :
+    ##########################################################################
+    DB     = self . ConnectDB      (                                         )
+    if                             ( DB == None                            ) :
+      return
+    ##########################################################################
+    NAMTAB = self . Tables         [ "Names"                                 ]
+    RELTAB = self . Tables         [ "Relation"                              ]
+    ##########################################################################
+    UUID   = self . Relation . get ( "first"                                 )
+    T1     = self . Relation . get ( "t1"                                    )
+    T2     = self . Relation . get ( "t2"                                    )
+    REL    = self . Relation . get ( "relation"                              )
+    ##########################################################################
+    LISTS  =                       [                                         ]
+    FF     = f"""select `second` from {RELTAB}
+                 where ( `first` = {UUID} )
+                 and ( `t1` = {T1} )
+                 and ( `t2` = {T2} )
+                 and ( `relation` = {REL} )"""
+    QQ     = f"""select `uuid`,`name` from {NAMTAB}
+                 where ( `uuid` in ( {FF} ) )
+                 and ( `relevance` = 0 )
+                 order by `name` asc ;"""
+    QQ     = " " . join            ( QQ . split ( )                          )
+    DB     . Query                 ( QQ                                      )
+    ALL    = DB . FetchAll         (                                         )
+    TOTAL  = len                   ( ALL                                     )
+    PREV   = 0
+    AT     = 1
+    CC     = False
+    ##########################################################################
+    PVID   = ALL                   [ PREV ] [ 0                              ]
+    NAME   = ALL                   [ PREV ] [ 1                              ]
+    ##########################################################################
+    while                          ( AT < TOTAL                            ) :
+      ########################################################################
+      U    = ALL                   [ AT ] [ 0                                ]
+      N    = ALL                   [ AT ] [ 1                                ]
+      ########################################################################
+      if                           ( ( N == NAME ) and ( PVID != U )       ) :
+        ######################################################################
+        if                         ( not CC                                ) :
+          ####################################################################
+          CC = True
+          L  = f"{PVID}"
+          LISTS . append ( L )
+        ######################################################################
+        L  = f"{U}"
+        LISTS . append ( L )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        CC   = False
+        NAME = N
+      ########################################################################
+      PVID = U
+      AT   = AT + 1
+    ##########################################################################
+    DB     . Close                    (                                      )
+    ##########################################################################
+    if                                ( len ( LISTS ) > 0                  ) :
+      ########################################################################
+      NOTE = "\n" . join              ( LISTS                                )
+      self . emitOpenSmartNote . emit ( NOTE                                 )
+    ##########################################################################
+    return
+  ############################################################################
   def SearchForSameNames           ( self                                  ) :
     ##########################################################################
     DB     = self . ConnectDB      (                                         )
@@ -753,11 +889,20 @@ class PeopleView                     ( IconDock                            ) :
       mm  . addActionFromMenu    ( LOM , 25351301 , msg                      )
       mm  . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
-    msg   = self . getMenuItem   ( "AllNames"                                )
+    msg   = self . getMenuItem   ( "LoadLists"                               )
     mm    . addActionFromMenu    ( LOM , 25355001 , msg                      )
     ##########################################################################
-    msg   = "搜尋同名人物"
+    msg   = self . getMenuItem   ( "ImportLists"                             )
     mm    . addActionFromMenu    ( LOM , 25355002 , msg                      )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "ExportSameNames"                         )
+    mm    . addActionFromMenu    ( LOM , 25355003 , msg                      )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "AllNames"                                )
+    mm    . addActionFromMenu    ( LOM , 25355004 , msg                      )
+    ##########################################################################
+    msg   = "搜尋同名人物"
+    mm    . addActionFromMenu    ( LOM , 25355005 , msg                      )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
@@ -787,11 +932,29 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     if                                 ( at == 25355001                    ) :
       ########################################################################
-      self . ListAllNames              (                                     )
+      self . LoadPeople                (                                     )
       ########################################################################
       return True
     ##########################################################################
     if                                 ( at == 25355002                    ) :
+      ########################################################################
+      self . ImportPeople              (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 25355003                    ) :
+      ########################################################################
+      self . ExportSameNames           (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 25355004                    ) :
+      ########################################################################
+      self . ListAllNames              (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 25355005                    ) :
       ########################################################################
       self . Go                        ( self . SearchForSameNames           )
       ########################################################################
