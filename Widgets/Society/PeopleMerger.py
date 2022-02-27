@@ -39,6 +39,7 @@ from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QFileDialog
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock

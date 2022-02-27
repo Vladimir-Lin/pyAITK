@@ -49,6 +49,7 @@ from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QFileDialog
 ##############################################################################
 from   AITK  . Qt . IconDock          import IconDock    as IconDock
 ##############################################################################
@@ -573,6 +574,17 @@ class PeopleView                     ( IconDock                            ) :
     return
   ############################################################################
   def LoadPeople                    ( self                                 ) :
+    ##########################################################################
+    Filters  = self . getMenuItem ( "TextFilters"                            )
+    Name , t = QFileDialog . getOpenFileName                                 (
+                                    self                                   , \
+                                    self . windowTitle ( )                 , \
+                                    ""                                     , \
+                                    Filters                                  )
+    ##########################################################################
+    if                            ( len ( Name ) <= 0                      ) :
+      self   . Notify             ( 1                                        )
+      return
     ##########################################################################
     ##########################################################################
     return

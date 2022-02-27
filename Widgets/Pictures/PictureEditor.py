@@ -45,6 +45,7 @@ from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QScrollArea
 from   PyQt5 . QtWidgets              import QLabel
+from   PyQt5 . QtWidgets              import QFileDialog
 ##############################################################################
 from   AITK  . Pictures . Picture     import Picture     as Picture
 from   AITK  . Qt       . MenuManager import MenuManager as MenuManager
