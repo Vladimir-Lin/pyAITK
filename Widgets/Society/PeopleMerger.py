@@ -47,11 +47,12 @@ from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
 from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
+from   AITK  . Documents  . JSON      import Load        as LoadJson
 from   AITK  . Essentials . Relation  import Relation
 ##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
-from   AITK . People    . People      import People      as PeopleItem
+from   AITK  . Calendars . StarDate   import StarDate
+from   AITK  . Calendars . Periode    import Periode
+from   AITK  . People    . People     import People      as PeopleItem
 ##############################################################################
 class PeopleMerger                 ( TreeDock                              ) :
   ############################################################################
@@ -387,6 +388,83 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ImportGroups                ( self                                   ) :
+    ##########################################################################
+    Filters  = self . getMenuItem ( "JsonFilters"                            )
+    Name , t = QFileDialog . getOpenFileName                                 (
+                                    self                                   , \
+                                    self . windowTitle ( )                 , \
+                                    ""                                     , \
+                                    Filters                                  )
+    ##########################################################################
+    if                            ( len ( Name ) <= 0                      ) :
+      self   . Notify             ( 1                                        )
+      return
+    ##########################################################################
+    VAL      =                    ( Name ,                                   )
+    self     . Go                 ( self . ImportPeopleGroups , VAL          )
+    ##########################################################################
+    return
+  ############################################################################
+  def ImportPeopleGroups           ( self , Filename                       ) :
+    ##########################################################################
+    GROUPs    = LoadJson           ( Filename                                )
+    ##########################################################################
+    if                             ( len ( GROUPs ) <= 0                   ) :
+      self    . Notify             ( 1                                       )
+      return
+    ##########################################################################
+    DB        = self . ConnectDB   ( UsePure = True                          )
+    if                             ( DB in [ False , None ]                ) :
+      return
+    ##########################################################################
+    PIT       = PeopleItem         (                                         )
+    PIT       . Settings = self . Settings
+    PIT       . Tables   = self . Tables
+    ##########################################################################
+    PLAN      = self . GetPlan     (                                         )
+    TOTAL     = len                ( GROUPs                                  )
+    ##########################################################################
+    NAME      = self . getMenuItem ( "GroupMerge"                            )
+    SECSC     = self . getMenuItem ( "SecsCounting"                          )
+    ITEMC     = self . getMenuItem ( "ItemCounting"                          )
+    ##########################################################################
+    PID       = PLAN . Progress    ( NAME , "%v / %m"                        )
+    PLAN      . ProgressText       ( PID  , f"{TOTAL}"                       )
+    PLAN      . setRange           ( PID  , 0 , TOTAL                        )
+    AT        = 0
+    PLAN      . Start              ( PID  , AT , True                        )
+    PLAN      . ProgressReady      ( PID                                     )
+    PLAN      . setFrequency       ( PID  , SECSC , ITEMC                    )
+    ##########################################################################
+    for GROUP in GROUPs                                                      :
+      ########################################################################
+      AT      = AT + 1
+      ########################################################################
+      RUNNING = PLAN . isProgressRunning ( PID                               )
+      if                           ( not RUNNING                           ) :
+        continue
+      ########################################################################
+      NAME    = "," . join         ( str ( u ) for u in GROUP                )
+      PLAN    . setProgressValue   ( PID , AT                                )
+      PLAN    . ProgressText       ( PID , NAME                              )
+      ########################################################################
+      if                           ( len ( GROUP ) > 1                     ) :
+        ######################################################################
+        UUID  = GROUP              [ 0                                       ]
+        ICON  = GROUP              [ 0                                       ]
+        ######################################################################
+        PIT   . MergeAll           ( DB   , UUID , GROUP , ICON              )
+    ##########################################################################
+    time      . sleep              ( 1.0                                     )
+    PLAN      . Finish             ( PID                                     )
+    ##########################################################################
+    DB        . Close              (                                         )
+    ##########################################################################
+    self      . Notify             ( 5                                       )
+    ##########################################################################
+    return True
+  ############################################################################
   def Menu                            ( self , pos                         ) :
     ##########################################################################
     if                                ( not self . isPrepared ( )          ) :
@@ -422,6 +500,9 @@ class PeopleMerger                 ( TreeDock                              ) :
     if                                ( len ( items ) > 0                  ) :
       self . AppendDeleteAction       ( mm , 1102                            )
     ##########################################################################
+    msg    = self . getMenuItem       ( "Import"                             )
+    mm     . addAction                ( 5001 , msg                           )
+    ##########################################################################
     mm     . addSeparator             (                                      )
     ##########################################################################
     mm     = self . LocalityMenu      ( mm                                   )
@@ -443,6 +524,10 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     if                                ( at == 1102                         ) :
       self . DeleteItems              (                                      )
+      return True
+    ##########################################################################
+    if                                ( at == 5001                         ) :
+      self . ImportGroups             (                                      )
       return True
     ##########################################################################
     if                                ( at == 7001                         ) :
