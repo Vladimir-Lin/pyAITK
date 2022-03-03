@@ -51,19 +51,19 @@ class Identifier         ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def set            ( self , item , value                                 ) :
+  def set                 ( self , item , value                            ) :
     ##########################################################################
-    a = item . lower (                                                       )
+    a      = item . lower (                                                  )
     ##########################################################################
-    if               ( "id"    == a                                        ) :
-      self . Id    = value
-    if               ( "uuid"  == a                                        ) :
-      self . Uuid  = value
-    if               ( "type"  == a                                        ) :
-      self . Type  = value
-    if               ( "name"  == a                                        ) :
+    if                    ( "id"    == a                                   ) :
+      self . Id    = int  ( value                                            )
+    if                    ( "uuid"  == a                                   ) :
+      self . Uuid  = int  ( value                                            )
+    if                    ( "type"  == a                                   ) :
+      self . Type  = int  ( value                                            )
+    if                    ( "name"  == a                                   ) :
       self . Name  = value
-    if               ( "ltime" == a                                        ) :
+    if                    ( "ltime" == a                                   ) :
       self . ltime = value
     ##########################################################################
     return
@@ -232,12 +232,18 @@ class Identifier         ( Columns                                         ) :
   ############################################################################
   def Append                 ( self , DB , TABLE                           ) :
     ##########################################################################
+    N   = self . Name
+    try                                                                      :
+      B = N . encode         ( "utf-8"                                       )
+    except                                                                   :
+      pass
+    ##########################################################################
     U   = self . Uuid
     T   = self . Type
-    VAL =                    ( self . Name                                 , )
+    VAL =                    ( B ,                                           )
     ##########################################################################
     QQ  = f"""insert into {TABLE}
-              ( `uuid`,`type`,`name` )
+              ( `uuid` , `type` , `name` )
               values
               ( {U} , {T} , %s ) ;"""
     QQ  = " "  . join        ( QQ . split ( )                                )
