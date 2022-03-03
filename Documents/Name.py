@@ -39,9 +39,9 @@ class Name               ( Columns                                         ) :
   def __del__  ( self )                                                      :
     return
   ############################################################################
-  def Clear    ( self )                                                      :
+  def Clear            ( self                                              ) :
     ##########################################################################
-    self . Columns   = [ ]
+    self . Columns   = [                                                     ]
     self . Id        = -1
     self . Uuid      =  0
     self . Locality  =  0
@@ -71,117 +71,125 @@ class Name               ( Columns                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def set ( self , item , value )                                            :
-    a = item . lower ( )
-    if ( "id"        == a ) :
-      self . Id        = value
-    if ( "uuid"      == a ) :
-      self . Uuid      = value
-    if ( "locality"  == a ) :
-      self . Locality  = value
-    if ( "priority"  == a ) :
-      self . Priority  = value
-    if ( "relevance" == a ) :
-      self . Relevance = value
-    if ( "flags"     == a ) :
-      self . Flags     = value
-    if ( "utf8"      == a ) :
-      self . Utf8      = value
-    if ( "length"    == a ) :
-      self . Length    = value
-    if ( "name"      == a ) :
+  def set                    ( self , item , value                         ) :
+    ##########################################################################
+    a      = item . lower    (                                               )
+    ##########################################################################
+    if                       ( "id"        == a                            ) :
+      self . Id        = int ( value                                         )
+    if                       ( "uuid"      == a                            ) :
+      self . Uuid      = int ( value                                         )
+    if                       ( "locality"  == a                            ) :
+      self . Locality  = int ( value                                         )
+    if                       ( "priority"  == a                            ) :
+      self . Priority  = int ( value                                         )
+    if                       ( "relevance" == a                            ) :
+      self . Relevance = int ( value                                         )
+    if                       ( "flags"     == a                            ) :
+      self . Flags     = int ( value                                         )
+    if                       ( "utf8"      == a                            ) :
+      self . Utf8      = int ( value                                         )
+    if                       ( "length"    == a                            ) :
+      self . Length    = int ( value                                         )
+    if                       ( "name"      == a                            ) :
       self . Name      = value
-    if ( "ltime"     == a ) :
+    if                       ( "ltime"     == a                            ) :
       self . ltime     = value
+    ##########################################################################
+    return
   ############################################################################
-  def get ( self , item ) :
-    a = item . lower ( )
-    if ( "id"        == a ) :
-      return self . Id
-    if ( "uuid"      == a ) :
-      return self . Uuid
-    if ( "locality"  == a ) :
-      return self . Locality
-    if ( "priority"  == a ) :
-      return self . Priority
-    if ( "relevance" == a ) :
-      return self . Relevance
-    if ( "flags"     == a ) :
-      return self . Flags
-    if ( "utf8"      == a ) :
-      return self . Utf8
-    if ( "length"    == a ) :
-      return self . Length
-    if ( "name"      == a ) :
-      return self . Name
-    if ( "ltime"     == a ) :
-      return self . ltime
+  def get                        ( self , item                             ) :
+    ##########################################################################
+    a             = item . lower (                                           )
+    ##########################################################################
+    if                           ( "id"        == a                        ) :
+      return int                 ( self . Id                                 )
+    if                           ( "uuid"      == a                        ) :
+      return int                 ( self . Uuid                               )
+    if                           ( "locality"  == a                        ) :
+      return int                 ( self . Locality                           )
+    if                           ( "priority"  == a                        ) :
+      return int                 ( self . Priority                           )
+    if                           ( "relevance" == a                        ) :
+      return int                 ( self . Relevance                          )
+    if                           ( "flags"     == a                        ) :
+      return int                 ( self . Flags                              )
+    if                           ( "utf8"      == a                        ) :
+      return int                 ( self . Utf8                               )
+    if                           ( "length"    == a                        ) :
+      return int                 ( self . Length                             )
+    if                           ( "name"      == a                        ) :
+      return                       self . Name
+    if                           ( "ltime"     == a                        ) :
+      return                       self . ltime
+    ##########################################################################
     return ""
   ############################################################################
-  def tableItems ( self )                                                    :
-    return [ "id"                                                            ,
-             "uuid"                                                          ,
-             "locality"                                                      ,
-             "priority"                                                      ,
-             "relevance"                                                     ,
-             "flags"                                                         ,
-             "utf8"                                                          ,
-             "length"                                                        ,
-             "name"                                                          ,
-             "ltime"                                                         ]
+  def tableItems ( self                                                    ) :
+    return       [ "id"                                                    , \
+                   "uuid"                                                  , \
+                   "locality"                                              , \
+                   "priority"                                              , \
+                   "relevance"                                             , \
+                   "flags"                                                 , \
+                   "utf8"                                                  , \
+                   "length"                                                , \
+                   "name"                                                  , \
+                   "ltime"                                                   ]
   ############################################################################
   def pair ( self , item )                                                   :
     v = self . get ( item )
     return f"`{item}` = {v}"
   ############################################################################
-  def valueItems ( self )                                                    :
-    return [ "id"                                                            ,
-             "uuid"                                                          ,
-             "locality"                                                      ,
-             "priority"                                                      ,
-             "relevance"                                                     ,
-             "flags"                                                         ,
-             "utf8"                                                          ,
-             "length"                                                        ,
-             "name"                                                          ,
-             "ltime"                                                         ]
+  def valueItems ( self                                                    ) :
+    return       [ "id"                                                    , \
+                   "uuid"                                                  , \
+                   "locality"                                              , \
+                   "priority"                                              , \
+                   "relevance"                                             , \
+                   "flags"                                                 , \
+                   "utf8"                                                  , \
+                   "length"                                                , \
+                   "name"                                                  , \
+                   "ltime"                                                   ]
   ############################################################################
-  def isFlag ( self , Mask )                                                 :
-    return ( ( self . Flags & Mask ) == Mask )
+  def isFlag ( self , Mask                                                 ) :
+    return   ( ( self . Flags & Mask ) == Mask                               )
   ############################################################################
-  def isUuid ( self , U )                                                    :
-    return ( U == self . Uuid )
+  def isUuid ( self , U                                                    ) :
+    return   ( U == self . Uuid                                              )
   ############################################################################
-  def isLocality ( self , L )                                                :
-    return ( L == self . Locality )
+  def isLocality ( self , L                                                ) :
+    return       ( L == self . Locality                                      )
   ############################################################################
-  def isRelevance ( self , R )                                               :
-    return ( R == self . Relevance )
+  def isRelevance ( self , R                                               ) :
+    return        ( R == self . Relevance                                    )
   ############################################################################
-  def hasName ( self )                                                       :
-    return ( len ( self . Name ) > 0 )
+  def hasName ( self                                                       ) :
+    return    ( len ( self . Name ) > 0                                      )
   ############################################################################
-  def setRelevance ( self , N )                                              :
+  def setRelevance            ( self , N                                   ) :
     ##########################################################################
     global Usages
     ##########################################################################
-    if ( N not in Usages )                                                   :
+    if                        ( N not in Usages                            ) :
       return
-    self . Relevance = Usages [ N ]
+    ##########################################################################
+    self . Relevance = Usages [ N                                            ]
+    ##########################################################################
     return
   ############################################################################
-  def toJson ( self )                                                        :
-    return {  "id" : self . Id ,
-              "uuid" : self . Uuid ,
-              "locality" : self . Locality ,
-              "priority" : self . Priority ,
-              "relevance" : self . Relevance ,
-              "flags" : self . Flags ,
-              "utf8" : self . Utf8 ,
-              "length" : self . Length ,
-              "name" : self . Name ,
-              "ltime" : self . ltime ,
-           }
+  def toJson ( self                                                        ) :
+    return   { "id"        : self . Id                                     , \
+               "uuid"      : self . Uuid                                   , \
+               "locality"  : self . Locality                               , \
+               "priority"  : self . Priority                               , \
+               "relevance" : self . Relevance                              , \
+               "flags"     : self . Flags                                  , \
+               "utf8"      : self . Utf8                                   , \
+               "length"    : self . Length                                 , \
+               "name"      : self . Name                                   , \
+               "ltime"     : self . ltime                                    }
   ############################################################################
   def toList          ( self                                               ) :
     ##########################################################################
@@ -594,6 +602,73 @@ class Name               ( Columns                                         ) :
     ##########################################################################
     return True
   ############################################################################
+  def ListsToStrings ( self , LISTS                                        ) :
+    ##########################################################################
+    KK   =           [                                                       ]
+    ##########################################################################
+    for K in LISTS                                                           :
+      ########################################################################
+      KK . append    ( f"{K}"                                                )
+    ##########################################################################
+    return KK
+  ############################################################################
+  def LocateByName       ( self                                            , \
+                           DB                                              , \
+                           TABLE                                           , \
+                           NAME                                            , \
+                           LOCALITIES = [ ]                                , \
+                           RELEVANCES = [ ]                                , \
+                           PRIORITIES = [ ]                                ) :
+    ##########################################################################
+    LSQL   = ""
+    RSQL   = ""
+    PSQL   = ""
+    ##########################################################################
+    if                   ( len ( LOCALITIES ) > 0                          ) :
+      ########################################################################
+      KS   = self . ListsToStrings ( LOCALITIES                              )
+      VS   = " , " . join          ( KS                                      )
+      LSQL = f"and ( `locality` in ( {VS} ) )"
+    ##########################################################################
+    if                   ( len ( RELEVANCES ) > 0                          ) :
+      ########################################################################
+      KS   = self . ListsToStrings ( RELEVANCES                              )
+      VS   = " , " . join          ( KS                                      )
+      RSQL = f"and ( `relevance` in ( {VS} ) )"
+    ##########################################################################
+    if                   ( len ( PRIORITIES ) > 0                          ) :
+      ########################################################################
+      KS   = self . ListsToStrings ( PRIORITIES                              )
+      VS   = " , " . join          ( KS                                      )
+      PSQL = f"and ( `priority` in ( {VS} ) )"
+    ##########################################################################
+    QQ     = f"""select `uuid` from {TABLE}
+               where ( `name` = %s ) {LSQL} {RSQL} {PSQL}
+               group by `uuid` asc ;"""
+    QQ     = " " . join    ( QQ . split ( )                                  )
+    VAL    =               ( NAME ,                                          )
+    ##########################################################################
+    DB     . QueryValues   ( QQ , VAL                                        )
+    RR     = DB . FetchAll (                                                 )
+    ##########################################################################
+    if                     ( RR in [ False , None ]                        ) :
+      return               [                                                 ]
+    ##########################################################################
+    UU     =               [                                                 ]
+    ##########################################################################
+    for V in RR                                                              :
+      ########################################################################
+      XX   = V             [ 0                                               ]
+      ########################################################################
+      try                                                                    :
+        VV = int           ( XX                                              )
+      except                                                                 :
+        VV = 0
+      ########################################################################
+      if                   ( VV not in UU                                  ) :
+        UU . append        ( VV                                              )
+    ##########################################################################
+    return UU
 ##############################################################################
 def Naming                 ( DB , Table , U , Locality , Usage = "Default" ) :
   NN        = Name         (                                                 )
@@ -601,4 +676,19 @@ def Naming                 ( DB , Table , U , Locality , Usage = "Default" ) :
   NN        . set          ( "Locality" , Locality                           )
   NN        . setRelevance ( Usage                                           )
   return NN . Fetch        ( DB         , Table                              )
+##############################################################################
+def Locate                 ( DB                                            , \
+                             TABLE                                         , \
+                             NAME                                          , \
+                             LOCALITIES = [ ]                              , \
+                             RELEVANCES = [ ]                              , \
+                             PRIORITIES = [ ]                              ) :
+  ############################################################################
+  NN        = Name         (                                                 )
+  return NN . LocateByName ( DB                                            , \
+                             TABLE                                         , \
+                             NAME                                          , \
+                             LOCALITIES                                    , \
+                             RELEVANCES                                    , \
+                             PRIORITIES                                      )
 ##############################################################################
