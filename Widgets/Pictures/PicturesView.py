@@ -458,7 +458,7 @@ class PicturesView                 ( IconDock                              ) :
     REL    = Relation                (                                       )
     GALM   = GalleryItem             (                                       )
     ICONs  = GALM . GetPictures      ( DB , RELTAB , FIRST , T1 , 12         )
-    UUIDs  = GALM . PlaceUuidToFirst ( self , UUID , ICONs                   )
+    UUIDs  = GALM . PlaceUuidToFirst ( UUID , ICONs                          )
     ##########################################################################
     DB     . LockWrites              ( [ RELTAB                            ] )
     REL    . RepositionByFirst       ( DB , RELTAB , UUIDs                   )
