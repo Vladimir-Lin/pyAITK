@@ -444,34 +444,28 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     return                            {                                      }
   ############################################################################
-  def AssignAsIcon                 ( self , UUID                           ) :
+  def AssignAsIcon                   ( self , UUID                         ) :
     ##########################################################################
-    DB     = self . ConnectDB      ( UsePure = True                          )
-    if                             ( DB in [ False , None ]                ) :
+    DB     = self . ConnectDB        ( UsePure = True                        )
+    if                               ( DB in [ False , None ]              ) :
       return
     ##########################################################################
-    RELTAB = self . Tables         [ "Relation"                              ]
+    RELTAB = self . Tables           [ "Relation"                            ]
     ##########################################################################
-    FIRST  = self . Relation . get ( "first"                                 )
-    T1     = self . Relation . get ( "t1"                                    )
+    FIRST  = self . Relation . get   ( "first"                               )
+    T1     = self . Relation . get   ( "t1"                                  )
     ##########################################################################
-    GALM   = GalleryItem           (                                         )
-    ICONs  = GALM . GetPictures    ( DB , RELTAB , FIRST , T1 , 12           )
+    REL    = Relation                (                                       )
+    GALM   = GalleryItem             (                                       )
+    ICONs  = GALM . GetPictures      ( DB , RELTAB , FIRST , T1 , 12         )
+    UUIDs  = GALM . PlaceUuidToFirst ( self , UUID , ICONs                   )
     ##########################################################################
-    UUIDs  =                       [ UUID                                    ]
+    DB     . LockWrites              ( [ RELTAB                            ] )
+    REL    . RepositionByFirst       ( DB , RELTAB , UUIDs                   )
+    DB     . UnlockTables            (                                       )
     ##########################################################################
-    for ICON in ICONs                                                        :
-      ########################################################################
-      if                           ( ICON not in UUIDs                     ) :
-        ######################################################################
-        UUIDs . append             ( ICON                                    )
-    ##########################################################################
-    DB     . LockWrites            ( [ RELTAB                              ] )
-    REL    . RepositionByFirst     ( DB , RELTAB , UUIDs                     )
-    DB     . UnlockTables          (                                         )
-    ##########################################################################
-    DB     . Close                 (                                         )
-    self   . Notify                ( 5                                       )
+    DB     . Close                   (                                       )
+    self   . Notify                  ( 5                                     )
     ##########################################################################
     return
   ############################################################################
