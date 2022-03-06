@@ -219,7 +219,7 @@ class PeopleView                     ( IconDock                            ) :
     if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel    ( "Label"      , self . windowTitle ( )         )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
     self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################

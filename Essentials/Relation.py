@@ -387,6 +387,38 @@ class Relation           ( Columns                                         ) :
     ##########################################################################
     return ""
   ############################################################################
+  def toJson   ( self                                                      ) :
+    ##########################################################################
+    return     { "id"          : self . Id                                 , \
+                 "first"       : self . First                              , \
+                 "t1"          : self . T1                                 , \
+                 "second"      : self . Second                             , \
+                 "t2"          : self . T2                                 , \
+                 "relation"    : self . Relation                           , \
+                 "position"    : self . Position                           , \
+                 "reverse"     : self . Reverse                            , \
+                 "prefer"      : self . Prefer                             , \
+                 "membership"  : self . Membership                         , \
+                 "description" : self . Description                        , \
+                 "operator"    : self . Operator                             }
+  ############################################################################
+  def fromJson ( self , JSON                                               ) :
+    ##########################################################################
+    self . Id          = JSON [ "id"                                         ]
+    self . First       = JSON [ "first"                                      ]
+    self . T1          = JSON [ "t1"                                         ]
+    self . Second      = JSON [ "second"                                     ]
+    self . T2          = JSON [ "t2"                                         ]
+    self . Relation    = JSON [ "relation"                                   ]
+    self . Position    = JSON [ "position"                                   ]
+    self . Reverse     = JSON [ "reverse"                                    ]
+    self . Prefer      = JSON [ "prefer"                                     ]
+    self . Membership  = JSON [ "membership"                                 ]
+    self . Description = JSON [ "description"                                ]
+    self . Operator    = JSON [ "operator"                                   ]
+    ##########################################################################
+    return
+  ############################################################################
   def Value           ( self , item                                        ) :
     return self . get (        item                                          )
   ############################################################################

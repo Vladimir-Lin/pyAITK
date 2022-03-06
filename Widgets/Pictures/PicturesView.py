@@ -54,7 +54,8 @@ from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 from   AITK  . Essentials . Relation  import Relation    as Relation
 from   AITK  . Calendars  . StarDate  import StarDate    as StarDate
 from   AITK  . Calendars  . Periode   import Periode     as Periode
-from   AITK  . Pictures   . Gallery   import Gallery     as Gallery
+from   AITK  . Pictures   . Picture   import Picture     as PictureItem
+from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
 ##############################################################################
 class PicturesView                 ( IconDock                              ) :
   ############################################################################
@@ -76,6 +77,7 @@ class PicturesView                 ( IconDock                              ) :
     self . FetchTableKey = "PicturesView"
     ##########################################################################
     self . Grouping      = "Original"
+    self . OldGrouping   = "Original"
     ## self . Grouping   = "Subordination"
     ## self . Grouping   = "Reverse"
     ##########################################################################
@@ -100,12 +102,36 @@ class PicturesView                 ( IconDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def setGrouping             ( self , group                               ) :
-    self . Grouping = group
-    return self . Grouping
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
   ############################################################################
-  def getGrouping             ( self                                       ) :
-    return self . Grouping
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
+      return False
+    ##########################################################################
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def closeEvent             ( self , event                                ) :
+    ##########################################################################
+    self . AttachActions     ( False                                         )
+    self . defaultCloseEvent ( event                                         )
+    ##########################################################################
+    return
   ############################################################################
   def GetUuidIcon                ( self , DB , Uuid                        ) :
     ##########################################################################
@@ -118,7 +144,7 @@ class PicturesView                 ( IconDock                              ) :
     DB     . Query           ( QQ                                            )
     ONE    = DB . FetchOne   (                                               )
     ##########################################################################
-    if                       ( ONE == None                                 ) :
+    if                       ( ONE in [ False , None ]                     ) :
       return 0
     ##########################################################################
     if                       ( len ( ONE ) <= 0                            ) :
@@ -175,40 +201,6 @@ class PicturesView                 ( IconDock                              ) :
   def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
     self . defaultFetchSessionInformation (        DB                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def FocusIn             ( self                                           ) :
-    ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
-      return False
-    ##########################################################################
-    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
-    self . LinkAction     ( "Refresh"    , self . startup                    )
-    ##########################################################################
-    self . LinkAction     ( "Delete"     , self . DeleteItems                )
-    self . LinkAction     ( "Home"       , self . PageHome                   )
-    self . LinkAction     ( "End"        , self . PageEnd                    )
-    self . LinkAction     ( "PageUp"     , self . PageUp                     )
-    self . LinkAction     ( "PageDown"   , self . PageDown                   )
-    ##########################################################################
-    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
-    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
-    ##########################################################################
-    return True
-  ############################################################################
-  def closeEvent             ( self , event                                ) :
-    ##########################################################################
-    self . LinkAction        ( "Refresh"    , self . startup     , False     )
-    self . LinkAction        ( "Delete"     , self . DeleteItems , False     )
-    self . LinkAction        ( "Home"       , self . PageHome    , False     )
-    self . LinkAction        ( "End"        , self . PageEnd     , False     )
-    self . LinkAction        ( "PageUp"     , self . PageUp      , False     )
-    self . LinkAction        ( "PageDown"   , self . PageDown    , False     )
-    self . LinkAction        ( "SelectAll"  , self . SelectAll   , False     )
-    self . LinkAction        ( "SelectNone" , self . SelectNone  , False     )
-    ##########################################################################
-    self . defaultCloseEvent ( event                                         )
     ##########################################################################
     return
   ############################################################################
@@ -273,7 +265,6 @@ class PicturesView                 ( IconDock                              ) :
       return False
     if                         ( atItem . isSelected ( )                   ) :
       return False
-    ##########################################################################
     ##########################################################################
     return True
   ############################################################################
@@ -463,12 +454,9 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     FIRST  = self . Relation . get ( "first"                                 )
     T1     = self . Relation . get ( "t1"                                    )
-    REL    = Relation              (                                         )
-    REL    . set                   ( "first"  , FIRST                        )
-    REL    . set                   ( "t1"     , T1                           )
-    REL    . setT2                 ( "Picture"                               )
-    REL    . setRelation           ( "Using"                                 )
-    ICONs  = REL . Subordination   ( DB , RELTAB                             )
+    ##########################################################################
+    GALM   = GalleryItem           (                                         )
+    ICONs  = GALM . GetPictures    ( DB , RELTAB , FIRST , T1 , 12           )
     ##########################################################################
     UUIDs  =                       [ UUID                                    ]
     ##########################################################################
@@ -481,8 +469,8 @@ class PicturesView                 ( IconDock                              ) :
     DB     . LockWrites            ( [ RELTAB                              ] )
     REL    . RepositionByFirst     ( DB , RELTAB , UUIDs                     )
     DB     . UnlockTables          (                                         )
-    DB     . Close                 (                                         )
     ##########################################################################
+    DB     . Close                 (                                         )
     self   . Notify                ( 5                                       )
     ##########################################################################
     return
@@ -492,7 +480,7 @@ class PicturesView                 ( IconDock                              ) :
     SCOPE   = self . Grouping
     ALLOWED =                       [ "Subordination" , "Reverse"            ]
     ##########################################################################
-    if                              ( SCOPE not in ALLOWED                 ) :
+    if                              ( not self . isGrouping ( )            ) :
       return
     ##########################################################################
     PAMTAB  = self . Tables         [ "Parameters"                           ]
