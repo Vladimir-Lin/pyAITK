@@ -207,5 +207,15 @@ class Gallery     (                                                        ) :
     REL . setRelation          ( "Subordination"                             )
     return REL . Subordination ( DB , TABLE                                  )
   ############################################################################
+  def RepositionIcons       ( self , DB , TABLE , FIRST , T1 , UUIDs       ) :
+    ##########################################################################
+    REL = Relation          (                                                )
+    REL . set               ( "first" , FIRST                                )
+    REL . set               ( "t1"    , T1                                   )
+    REL . setT2             ( "Picture"                                      )
+    REL . setRelation       ( "Using"                                        )
+    REL . RepositionByFirst ( DB , TABLE , UUIDs                             )
+    ##########################################################################
+    return
   ############################################################################
 ##############################################################################
