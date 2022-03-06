@@ -115,6 +115,34 @@ class Picture     (                                                        ) :
     ##########################################################################
     return self . Assign   ( BLOB                                            )
   ############################################################################
+  def GetInformation         ( self , DB , TABLE , UUID                    ) :
+    ##########################################################################
+    COLS     = "`mimeid`,`suffix`,`filesize`,`checksum`,`width`,`height`"
+    QQ       = f"select {COLS} from {TABLE} where ( `uuid` = {UUID} ) ;"
+    QQ       = " " . join    ( QQ . split ( )                                )
+    DB       . Query         ( QQ                                            )
+    RR       = DB . FetchOne (                                               )
+    ##########################################################################
+    if                       ( RR in [ False , None ]                      ) :
+      return None
+    ##########################################################################
+    if                       ( len ( RR ) <= 0                             ) :
+      return None
+    ##########################################################################
+    MIME     = int           ( RR [ 0 ]                                      )
+    SUFFIX   = str           ( RR [ 1 ]                                      )
+    FILESIZE = int           ( RR [ 2 ]                                      )
+    CHECKSUM = int           ( RR [ 3 ]                                      )
+    WIDTH    = int           ( RR [ 4 ]                                      )
+    HEIGHT   = int           ( RR [ 5 ]                                      )
+    ##########################################################################
+    return { "Width"    : WIDTH                                            , \
+             "Height"   : HEIGHT                                           , \
+             "Filesize" : FILESIZE                                         , \
+             "Suffix"   : SUFFIX                                           , \
+             "Mime"     : MIME                                             , \
+             "Checksum" : CHECKSUM                                           }
+  ############################################################################
   def Format ( self                                                        ) :
     ##########################################################################
     if       ( self . Image == None                                        ) :

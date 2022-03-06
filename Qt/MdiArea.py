@@ -289,12 +289,14 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     ws     = size
     mw     = self . geometry     (                                           )
     wm     = QSize               ( mw . width ( ) , mw . height ( )          )
+    fs     = msw . frameSize     (                                           )
     fg     = msw . frameGeometry (                                           )
     wg     = msw . geometry      (                                           )
     ms     = QSize               ( fg . width ( ) , fg . height ( )          )
     ds     = QSize               ( wg . width ( ) , wg . height ( )          )
     ##########################################################################
-    ms     = ms - ds
+    ## ms     = ms - ds
+    ms     = QSize ( 20 , 38 )
     ms     = ms + ws
     wm     = wm - ms
     ##########################################################################
@@ -309,6 +311,7 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     ##########################################################################
     msw    . move                ( ds . width ( ) , ds . height ( )          )
     msw    . resize              ( ms                                        )
+    msw    . updateGeometry      (                                           )
     self   . update              (                                           )
     ##########################################################################
     return

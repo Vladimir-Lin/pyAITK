@@ -67,7 +67,7 @@ class VcfManager      (                                                    ) :
       ########################################################################
       return len             ( self . vcfItems                               )
     ##########################################################################
-    item . setMenuCaller     ( MasterWidget . MenuCallerEmitter              )
+    item . setMenuCaller     ( self . MasterWidget . MenuCallerEmitter       )
     ##########################################################################
     self . vcfItems . append ( item                                          )
     self . vcfMaps [ item ] = parent

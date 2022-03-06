@@ -20,6 +20,10 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
+from   PyQt5 . QtCore                 import QRect
+from   PyQt5 . QtCore                 import QRectF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QImage
@@ -39,12 +43,14 @@ from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
 ##############################################################################
 from   AITK  . Essentials . Object    import Object       as Object
+from   AITK  . Pictures   . Picture   import Picture      as PictureItem
+from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
+##############################################################################
 from         . VcfItem                import VcfItem      as VcfItem
 from         . VcfRectangle           import VcfRectangle as VcfRectangle
 ##############################################################################
 class VcfPicture                 ( VcfRectangle                            , \
                                    Object                                  ) :
-  ############################################################################
   ############################################################################
   def __init__                   ( self                                    , \
                                    parent = None                           , \
@@ -53,7 +59,7 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     super ( ) . __init__         ( parent , item , plan                      )
     self . setObjectEmpty        (                                           )
-    self . setVcfCanvasDefaults  (                                           )
+    self . setRectangleDefaults  (                                           )
     self . setVcfPictureDefaults (                                           )
     ##########################################################################
     return
@@ -70,6 +76,7 @@ class VcfPicture                 ( VcfRectangle                            , \
     self . Original   = None
     self . Printable  = True
     self . Scaling    = False
+    self . Details    =     {                                                }
     ##########################################################################
     self . setFlag ( QGraphicsItem . ItemIsSelectable         , True         )
     self . setFlag ( QGraphicsItem . ItemIsFocusable          , True         )
@@ -81,6 +88,8 @@ class VcfPicture                 ( VcfRectangle                            , \
     self . Painter . addMap ( "Border" , 0                                   )
     self . Painter . addPen ( 0 , QColor ( 224 , 224 , 224 )                 )
     self . Painter . pens [ 0 ] . setStyle ( Qt . DotLine                    )
+    ##########################################################################
+    self . setObjectType    ( 9                                              )
     ##########################################################################
     return
   ############################################################################
@@ -101,8 +110,8 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     X = QPointF ( 3.0 , 3.0 )
     H = X / 2
-    C = self . ScreenRect . center ( )
-    C = self . mapToScene ( C )
+    C = self . ScreenRect . center (   )
+    C = self . mapToScene          ( C )
     ## C = self . Options . Standard ( C )
     Z = QRectF ( C . x ( ) - H . x ( ) , C . y ( ) - H . y ( ) , X . x ( ) , X . y ( ) )
     ## Z = self . Options . Region ( Z )
@@ -179,8 +188,144 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     return
   ############################################################################
+  def paint               ( self , painter , options , widget              ) :
+    ##########################################################################
+    self   . pushPainters ( painter                                          )
+    ##########################################################################
+    self   . Painting     ( painter , self . ScreenRect , False , True       )
+    if                    ( self . isSelected ( )                          ) :
+      self . PaintBorder  ( painter , self . ScreenRect , False , True       )
+    ##########################################################################
+    self   . popPainters  ( painter                                          )
+    ##########################################################################
+    return
   ############################################################################
+  def Painting              ( self , p , region , clip , color             ) :
+    ##########################################################################
+    if                      ( clip                                         ) :
+      self . PaintImageClip (        p , region , clip , color               )
+    else                                                                     :
+      self . PaintImage     (        p , region , clip , color               )
+    ##########################################################################
+    return
   ############################################################################
+  def PaintImage  ( self , p , region , clip , color                       ) :
+    ##########################################################################
+    if            ( self . Image in [ False , None ]                       ) :
+      return
+    ##########################################################################
+    p . drawImage ( self . ScreenRect , self . Image                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def PaintImageClip       ( self , p , region , clip , color              ) :
+    ##########################################################################
+    if                     ( self . Image in [ False , None ]              ) :
+      return
+    ##########################################################################
+    PS = self . mapToScene ( QPointF ( 0.0 , 0.0 )                           )
+    PX = QPointF           ( PS.x() - region.left() , PS.y() - region.top()  )
+    TM = self . transform  (                                                 )
+    TX = TM . inverted     (                                                 )
+    PX = TX . map          ( px                                              )
+    p  . setTransform      ( TM                                              )
+    p  . translate         ( PX                                              )
+    p  . drawImage         ( self . ScreenRect , self . Image                )
+    ##########################################################################
+    return
+  ############################################################################
+  def PaintBorder               ( self , p , region , clip , color         ) :
+    ##########################################################################
+    self . Painter . drawBorder ( p , "Border" , self . ScreenRect           )
+    ##########################################################################
+    return
+  ############################################################################
+  def ImageWidth                 ( self                                    ) :
+    ##########################################################################
+    if                           ( self . Image in [ False , None ]        ) :
+      return 0
+    ##########################################################################
+    return self . Image . width  (                                           )
+  ############################################################################
+  def ImageHeight                ( self                                    ) :
+    ##########################################################################
+    if                           ( self . Image in [ False , None ]        ) :
+      return 0
+    ##########################################################################
+    return self . Image . height (                                           )
+  ############################################################################
+  def ImageSize                  ( self                                    ) :
+    ##########################################################################
+    if                           ( self . Image in [ False , None ]        ) :
+      return QSize               ( 0 , 0                                     )
+    ##########################################################################
+    return self . Image . size   (                                           )
+  ############################################################################
+  def ImageCm                      ( self                                  ) :
+    ##########################################################################
+    S = self . ImageSize           (                                         )
+    X = self . Options . imageToCm ( S . width  ( )                          )
+    Y = self . Options . imageToCm ( S . height ( )                          )
+    ##########################################################################
+    return QSizeF                  ( X , Y                                   )
+  ############################################################################
+  def FetchImage                  ( self , DB , UUID                       ) :
+    ##########################################################################
+    PICTAB = self . Tables        [ "Information"                            ]
+    DOPTAB = self . Tables        [ "Depot"                                  ]
+    ##########################################################################
+    PIC    = PictureItem          (                                          )
+    ##########################################################################
+    INFO   = PIC . GetInformation ( DB , PICTAB , UUID                       )
+    if                            ( INFO in [ False , None ]               ) :
+      return None , { }
+    ##########################################################################
+    QQ     = f"select `file` from {DOPTAB} where ( `uuid` = {UUID} ) ;"
+    OKAY   = PIC . FromDB         ( DB , QQ                                  )
+    ##########################################################################
+    if                            ( not OKAY                               ) :
+      return None , INFO
+    ##########################################################################
+    IMAGE  = PIC . toQImage       (                                          )
+    ##########################################################################
+    return IMAGE , INFO
+  ############################################################################
+  def LoadImage             ( self , Uuid                                  ) :
+    ##########################################################################
+    self . setObjectUuid    ( Uuid                                           )
+    ##########################################################################
+    DB   = self . ConnectDB ( UsePure = True                                 )
+    if                      ( DB in [ False , None ]                       ) :
+      return False
+    ##########################################################################
+    self . Original = None
+    self . Image , self . Details = self . FetchImage ( DB , Uuid            )
+    ##########################################################################
+    DB   . Close            (                                                )
+    ##########################################################################
+    return                  ( self . Image not in [ False , None ]           )
+  ############################################################################
+  def setImage                       ( self , image , details = { }        ) :
+    ##########################################################################
+    self . Image    = image
+    self . Original = None
+    self . Details  = details
+    ##########################################################################
+    return
+  ############################################################################
+  def asImageRect                    ( self                                ) :
+    ##########################################################################
+    SM   = self       . ImageSize    (                                       )
+    PM   = QPoint                    ( SM . width ( ) , SM . height ( )      )
+    SP   = self . Gui . mapToScene   ( PM                                    )
+    FS   = self       . mapFromScene ( SP                                    )
+    MP   = self       . pointToPaper ( FS                                    )
+    ##########################################################################
+    self . ScreenRect = QRectF       ( 0.0 , 0.0 , FS . x ( ) , FS . y ( )   )
+    self . PaperRect  = QRectF       ( 0.0 , 0.0 , MP . x ( ) , MP . y ( )   )
+    self . prepareGeometryChange     (                                       )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -271,61 +416,6 @@ class Q_VCF_EXPORT VcfPicture : public VcfRectangle
     void Channel                       (VcfPicture * picture,int Component);
 
 };
-
-void N::VcfPicture::paint(QPainter * painter,const QStyleOptionGraphicsItem * option,QWidget * widget)
-{
-  Paint(painter,ScreenRect,false,true);
-  if (isSelected()) PaintBorder(painter,ScreenRect,false,true);
-}
-
-void N::VcfPicture::Paint(QPainter * painter,QRectF Region,bool clip,bool color)
-{
-  if (clip) PaintImageClip (painter,Region,clip,color) ;
-       else PaintImage     (painter,Region,clip,color) ;
-}
-
-void N::VcfPicture::PaintImage(QPainter * p,QRectF Region,bool clip,bool color)
-{
-  p->drawImage(ScreenRect,Image);
-}
-
-void N::VcfPicture::PaintImageClip(QPainter * p,QRectF Region,bool clip,bool color)
-{
-  QPointF ps(0,0);
-  ps = mapToScene(ps);
-  QPointF px(ps.x()-Region.left(),ps.y()-Region.top());
-  QTransform TX = transform().inverted();
-  px = TX.map(px);
-  p->setTransform(transform());
-  p->translate(px);
-  p->drawImage(ScreenRect,Image);
-}
-
-void N::VcfPicture::PaintBorder(QPainter * p,QRectF Region,bool clip,bool color)
-{
-  pushPainters         ( p                         ) ;
-  Painter . drawBorder ( p , "Border" , ScreenRect ) ;
-  popPainters          ( p                         ) ;
-}
-
-void N::VcfPicture::LoadImage(SUID puid)
-{
-  Mutex . lock   ()                      ;
-  SqlConnection  SC (plan->sql)          ;
-  PictureManager PM (plan     )          ;
-  if (SC.open("VcfPicture","LoadImage")) {
-    QImage *  I = NULL                   ;
-    I = PM.Picture(SC,puid)              ;
-    if (I!=NULL)                         {
-      uuid  = puid                       ;
-      Image = *I                         ;
-      delete I                           ;
-    }                                    ;
-    SC.close()                           ;
-  }                                      ;
-  SC.remove()                            ;
-  Mutex . unlock ()                      ;
-}
 
 QVariant N::VcfPicture::itemChange(GraphicsItemChange change,const QVariant & value)
 {

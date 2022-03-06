@@ -251,6 +251,19 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     return
   ############################################################################
+  def assignItemProperties   ( self , ITEM                                 ) :
+    ##########################################################################
+    ITEM . Initialize        ( self                                          )
+    ITEM . setMenus          ( self . Menus                                  )
+    ITEM . setLanguages      ( self . Languages                              )
+    ##########################################################################
+    ITEM . DB           = self . DB
+    ITEM . Settings     = self . Settings
+    ITEM . Translations = self . Translations
+    ITEM . Tables       = self . Tables
+    ##########################################################################
+    return
+  ############################################################################
   def startup                ( self                                        ) :
     ##########################################################################
     self . PerfectView       (                                               )
