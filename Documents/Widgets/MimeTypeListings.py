@@ -374,20 +374,21 @@ class MimeTypeListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################
-    self    . Total = 0
+    self  . Total = 0
     ##########################################################################
-    TABLE   = self . Tables           [ "MIME"                               ]
+    TABLE = self . Tables [ "MIME"                                           ]
     ##########################################################################
-    QQ      = f"select count(*) from {TABLE} ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
+    QQ    = f"select count(*) from {TABLE} ;"
+    DB    . Query         ( QQ                                               )
+    RR    = DB . FetchOne (                                                  )
     ##########################################################################
     if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    self  . Total = int   ( RR [ 0 ]                                         )
+    print(self. Total)
     ##########################################################################
     return
   ############################################################################
@@ -406,6 +407,10 @@ class MimeTypeListings             ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
+    self . setColumnWidth ( 0 ,  80                                          )
+    self . setColumnWidth ( 1 , 320                                          )
+    self . setColumnWidth ( 2 , 160                                          )
+    self . setColumnWidth ( 5 , 240                                          )
     self . defaultPrepare ( self . ClassTag , 6                              )
     ##########################################################################
     return
@@ -442,12 +447,6 @@ class MimeTypeListings             ( TreeDock                              ) :
     if                           ( DB == None                              ) :
       return
     ##########################################################################
-    if                           ( self . Grouping in [ "Original" ]       ) :
-      self . UselessUUIDs        ( DB , UUIDs                                )
-    elif                         ( self . Grouping in [ "Subordination" ]  ) :
-      self . RemoveSubordination ( DB , UUIDs                                )
-    elif                         ( self . Grouping in [ "Reverse" ]        ) :
-      self . RemoveReverse       ( DB , UUIDs                                )
     ##########################################################################
     DB     . Close               (                                           )
     self   . Notify              ( 5                                         )
@@ -465,14 +464,12 @@ class MimeTypeListings             ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9001 ) and ( at <= 9006 )         :
+      ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
-        ######################################################################
-        self . startup             (                                         )
-        ######################################################################
+      ########################################################################
       return True
     ##########################################################################
     return False
@@ -488,53 +485,18 @@ class MimeTypeListings             ( TreeDock                              ) :
     ##########################################################################
     self   . Notify                ( 0                                       )
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . currentItem    (                                         )
-    uuid   = 0
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
+    items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    ##########################################################################
-    if                              ( self . Grouping in [ "Searching" ]   ) :
-      ########################################################################
-      msg  = self . getMenuItem     ( "NotSearch"                            )
-      mm   . addAction              ( 2001 , msg                             )
-    ##########################################################################
+    self   . AmountIndexMenu       ( mm                                      )
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
     ##########################################################################
     if                             ( len ( items ) > 0                     ) :
       self . AppendDeleteAction    ( mm , 1102                               )
-    ##########################################################################
-    msg    = self . getMenuItem    ( "Search"                                )
-    mm     . addAction             ( 1103 , msg                              )
-    ##########################################################################
-    if                             ( self . Method not in [ "Original" ]   ) :
-      ########################################################################
-      msg  = self . getMenuItem    ( "Original"                              )
-      mm   . addAction             ( 1002 , msg                              )
-    ##########################################################################
-    if                             ( atItem not in [ False , None ]        ) :
-      FMT  = TRX                   [ "UI::AttachCrowds"                      ]
-      MSG  = FMT . format          ( atItem . text ( 0 )                     )
-      mm   . addSeparator          (                                         )
-      mm   . addAction             ( 1201 ,  MSG                             )
-    ##########################################################################
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    if                             ( atItem not in [ False , None ]        ) :
-      msg  = self . getMenuItem    ( "Positions"                             )
-      mm   . addAction             ( 7401 , msg                              )
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
     ##########################################################################
     mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . SortingMenu    ( mm                                      )
@@ -580,42 +542,6 @@ class MimeTypeListings             ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1102                            ) :
       self . DeleteItems           (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1103                            ) :
-      self . Search                (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1201                            ) :
-      head = atItem . text         ( 0                                       )
-      self . PeopleGroup   . emit  ( head , 184 , str ( uuid )               )
-      return True
-    ##########################################################################
-    if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Place" , uuid , NAM             )
-      return True
-    ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
-      return True
-    ##########################################################################
-    if                             ( at == 7401                            ) :
-      ########################################################################
-      head = atItem . text         ( 0                                       )
-      uuid = self   . itemUuid     ( atItem , 0                              )
-      icon = self   . windowIcon   (                                         )
-      self . BelongingEarthSpots . emit ( str ( uuid ) , head , icon         )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 2001                           ) :
-      ########################################################################
-      self . Grouping = self . OldGrouping
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
       return True
     ##########################################################################
     return True

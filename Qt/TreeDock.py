@@ -275,7 +275,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     MSG    = self . getMenuItem         ( "Total"                            )
     SSI    = self . getMenuItem         ( "SpinStartId"                      )
     SSA    = self . getMenuItem         ( "SpinAmount"                       )
-    MSG    = MSG . format               ( AMT                                )
+    MSG    = MSG . format               ( T                                  )
     ##########################################################################
     mm     . addAction                  ( 9999991 , MSG                      )
     ##########################################################################
