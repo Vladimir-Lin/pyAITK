@@ -497,11 +497,9 @@ class MimeTypeListings             ( TreeDock                              ) :
     if                             ( len ( items ) > 0                     ) :
       self . AppendDeleteAction    ( mm , 1102                               )
     ##########################################################################
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . SortingMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
     mm     . addSeparator          (                                         )
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
+    self   . ColumnsMenu           ( mm                                      )
+    self   . SortingMenu           ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
@@ -516,9 +514,6 @@ class MimeTypeListings             ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
-      return True
-    ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
       return True
     ##########################################################################
     if                             ( self . RunColumnsMenu     ( at )      ) :
