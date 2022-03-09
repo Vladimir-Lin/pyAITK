@@ -237,10 +237,12 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     item   = JSON      [ "Item"                                              ]
     pos    = JSON      [ "Position"                                          ]
+    gpos   = item . mapToScene   (  pos                                      )
+    spos   = self . mapFromScene ( gpos                                      )
     ##########################################################################
     Caller = getattr   ( item , "Menu" , None                                )
     if                 ( callable ( Caller )                               ) :
-      Caller           ( self , pos                                          )
+      Caller           ( self , pos , spos                                   )
     ##########################################################################
     return
   ############################################################################

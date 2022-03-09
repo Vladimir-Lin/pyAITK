@@ -42,6 +42,8 @@ from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
 ##############################################################################
+from   AITK  . Qt . MenuManager       import MenuManager  as MenuManager
+##############################################################################
 from   AITK  . Essentials . Object    import Object       as Object
 from   AITK  . Pictures   . Picture   import Picture      as PictureItem
 from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
@@ -74,6 +76,7 @@ class VcfPicture                 ( VcfRectangle                            , \
     self . PictureDPI = 96.0
     self . Image      = None
     self . Original   = None
+    self . PICOP      = None
     self . Printable  = True
     self . Scaling    = False
     self . Details    =     {                                                }
@@ -269,24 +272,24 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     return QSizeF                  ( X , Y                                   )
   ############################################################################
-  def FetchImage                  ( self , DB , UUID                       ) :
+  def FetchImage                     ( self , DB , UUID                    ) :
     ##########################################################################
-    PICTAB = self . Tables        [ "Information"                            ]
-    DOPTAB = self . Tables        [ "Depot"                                  ]
+    PICTAB = self . Tables           [ "Information"                         ]
+    DOPTAB = self . Tables           [ "Depot"                               ]
     ##########################################################################
-    PIC    = PictureItem          (                                          )
+    self . PICOP = PictureItem       (                                       )
     ##########################################################################
-    INFO   = PIC . GetInformation ( DB , PICTAB , UUID                       )
-    if                            ( INFO in [ False , None ]               ) :
+    INFO   = self . PICOP . GetInformation ( DB , PICTAB , UUID              )
+    if                               ( INFO in [ False , None ]            ) :
       return None , { }
     ##########################################################################
     QQ     = f"select `file` from {DOPTAB} where ( `uuid` = {UUID} ) ;"
-    OKAY   = PIC . FromDB         ( DB , QQ                                  )
+    OKAY   = self . PICOP . FromDB   ( DB , QQ                               )
     ##########################################################################
-    if                            ( not OKAY                               ) :
+    if                               ( not OKAY                            ) :
       return None , INFO
     ##########################################################################
-    IMAGE  = PIC . toQImage       (                                          )
+    IMAGE  = self . PICOP . toQImage (                                       )
     ##########################################################################
     return IMAGE , INFO
   ############################################################################
@@ -336,7 +339,40 @@ class VcfPicture                 ( VcfRectangle                            , \
   ############################################################################
   ############################################################################
   ############################################################################
+  def InformationMenu              ( self , mm                             ) :
+    ##########################################################################
+    if                             ( self . Image in [ False , None ]      ) :
+      return mm
+    ##########################################################################
+    UUID   = self . ObjectUuid     (                                         )
+    if                             ( UUID > 0                              ) :
+      ########################################################################
+      UXID = str                   ( UUID                                    )
+      mm   . addAction             ( 43521101 , UXID                         )
+    ##########################################################################
+    W      = self . Image . width  (                                         )
+    H      = self . Image . height (                                         )
+    MSG    = f"{W} x {H}"
+    mm     . addAction             ( 43521102 , MSG                          )
+    ##########################################################################
+    mm     . addSeparator          (                                         )
+    ##########################################################################
+    return mm
   ############################################################################
+  def Menu                    ( self , gview , pos , spos                  ) :
+    ##########################################################################
+    mm     = MenuManager      ( gview                                        )
+    self   . InformationMenu  ( mm                                           )
+    ##########################################################################
+    msg    = "人臉辨識"
+    mm     . addAction        ( 1101 , msg                                   )
+    ##########################################################################
+    mm     . setFont          ( gview   . menuFont ( )                       )
+    aa     = mm . exec_       ( QCursor . pos      ( )                       )
+    at     = mm . at          ( aa                                           )
+    ##########################################################################
+    ##########################################################################
+    return
 ##############################################################################
 """
 class Q_VCF_EXPORT VcfPicture : public VcfRectangle

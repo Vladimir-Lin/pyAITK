@@ -114,19 +114,6 @@ class VcfCanvas                 ( VcfRectangle                             , \
   def CustomPainting              ( self , p , region , clip , color       ) :
     return
   ############################################################################
-  def contextMenuEvent             ( self , event                          ) :
-    ##########################################################################
-    if                             ( self . isFunction ( 32001 )           ) :
-      super ( ) . contextMenuEvent ( event                                   )
-      return
-    ##########################################################################
-    if                             ( self . isFunction ( 32002 )           ) :
-      self      . Menu . emit      ( self , event . pos ( )                  )
-    ##########################################################################
-    event       . accept           (                                         )
-    ##########################################################################
-    return
-  ############################################################################
   def mouseDoubleClickEvent           ( self , event                       ) :
     ##########################################################################
     super ( ) . mouseDoubleClickEvent (        event                         )
