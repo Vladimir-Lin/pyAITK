@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## FileExtListings
+## MimeExtListings
 ##############################################################################
 import os
 import sys
@@ -51,7 +51,7 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars . StarDate   import StarDate
 from   AITK  . Calendars . Periode    import Periode
 ##############################################################################
-class FileExtListings              ( TreeDock                              ) :
+class MimeExtListings              ( TreeDock                              ) :
   ############################################################################
   HavingMenu    = 1371434312
   ############################################################################
