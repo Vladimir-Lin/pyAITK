@@ -160,12 +160,14 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     return
   ############################################################################
+  """
   def contextMenuEvent ( self , event                                      ) :
     ##########################################################################
     self  . CallMenu   ( self , event . pos ( )                              )
     event . accept     (                                                     )
     ##########################################################################
     return
+  """
   ############################################################################
   def mouseDoubleClickEvent           ( self , event                       ) :
     ##########################################################################
@@ -190,6 +192,38 @@ class VcfPicture                 ( VcfRectangle                            , \
     self . scaleReleaseEvent (        event                                  )
     ##########################################################################
     return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Load"       , self . LoadPeople      , Enabled      )
+    self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
+    self . LinkAction ( "Export"     , self . ExportSameNames , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenamePeople    , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyItems       , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    self . LinkAction ( "Search"     , self . Search          , Enabled      )
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn  ( self                                                      ) :
+    ##########################################################################
+    ##########################################################################
+    return True
+  ############################################################################
+  def FocusOut ( self                                                      ) :
+    ##########################################################################
+    ##########################################################################
+    return True
   ############################################################################
   def paint               ( self , painter , options , widget              ) :
     ##########################################################################
@@ -242,6 +276,87 @@ class VcfPicture                 ( VcfRectangle                            , \
     self . Painter . drawBorder ( p , "Border" , self . ScreenRect           )
     ##########################################################################
     return
+  ############################################################################
+  def setCornerCursor           ( self , Corner                            ) :
+    ##########################################################################
+    """
+    void N::VcfPicture::setCornerCursor(int Corner)
+    {
+      switch (Corner)                      {
+        case NoSide                        :
+          setCursor(Qt::ArrowCursor     )  ;
+        break                              ;
+        case TopLeft                       :
+          setCursor(Qt::SizeFDiagCursor )  ;
+        break                              ;
+        case TopRight                      :
+          setCursor(Qt::SizeBDiagCursor )  ;
+        break                              ;
+        case BottomLeft                    :
+          setCursor(Qt::SizeBDiagCursor )  ;
+        break                              ;
+        case BottomRight                   :
+          setCursor(Qt::SizeFDiagCursor )  ;
+        break                              ;
+        case LeftSide                      :
+          setCursor(Qt::SizeHorCursor   )  ;
+        break                              ;
+        case RightSide                     :
+          setCursor(Qt::SizeHorCursor   )  ;
+        break                              ;
+        case TopSide                       :
+          setCursor(Qt::SizeVerCursor   )  ;
+        break                              ;
+        case BottomSide                    :
+          setCursor(Qt::SizeVerCursor   )  ;
+        break                              ;
+        case Inside                        :
+          setCursor(Qt::ClosedHandCursor)  ;
+        break                              ;
+      }                                    ;
+    }
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def itemChange ( self , change , value                                   ) :
+    ##########################################################################
+    if           ( change == QGraphicsItem . ItemPositionChange            ) :
+      self . signalGeometryChanged  (                                        )
+    ##########################################################################
+    """
+    QVariant N::VcfPicture::itemChange(GraphicsItemChange change,const QVariant & value)
+    {
+      switch (change)                                       {
+        case ItemPositionChange                             :
+        case ItemPositionHasChanged                         :
+          if (NotNull(Options))                             {
+            QPointF scenePos = value.toPointF(  )           ;
+            PaperPos = Options->Standard(scenePos)          ;
+            setToolTip                                      (
+              tr("Picture UUID : %1\n"
+                 "%2 x %3 pixels\n"
+                 "%4 DPI\n"
+                 "%5 x %6 cm\n"
+                 "Center : %7 x %8 cm"                      )
+              .arg(uuid                                     )
+              .arg(Image    .width()).arg(Image    .height())
+              .arg(PictureDPI                               )
+              .arg(PaperRect.width()).arg(PaperRect.height())
+              .arg(PaperPos .x    ()).arg(PaperPos .y     ())
+            )                                               ;
+            QToolTip::showText(QCursor::pos(),toolTip())    ;
+          }                                                 ;
+        break                                               ;
+        case ItemSelectedHasChanged                         :
+          DeleteGadgets()                                   ;
+        break                                               ;
+      }                                                     ;
+      return QGraphicsItem::itemChange(change,value)        ;
+    }
+    """
+    ##########################################################################
+    return super ( ) . itemChange   ( change , value                         )
   ############################################################################
   def ImageWidth                 ( self                                    ) :
     ##########################################################################
@@ -333,11 +448,241 @@ class VcfPicture                 ( VcfRectangle                            , \
   ############################################################################
   ############################################################################
   ############################################################################
+  def MountZLevel            ( self , proxy , slider                       ) :
+    ##########################################################################
+    self . Proxys  [ 1 ] = proxy
+    self . Widgets [ 1 ] = slider
+    ##########################################################################
+    R     = self . PanelRect (                                               )
+    proxy . setGeometry      ( R                                             )
+    proxy . setZValue        ( 0.90                                          )
+    proxy . setOpacity       ( 0.50                                          )
+    ##########################################################################
+    return
   ############################################################################
+  def MountOpacity           ( self , proxy , slider                       ) :
+    ##########################################################################
+    self . Proxys  [ 2 ] = proxy
+    self . Widgets [ 2 ] = slider
+    ##########################################################################
+    R     = self . PanelRect (                                               )
+    proxy . setGeometry      ( R                                             )
+    proxy . setZValue        ( 0.90                                          )
+    proxy . setOpacity       ( 0.50                                          )
+    ##########################################################################
+    return
   ############################################################################
+  def MountRotation           ( self , proxy , dial                        ) :
+    ##########################################################################
+    self . Proxys  [ 3 ] = proxy
+    self . Widgets [ 3 ] = dial
+    ##########################################################################
+    R     = self . CenterRect (                                              )
+    z     = self . zValue     (                                              )
+    z     = z + 0.90
+    if                        ( z > 1.0                                    ) :
+      z   = 1.0
+    ##########################################################################
+    proxy . setGeometry       ( R                                            )
+    proxy . setZValue         ( z                                            )
+    proxy . setOpacity        ( 0.75                                         )
+    ##########################################################################
+    return
   ############################################################################
+  def RotationUpdated    ( self                                            ) :
+    ##########################################################################
+    T    = self . Transform
+    T    = T    . rotate ( self . Angle                                      )
+    self . setTransform  ( T                                                 )
+    ##########################################################################
+    return
   ############################################################################
+  def NormalTransform   ( self                                             ) :
+    ##########################################################################
+    T    = QTransform   (                                                    )
+    T    . reset        (                                                    )
+    self . Angle = 0.0
+    sx   = self . Options . DPIX
+    sy   = self . Options . DPIY
+    sx   = sx / self . PictureDPI
+    sy   = sy / self . PictureDPI
+    T    = T . scale    ( sx , sy                                            )
+    self . Transform = T
+    self . setTransform ( T                                                  )
+    ##########################################################################
+    return
   ############################################################################
+  def AttachDPI ( self ) :
+    ##########################################################################
+    """
+    QDoubleSpinBox * dpi = new QDoubleSpinBox();
+    QGraphicsProxyWidget * proxy  = new QGraphicsProxyWidget(this);
+    proxy->setWidget(dpi);
+    dpi->setRange(1,9600);
+    dpi->setValue(PictureDPI);
+    dpi->setSingleStep(1);
+    connect(dpi,SIGNAL(valueChanged(double)),this,SLOT(modifyDPI(double)));
+    Proxys  [4] = proxy       ;
+    Widgets [4] = dpi         ;
+    QRectF R = PanelRect()    ;
+    proxy->setGeometry(R    ) ;
+    proxy->setZValue  (0.90f) ;
+    proxy->setOpacity (0.50f) ;
+    QFont Font = plan->fonts[Fonts::ComboBox] ;
+    Font.setPixelSize(R.height());
+    dpi->setFont(Font);
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def ModifyDPI ( self , dpi ) :
+    ##########################################################################
+    """
+    QTransform T                                        ;
+    T.reset()                                           ;
+    qreal sx = Options->DPI                             ;
+    qreal sy = Options->DPI                             ;
+    PictureDPI = dpi                                    ;
+    sx /= PictureDPI                                    ;
+    sy /= PictureDPI                                    ;
+    T = T.scale(sx,sy)                                  ;
+    Transform = T                                       ;
+    T = T.rotate(Angle)                                 ;
+    setTransform(T)                                     ;
+    QRectF SR = mapToScene (ScreenRect ).boundingRect() ;
+    PaperRect = Options -> Standard (SR)                ;
+    setToolTip                                          (
+      tr("Picture UUID : %1\n"
+         "%2 x %3 pixels\n"
+         "%4 DPI\n"
+         "%5 x %6 cm\n"
+         "Center : %7 x %8 cm"                      )
+      .arg(uuid                                     )
+      .arg(Image    .width()).arg(Image    .height())
+      .arg(PictureDPI                               )
+      .arg(PaperRect.width()).arg(PaperRect.height())
+      .arg(PaperPos .x    ()).arg(PaperPos .y     ())
+    )                                                   ;
+    prepareGeometryChange  (           )                ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def AdjustContrast ( self ) :
+    ##########################################################################
+    """
+    QSlider              * slider = new QSlider(Qt::Horizontal);
+    QGraphicsProxyWidget * proxy  = new QGraphicsProxyWidget(this);
+    proxy->setWidget(slider);
+    Proxys  [5] = proxy       ;
+    Widgets [5] = slider      ;
+    QRectF R = PanelRect()    ;
+    proxy->setGeometry(R)     ;
+    proxy->setZValue  (0.90f) ;
+    proxy->setOpacity (0.50f) ;
+    slider->setRange(-255,255);
+    slider->setValue(0);
+    Original = Image ;
+    connect(slider,SIGNAL(valueChanged(int)),this,SLOT(contrastChanged(int)));
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def ContrastChanged ( self , contrast ) :
+    ##########################################################################
+    """
+    PictureManager PM ( plan )                   ;
+    Image = PM.AdjustContrast(Original,contrast) ;
+    update ( )                                   ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def UnsharpMask ( self ) :
+    ##########################################################################
+    """
+    QSlider              * slider = new QSlider(Qt::Horizontal);
+    QGraphicsProxyWidget * proxy  = new QGraphicsProxyWidget(this);
+    proxy->setWidget(slider);
+    Proxys  [6] = proxy       ;
+    Widgets [6] = slider      ;
+    QRectF R = PanelRect()    ;
+    proxy->setGeometry(R)     ;
+    proxy->setZValue  (0.90f) ;
+    proxy->setOpacity (0.50f) ;
+    slider->setRange(-255,255);
+    slider->setValue(0);
+    Original = Image ;
+    connect(slider,SIGNAL(valueChanged(int)),
+            this,SLOT(usmChanged(int)));
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def usmChanged ( self , sharpen ) :
+    ##########################################################################
+    """
+    PictureManager PM ( plan )                         ;
+    Image = PM.UnsharpMask(Original,20,3,0.0,contrast) ;
+    update ( )                                         ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def JoinColorGroup ( self ) :
+    ##########################################################################
+    """
+    SUID            uu = 0                           ;
+    UUIDs           Uuids                            ;
+    Colors          Colors                           ;
+    GraphicsManager GM ( plan )                      ;
+    EnterSQL(SC,plan->sql)                           ;
+      Uuids = SC.Uuids                               (
+                PlanTable(ColorGroups)               ,
+                "uuid"                               ,
+                SC.OrderByAsc("id")                ) ;
+    LeaveSQL(SC,plan->sql)                           ;
+    //////////////////////////////////////////////////
+    if (Uuids.count()<=0)                            {
+      Alert ( Error )                                ;
+      return                                         ;
+    }                                                ;
+    //////////////////////////////////////////////////
+    UuidSelection * NUS                              ;
+    NUS = new UuidSelection(GraphicsView(),plan)     ;
+    NUS->setWindowTitle(tr("Join color group"))      ;
+    NUS->setUuids(Uuids)                             ;
+    if (NUS->exec()==QDialog::Accepted)              {
+      uu = NUS->currentUuid()                        ;
+    }                                                ;
+    NUS->deleteLater()                               ;
+    nDropOut ( uu <= 0 )                             ;
+    //////////////////////////////////////////////////
+    EnterSQL(XC,plan->sql)                           ;
+      GM        . LoadColors ( XC,uu , Colors )      ;
+      Graphics :: toColors   ( Image , Colors )      ;
+      GM        . SaveColors ( XC,uu , Colors )      ;
+    LeaveSQL(XC,plan->sql)                           ;
+    //////////////////////////////////////////////////
+    Alert ( Done )                                   ;
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveAs ( self ) :
+    ##########################################################################
+    """
+    QString filename = QFileDialog::getSaveFileName (
+                         GraphicsView()             ,
+                         QString::number(uuid)      ,
+                         plan->Path("Images")       ,
+                         "*.png *.jpg"            ) ;
+    if (filename.length()<=0) return                ;
+    Image.save(filename)                            ;
+    Alert ( Done )                                  ;
+    """
+    ##########################################################################
+    return
   ############################################################################
   def InformationMenu              ( self , mm                             ) :
     ##########################################################################
@@ -371,19 +716,246 @@ class VcfPicture                 ( VcfRectangle                            , \
     aa     = mm . exec_       ( QCursor . pos      ( )                       )
     at     = mm . at          ( aa                                           )
     ##########################################################################
+    """
+    bool N::VcfPicture::showMenu(QGraphicsView * view,QPoint global)
+    {
+      nScopedMenu ( mm , view )                          ;
+      bool movable = IsMask (flags(),ItemIsMovable)      ;
+      QMenu      * ma = NULL                             ;
+      QMenu      * me = NULL                             ;
+      QMenu      * mp = NULL                             ;
+      QMenu      * mc = NULL                             ;
+      QAction    * a  = NULL                             ;
+      me = mm.addMenu(tr("Edit"))                        ;
+      if (uuid> 0) mm.add(me,23,tr("Drag" ))             ;
+      if (uuid<=0) mm.add(me,24,tr("Store" ))            ;
+          mm.addSeparator(me)                            ;
+      if (uuid> 0) mm.add(me,25,tr("Load selections"))   ;
+          mm.add(me,21,tr("Create selection area"))      ;
+          mm.add(me,22,tr("Create canvas"))              ;
+          mm.addSeparator(me)                            ;
+          mm.add(me,26,tr("Save as" ))                   ;
+          mm.add(me, 1,tr("Delete" ))                    ;
+      ma = mm.addMenu(tr("Adjustments"))                 ;
+      a  = mm.add(ma, 2,tr("Overlay"))                   ;
+      a->setCheckable(true); a->setChecked(Overlay)      ;
+      a  = mm.add(ma, 3,tr("Movable"))                   ;
+      a->setCheckable(true); a->setChecked(movable)      ;
+      a  = mm.add(ma, 4,tr("Resizable"))                 ;
+      a->setCheckable(true); a->setChecked(Scaling)      ;
+          mm.addSeparator(ma)                            ;
+          mm.add(ma,11,tr("DPI"    ))                    ;
+          mm.add(ma,12,tr("Z Level"))                    ;
+          mm.add(ma,13,tr("Opacity"))                    ;
+          mm.add(ma,14,tr("Rotate" ))                    ;
+          mm.add(ma,15,tr("Normal" ))                    ;
+      mc = mm.addMenu(tr("Channels"))                    ;
+      mm.add(mc,75,tr("Extract red channel"  ))          ;
+      mm.add(mc,76,tr("Extract green channel"))          ;
+      mm.add(mc,77,tr("Extract blue channel" ))          ;
+      mm.add(mc,78,tr("Extract alpha channel"))          ;
+      mm.addSeparator(mc)                                ;
+      mm.add(mc,79,tr("Picture colors join color group"));
+      mp = mm.addMenu(tr("Process"))                     ;
+          mm.add(mp,81,tr("Filters"))                    ;
+      if (plan->classifiers.count()>0)                   {
+          mm.add(mp,52,tr("Human faces detection"))      ;
+          mm.add(mp,53,tr("Human faces analysis" ))      ;
+      }                                                  ;
+          mm.addSeparator(mp)                            ;
+          mm.add(mp,82,tr("Grey image"     ))            ;
+          mm.add(mp,83,tr("Invert RGB"     ))            ;
+          mm.add(mp,84,tr("Median smooth"  ))            ;
+          mm.add(mp,85,tr("Gaussian smooth"))            ;
+          mm.add(mp,86,tr("Blur"           ))            ;
+          mm.addSeparator(mp                )            ;
+          mm.add(mp,87,tr("Erode"          ))            ;
+          mm.add(mp,88,tr("Dilate"         ))            ;
+          mm.addSeparator(mp)                            ;
+          mm.add(mp,89,tr("Contrast"))                   ;
+          mm.add(mp,90,tr("Unsharp mask"))               ;
+          mm.addSeparator(mp)                            ;
+          mm.add(mp,91,tr("Color distribution"))         ;
+          mm.add(mp,92,tr("Transform"))                  ;
+          mm.addSeparator(mp)                            ;
+          mm.add(mp,93,tr("Feature points"))             ;
+          mm.setFont(plan)                               ;
+      a = mm.exec(global)                                ;
+      if (IsNull(a)) return false                        ;
+      PictureManager PM ( plan )                         ;
+      QImage   * II                                      ;
+      IplImage * image                                   ;
+      IplImage * result                                  ;
+      switch (mm[a])                                     {
+        case  1                                          :
+          emit Delete (this)                             ;
+        break                                            ;
+        case  2                                          :
+          Overlay   = a->isChecked()                     ;
+        break                                            ;
+        case  3                                          :
+          movable   = a->isChecked()                     ;
+          setFlag ( ItemIsMovable , movable )            ;
+        break                                            ;
+        case  4                                          :
+          Scaling = a->isChecked()                       ;
+        break                                            ;
+        case 11                                          :
+          DeleteGadgets  ()                              ;
+          AttachDPI      ()                              ;
+        break                                            ;
+        case 12                                          :
+          DeleteGadgets  ()                              ;
+          AttachZLevel   ()                              ;
+        break                                            ;
+        case 13                                          :
+          DeleteGadgets  ()                              ;
+          AttachOpacity  ()                              ;
+        break                                            ;
+        case 14                                          :
+          DeleteGadgets  ()                              ;
+          AttachRotation ()                              ;
+        break                                            ;
+        case 15                                          :
+          DeleteGadgets  ()                              ;
+          NormalTransform()                              ;
+        break                                            ;
+        case 21                                          :
+          emit Selection ( this , ScreenRect )           ;
+        break                                            ;
+        case 22                                          :
+          emit Canvas    ( this , ScreenRect )           ;
+        break                                            ;
+        case 23                                          :
+          Drag  ( )                                      ;
+        break                                            ;
+        case 24                                          :
+          Store ( )                                      ;
+        break                                            ;
+        case 25                                          :
+          emit LoadSelections ( this )                   ;
+        break                                            ;
+        case 26                                          :
+          SaveAs              (      )                   ;
+        break                                            ;
+        case 52                                          :
+          emit Faces          ( this )                   ;
+        break                                            ;
+        case 53                                          :
+          emit FacesAnalysis  ( this )                   ;
+        break                                            ;
+        case 75                                          :
+          emit Channel        ( this , 0 )               ;
+        break                                            ;
+        case 76                                          :
+          emit Channel        ( this , 1 )               ;
+        break                                            ;
+        case 77                                          :
+          emit Channel        ( this , 2 )               ;
+        break                                            ;
+        case 78                                          :
+          emit Channel        ( this , 3 )               ;
+        break                                            ;
+        case 79                                          :
+          JoinColorGroup      (          )               ;
+        break                                            ;
+        case 81                                          :
+          emit Process        ( this )                   ;
+        break                                            ;
+        case 82                                          :
+          image  = PM.toIplImage( Image  )               ;
+          result = PM.toGrey    ( image  )               ;
+          II     = PM.toImage   ( result )               ;
+          Image  = *II                                   ;
+          delete II                                      ;
+          PM . Release ( image  )                        ;
+          PM . Release ( result )                        ;
+          update ( )                                     ;
+        break                                            ;
+        case 83                                          :
+          Image.invertPixels ()                          ;
+          update ( )                                     ;
+        break                                            ;
+        case 84                                          :
+          image  = PM.toIplImage ( Image  )              ;
+          result = PM.Median     ( image  )              ;
+          II     = PM.toImage    ( result )              ;
+          if (NotNull(II)) Image = *II                   ;
+          PM     . Release       ( image  )              ;
+          PM     . Release       ( result )              ;
+          if (NotNull(II)) delete II                     ;
+          update ( )                                     ;
+        break                                            ;
+        case 85                                          :
+          image  = PM.toIplImage ( Image  )              ;
+          result = PM.Gaussian   ( image  )              ;
+          II     = PM.toImage    ( result )              ;
+          if (NotNull(II)) Image = *II                   ;
+          PM     . Release       ( image  )              ;
+          PM     . Release       ( result )              ;
+          if (NotNull(II)) delete II                     ;
+          update ( )                                     ;
+        break                                            ;
+        case 86                                          :
+          image  = PM.toIplImage ( Image  )              ;
+          result = PM.Blur       ( image  )              ;
+          II     = PM.toImage    ( result )              ;
+          if (NotNull(II)) Image = *II                   ;
+          PM     . Release       ( image  )              ;
+          PM     . Release       ( result )              ;
+          if (NotNull(II)) delete II                     ;
+          update ( )                                     ;
+        break                                            ;
+        case 87                                          :
+          image  = PM.toIplImage ( Image  )              ;
+          result = PM.Erode      ( image  )              ;
+          II     = PM.toImage    ( result )              ;
+          if (NotNull(II)) Image = *II                   ;
+          PM     . Release       ( image  )              ;
+          PM     . Release       ( result )              ;
+          if (NotNull(II)) delete II                     ;
+          update ( )                                     ;
+        break                                            ;
+        case 88                                          :
+          image  = PM.toIplImage ( Image  )              ;
+          result = PM.Dilate     ( image  )              ;
+          II     = PM.toImage    ( result )              ;
+          if (NotNull(II)) Image = *II                   ;
+          PM     . Release       ( image  )              ;
+          PM     . Release       ( result )              ;
+          if (NotNull(II)) delete II                     ;
+          update ( )                                     ;
+        break                                            ;
+        case 89                                          :
+          DeleteGadgets  ()                              ;
+          AdjustContrast ()                              ;
+        break                                            ;
+        case 90                                          :
+          DeleteGadgets  ()                              ;
+          UnsharpMask    ()                              ;
+        break                                            ;
+        case 91                                          :
+          emit ColorDistribution ( this )                ;
+        break                                            ;
+        case 92                                          :
+          emit TransformPicture  ( this )                ;
+        break                                            ;
+        case 93                                          :
+          emit KeyPoints         ( this )                ;
+        break                                            ;
+      }                                                  ;
+      return true                                        ;
+    }
+    """
     ##########################################################################
     return
 ##############################################################################
 """
 class Q_VCF_EXPORT VcfPicture : public VcfRectangle
-                 , public Object
+                              , public Object
 {
   Q_OBJECT
   public:
-
-    double PictureDPI ;
-    QImage Image      ;
-    QImage Original   ;
 
     enum { Type = UserType + VCF::Picture };
     virtual int type(void) const { return Type; }
@@ -391,51 +963,13 @@ class Q_VCF_EXPORT VcfPicture : public VcfRectangle
     explicit VcfPicture                (VcfConstructor) ;
     virtual ~VcfPicture                (void);
 
-    virtual void paint                 (QPainter * painter,const QStyleOptionGraphicsItem * option,QWidget * widget = 0);
-
     QByteArray Configuration           (void);
     bool       setConfiguration        (QByteArray & configuration);
 
-  protected:
-
-    virtual void contextMenuEvent      (QGraphicsSceneContextMenuEvent * event);
-    virtual QVariant itemChange        (GraphicsItemChange change,const QVariant & value);
-    virtual void setCornerCursor       (int corner);
-
-    virtual void MountZLevel           (QGraphicsProxyWidget * proxy,QSlider * slider);
-    virtual void MountOpacity          (QGraphicsProxyWidget * proxy,QSlider * slider);
-    virtual void MountRotation         (QGraphicsProxyWidget * proxy,QDial   * dial  );
-    virtual void RotationUpdated       (void);
-    virtual void NormalTransform       (void);
-    virtual void AttachDPI             (void);
-    virtual void AdjustContrast        (void) ;
-    virtual void UnsharpMask           (void) ;
-    virtual void SaveAs                (void) ;
-
   public slots:
-
-    virtual void setCenter             (QPointF center);
-    virtual void LoadImage             (SUID uuid);
-
-    virtual void Paint                 (QPainter * painter,QRectF Region,bool clip,bool color) ;
-    virtual void PaintImage            (QPainter * painter,QRectF Region,bool clip,bool color) ;
-    virtual void PaintImageClip        (QPainter * painter,QRectF Region,bool clip,bool color) ;
-    virtual void PaintBorder           (QPainter * painter,QRectF Region,bool clip,bool color) ;
-
-    bool showMenu                      (QGraphicsView * view,QPoint global);
 
     virtual void Drag                  (void) ;
     virtual void Store                 (void) ;
-
-    virtual void JoinColorGroup        (void) ;
-
-  protected slots:
-
-    void modifyDPI                     (double dpi);
-    void contrastChanged               (int contrast) ;
-    void usmChanged                    (int contrast) ;
-
-  private slots:
 
   signals:
 
@@ -452,406 +986,6 @@ class Q_VCF_EXPORT VcfPicture : public VcfRectangle
     void Channel                       (VcfPicture * picture,int Component);
 
 };
-
-QVariant N::VcfPicture::itemChange(GraphicsItemChange change,const QVariant & value)
-{
-  switch (change)                                       {
-    case ItemPositionChange                             :
-    case ItemPositionHasChanged                         :
-      if (NotNull(Options))                             {
-        QPointF scenePos = value.toPointF(  )           ;
-        PaperPos = Options->Standard(scenePos)          ;
-        setToolTip                                      (
-          tr("Picture UUID : %1\n"
-             "%2 x %3 pixels\n"
-             "%4 DPI\n"
-             "%5 x %6 cm\n"
-             "Center : %7 x %8 cm"                      )
-          .arg(uuid                                     )
-          .arg(Image    .width()).arg(Image    .height())
-          .arg(PictureDPI                               )
-          .arg(PaperRect.width()).arg(PaperRect.height())
-          .arg(PaperPos .x    ()).arg(PaperPos .y     ())
-        )                                               ;
-        QToolTip::showText(QCursor::pos(),toolTip())    ;
-      }                                                 ;
-    break                                               ;
-    case ItemSelectedHasChanged                         :
-      DeleteGadgets()                                   ;
-    break                                               ;
-  }                                                     ;
-  return QGraphicsItem::itemChange(change,value)        ;
-}
-
-void N::VcfPicture::setCornerCursor(int Corner)
-{
-  switch (Corner)                      {
-    case NoSide                        :
-      setCursor(Qt::ArrowCursor     )  ;
-    break                              ;
-    case TopLeft                       :
-      setCursor(Qt::SizeFDiagCursor )  ;
-    break                              ;
-    case TopRight                      :
-      setCursor(Qt::SizeBDiagCursor )  ;
-    break                              ;
-    case BottomLeft                    :
-      setCursor(Qt::SizeBDiagCursor )  ;
-    break                              ;
-    case BottomRight                   :
-      setCursor(Qt::SizeFDiagCursor )  ;
-    break                              ;
-    case LeftSide                      :
-      setCursor(Qt::SizeHorCursor   )  ;
-    break                              ;
-    case RightSide                     :
-      setCursor(Qt::SizeHorCursor   )  ;
-    break                              ;
-    case TopSide                       :
-      setCursor(Qt::SizeVerCursor   )  ;
-    break                              ;
-    case BottomSide                    :
-      setCursor(Qt::SizeVerCursor   )  ;
-    break                              ;
-    case Inside                        :
-      setCursor(Qt::ClosedHandCursor)  ;
-    break                              ;
-  }                                    ;
-}
-
-bool N::VcfPicture::showMenu(QGraphicsView * view,QPoint global)
-{
-  nScopedMenu ( mm , view )                          ;
-  bool movable = IsMask (flags(),ItemIsMovable)      ;
-  QMenu      * ma = NULL                             ;
-  QMenu      * me = NULL                             ;
-  QMenu      * mp = NULL                             ;
-  QMenu      * mc = NULL                             ;
-  QAction    * a  = NULL                             ;
-  me = mm.addMenu(tr("Edit"))                        ;
-  if (uuid> 0) mm.add(me,23,tr("Drag" ))             ;
-  if (uuid<=0) mm.add(me,24,tr("Store" ))            ;
-      mm.addSeparator(me)                            ;
-  if (uuid> 0) mm.add(me,25,tr("Load selections"))   ;
-      mm.add(me,21,tr("Create selection area"))      ;
-      mm.add(me,22,tr("Create canvas"))              ;
-      mm.addSeparator(me)                            ;
-      mm.add(me,26,tr("Save as" ))                   ;
-      mm.add(me, 1,tr("Delete" ))                    ;
-  ma = mm.addMenu(tr("Adjustments"))                 ;
-  a  = mm.add(ma, 2,tr("Overlay"))                   ;
-  a->setCheckable(true); a->setChecked(Overlay)      ;
-  a  = mm.add(ma, 3,tr("Movable"))                   ;
-  a->setCheckable(true); a->setChecked(movable)      ;
-  a  = mm.add(ma, 4,tr("Resizable"))                 ;
-  a->setCheckable(true); a->setChecked(Scaling)      ;
-      mm.addSeparator(ma)                            ;
-      mm.add(ma,11,tr("DPI"    ))                    ;
-      mm.add(ma,12,tr("Z Level"))                    ;
-      mm.add(ma,13,tr("Opacity"))                    ;
-      mm.add(ma,14,tr("Rotate" ))                    ;
-      mm.add(ma,15,tr("Normal" ))                    ;
-  mc = mm.addMenu(tr("Channels"))                    ;
-  mm.add(mc,75,tr("Extract red channel"  ))          ;
-  mm.add(mc,76,tr("Extract green channel"))          ;
-  mm.add(mc,77,tr("Extract blue channel" ))          ;
-  mm.add(mc,78,tr("Extract alpha channel"))          ;
-  mm.addSeparator(mc)                                ;
-  mm.add(mc,79,tr("Picture colors join color group"));
-  mp = mm.addMenu(tr("Process"))                     ;
-      mm.add(mp,81,tr("Filters"))                    ;
-  if (plan->classifiers.count()>0)                   {
-      mm.add(mp,52,tr("Human faces detection"))      ;
-      mm.add(mp,53,tr("Human faces analysis" ))      ;
-  }                                                  ;
-      mm.addSeparator(mp)                            ;
-      mm.add(mp,82,tr("Grey image"     ))            ;
-      mm.add(mp,83,tr("Invert RGB"     ))            ;
-      mm.add(mp,84,tr("Median smooth"  ))            ;
-      mm.add(mp,85,tr("Gaussian smooth"))            ;
-      mm.add(mp,86,tr("Blur"           ))            ;
-      mm.addSeparator(mp                )            ;
-      mm.add(mp,87,tr("Erode"          ))            ;
-      mm.add(mp,88,tr("Dilate"         ))            ;
-      mm.addSeparator(mp)                            ;
-      mm.add(mp,89,tr("Contrast"))                   ;
-      mm.add(mp,90,tr("Unsharp mask"))               ;
-      mm.addSeparator(mp)                            ;
-      mm.add(mp,91,tr("Color distribution"))         ;
-      mm.add(mp,92,tr("Transform"))                  ;
-      mm.addSeparator(mp)                            ;
-      mm.add(mp,93,tr("Feature points"))             ;
-      mm.setFont(plan)                               ;
-  a = mm.exec(global)                                ;
-  if (IsNull(a)) return false                        ;
-  PictureManager PM ( plan )                         ;
-  QImage   * II                                      ;
-  IplImage * image                                   ;
-  IplImage * result                                  ;
-  switch (mm[a])                                     {
-    case  1                                          :
-      emit Delete (this)                             ;
-    break                                            ;
-    case  2                                          :
-      Overlay   = a->isChecked()                     ;
-    break                                            ;
-    case  3                                          :
-      movable   = a->isChecked()                     ;
-      setFlag ( ItemIsMovable , movable )            ;
-    break                                            ;
-    case  4                                          :
-      Scaling = a->isChecked()                       ;
-    break                                            ;
-    case 11                                          :
-      DeleteGadgets  ()                              ;
-      AttachDPI      ()                              ;
-    break                                            ;
-    case 12                                          :
-      DeleteGadgets  ()                              ;
-      AttachZLevel   ()                              ;
-    break                                            ;
-    case 13                                          :
-      DeleteGadgets  ()                              ;
-      AttachOpacity  ()                              ;
-    break                                            ;
-    case 14                                          :
-      DeleteGadgets  ()                              ;
-      AttachRotation ()                              ;
-    break                                            ;
-    case 15                                          :
-      DeleteGadgets  ()                              ;
-      NormalTransform()                              ;
-    break                                            ;
-    case 21                                          :
-      emit Selection ( this , ScreenRect )           ;
-    break                                            ;
-    case 22                                          :
-      emit Canvas    ( this , ScreenRect )           ;
-    break                                            ;
-    case 23                                          :
-      Drag  ( )                                      ;
-    break                                            ;
-    case 24                                          :
-      Store ( )                                      ;
-    break                                            ;
-    case 25                                          :
-      emit LoadSelections ( this )                   ;
-    break                                            ;
-    case 26                                          :
-      SaveAs              (      )                   ;
-    break                                            ;
-    case 52                                          :
-      emit Faces          ( this )                   ;
-    break                                            ;
-    case 53                                          :
-      emit FacesAnalysis  ( this )                   ;
-    break                                            ;
-    case 75                                          :
-      emit Channel        ( this , 0 )               ;
-    break                                            ;
-    case 76                                          :
-      emit Channel        ( this , 1 )               ;
-    break                                            ;
-    case 77                                          :
-      emit Channel        ( this , 2 )               ;
-    break                                            ;
-    case 78                                          :
-      emit Channel        ( this , 3 )               ;
-    break                                            ;
-    case 79                                          :
-      JoinColorGroup      (          )               ;
-    break                                            ;
-    case 81                                          :
-      emit Process        ( this )                   ;
-    break                                            ;
-    case 82                                          :
-      image  = PM.toIplImage( Image  )               ;
-      result = PM.toGrey    ( image  )               ;
-      II     = PM.toImage   ( result )               ;
-      Image  = *II                                   ;
-      delete II                                      ;
-      PM . Release ( image  )                        ;
-      PM . Release ( result )                        ;
-      update ( )                                     ;
-    break                                            ;
-    case 83                                          :
-      Image.invertPixels ()                          ;
-      update ( )                                     ;
-    break                                            ;
-    case 84                                          :
-      image  = PM.toIplImage ( Image  )              ;
-      result = PM.Median     ( image  )              ;
-      II     = PM.toImage    ( result )              ;
-      if (NotNull(II)) Image = *II                   ;
-      PM     . Release       ( image  )              ;
-      PM     . Release       ( result )              ;
-      if (NotNull(II)) delete II                     ;
-      update ( )                                     ;
-    break                                            ;
-    case 85                                          :
-      image  = PM.toIplImage ( Image  )              ;
-      result = PM.Gaussian   ( image  )              ;
-      II     = PM.toImage    ( result )              ;
-      if (NotNull(II)) Image = *II                   ;
-      PM     . Release       ( image  )              ;
-      PM     . Release       ( result )              ;
-      if (NotNull(II)) delete II                     ;
-      update ( )                                     ;
-    break                                            ;
-    case 86                                          :
-      image  = PM.toIplImage ( Image  )              ;
-      result = PM.Blur       ( image  )              ;
-      II     = PM.toImage    ( result )              ;
-      if (NotNull(II)) Image = *II                   ;
-      PM     . Release       ( image  )              ;
-      PM     . Release       ( result )              ;
-      if (NotNull(II)) delete II                     ;
-      update ( )                                     ;
-    break                                            ;
-    case 87                                          :
-      image  = PM.toIplImage ( Image  )              ;
-      result = PM.Erode      ( image  )              ;
-      II     = PM.toImage    ( result )              ;
-      if (NotNull(II)) Image = *II                   ;
-      PM     . Release       ( image  )              ;
-      PM     . Release       ( result )              ;
-      if (NotNull(II)) delete II                     ;
-      update ( )                                     ;
-    break                                            ;
-    case 88                                          :
-      image  = PM.toIplImage ( Image  )              ;
-      result = PM.Dilate     ( image  )              ;
-      II     = PM.toImage    ( result )              ;
-      if (NotNull(II)) Image = *II                   ;
-      PM     . Release       ( image  )              ;
-      PM     . Release       ( result )              ;
-      if (NotNull(II)) delete II                     ;
-      update ( )                                     ;
-    break                                            ;
-    case 89                                          :
-      DeleteGadgets  ()                              ;
-      AdjustContrast ()                              ;
-    break                                            ;
-    case 90                                          :
-      DeleteGadgets  ()                              ;
-      UnsharpMask    ()                              ;
-    break                                            ;
-    case 91                                          :
-      emit ColorDistribution ( this )                ;
-    break                                            ;
-    case 92                                          :
-      emit TransformPicture  ( this )                ;
-    break                                            ;
-    case 93                                          :
-      emit KeyPoints         ( this )                ;
-    break                                            ;
-  }                                                  ;
-  return true                                        ;
-}
-
-void N::VcfPicture::MountZLevel(QGraphicsProxyWidget * proxy,QSlider * slider)
-{
-  Proxys  [1] = proxy       ;
-  Widgets [1] = slider      ;
-  QRectF R = PanelRect()    ;
-  proxy->setGeometry(R    ) ;
-  proxy->setZValue  (0.90f) ;
-  proxy->setOpacity (0.50f) ;
-}
-
-void N::VcfPicture::MountOpacity(QGraphicsProxyWidget * proxy,QSlider * slider)
-{
-  Proxys  [2] = proxy       ;
-  Widgets [2] = slider      ;
-  QRectF R = PanelRect()    ;
-  proxy->setGeometry(R)     ;
-  proxy->setZValue  (0.90f) ;
-  proxy->setOpacity (0.50f) ;
-}
-
-void N::VcfPicture::MountRotation(QGraphicsProxyWidget * proxy,QDial * dial)
-{
-  Proxys  [3] = proxy       ;
-  Widgets [3] = dial        ;
-  QRectF R = CenterRect()   ;
-  qreal  z = zValue()       ;
-  z += 0.90f                ;
-  if (z>1.0) z = 1.0        ;
-  proxy->setGeometry(R)     ;
-  proxy->setZValue  (z    ) ;
-  proxy->setOpacity (0.75f) ;
-}
-
-void N::VcfPicture::RotationUpdated(void)
-{
-  QTransform T = Transform ;
-  T = T.rotate(Angle)      ;
-  setTransform(T)          ;
-}
-
-void N::VcfPicture::NormalTransform(void)
-{
-  QTransform T            ;
-  T.reset()               ;
-  Angle = 0.0             ;
-  qreal sx = Options->DPI ;
-  qreal sy = Options->DPI ;
-  sx /= PictureDPI        ;
-  sy /= PictureDPI        ;
-  T = T.scale(sx,sy)      ;
-  Transform = T           ;
-  setTransform(T)         ;
-}
-
-void N::VcfPicture::AttachDPI(void)
-{
-  QDoubleSpinBox * dpi = new QDoubleSpinBox();
-  QGraphicsProxyWidget * proxy  = new QGraphicsProxyWidget(this);
-  proxy->setWidget(dpi);
-  dpi->setRange(1,9600);
-  dpi->setValue(PictureDPI);
-  dpi->setSingleStep(1);
-  connect(dpi,SIGNAL(valueChanged(double)),this,SLOT(modifyDPI(double)));
-  Proxys  [4] = proxy       ;
-  Widgets [4] = dpi         ;
-  QRectF R = PanelRect()    ;
-  proxy->setGeometry(R    ) ;
-  proxy->setZValue  (0.90f) ;
-  proxy->setOpacity (0.50f) ;
-  QFont Font = plan->fonts[Fonts::ComboBox] ;
-  Font.setPixelSize(R.height());
-  dpi->setFont(Font);
-}
-
-void N::VcfPicture::modifyDPI(double dpi)
-{
-  QTransform T                                        ;
-  T.reset()                                           ;
-  qreal sx = Options->DPI                             ;
-  qreal sy = Options->DPI                             ;
-  PictureDPI = dpi                                    ;
-  sx /= PictureDPI                                    ;
-  sy /= PictureDPI                                    ;
-  T = T.scale(sx,sy)                                  ;
-  Transform = T                                       ;
-  T = T.rotate(Angle)                                 ;
-  setTransform(T)                                     ;
-  QRectF SR = mapToScene (ScreenRect ).boundingRect() ;
-  PaperRect = Options -> Standard (SR)                ;
-  setToolTip                                          (
-    tr("Picture UUID : %1\n"
-       "%2 x %3 pixels\n"
-       "%4 DPI\n"
-       "%5 x %6 cm\n"
-       "Center : %7 x %8 cm"                      )
-    .arg(uuid                                     )
-    .arg(Image    .width()).arg(Image    .height())
-    .arg(PictureDPI                               )
-    .arg(PaperRect.width()).arg(PaperRect.height())
-    .arg(PaperPos .x    ()).arg(PaperPos .y     ())
-  )                                                   ;
-  prepareGeometryChange  (           )                ;
-}
 
 void N::VcfPicture::Drag(void)
 {
@@ -966,103 +1100,5 @@ bool N::VcfPicture::setConfiguration(QByteArray & configuration)
   )                                                        ;
   prepareGeometryChange  (           )                     ;
   return true;
-}
-
-void N::VcfPicture::AdjustContrast(void)
-{
-  QSlider              * slider = new QSlider(Qt::Horizontal);
-  QGraphicsProxyWidget * proxy  = new QGraphicsProxyWidget(this);
-  proxy->setWidget(slider);
-  Proxys  [5] = proxy       ;
-  Widgets [5] = slider      ;
-  QRectF R = PanelRect()    ;
-  proxy->setGeometry(R)     ;
-  proxy->setZValue  (0.90f) ;
-  proxy->setOpacity (0.50f) ;
-  slider->setRange(-255,255);
-  slider->setValue(0);
-  Original = Image ;
-  connect(slider,SIGNAL(valueChanged(int)),this,SLOT(contrastChanged(int)));
-}
-
-void N::VcfPicture::contrastChanged(int contrast)
-{
-  PictureManager PM ( plan )                   ;
-  Image = PM.AdjustContrast(Original,contrast) ;
-  update ( )                                   ;
-}
-
-void N::VcfPicture::UnsharpMask(void)
-{
-  QSlider              * slider = new QSlider(Qt::Horizontal);
-  QGraphicsProxyWidget * proxy  = new QGraphicsProxyWidget(this);
-  proxy->setWidget(slider);
-  Proxys  [6] = proxy       ;
-  Widgets [6] = slider      ;
-  QRectF R = PanelRect()    ;
-  proxy->setGeometry(R)     ;
-  proxy->setZValue  (0.90f) ;
-  proxy->setOpacity (0.50f) ;
-  slider->setRange(-255,255);
-  slider->setValue(0);
-  Original = Image ;
-  connect(slider,SIGNAL(valueChanged(int)),
-          this,SLOT(usmChanged(int)));
-}
-
-void N::VcfPicture::usmChanged(int contrast)
-{
-  PictureManager PM ( plan )                         ;
-  Image = PM.UnsharpMask(Original,20,3,0.0,contrast) ;
-  update ( )                                         ;
-}
-
-void N::VcfPicture::SaveAs(void)
-{
-  QString filename = QFileDialog::getSaveFileName (
-                       GraphicsView()             ,
-                       QString::number(uuid)      ,
-                       plan->Path("Images")       ,
-                       "*.png *.jpg"            ) ;
-  if (filename.length()<=0) return                ;
-  Image.save(filename)                            ;
-  Alert ( Done )                                  ;
-}
-
-void N::VcfPicture::JoinColorGroup(void)
-{
-  SUID            uu = 0                           ;
-  UUIDs           Uuids                            ;
-  Colors          Colors                           ;
-  GraphicsManager GM ( plan )                      ;
-  EnterSQL(SC,plan->sql)                           ;
-    Uuids = SC.Uuids                               (
-              PlanTable(ColorGroups)               ,
-              "uuid"                               ,
-              SC.OrderByAsc("id")                ) ;
-  LeaveSQL(SC,plan->sql)                           ;
-  //////////////////////////////////////////////////
-  if (Uuids.count()<=0)                            {
-    Alert ( Error )                                ;
-    return                                         ;
-  }                                                ;
-  //////////////////////////////////////////////////
-  UuidSelection * NUS                              ;
-  NUS = new UuidSelection(GraphicsView(),plan)     ;
-  NUS->setWindowTitle(tr("Join color group"))      ;
-  NUS->setUuids(Uuids)                             ;
-  if (NUS->exec()==QDialog::Accepted)              {
-    uu = NUS->currentUuid()                        ;
-  }                                                ;
-  NUS->deleteLater()                               ;
-  nDropOut ( uu <= 0 )                             ;
-  //////////////////////////////////////////////////
-  EnterSQL(XC,plan->sql)                           ;
-    GM        . LoadColors ( XC,uu , Colors )      ;
-    Graphics :: toColors   ( Image , Colors )      ;
-    GM        . SaveColors ( XC,uu , Colors )      ;
-  LeaveSQL(XC,plan->sql)                           ;
-  //////////////////////////////////////////////////
-  Alert ( Done )                                   ;
 }
 """
