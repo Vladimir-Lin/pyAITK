@@ -684,6 +684,57 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     return
   ############################################################################
+  def StatesMenu               ( self , mm                                 ) :
+    ##########################################################################
+    FLAGS = self . flags       (                                             )
+    ##########################################################################
+    MSG   = self . getMenuItem ( "ElementFlags"                              )
+    LOM   = mm   . addMenu     ( MSG                                         )
+    ##########################################################################
+    CHECK = self . IsMask      ( FLAGS , QGraphicsItem . ItemIsMovable       )
+    MSG   = self . getMenuItem ( "Movable"                                   )
+    mm    . addActionFromMenu  ( LOM , 45821201 , MSG , True , CHECK         )
+    ##########################################################################
+    CHECK = self . IsMask      ( FLAGS , QGraphicsItem . ItemIsSelectable    )
+    MSG   = self . getMenuItem ( "Selectable"                                )
+    mm    . addActionFromMenu  ( LOM , 45821202 , MSG , True , CHECK         )
+    ##########################################################################
+    CHECK = self . IsMask      ( FLAGS , QGraphicsItem . ItemIsFocusable     )
+    MSG   = self . getMenuItem ( "Focusable"                                 )
+    mm    . addActionFromMenu  ( LOM , 45821203 , MSG , True , CHECK         )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunStatesMenu            ( self , at                                 ) :
+    ##########################################################################
+    FLAGS   = self . flags     (                                             )
+    ##########################################################################
+    if                         ( at == 45821201                            ) :
+      ########################################################################
+      ITEM  = QGraphicsItem . ItemIsMovable
+      CHECK = self . IsMask    ( FLAGS , ITEM                                )
+      self  . setFlag          ( ITEM  , not CHECK                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                         ( at == 45821202                            ) :
+      ########################################################################
+      ITEM  = QGraphicsItem . ItemIsSelectable
+      CHECK = self . IsMask    ( FLAGS , ITEM                                )
+      self  . setFlag          ( ITEM  , not CHECK                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                         ( at == 45821203                            ) :
+      ########################################################################
+      ITEM  = QGraphicsItem . ItemIsFocusable
+      CHECK = self . IsMask    ( FLAGS , ITEM                                )
+      self  . setFlag          ( ITEM  , not CHECK                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
   def InformationMenu              ( self , mm                             ) :
     ##########################################################################
     if                             ( self . Image in [ False , None ]      ) :
@@ -712,9 +763,14 @@ class VcfPicture                 ( VcfRectangle                            , \
     msg    = "人臉辨識"
     mm     . addAction        ( 1101 , msg                                   )
     ##########################################################################
+    self   . StatesMenu       ( mm                                           )
+    ##########################################################################
     mm     . setFont          ( gview   . menuFont ( )                       )
     aa     = mm . exec_       ( QCursor . pos      ( )                       )
     at     = mm . at          ( aa                                           )
+    ##########################################################################
+    if                        ( self . RunStatesMenu ( at )                ) :
+      return True
     ##########################################################################
     """
     bool N::VcfPicture::showMenu(QGraphicsView * view,QPoint global)
