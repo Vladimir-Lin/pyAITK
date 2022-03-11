@@ -50,6 +50,7 @@ from   AITK  . Essentials . Relation  import Relation
 ##############################################################################
 from   AITK  . Calendars . StarDate   import StarDate
 from   AITK  . Calendars . Periode    import Periode
+from   AITK  . Documents . MIME       import MIME        as MimeItem
 ##############################################################################
 class MimeTypeListings             ( TreeDock                              ) :
   ############################################################################

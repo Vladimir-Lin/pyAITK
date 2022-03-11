@@ -11,45 +11,46 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                             import QtCore
+from   PyQt5                             import QtGui
+from   PyQt5                             import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                    import QObject
+from   PyQt5 . QtCore                    import pyqtSignal
+from   PyQt5 . QtCore                    import pyqtSlot
+from   PyQt5 . QtCore                    import Qt
+from   PyQt5 . QtCore                    import QPoint
+from   PyQt5 . QtCore                    import QPointF
+from   PyQt5 . QtCore                    import QSize
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                     import QIcon
+from   PyQt5 . QtGui                     import QCursor
+from   PyQt5 . QtGui                     import QKeySequence
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QAction
-from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAbstractItemView
-from   PyQt5 . QtWidgets              import QTreeWidget
-from   PyQt5 . QtWidgets              import QTreeWidgetItem
-from   PyQt5 . QtWidgets              import QLineEdit
-from   PyQt5 . QtWidgets              import QComboBox
-from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets                 import QApplication
+from   PyQt5 . QtWidgets                 import QWidget
+from   PyQt5 . QtWidgets                 import qApp
+from   PyQt5 . QtWidgets                 import QAction
+from   PyQt5 . QtWidgets                 import QShortcut
+from   PyQt5 . QtWidgets                 import QMenu
+from   PyQt5 . QtWidgets                 import QAbstractItemView
+from   PyQt5 . QtWidgets                 import QTreeWidget
+from   PyQt5 . QtWidgets                 import QTreeWidgetItem
+from   PyQt5 . QtWidgets                 import QLineEdit
+from   PyQt5 . QtWidgets                 import QComboBox
+from   PyQt5 . QtWidgets                 import QSpinBox
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
-from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
-from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
-from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
-from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
+from   AITK  . Qt . MenuManager          import MenuManager as MenuManager
+from   AITK  . Qt . TreeDock             import TreeDock    as TreeDock
+from   AITK  . Qt . LineEdit             import LineEdit    as LineEdit
+from   AITK  . Qt . ComboBox             import ComboBox    as ComboBox
+from   AITK  . Qt . SpinBox              import SpinBox     as SpinBox
 ##############################################################################
-from   AITK  . Essentials . Relation  import Relation
+from   AITK  . Essentials . Relation     import Relation
 ##############################################################################
-from   AITK  . Calendars . StarDate   import StarDate
-from   AITK  . Calendars . Periode    import Periode
+from   AITK  . Calendars . StarDate      import StarDate
+from   AITK  . Calendars . Periode       import Periode
+from   AITK  . Documents . FileExtension import FileExtension
 ##############################################################################
 class FileExtListings              ( TreeDock                              ) :
   ############################################################################
@@ -62,7 +63,7 @@ class FileExtListings              ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . ClassTag           = "MimeTypeListings"
+    self . ClassTag           = "FileExtListings"
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 40
@@ -75,8 +76,8 @@ class FileExtListings              ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 7                                       )
-    self . setColumnHidden         ( 6 , True                                )
+    self . setColumnCount          ( 6                                       )
+    self . setColumnHidden         ( 5 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -166,9 +167,8 @@ class FileExtListings              ( TreeDock                              ) :
     ##########################################################################
     ID    = str              ( JSON [ "Id" ]                                 )
     UXID  = str              ( UUID                                          )
-    MIME  = JSON             [ "MIME"                                        ]
-    TYPE  = JSON             [ "Type"                                        ]
-    STYPE = JSON             [ "SubType"                                     ]
+    EXT   = JSON             [ "Extension"                                   ]
+    CREAT = JSON             [ "Creator"                                     ]
     COMM  = JSON             [ "Comment"                                     ]
     WIKI  = JSON             [ "Wiki"                                        ]
     ##########################################################################
@@ -177,13 +177,12 @@ class FileExtListings              ( TreeDock                              ) :
     IT    . setData          ( 0 , Qt . UserRole , UUID                      )
     IT    . setTextAlignment ( 0 , Qt.AlignRight                             )
     ##########################################################################
-    IT    . setText          ( 1 , MIME                                      )
-    IT    . setText          ( 2 , TYPE                                      )
-    IT    . setText          ( 3 , STYPE                                     )
-    IT    . setText          ( 4 , COMM                                      )
-    IT    . setText          ( 5 , WIKI                                      )
+    IT    . setText          ( 1 , EXT                                       )
+    IT    . setText          ( 2 , CREAT                                     )
+    IT    . setText          ( 3 , COMM                                      )
+    IT    . setText          ( 4 , WIKI                                      )
     ##########################################################################
-    IT   . setData           ( 6 , Qt . UserRole , JSON                      )
+    IT   . setData           ( 5 , Qt . UserRole , JSON                      )
     ##########################################################################
     return
   ############################################################################
@@ -291,11 +290,11 @@ class FileExtListings              ( TreeDock                              ) :
     if                            ( len ( UUIDs ) <= 0                     ) :
       return JSONs
     ##########################################################################
-    TABLE   = self . Tables       [ "MIME"                                   ]
+    TABLE   = self . Tables       [ "Extensions"                             ]
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      COLS  = f"`id` , `mime` , `type` , `subtype` , `comment` , `wiki`"
+      COLS  = f"`id` , `extension` , `creator` , `comment` , `wiki`"
       QQ    = f"""select {COLS} from {TABLE} where ( `uuid` = {UUID} ) ;"""
       QQ    = " " . join          ( QQ . split ( )                           )
       DB    . Query               ( QQ                                       )
@@ -308,18 +307,16 @@ class FileExtListings              ( TreeDock                              ) :
         continue
       ########################################################################
       ID    = int                 ( RR [ 0 ]                                 )
-      MIME  = self . assureString ( RR [ 1 ]                                 )
-      TYPE  = self . assureString ( RR [ 2 ]                                 )
-      STYPE = self . assureString ( RR [ 3 ]                                 )
-      COMM  = self . assureString ( RR [ 4 ]                                 )
-      WIKI  = self . assureString ( RR [ 5 ]                                 )
-      J     =                     { "Id"      : ID                         , \
-                                    "Uuid"    : UUID                       , \
-                                    "MIME"    : MIME                       , \
-                                    "Type"    : TYPE                       , \
-                                    "SubType" : STYPE                      , \
-                                    "Comment" : COMM                       , \
-                                    "Wiki"    : WIKI                         }
+      EXT   = self . assureString ( RR [ 1 ]                                 )
+      CREAT = self . assureString ( RR [ 2 ]                                 )
+      COMM  = self . assureString ( RR [ 3 ]                                 )
+      WIKI  = self . assureString ( RR [ 4 ]                                 )
+      J     =                     { "Id"        : ID                       , \
+                                    "Uuid"      : UUID                     , \
+                                    "Extension" : EXT                      , \
+                                    "Creator"   : CREAT                    , \
+                                    "Comment"   : COMM                     , \
+                                    "Wiki"      : WIKI                       }
       ########################################################################
       JSONs [ UUID ] = J
     ##########################################################################
@@ -378,7 +375,7 @@ class FileExtListings              ( TreeDock                              ) :
     ##########################################################################
     self  . Total = 0
     ##########################################################################
-    TABLE = self . Tables [ "MIME"                                           ]
+    TABLE = self . Tables [ "Extensions"                                     ]
     ##########################################################################
     QQ    = f"select count(*) from {TABLE} ;"
     DB    . Query         ( QQ                                               )
@@ -393,7 +390,7 @@ class FileExtListings              ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    TABLE  = self . Tables          [ "MIME"                                 ]
+    TABLE  = self . Tables          [ "Extensions"                           ]
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
@@ -407,10 +404,8 @@ class FileExtListings              ( TreeDock                              ) :
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . setColumnWidth ( 0 ,  80                                          )
-    self . setColumnWidth ( 1 , 320                                          )
-    self . setColumnWidth ( 2 , 160                                          )
-    self . setColumnWidth ( 5 , 240                                          )
-    self . defaultPrepare ( self . ClassTag , 6                              )
+    self . setColumnWidth ( 1 , 160                                          )
+    self . defaultPrepare ( self . ClassTag , 5                              )
     ##########################################################################
     return
   ############################################################################
