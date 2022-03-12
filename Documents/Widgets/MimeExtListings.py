@@ -77,8 +77,8 @@ class MimeExtListings              ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnCount          ( 4                                       )
+    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -167,25 +167,22 @@ class MimeExtListings              ( TreeDock                              ) :
   def PrepareItemContent     ( self , IT , UUID , JSON                     ) :
     ##########################################################################
     ID    = str              ( JSON [ "Id" ]                                 )
-    UXID  = str              ( UUID                                          )
     MIME  = JSON             [ "MIME"                                        ]
-    TYPE  = JSON             [ "Type"                                        ]
-    STYPE = JSON             [ "SubType"                                     ]
-    COMM  = JSON             [ "Comment"                                     ]
-    WIKI  = JSON             [ "Wiki"                                        ]
+    EXT   = JSON             [ "Extension"                                   ]
+    MSTR  = JSON             [ "MimeString"                                  ]
+    ESTR  = JSON             [ "ExtString"                                   ]
     ##########################################################################
     IT    . setText          ( 0 , ID                                        )
-    IT    . setToolTip       ( 0 , UXID                                      )
-    IT    . setData          ( 0 , Qt . UserRole , UUID                      )
-    IT    . setTextAlignment ( 0 , Qt.AlignRight                             )
+    IT    . setData          ( 0 , Qt . UserRole , ID                        )
+    IT    . setTextAlignment ( 0 , Qt . AlignRight                           )
     ##########################################################################
-    IT    . setText          ( 1 , MIME                                      )
-    IT    . setText          ( 2 , TYPE                                      )
-    IT    . setText          ( 3 , STYPE                                     )
-    IT    . setText          ( 4 , COMM                                      )
-    IT    . setText          ( 5 , WIKI                                      )
+    IT    . setText          ( 1 , MSTR                                      )
+    IT    . setData          ( 1 , Qt . UserRole , int ( MIME )              )
     ##########################################################################
-    IT   . setData           ( 6 , Qt . UserRole , JSON                      )
+    IT    . setText          ( 2 , ESTR                                      )
+    IT    . setData          ( 2 , Qt . UserRole , int ( EXT  )              )
+    ##########################################################################
+    IT   . setData           ( 3 , Qt . UserRole , JSON                      )
     ##########################################################################
     return
   ############################################################################
@@ -293,12 +290,25 @@ class MimeExtListings              ( TreeDock                              ) :
     if                            ( len ( UUIDs ) <= 0                     ) :
       return JSONs
     ##########################################################################
-    TABLE   = self . Tables       [ "MIME"                                   ]
+    MTAB    = self . Tables       [ "MIME"                                   ]
+    ETAB    = self . Tables       [ "Extensions"                             ]
+    CTAB    = self . Tables       [ "MimeExtensions"                         ]
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      COLS  = f"`id` , `mime` , `type` , `subtype` , `comment` , `wiki`"
-      QQ    = f"""select {COLS} from {TABLE} where ( `uuid` = {UUID} ) ;"""
+      QQ    = f"""select
+                  `me`.`id` ,
+                  `me`.`mime` ,
+                  `me`.`extension` ,
+                  `mt`.`mime` ,
+                  `fe`.`extension`
+                  from
+                  {CTAB} as `me` ,
+                  {MTAB} as `mt` ,
+                  {ETAB} as `fe`
+                  where ( `mt`.`id` = `me`.`mime` )
+                    and ( `fe`.`id` = `me`.`extension` )
+                    and ( `me`.`id` = {UUID} ) ;"""
       QQ    = " " . join          ( QQ . split ( )                           )
       DB    . Query               ( QQ                                       )
       RR    = DB . FetchOne       (                                          )
@@ -310,18 +320,15 @@ class MimeExtListings              ( TreeDock                              ) :
         continue
       ########################################################################
       ID    = int                 ( RR [ 0 ]                                 )
-      MIME  = self . assureString ( RR [ 1 ]                                 )
-      TYPE  = self . assureString ( RR [ 2 ]                                 )
-      STYPE = self . assureString ( RR [ 3 ]                                 )
-      COMM  = self . assureString ( RR [ 4 ]                                 )
-      WIKI  = self . assureString ( RR [ 5 ]                                 )
-      J     =                     { "Id"      : ID                         , \
-                                    "Uuid"    : UUID                       , \
-                                    "MIME"    : MIME                       , \
-                                    "Type"    : TYPE                       , \
-                                    "SubType" : STYPE                      , \
-                                    "Comment" : COMM                       , \
-                                    "Wiki"    : WIKI                         }
+      MIME  = int                 ( RR [ 1 ]                                 )
+      EXT   = int                 ( RR [ 2 ]                                 )
+      MSTR  = self . assureString ( RR [ 3 ]                                 )
+      ESTR  = self . assureString ( RR [ 4 ]                                 )
+      J     =                     { "Id"         : ID                      , \
+                                    "MIME"       : MIME                    , \
+                                    "Extension"  : EXT                     , \
+                                    "MimeString" : MSTR                    , \
+                                    "ExtString"  : ESTR                      }
       ########################################################################
       JSONs [ UUID ] = J
     ##########################################################################
@@ -380,7 +387,7 @@ class MimeExtListings              ( TreeDock                              ) :
     ##########################################################################
     self  . Total = 0
     ##########################################################################
-    TABLE = self . Tables [ "MIME"                                           ]
+    TABLE = self . Tables [ "MimeExtensions"                                 ]
     ##########################################################################
     QQ    = f"select count(*) from {TABLE} ;"
     DB    . Query         ( QQ                                               )
@@ -395,12 +402,12 @@ class MimeExtListings              ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    TABLE  = self . Tables          [ "MIME"                                 ]
+    TABLE  = self . Tables          [ "MimeExtensions"                       ]
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ     = f"""select `uuid` from {TABLE}
+    QQ     = f"""select `id` from {TABLE}
                  order by `id` {ORDER}
                  limit {STID} , {AMOUNT} ;"""
     ##########################################################################
@@ -409,10 +416,8 @@ class MimeExtListings              ( TreeDock                              ) :
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . setColumnWidth ( 0 ,  80                                          )
-    self . setColumnWidth ( 1 , 320                                          )
-    self . setColumnWidth ( 2 , 160                                          )
-    self . setColumnWidth ( 5 , 240                                          )
-    self . defaultPrepare ( self . ClassTag , 6                              )
+    self . setColumnWidth ( 1 , 240                                          )
+    self . defaultPrepare ( self . ClassTag , 3                              )
     ##########################################################################
     return
   ############################################################################
