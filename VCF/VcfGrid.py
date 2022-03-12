@@ -34,9 +34,14 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
-class VcfGrid         (                                                    ) :
+from         . VcfCanvas              import VcfCanvas as VcfCanvas
+##############################################################################
+class VcfGrid         ( VcfCanvas                                          ) :
   ############################################################################
-  def __init__        ( self                                               ) :
+  def __init__        ( self                                               , \
+                        parent = None                                      , \
+                        item   = None                                      , \
+                        plan   = None                                      ) :
     ##########################################################################
     ##########################################################################
     return

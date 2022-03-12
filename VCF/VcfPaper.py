@@ -34,7 +34,9 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
-class VcfPaper        (                                                    ) :
+from         . VcfRectangle           import VcfRectangle as VcfRectangle
+##############################################################################
+class VcfPaper        ( VcfRectangle                                       ) :
   ############################################################################
   def __init__        ( self                                               ) :
     ##########################################################################

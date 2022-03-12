@@ -34,9 +34,14 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
-class VcfBlock        (                                                    ) :
+from         . VcfNode                import VcfNode      as VcfNode
+##############################################################################
+class VcfBlock        ( VcfNode                                            ) :
   ############################################################################
-  def __init__        ( self                                               ) :
+  def __init__        ( self                                               , \
+                        parent = None                                      , \
+                        item   = None                                      , \
+                        plan   = None                                      ) :
     ##########################################################################
     ##########################################################################
     return

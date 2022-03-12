@@ -34,9 +34,18 @@ from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
-class VcfLinker       (                                                    ) :
+from   AITK  . Essentials . Object    import Object   as Object
+from   AITK  . Math       . Node      import Node     as Node
+from   AITK  . Math       . Relation  import Relation as Relation
+##############################################################################
+from         . VcfLines               import VcfLines as VcfLines
+##############################################################################
+class VcfLinker       ( VcfLines , Relation                                ) :
   ############################################################################
-  def __init__        ( self                                               ) :
+  def __init__        ( self                                               , \
+                        parent = None                                      , \
+                        item   = None                                      , \
+                        plan   = None                                      ) :
     ##########################################################################
     ##########################################################################
     return

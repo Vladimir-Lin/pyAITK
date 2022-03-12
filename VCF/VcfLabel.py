@@ -143,17 +143,16 @@ class VcfLabel                  ( VcfCanvas                                ) :
                     self . ScreenRect . width  ( ) - ( G . x ( ) * 2 )     , \
                     self . ScreenRect . height ( ) - ( G . y ( ) * 2 )       )
   ############################################################################
-  def FitSize ( self ) :
+  def FitSize                             ( self                           ) :
     ##########################################################################
+    self . Painter . fonts [ 0 ] . setDPI ( self . Options . PaperDPI        )
+    R    = self . Painter . boundingRect  ( 0 , self . Content               )
+    S    = QPointF                        ( R . width ( ) , R . height ( )   )
     """
-    Painter.fonts[0].setDPI(Options->DPI) ;
-    QFontMetricsF FMF(Painter.fonts[0])   ;
-    QRectF  R = FMF.boundingRect(Content) ;
-    QPointF S (R.width(),R.height())      ;
-    S = Options -> Standard ( S )         ;
+    S = Options -> Standard ( S )
     """
     ##########################################################################
-    return QSizeF ( S . x ( ) , S . y ( ) )
+    return QSizeF                         ( S . x ( ) , S . y ( )            )
   ############################################################################
   def MountEditor ( self ) :
     ##########################################################################

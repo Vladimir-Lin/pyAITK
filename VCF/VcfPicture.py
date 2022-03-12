@@ -48,7 +48,6 @@ from   AITK  . Essentials . Object    import Object       as Object
 from   AITK  . Pictures   . Picture   import Picture      as PictureItem
 from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
 ##############################################################################
-from         . VcfItem                import VcfItem      as VcfItem
 from         . VcfRectangle           import VcfRectangle as VcfRectangle
 ##############################################################################
 class VcfPicture                 ( VcfRectangle                            , \
