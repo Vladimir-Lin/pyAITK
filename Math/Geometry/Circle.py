@@ -2,78 +2,55 @@
 ##############################################################################
 ## Circle
 ##############################################################################
-## from . Nexus import Nexus as Nexus
+import math
 ##############################################################################
-class Circle              (                                                ) :
+from . ControlPoint import ControlPoint as ControlPoint
+##############################################################################
+class Circle     (                                                         ) :
   ############################################################################
-  def __init__            ( self                                           ) :
+  def __init__   ( self                                                    ) :
+    ##########################################################################
+    self . clear (                                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def __del__    ( self                                                    ) :
     ##########################################################################
     ##########################################################################
     return
   ############################################################################
-  def __del__     ( self                                                   ) :
+  def clear                 ( self                                         ) :
     ##########################################################################
+    self . O = ControlPoint (                                                )
+    self . X = ControlPoint (                                                )
+    self . Y = ControlPoint (                                                )
+    self . N = 0
     ##########################################################################
     return
+  ############################################################################
+  def assign ( self , circle                                               ) :
+    ##########################################################################
+    self . O = circle . O
+    self . X = circle . X
+    self . Y = circle . Y
+    self . N = circle . N
+    ##########################################################################
+    return self
+  ############################################################################
+  def Angle             ( self , angle , P                                 ) :
+    ##########################################################################
+    A    = math . pi * angle
+    C    = ControlPoint (                                                    )
+    sinv = math . sin   ( A                                                  )
+    cosv = math . cos   ( A                                                  )
+    ##########################################################################
+    P    . assign       ( self . O                                           )
+    C    . assign       ( self . X                                           )
+    C    . multiply     ( cosv                                               )
+    P    . VectorPlus   ( C                                                  )
+    C    . assign       ( self . Y                                           )
+    C    . multiply     ( sinv                                               )
+    P    . VectorPlus   ( C                                                  )
+    ##########################################################################
+    return True
 ##############################################################################
-"""
-class Q_GEOMETRY_EXPORT Circle
-{
-  public:
-
-    ControlPoint O ; // Center
-    ControlPoint X ; // X Vector
-    ControlPoint Y ; // Y Vector
-    int          N ; // N sectors
-
-    explicit Circle     (void) ;
-             Circle     (const Circle & circle) ;
-    virtual ~Circle     (void) ;
-
-    Circle & operator = (const Circle & circle) ;
-
-    bool Angle          (double angle,ControlPoint & P) ;
-
-  protected:
-
-  private:
-
-};
-
-N::Circle:: Circle(void)
-{
-}
-
-N::Circle:: Circle(const Circle & circle)
-{
-  ME = circle ;
-}
-
-N::Circle::~Circle(void)
-{
-}
-
-N::Circle & N::Circle::operator = (const Circle & circle)
-{
-  nMemberCopy ( circle , O ) ;
-  nMemberCopy ( circle , X ) ;
-  nMemberCopy ( circle , Y ) ;
-  nMemberCopy ( circle , N ) ;
-  return ME                  ;
-}
-
-bool N::Circle::Angle(double angle,ControlPoint & P)
-{
-  ControlPoint C                       ;
-  double sin = Math::fastSine  (angle) ;
-  double cos = Math::fastCosine(angle) ;
-  P          = O                       ;
-  C          = X                       ;
-  C         *= cos                     ;
-  P         += C                       ;
-  C          = Y                       ;
-  C         *= sin                     ;
-  P         += C                       ;
-  return true                          ;
-}
-"""

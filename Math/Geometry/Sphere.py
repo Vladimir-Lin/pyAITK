@@ -2,64 +2,38 @@
 ##############################################################################
 ## Sphere
 ##############################################################################
-## from . Nexus import Nexus as Nexus
+from . ControlPoint import ControlPoint as ControlPoint
 ##############################################################################
-class Sphere              (                                                ) :
+class Sphere     (                                                         ) :
   ############################################################################
-  def __init__            ( self                                           ) :
+  def __init__   ( self                                                    ) :
+    ##########################################################################
+    self . clear (                                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def __del__    ( self                                                    ) :
     ##########################################################################
     ##########################################################################
     return
   ############################################################################
-  def __del__     ( self                                                   ) :
+  def clear                 ( self                                         ) :
     ##########################################################################
+    self . O = ControlPoint (                                                ) ## Center
+    self . X = ControlPoint (                                                ) ## X Vector
+    self . Y = ControlPoint (                                                ) ## Y Vector
+    self . R = ControlPoint (                                                ) ## Radius Vector
+    self . N =              {                                                } ## Sectors
+    ##########################################################################
+    return
+  ############################################################################
+  def assign ( self , sphere                                               ) :
+    ##########################################################################
+    self . O = sphere . O
+    self . X = sphere . X
+    self . Y = sphere . Y
+    self . R = sphere . R
+    self . N = sphere . N
     ##########################################################################
     return
 ##############################################################################
-"""
-class Q_GEOMETRY_EXPORT Sphere
-{
-  public:
-
-    ControlPoint O ; // Center
-    ControlPoint X ; // X Vector
-    ControlPoint Y ; // Y Vector
-    ControlPoint R ; // Radius Vector
-    IMAPs        N ; // Sectors
-
-    explicit Sphere     (void) ;
-             Sphere     (const Sphere & sphere) ;
-    virtual ~Sphere     (void) ;
-
-    Sphere & operator = (const Sphere & sphere) ;
-
-  protected:
-
-  private:
-
-};
-
-
-N::Sphere:: Sphere(void)
-{
-}
-
-N::Sphere:: Sphere(const Sphere & sphere)
-{
-  ME = sphere ;
-}
-
-N::Sphere::~Sphere(void)
-{
-}
-
-N::Sphere & N::Sphere::operator = (const Sphere & sphere)
-{
-  nMemberCopy ( sphere , O ) ;
-  nMemberCopy ( sphere , X ) ;
-  nMemberCopy ( sphere , Y ) ;
-  nMemberCopy ( sphere , R ) ;
-  nMemberCopy ( sphere , N ) ;
-  return ME                  ;
-}
-"""

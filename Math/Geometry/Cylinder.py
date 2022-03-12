@@ -2,98 +2,60 @@
 ##############################################################################
 ## Cylinder
 ##############################################################################
-## from . Nexus import Nexus as Nexus
+from . ControlPoint import ControlPoint as ControlPoint
+from . Circle       import Circle       as Circle
 ##############################################################################
-class Cylinder              (                                                ) :
+class Cylinder   (                                                         ) :
   ############################################################################
-  def __init__            ( self                                           ) :
+  def __init__   ( self                                                    ) :
+    ##########################################################################
+    self . clear (                                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def __del__    ( self                                                    ) :
     ##########################################################################
     ##########################################################################
     return
   ############################################################################
-  def __del__     ( self                                                   ) :
+  def clear          ( self                                                ) :
     ##########################################################################
+    self . Sectors = {                                                       }
+    self . Pathes  = {                                                       }
+    self . Circles = {                                                       }
+    ##########################################################################
+    return
+  ############################################################################
+  def assign         ( self , cylinder                                     ) :
+    ##########################################################################
+    self . Sectors = cylinder . Sectors
+    self . Pathes  = cylinder . Pathes
+    self . Circles = cylinder . Circles
+    ##########################################################################
+    return
+  ############################################################################
+  def Cone            ( self , P1 , P2 , X1 , Y1 , X2 , Y2                 ) :
+    ##########################################################################
+    self . clear      (                                                      )
+    ##########################################################################
+    C1   = Circle     (                                                      )
+    C1   . O . assign ( P1                                                   )
+    C1   . X . assign ( X1                                                   )
+    C1   . Y . assign ( Y1                                                   )
+    C1   . N = 72
+    ##########################################################################
+    C2   = Circle     (                                                      )
+    C2   . O . assign ( P2                                                   )
+    C2   . X . assign ( X2                                                   )
+    C2   . Y . assign ( Y2                                                   )
+    C2   . N = 72
+    ##########################################################################
+    self . Sectors [ 0 ] = 0
+    self . Sectors [ 1 ] = 1
+    self . Pathes  [ 0 ] = P1
+    self . Pathes  [ 1 ] = P2
+    self . Circles [ 0 ] = C1
+    self . Circles [ 1 ] = C2
     ##########################################################################
     return
 ##############################################################################
-"""
-class Q_GEOMETRY_EXPORT Cylinder
-{
-  public:
-
-    IMAPs         sectors ;
-    ControlPoints pathes  ;
-    Circles       circles ;
-
-    explicit Cylinder     (void) ;
-             Cylinder     (const Cylinder & cylinder) ;
-    virtual ~Cylinder     (void) ;
-
-    Cylinder & operator = (const Cylinder & cylinder) ;
-
-    void Cone             (ControlPoint & P1   ,
-                           ControlPoint & P2   ,
-                           ControlPoint & X1   ,
-                           ControlPoint & Y1   ,
-                           ControlPoint & X2   ,
-                           ControlPoint & Y2 ) ;
-
-  protected:
-
-  private:
-
-};
-
-N::Cylinder:: Cylinder(void)
-{
-}
-
-N::Cylinder:: Cylinder(const Cylinder & cylinder)
-{
-  ME = cylinder ;
-}
-
-N::Cylinder::~Cylinder(void)
-{
-}
-
-N::Cylinder & N::Cylinder::operator = (const Cylinder & cylinder)
-{
-  nMemberCopy ( cylinder , sectors ) ;
-  nMemberCopy ( cylinder , pathes  ) ;
-  nMemberCopy ( cylinder , circles ) ;
-  return ME                          ;
-}
-
-void N::Cylinder::Cone   (
-       ControlPoint & P1 ,
-       ControlPoint & P2 ,
-       ControlPoint & X1 ,
-       ControlPoint & Y1 ,
-       ControlPoint & X2 ,
-       ControlPoint & Y2 )
-{
-  Circle C1           ;
-  Circle C2           ;
-  /////////////////////
-  C1 . O = P1         ;
-  C1 . X = X1         ;
-  C1 . Y = Y1         ;
-  C1 . N = 72         ;
-  C2 . O = P2         ;
-  C2 . X = X2         ;
-  C2 . Y = Y2         ;
-  C2 . N = 72         ;
-  /////////////////////
-  sectors . clear ( ) ;
-  pathes  . clear ( ) ;
-  circles . clear ( ) ;
-  /////////////////////
-  sectors [ 0 ] = 0   ;
-  sectors [ 1 ] = 1   ;
-  pathes  [ 0 ] = P1  ;
-  pathes  [ 1 ] = P2  ;
-  circles [ 0 ] = C1  ;
-  circles [ 1 ] = C2  ;
-}
-"""

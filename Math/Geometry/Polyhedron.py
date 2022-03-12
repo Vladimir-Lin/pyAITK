@@ -2,9 +2,16 @@
 ##############################################################################
 ## Polyhedron
 ##############################################################################
-## from . Nexus import Nexus as Nexus
+from . ControlPoint import ControlPoint as ControlPoint
 ##############################################################################
 class Polyhedron          (                                                ) :
+  ############################################################################
+  Tetrahedron  = 1
+  Hexahedron   = 2
+  Octahedron   = 3
+  Dodecahedron = 4
+  Icosahedron  = 5
+  Zonohedron   = 6
   ############################################################################
   def __init__            ( self                                           ) :
     ##########################################################################
@@ -15,56 +22,20 @@ class Polyhedron          (                                                ) :
     ##########################################################################
     ##########################################################################
     return
+  ############################################################################
+  def clear            ( self                                              ) :
+    ##########################################################################
+    self . Type      = 0
+    self . Points    = {                                                     }
+    self . Arguments = {                                                     }
+    ##########################################################################
+    return
+  ############################################################################
+  def assign           ( self , polyhedron                                 ) :
+    ##########################################################################
+    self . Type      = polyhedron . Type
+    self . Points    = polyhedron . Points
+    self . Arguments = polyhedron . Arguments
+    ##########################################################################
+    return
 ##############################################################################
-"""
-class Q_GEOMETRY_EXPORT Polyhedron
-{
-  public:
-
-    enum                  {
-      Tetrahedron  =  1   ,
-      Hexahedron   =  2   ,
-      Octahedron   =  3   ,
-      Dodecahedron =  4   ,
-      Icosahedron  =  5   ,
-      Zonohedron   =  6 } ;
-
-    int           type      ;
-    ControlPoints points    ;
-    VarArgs       arguments ;
-
-    explicit Polyhedron     (void) ;
-             Polyhedron     (const Polyhedron & polyhedron) ;
-    virtual ~Polyhedron     (void) ;
-
-    Polyhedron & operator = (const Polyhedron & polyhedron) ;
-
-  protected:
-
-  private:
-
-};
-
-
-
-N::Polyhedron:: Polyhedron(void)
-{
-}
-
-N::Polyhedron:: Polyhedron(const Polyhedron & polyhedron)
-{
-  ME = polyhedron ;
-}
-
-N::Polyhedron::~Polyhedron(void)
-{
-}
-
-N::Polyhedron & N::Polyhedron::operator = (const Polyhedron & polyhedron)
-{
-  nMemberCopy ( polyhedron , type      ) ;
-  nMemberCopy ( polyhedron , points    ) ;
-  nMemberCopy ( polyhedron , arguments ) ;
-  return ME                              ;
-}
-"""
