@@ -49,8 +49,8 @@ class VcfCanvas                 ( VcfRectangle                             , \
   BoardMode       = 2
   CustomMode      = 3
   ############################################################################
-  Menu            = pyqtSignal  ( VcfItem , QPointF                          )
-  ShapeName       = pyqtSignal  ( VcfItem , str                              )
+  ## Menu            = pyqtSignal  ( VcfItem , QPointF                          )
+  ## ShapeName       = pyqtSignal  ( VcfItem , str                              )
   ############################################################################
   def __init__                  ( self                                     , \
                                   parent = None                            , \

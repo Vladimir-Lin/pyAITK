@@ -25,9 +25,11 @@ from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QFont
 from   PyQt5 . QtGui                  import QFontMetricsF
+from   PyQt5 . QtGui                  import QColor
 from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QPolygonF
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
@@ -36,13 +38,15 @@ from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
 from         . VcfPath                import VcfPath      as VcfPath
 ##############################################################################
-class VcfLines        ( VcfPath                                            ) :
+class VcfLines                 ( VcfPath                                   ) :
   ############################################################################
-  def __init__        ( self                                               , \
-                        parent = None                                      , \
-                        item   = None                                      , \
-                        plan   = None                                      ) :
+  def __init__                 ( self                                      , \
+                                 parent = None                             , \
+                                 item   = None                             , \
+                                 plan   = None                             ) :
     ##########################################################################
+    super ( ) . __init__       ( parent , item , plan                        )
+    self . setVcfLinesDefaults (                                             )
     ##########################################################################
     return
   ############################################################################
@@ -50,79 +54,56 @@ class VcfLines        ( VcfPath                                            ) :
     ##########################################################################
     ##########################################################################
     return
+  ############################################################################
+  def setVcfLinesDefaults      ( self                                      ) :
+    ##########################################################################
+    ## self . contour = Contour
+    self . contour = None
+    self . lines   = QPolygonF (                                             )
+    ##########################################################################
+    self . setBrushColor       ( 1 , QColor ( 224 , 224 , 224 )              )
+    self . setBrushColor       ( 2 , QColor ( 255 , 144 , 144 )              )
+    ##########################################################################
+    return
+  ############################################################################
+  def Painting          ( self , p , region , clip , color                 ) :
+    ##########################################################################
+    self . pushPainters ( p                                                  )
+    ##########################################################################
+    self . PaintPath    ( p , 1                                              )
+    self . PaintLines   ( p , 3 , self . lines                               )
+    self . PaintPath    ( p , 2                                              )
+    ##########################################################################
+    self . popPainters  ( p                                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def Prepare            ( self , line = False , dot = False               ) :
+    ##########################################################################
+    self   . setLines    ( 1 , contour                                       )
+    self   . EnablePath  ( 1 , True                                          )
+    self   . ShowLines   ( line                                              )
+    ##########################################################################
+    if                   ( dot                                             ) :
+      ########################################################################
+      ## self . setPoints   ( 2 , contour                                       )
+      self . EnablePath  ( 2 , True                                          )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . EnablePath  ( 2 , False                                         )
+    ##########################################################################
+    self   . MergePathes ( 0                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def ShowLines                      ( self , line = False                 ) :
+    ##########################################################################
+    self   . lines . clear           (                                       )
+    if                               ( line                                ) :
+      pass
+      ## self . lines = self . Polyline ( contour , contour . closed            )
+    self   . update                  (                                       )
+    ##########################################################################
+    return
 ##############################################################################
-"""
-class Q_COMPONENTS_EXPORT VcfLines : public VcfPath
-{
-  Q_OBJECT
-  public:
-
-    Contour   contour ;
-    QPolygonF lines   ;
-
-    enum { Type = UserType + VCF::Lines };
-    virtual int type(void) const { return Type; }
-
-    explicit VcfLines            (QObject       * parent       ,
-                                  QGraphicsItem * item         ,
-                                  Plan          * plan = NULL) ;
-    virtual ~VcfLines            (void);
-
-  protected:
-
-  private:
-
-  public slots:
-
-    virtual void Paint          (QPainter * painter,QRectF Region,bool clip,bool color) ;
-
-    virtual void Prepare        (bool line = false,bool dot = false) ;
-    virtual void ShowLines      (bool line = false) ;
-
-  protected slots:
-
-  private slots:
-
-  signals:
-
-};
-
-N::VcfLines:: VcfLines (QObject * parent,QGraphicsItem * item,Plan * p)
-            : VcfPath  (          parent,                item,       p)
-{
-  setBrushColor ( 1 , QColor ( 224 , 224 , 224 ) ) ;
-  setBrushColor ( 2 , QColor ( 255 , 144 , 144 ) ) ;
-}
-
-N::VcfLines::~VcfLines (void)
-{
-}
-
-void N::VcfLines::Paint(QPainter * p,QRectF Region,bool,bool)
-{
-  PaintPath  ( p , 1        ) ;
-  PaintLines ( p , 3 ,lines ) ;
-  PaintPath  ( p , 2        ) ;
-}
-
-void N::VcfLines::Prepare(bool line,bool dot)
-{
-  setLines     ( 1 , contour ) ;
-  EnablePath   ( 1 , true    ) ;
-  ShowLines    ( line        ) ;
-  if (dot )                    {
-    setPoints  ( 2 , contour ) ;
-    EnablePath ( 2 , true    ) ;
-  } else                       {
-    EnablePath ( 2 , false   ) ;
-  }                            ;
-  MergePathes  ( 0           ) ;
-}
-
-void N::VcfLines::ShowLines(bool line)
-{
-  lines . clear              (                          ) ;
-  if (line) lines = Polyline ( contour , contour.closed ) ;
-  update                     (                          ) ;
-}
-"""
