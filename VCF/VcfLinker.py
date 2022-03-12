@@ -36,11 +36,11 @@ from   PyQt5 . QtWidgets              import QGraphicsView
 ##############################################################################
 from   AITK  . Essentials . Object    import Object   as Object
 from   AITK  . Math       . Node      import Node     as Node
-from   AITK  . Math       . Relation  import Relation as Relation
+from   AITK  . Math       . Nexus     import Nexus    as Nexus
 ##############################################################################
 from         . VcfLines               import VcfLines as VcfLines
 ##############################################################################
-class VcfLinker       ( VcfLines , Relation                                ) :
+class VcfLinker       ( VcfLines , Nexus                                   ) :
   ############################################################################
   def __init__        ( self                                               , \
                         parent = None                                      , \
