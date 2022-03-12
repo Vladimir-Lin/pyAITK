@@ -166,13 +166,72 @@ class Contour             (                                                ) :
     ##########################################################################
     return R
   ############################################################################
+  def plus         ( self , center                                         ) :
+    ##########################################################################
+    x = center . x (                                                         )
+    y = center . y (                                                         )
+    ##########################################################################
+    for Id in self . Index                                                   :
+      ########################################################################
+      self . Points [ Id ] . x = self . Points [ Id ] . x + x
+      self . Points [ Id ] . y = self . Points [ Id ] . y + y
+    ##########################################################################
+    return self
   ############################################################################
+  """
+  N::Contour & N::Contour::operator += (FeaturePoints & features)
+  {
+    int L = 0                                           ;
+    if (index.count()>0) L = index.last()               ;
+    for (int i=0;i<features.count();i++)                {
+      ControlPoint point(features[i]->x,features[i]->y) ;
+      L++                                               ;
+      index << L                                        ;
+      points [ L ] = point                              ;
+    }                                                   ;
+    return ME                                           ;
+  }
+  """
   ############################################################################
+  def minus        ( self , center                                         ) :
+    ##########################################################################
+    x = center . x (                                                         )
+    y = center . y (                                                         )
+    ##########################################################################
+    for Id in self . Index                                                   :
+      ########################################################################
+      self . Points [ Id ] . x = self . Points [ Id ] . x - x
+      self . Points [ Id ] . y = self . Points [ Id ] . y - y
+    ##########################################################################
+    return self
   ############################################################################
+  def multiply                        ( self , factor                      ) :
+    ##########################################################################
+    for Id in self . Index                                                   :
+      ########################################################################
+      self . Points [ Id ] . multiply (        factor                        )
+    ##########################################################################
+    return self
   ############################################################################
+  def Dot               ( self , s                                         ) :
+    ##########################################################################
+    w      = s . width  (                                                    )
+    h      = s . height (                                                    )
+    ##########################################################################
+    for Id in self . Index                                                   :
+      ########################################################################
+      self . Points [ Id ] . x = self . Points [ Id ] . x * w
+      self . Points [ Id ] . y = self . Points [ Id ] . y * h
+    ##########################################################################
+    return self
   ############################################################################
-  ############################################################################
-  ############################################################################
+  def divide                        ( self , divisor                       ) :
+    ##########################################################################
+    for Id in self . Index                                                   :
+      ########################################################################
+      self . Points [ Id ] . divide (        divisor                         )
+    ##########################################################################
+    return self
 ##############################################################################
 """
 class Q_GEOMETRY_EXPORT Contour
@@ -302,70 +361,5 @@ void N::Contour::setData(QByteArray & contours)
     ncp.t    = R->Points[i].t                   ;
     add ( R->Points[i].Index , ncp )            ;
   }                                             ;
-}
-
-N::Contour & N::Contour::operator += (QPointF center)
-{
-  int i                 ;
-  double x = center.x() ;
-  double y = center.y() ;
-  foreach (i,index)     {
-    points[i].x += x    ;
-    points[i].y += y    ;
-  }                     ;
-  return ME             ;
-}
-
-N::Contour & N::Contour::operator += (FeaturePoints & features)
-{
-  int L = 0                                           ;
-  if (index.count()>0) L = index.last()               ;
-  for (int i=0;i<features.count();i++)                {
-    ControlPoint point(features[i]->x,features[i]->y) ;
-    L++                                               ;
-    index << L                                        ;
-    points [ L ] = point                              ;
-  }                                                   ;
-  return ME                                           ;
-}
-
-N::Contour & N::Contour::operator -= (QPointF center)
-{
-  int i                 ;
-  double x = center.x() ;
-  double y = center.y() ;
-  foreach (i,index)     {
-    points[i].x -= x    ;
-    points[i].y -= y    ;
-  }                     ;
-  return ME             ;
-}
-
-N::Contour & N::Contour::operator *= (double factor)
-{
-  int i                 ;
-  foreach (i,index)     {
-    points[i] *= factor ;
-  }                     ;
-  return ME             ;
-}
-
-N::Contour & N::Contour::operator *= (QSizeF s)
-{
-  int i                          ;
-  foreach (i,index)              {
-    points[i].x *= s . width  () ;
-    points[i].y *= s . height () ;
-  }                              ;
-  return ME                      ;
-}
-
-N::Contour & N::Contour::operator /= (double divisor)
-{
-  int i                  ;
-  foreach (i,index)      {
-    points[i] /= divisor ;
-  }                      ;
-  return ME              ;
 }
 """
