@@ -2,7 +2,15 @@
 ##############################################################################
 ## Contour
 ##############################################################################
-## from . Nexus import Nexus as Nexus
+import math
+##############################################################################
+from   PyQt5 . QtCore import QPointF
+from   PyQt5 . QtCore import QRectF
+##############################################################################
+from   PyQt5 . QtGui  import QColor
+from   PyQt5 . QtGui  import QVector3D
+##############################################################################
+from . ControlPoint   import ControlPoint as ControlPoint
 ##############################################################################
 class Contour             (                                                ) :
   ############################################################################
@@ -15,6 +23,151 @@ class Contour             (                                                ) :
     ##########################################################################
     ##########################################################################
     return
+  ############################################################################
+  def clear                         ( self                                 ) :
+    ##########################################################################
+    self . Uuid      = 0
+    self . Name      = ""
+    self . Type      = 0x00010000
+    self . Closed    = False
+    self . Substract = False
+    self . Index     =              [                                        ]
+    self . Thickness = ControlPoint (                                        )
+    self . Points    =              {                                        }
+    ##########################################################################
+    self . Thickness . setXYZ       ( 0.05 , 0.05 , 0.05                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def assign                  ( self , contour                             ) :
+    ##########################################################################
+    self . Uuid      = contour . Uuid
+    self . Name      = contour . Name
+    self . Type      = contour . Type
+    self . Closed    = contour . Closed
+    self . Substract = contour . Substract
+    self . Index     = contour . Index
+    self . Thickness . assign ( contour . Thickness                          )
+    self . Points    = contour . Points
+    ##########################################################################
+    return
+  ############################################################################
+  def count    ( self                                                      ) :
+    return len ( self . Index                                                )
+  ############################################################################
+  def begin         ( self                                                 ) :
+    ##########################################################################
+    self . Index  = [                                                        ]
+    self . Points = {                                                        }
+    ##########################################################################
+    return
+  ############################################################################
+  def add                 ( self , Id , point                              ) :
+    ##########################################################################
+    self . Index . append ( Id                                               )
+    self . Points [ Id ] = point
+    ##########################################################################
+    return self . count   (                                                  )
+  ############################################################################
+  def remove                ( self , Id                                    ) :
+    ##########################################################################
+    if                      ( Id in self . Index                           ) :
+      self . Index . remove ( Id                                             )
+    ##########################################################################
+    if                      ( Id in self . Points                          ) :
+      del self . Points     [ Id                                             ]
+    ##########################################################################
+    return self . count     (                                                )
+  ############################################################################
+  def end                   ( self                                         ) :
+    ##########################################################################
+    self . Closed = False
+    if                      ( self . count ( ) < 1                         ) :
+      return
+    ##########################################################################
+    a    = self . Index     [ 0                                              ]
+    ##########################################################################
+    self . Points [ a ] . Type = self . Type | 1
+    ## self . Points [ a ] . Type = self . type | Graphics::Start
+    ##########################################################################
+    if                      ( self . count ( ) < 2                         ) :
+      return
+    ##########################################################################
+    b    = self . Index     [ self . count ( ) - 1                           ]
+    self . Points [ b ] . Type = Type | 5
+    ## self . Points [ b ] . Type = Type | Graphics::End
+    ##########################################################################
+    return
+  ############################################################################
+  def close              ( self , t                                        ) :
+    ##########################################################################
+    self  . Closed = False
+    Flags = self . Type | t
+    a     = self . Index [ 0                                                 ]
+    self  . Points [ a ] . Type = Flags
+    ##########################################################################
+    if                   ( self . count ( ) < 2                            ) :
+      return
+    ##########################################################################
+    b    = self . Index  [ self . count ( ) - 1                              ]
+    self . Points [ b ] . Type = Flags
+    self . Closed = True
+    ##########################################################################
+    return
+  ############################################################################
+  def find ( self , point , R                                              ) :
+    ##########################################################################
+    R2 = R * R
+    ##########################################################################
+    for Id in self . Index                                                   :
+      ########################################################################
+      if   ( self . Points [ Id ] . Within ( point , R2 )                  ) :
+        return i
+    ##########################################################################
+    return -1
+  ############################################################################
+  def boundingRect     ( self                                              ) :
+    ##########################################################################
+    if                 ( len ( self . Points ) <=0                         ) :
+      return QRectF    ( 0 , 0 , 0 , 0                                       )
+    ##########################################################################
+    i      = self . Index  [ 0 ]
+    left   = self . points [ i ] . x
+    right  = self . points [ i ] . x
+    top    = self . points [ i ] . y
+    bottom = self . points [ i ] . y
+    ##########################################################################
+    if                 ( len ( self . Points ) > 1                         ) :
+      ########################################################################
+      for j in self . Index                                                  :
+        ######################################################################
+        if             ( i != j                                            ) :
+          ####################################################################
+          x = self . Points [ j ] . x
+          y = self . Points [ j ] . y
+          ####################################################################
+          if           ( x < left                                          ) :
+            left   = x
+          ####################################################################
+          if           ( x > right                                         ) :
+            right  = x
+          ####################################################################
+          if           ( y < top                                           ) :
+            top    = y
+          ####################################################################
+          if           ( y > bottom                                        ) :
+            bottom = y
+    ##########################################################################
+    R      = QRectF    (                                                     )
+    R      . setLeft   ( left                                                )
+    R      . setRight  ( right                                               )
+    R      . setTop    ( top                                                 )
+    R      . setBottom ( bottom                                              )
+    ##########################################################################
+    return R
+  ############################################################################
+  ############################################################################
+  ############################################################################
   ############################################################################
   ############################################################################
   ############################################################################
@@ -67,85 +220,6 @@ class Q_GEOMETRY_EXPORT Contour
   private:
 
 };
-
-
-N::Contour:: Contour   ( void             )
-           : uuid      ( 0                )
-           , type      ( Graphics::Linear )
-           , closed    ( false            )
-           , substract ( false            )
-{
-  thickness.x = 0.05 ;
-  thickness.y = 0.05 ;
-  thickness.z = 0.05 ;
-}
-
-N::Contour:: Contour(const Contour & contour)
-{
-  ME = contour ;
-}
-
-N::Contour::~Contour(void)
-{
-}
-
-int N::Contour::count(void)
-{
-  return index . count ( ) ;
-}
-
-void N::Contour::begin(void)
-{
-  index  . clear ( ) ;
-  points . clear ( ) ;
-}
-
-int N::Contour::add(int Id,ControlPoint & point)
-{
-  index << Id           ;
-  points [ Id ] = point ;
-  return count ( )      ;
-}
-
-int N::Contour::remove(int Id)
-{
-  if (index  . contains(Id)) index  . takeAt ( index.indexOf(Id) ) ;
-  if (points . contains(Id)) points . remove ( Id                ) ;
-  return count ( )                                                 ;
-}
-
-void N::Contour::end(void)
-{
-  closed = false                               ;
-  if (count()<1) return                        ;
-  int a = index [ 0 ]                          ;
-  points [ a ] . Type = type | Graphics::Start ;
-  if (count()<2) return                        ;
-  int b = index [ count() - 1 ]                ;
-  points [ b ] . Type = type | Graphics::End   ;
-}
-
-void N::Contour::close(int t)
-{
-  closed = false                ;
-  int Flags = type | t          ;
-  int a = index [ 0 ]           ;
-  points [ a ] . Type = Flags   ;
-  if (count()<2) return         ;
-  int b = index [ count() - 1 ] ;
-  points [ b ] . Type = Flags   ;
-  closed = true                 ;
-}
-
-int N::Contour::find(QPointF & point,double R)
-{
-  double R2 = R * R                          ;
-  CUID   i                                   ;
-  foreach (i,index)                          {
-    if (points[i].Within(point,R2)) return i ;
-  }                                          ;
-  return -1                                  ;
-}
 
 typedef struct {
   int    Index ;
@@ -228,52 +302,6 @@ void N::Contour::setData(QByteArray & contours)
     ncp.t    = R->Points[i].t                   ;
     add ( R->Points[i].Index , ncp )            ;
   }                                             ;
-}
-
-QRectF N::Contour::boundingRect(void)
-{
-  if (points.count()<=0) return QRectF(0,0,0,0) ;
-  ///////////////////////////////////////////////
-  int    i      = index [0]                     ;
-  double left   = points[i].x                   ;
-  double right  = points[i].x                   ;
-  double top    = points[i].y                   ;
-  double bottom = points[i].y                   ;
-  ///////////////////////////////////////////////
-  if (points.count()>1)                         {
-    for (int j=1;j<index.count();j++)           {
-      i = index[j]                              ;
-      double x = points[i].x                    ;
-      double y = points[i].y                    ;
-      if ( x < left   ) left   = x              ;
-      if ( x > right  ) right  = x              ;
-      if ( y < top    ) top    = y              ;
-      if ( y > bottom ) bottom = y              ;
-    }                                           ;
-  }                                             ;
-  ///////////////////////////////////////////////
-  QRectF R                                      ;
-  R . setLeft   ( left   )                      ;
-  R . setRight  ( right  )                      ;
-  R . setTop    ( top    )                      ;
-  R . setBottom ( bottom )                      ;
-  return R                                      ;
-}
-
-N::Contour & N::Contour::operator = (const Contour & contour)
-{
-  int i                               ;
-  nMemberCopy ( contour , uuid      ) ;
-  nMemberCopy ( contour , name      ) ;
-  nMemberCopy ( contour , type      ) ;
-  nMemberCopy ( contour , closed    ) ;
-  nMemberCopy ( contour , substract ) ;
-  nMemberCopy ( contour , index     ) ;
-  nMemberCopy ( contour , thickness ) ;
-  foreach (i,index)                   {
-    points[i] = contour.points[i]     ;
-  }                                   ;
-  return ME                           ;
 }
 
 N::Contour & N::Contour::operator += (QPointF center)
