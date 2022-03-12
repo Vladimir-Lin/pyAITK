@@ -164,25 +164,25 @@ class MimeExtListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItemContent     ( self , IT , UUID , JSON                     ) :
+  def PrepareItemContent    ( self , IT , UUID , JSON                      ) :
     ##########################################################################
-    ID    = str              ( JSON [ "Id" ]                                 )
-    MIME  = JSON             [ "MIME"                                        ]
-    EXT   = JSON             [ "Extension"                                   ]
-    MSTR  = JSON             [ "MimeString"                                  ]
-    ESTR  = JSON             [ "ExtString"                                   ]
+    ID   = str              ( JSON [ "Id" ]                                  )
+    MIME = JSON             [ "MIME"                                         ]
+    EXT  = JSON             [ "Extension"                                    ]
+    MSTR = JSON             [ "MimeString"                                   ]
+    ESTR = JSON             [ "ExtString"                                    ]
     ##########################################################################
-    IT    . setText          ( 0 , ID                                        )
-    IT    . setData          ( 0 , Qt . UserRole , ID                        )
-    IT    . setTextAlignment ( 0 , Qt . AlignRight                           )
+    IT   . setText          ( 0 , ID                                         )
+    IT   . setData          ( 0 , Qt . UserRole , ID                         )
+    IT   . setTextAlignment ( 0 , Qt . AlignRight                            )
     ##########################################################################
-    IT    . setText          ( 1 , MSTR                                      )
-    IT    . setData          ( 1 , Qt . UserRole , int ( MIME )              )
+    IT   . setText          ( 1 , ESTR                                       )
+    IT   . setData          ( 1 , Qt . UserRole , int ( EXT  )               )
     ##########################################################################
-    IT    . setText          ( 2 , ESTR                                      )
-    IT    . setData          ( 2 , Qt . UserRole , int ( EXT  )              )
+    IT   . setText          ( 2 , MSTR                                       )
+    IT   . setData          ( 2 , Qt . UserRole , int ( MIME )               )
     ##########################################################################
-    IT   . setData           ( 3 , Qt . UserRole , JSON                      )
+    IT   . setData          ( 3 , Qt . UserRole , JSON                       )
     ##########################################################################
     return
   ############################################################################
