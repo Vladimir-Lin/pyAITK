@@ -11,6 +11,15 @@ import threading
 import gettext
 import json
 ##############################################################################
+from   io                             import BytesIO
+from   wand . image                   import Image
+from   PIL                            import Image as Pillow
+##############################################################################
+import cv2
+import dlib
+import skimage
+import numpy                          as np
+##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
 from   PyQt5                          import QtWidgets
@@ -38,6 +47,7 @@ from   PyQt5 . QtGui                  import QTransform
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
+from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
@@ -47,6 +57,7 @@ from   AITK  . Qt . MenuManager       import MenuManager  as MenuManager
 from   AITK  . Essentials . Object    import Object       as Object
 from   AITK  . Pictures   . Picture   import Picture      as PictureItem
 from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
+from   AITK  . Pictures   . Face      import Face         as FaceItem
 ##############################################################################
 from         . VcfRectangle           import VcfRectangle as VcfRectangle
 ##############################################################################
@@ -159,6 +170,23 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     return
   ############################################################################
+  def atPixel                        ( self , pos                          ) :
+    ##########################################################################
+    if                               ( self . PICOP in [ False , None ]    ) :
+      return QPoint                  ( 0 , 0                                 )
+    ##########################################################################
+    XX  = pos  . x                   (                                       )
+    YY  = pos  . y                   (                                       )
+    SW  = self . ScreenRect . width  (                                       )
+    SH  = self . ScreenRect . height (                                       )
+    WW  = self . PICOP      . Width  (                                       )
+    HH  = self . PICOP      . Height (                                       )
+    ##########################################################################
+    X   = int                        ( XX * WW / SW                          )
+    Y   = int                        ( YY * HH / SH                          )
+    ##########################################################################
+    return QPoint                    ( X , Y                                 )
+  ############################################################################
   """
   def contextMenuEvent ( self , event                                      ) :
     ##########################################################################
@@ -223,6 +251,22 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     ##########################################################################
     return True
+  ############################################################################
+  def ReportCursorXY          ( self , pos                                 ) :
+    ##########################################################################
+    p        = self . atPixel (        pos                                   )
+    X        = p    . x       (                                              )
+    Y        = p    . y       (                                              )
+    TT       = f"{X} , {Y}"
+    QToolTip . showText       ( QCursor . pos ( ) , TT                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def Hovering            ( self , pos                                     ) :
+    ##########################################################################
+    self . ReportCursorXY (        pos                                       )
+    ##########################################################################
+    return
   ############################################################################
   def paint               ( self , painter , options , widget              ) :
     ##########################################################################
@@ -683,6 +727,39 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     return
   ############################################################################
+  def FacialRecognition                  ( self                            ) :
+    ##########################################################################
+    AI        = self . Settings          [ "AI"                              ]
+    HAAR      = AI                       [ "HAAR"                            ]
+    EYES      = AI                       [ "Eyes"                            ]
+    MOUTH     = AI                       [ "Mouth"                           ]
+    FIVEMARKS = AI                       [ "Fivemarks"                       ]
+    LANDMARKS = AI                       [ "Landmarks"                       ]
+    RESNET    = AI                       [ "Resnet"                          ]
+    ##########################################################################
+    FC        = cv2  . CascadeClassifier ( HAAR                              )
+    FIVE      = dlib . shape_predictor   ( FIVEMARKS                         )
+    PREDICTOR = dlib . shape_predictor   ( LANDMARKS                         )
+    FACIAL    = dlib . face_recognition_model_v1 ( RESNET                    )
+    ##########################################################################
+    IMG       = self . PICOP . toOpenCV  (                                   )
+    GRAY      = cv2  . cvtColor          ( IMG , cv2 . COLOR_BGR2GRAY        )
+    WW        = self . PICOP . Width     (                                   )
+    HH        = self . PICOP . Height    (                                   )
+    ##########################################################################
+    FACE      = FaceItem                 (                                   )
+    FACE      . Classifier = FC
+    FACE      . Fivemarks  = FIVE
+    FACE      . Predictor  = PREDICTOR
+    FACE      . Facial     = FACIAL
+    ##########################################################################
+    FACEs     = FACE . ToFaces           ( GRAY                              )
+    ##########################################################################
+    print(FACEs)
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -722,6 +799,12 @@ class VcfPicture                 ( VcfRectangle                            , \
     ##########################################################################
     if                        ( self . RunStatesMenu ( at )                ) :
       return True
+    ##########################################################################
+    if                        ( at == 1101                                 ) :
+      ########################################################################
+      self . Go               ( self . FacialRecognition                     )
+      ########################################################################
+      return
     ##########################################################################
     """
     bool N::VcfPicture::showMenu(QGraphicsView * view,QPoint global)
