@@ -319,8 +319,8 @@ class Picture     (                                                        ) :
     self . A      =                [                                         ]
     ##########################################################################
     fp            = BytesIO        ( self . Data                             )
-    img           = Pillow . open  ( fp                                      )
     try                                                                      :
+      img         = Pillow . open  ( fp                                      )
       channels    = img    . split (                                         )
       count       = len            ( channels                                )
     except                                                                   :
