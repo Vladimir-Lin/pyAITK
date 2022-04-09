@@ -98,6 +98,7 @@ class PeopleView                     ( IconDock                            ) :
     self . dockingPlace       = Qt . BottomDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
+    self . Relation . setT1        ( "People"                                )
     self . Relation . setT2        ( "People"                                )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
@@ -167,10 +168,10 @@ class PeopleView                     ( IconDock                            ) :
     LMTS   = f"limit {SID} , {AMOUNT}"
     RELTAB = self . Tables     [ "Relation"                                  ]
     ##########################################################################
-    if                         ( self . Grouping == "Subordination"        ) :
+    if                         ( self . isSubordination ( )                ) :
       OPTS = f"order by `position` {ORDER}"
       return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
-    if                         ( self . Grouping == "Reverse"              ) :
+    if                         ( self . isReverse       ( )                ) :
       OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
       return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
     ##########################################################################
