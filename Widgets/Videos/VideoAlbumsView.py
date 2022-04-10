@@ -561,11 +561,14 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                   ( len ( NAMEs ) <= 0                              ) :
       return
     ##########################################################################
-    NFILE    = f"{path}/scripts/names.txt"
+    NFILE    = f"{path}/scripts/name.txt"
     TEXT     = ""
     ##########################################################################
-    with open            ( NFILE , "rb" ) as f                               :
-      TEXT   = f . read  (                                                   )
+    try                                                                      :
+      with open          ( NFILE , "rb" ) as f                               :
+        TEXT = f . read  (                                                   )
+    except                                                                   :
+      pass
     ##########################################################################
     if                   ( len ( TEXT ) > 0                                ) :
       return
