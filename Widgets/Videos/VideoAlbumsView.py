@@ -216,7 +216,10 @@ class VideoAlbumsView              ( IconDock                              ) :
   ############################################################################
   def ObtainsItemUuids                      ( self , DB                    ) :
     ##########################################################################
-    if                                      ( self . isOriginal ( )        ) :
+    if                                      ( self . isSearching (       ) ) :
+      return self . UUIDs
+    ##########################################################################
+    if                                      ( self . isOriginal  (       ) ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
@@ -450,15 +453,12 @@ class VideoAlbumsView              ( IconDock                              ) :
   ############################################################################
   def looking             ( self , name                                    ) :
     ##########################################################################
-    print(name)
     self . SearchingForT2 ( name , "Albums" , "Names"                        )
     ##########################################################################
     return
   ############################################################################
-  def FindProducts        ( self , name                                    ) :
+  def FindProducts                    ( self , name                        ) :
     ##########################################################################
-    print(name)
-    """
     if                                ( len ( name ) <= 0                  ) :
       return
     ##########################################################################
@@ -466,22 +466,64 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                                ( DB == None                         ) :
       return
     ##########################################################################
-    OCPTAB  = self . Tables           [ Main                                 ]
-    NAMTAB  = self . Tables           [ NameTable                            ]
-    LIC     = self . getLocality      (                                      )
-    LIKE    = f"%{name}%"
-    UUIDs   =                         [                                      ]
-    """
+    FMT     = self . Translations     [ "UI::SearchKey"                      ]
+    MSG     = FMT . format            ( name                                 )
+    self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
     ##########################################################################
-    ## RQ      = f"select `uuid` from {OCPTAB} where ( `used` > 0 )"
-    ## QQ      = f"""select `uuid` from {NAMTAB}
-    ##               where ( `locality` = {LIC} )
-    ##               and ( `uuid` in ( {RQ} ) )
-    ##               and ( `name` like %s )
-    ##               group by `uuid` asc ;"""
-    """
+    ALMTAB  = self . Tables           [ "Albums"                             ]
+    IDFTAB  = self . Tables           [ "Identifiers"                        ]
+    RELTAB  = self . Tables           [ "Relation"                           ]
+    LIKE    = f"{name}"
+    UUIDs   =                         [                                      ]
+    ##########################################################################
+    if                                ( self . isOriginal      (         ) ) :
+      ########################################################################
+      PEQ   = f"""select `uuid` from {ALMTAB} where ( `used` > 0 )"""
+      ########################################################################
+    elif                              ( self . isSubordination (         ) ) :
+      ########################################################################
+      FIRST = self . Relation . get   ( "first"                              )
+      T1    = self . Relation . get   ( "t1"                                 )
+      T2    = self . Relation . get   ( "t2"                                 )
+      REL   = self . Relation . get   ( "relation"                           )
+      ########################################################################
+      REQ   = f"""select `second` from {RELTAB}
+                  where ( `t1` = {T1} )
+                    and ( `t2` = {T2} )
+                    and ( `relation` = {REL} )
+                    and ( `first` = {FIRST} )"""
+      PEQ   = f"""select `uuid` from {ALMTAB}
+                  where ( `used` > 0 )
+                  and ( `uuid` in ( {REQ} ) )"""
+      ########################################################################
+    elif                              ( self . isReverse       (         ) ) :
+      ########################################################################
+      SECID = self . Relation . get   ( "second"                             )
+      T1    = self . Relation . get   ( "t1"                                 )
+      T2    = self . Relation . get   ( "t2"                                 )
+      REL   = self . Relation . get   ( "relation"                           )
+      ########################################################################
+      REQ   = f"""select `first` from {RELTAB}
+                  where ( `t1` = {T1} )
+                    and ( `t2` = {T2} )
+                    and ( `relation` = {REL} )
+                    and ( `second` = {SECID} )"""
+      PEQ   = f"""select `uuid` from {ALMTAB}
+                  where ( `used` > 0 )
+                  and ( `uuid` in ( {REQ} ) )"""
+    ##########################################################################
+    QQ      = f"""select `uuid` from {IDFTAB}
+                  where ( `type` = 76 )
+                    and ( `name` like %s )
+                    and ( `uuid` in ( {PEQ} ) )
+                  group by `uuid` ;"""
+    QQ      = " " . join              ( QQ . split ( )                       )
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
     ALL     = DB . FetchAll           (                                      )
+    ##########################################################################
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
@@ -505,7 +547,6 @@ class VideoAlbumsView              ( IconDock                              ) :
     self . Grouping  = "Searching"
     ##########################################################################
     self . loading                    (                                      )
-    """
     ##########################################################################
     return
   ############################################################################

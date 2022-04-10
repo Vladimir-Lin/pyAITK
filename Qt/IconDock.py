@@ -918,6 +918,11 @@ class IconDock                      ( ListDock                             ) :
     if                                ( DB == None                         ) :
       return
     ##########################################################################
+    FMT     = self . Translations     [ "UI::SearchKey"                      ]
+    MSG     = FMT . format            ( name                                 )
+    self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
+    ##########################################################################
     OCPTAB  = self . Tables           [ Main                                 ]
     NAMTAB  = self . Tables           [ NameTable                            ]
     LIC     = self . getLocality      (                                      )
@@ -932,6 +937,9 @@ class IconDock                      ( ListDock                             ) :
                   group by `uuid` asc ;"""
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
     ALL     = DB . FetchAll           (                                      )
+    ##########################################################################
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
@@ -967,6 +975,11 @@ class IconDock                      ( ListDock                             ) :
     if                                ( DB == None                         ) :
       return
     ##########################################################################
+    FMT     = self . Translations     [ "UI::SearchKey"                      ]
+    MSG     = FMT . format            ( name                                 )
+    self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
+    ##########################################################################
     OCPTAB  = self . Tables           [ Main                                 ]
     NAMTAB  = self . Tables           [ NameTable                            ]
     LIC     = self . getLocality      (                                      )
@@ -981,6 +994,9 @@ class IconDock                      ( ListDock                             ) :
                   group by `uuid` asc ;"""
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
     ALL     = DB . FetchAll           (                                      )
+    ##########################################################################
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
     ##########################################################################
     DB      . Close                   (                                      )
     ##########################################################################
