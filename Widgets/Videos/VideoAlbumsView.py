@@ -244,7 +244,7 @@ class VideoAlbumsView              ( IconDock                              ) :
       for UUID in UUIDs                                                      :
         ######################################################################
         N     = NAMEs                  [ UUID                                ]
-        ALBUM . Uuid = Uuid
+        ALBUM . Uuid = UUID
         IDs   = ALBUM . GetIdentifiers ( DB                                  )
         ######################################################################
         if                             ( len ( IDs ) > 0                   ) :
