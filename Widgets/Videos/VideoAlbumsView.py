@@ -84,6 +84,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     self . StartId            = 0
     self . Amount             = 60
     self . SortOrder          = "asc"
+    self . ShowIdentifier     = False
     self . FetchTableKey      = "VideoAlbums"
     self . SearchLine         = None
     self . SearchKey          = ""
@@ -223,6 +224,41 @@ class VideoAlbumsView              ( IconDock                              ) :
       return self . DefaultObtainsItemUuids ( DB                             )
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
+  ############################################################################
+  def ObtainsUuidNames                 ( self , DB , UUIDs                 ) :
+    ##########################################################################
+    NAMEs     =                        {                                     }
+    ##########################################################################
+    if                                 ( len ( UUIDs ) > 0                 ) :
+      ########################################################################
+      TABLE   = self . Tables          [ "Names"                             ]
+      NAMEs   = self . GetNames        ( DB , TABLE , UUIDs                  )
+    ##########################################################################
+    if                                 ( self . ShowIdentifier             ) :
+      ########################################################################
+      NKs     =                        {                                     }
+      ALBUM   = AlbumItem              (                                     )
+      ALBUM   . Settings = self . Settings
+      ALBUM   . Tables   = self . Tables
+      ########################################################################
+      for UUID in UUIDs                                                      :
+        ######################################################################
+        N     = NAMEs                  [ UUID                                ]
+        ALBUM . Uuid = Uuid
+        IDs   = ALBUM . GetIdentifiers ( DB                                  )
+        ######################################################################
+        if                             ( len ( IDs ) > 0                   ) :
+          ####################################################################
+          ID  = " , " . join           ( IDs                                 )
+          if                           ( len ( ID ) > 0                    ) :
+            ##################################################################
+            N = f"[ {ID} ] {N}"
+        ######################################################################
+        NKs [ UUID ] = N
+      ########################################################################
+      NAMEs   = NKs
+    ##########################################################################
+    return NAMEs
   ############################################################################
   def FetchSessionInformation             ( self , DB                      ) :
     ##########################################################################
@@ -513,11 +549,14 @@ class VideoAlbumsView              ( IconDock                              ) :
                   where ( `used` > 0 )
                   and ( `uuid` in ( {REQ} ) )"""
     ##########################################################################
-    QQ      = f"""select `uuid` from {IDFTAB}
+    IDQ     = f"""select `uuid` from {IDFTAB}
                   where ( `type` = 76 )
                     and ( `name` like %s )
                     and ( `uuid` in ( {PEQ} ) )
-                  group by `uuid` ;"""
+                  group by `uuid`"""
+    QQ      = f"""select `uuid` from {IDFTAB}
+                  where ( `uuid` in ( {IDQ} ) )
+                  order by `name` asc ;"""
     QQ      = " " . join              ( QQ . split ( )                       )
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
     ALL     = DB . FetchAll           (                                      )
@@ -732,6 +771,13 @@ class VideoAlbumsView              ( IconDock                              ) :
       msg = self . getMenuItem   ( "AssignTables"                            )
       mm  . addActionFromMenu    ( LOM , 34621301 , msg                      )
     ##########################################################################
+    MSG   = self . getMenuItem   ( "ShowIdentifier"                          )
+    mm    . addActionFromMenu    ( LOM                                     , \
+                                   34621101                                , \
+                                   MSG                                     , \
+                                   True                                    , \
+                                   self . ShowIdentifier                     )
+    ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "Search"                                  )
@@ -751,6 +797,18 @@ class VideoAlbumsView              ( IconDock                              ) :
     return mm
   ############################################################################
   def RunFunctionsMenu                 ( self , at , uuid , item           ) :
+    ##########################################################################
+    if                                 ( at == 34621101                    ) :
+      ########################################################################
+      if                               ( self . ShowIdentifier             ) :
+        self . ShowIdentifier = False
+      else                                                                   :
+        self . ShowIdentifier = True
+      ########################################################################
+      self   . clear                   (                                     )
+      self   . startup                 (                                     )
+      ########################################################################
+      return
     ##########################################################################
     if                                 ( at == 34621301                    ) :
       ########################################################################

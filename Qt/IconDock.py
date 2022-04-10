@@ -797,13 +797,14 @@ class IconDock                      ( ListDock                             ) :
   def ObtainsItemUuids                ( self , DB                          ) :
     return self . DefaultObtainsItemUuids ( DB                               )
   ############################################################################
-  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
+  def ObtainsUuidNames        ( self , DB , UUIDs                          ) :
     ##########################################################################
-    NAMEs   =                         {                                      }
+    NAMEs   =                 {                                              }
     ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
+    if                        ( len ( UUIDs ) > 0                          ) :
+      ########################################################################
+      TABLE = self . Tables   [ "Names"                                      ]
+      NAMEs = self . GetNames ( DB , TABLE , UUIDs                           )
     ##########################################################################
     return NAMEs
   ############################################################################
