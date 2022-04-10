@@ -12,6 +12,7 @@ import gettext
 import json
 import glob
 import shutil
+import pathlib
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -63,6 +64,7 @@ from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . Documents  . Name      import Name        as NameItem
 from   AITK  . Pictures   . Picture   import Picture     as PictureItem
 from   AITK  . People     . People    import People      as PeopleItem
 from   AITK  . Videos     . Album     import Album       as AlbumItem
@@ -475,32 +477,78 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def GenerateVideoAlbum         ( self , uuid , path                      ) :
+  def ExportAlbumM3U             ( self , path                             ) :
     ##########################################################################
-    CONFs     = self . Settings  [ "Albums"                                  ]
-    DIR       = CONFs            [ "Template"                                ]
+    VIDPATH     = f"{path}/videos"
+    SUFFIXs     =                [ ".mp4"                                  , \
+                                   ".mkv"                                  , \
+                                   ".avi"                                  , \
+                                   ".wmv"                                  , \
+                                   ".vob"                                  , \
+                                   ".rmvb"                                   ]
+    FILEs       =                [                                           ]
     ##########################################################################
-    ALBUM     = AlbumItem        (                                           )
-    ALBUM     . Uuid     = uuid
-    ALBUM     . Settings = self . Settings
-    ALBUM     . Tables   = self . Tables
+    LISTS       = os . listdir   ( VIDPATH                                   )
+    for FILE in LISTS                                                        :
+      ########################################################################
+      SUFFIX    = pathlib . Path ( FILE                                      )
+      SUFFIX    = SUFFIX . suffix
+      SUFFIX    = SUFFIX . lower (                                           )
+      ########################################################################
+      if                         ( SUFFIX   in SUFFIXs                     ) :
+        ######################################################################
+        if                       ( FILE not in FILEs                       ) :
+          FILEs . append         ( FILE                                      )
     ##########################################################################
-    self      . BuildAlbum       ( DIR , path                                )
-    ##########################################################################
-    DB        = self . ConnectDB ( UsePure = True                            )
-    if                           ( self . NotOkay ( DB )                   ) :
+    if                           ( len ( FILEs ) <= 0                      ) :
       return
     ##########################################################################
-    print(uuid,path)
-    print(json.dumps(CONFs))
+    M3UF        = f"{path}/Album.m3u"
+    M3U         =                [ "#EXTM3U"                                 ]
     ##########################################################################
+    PTAG        = "# Playlist created by CIOS/AITK Video Tools"
+    M3U         . append         ( PTAG                                      )
     ##########################################################################
+    for FILE in FILEs                                                        :
+      ########################################################################
+      M3U       . append         ( f"#EXTINF:0,{FILE}"                       )
+      M3U       . append         ( f"videos/{FILE}"                          )
     ##########################################################################
+    M3UX        = "\r\n" . join  ( M3U                                       )
+    with open                    ( M3UF , 'w' , encoding = "utf-8" ) as f    :
+      f         . write          ( M3UX                                      )
     ##########################################################################
+    return
+  ############################################################################
+  def UpdateAlbumInformation     ( self , DB , uuid , path                 ) :
     ##########################################################################
-    DB        . Close            (                                           )
+    self    . ExportAlbumM3U     ( path                                      )
     ##########################################################################
-    self      . Notify           ( 5                                         )
+    NIT     = NameItem           (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def GenerateVideoAlbum           ( self , uuid , path                    ) :
+    ##########################################################################
+    CONFs = self . Settings        [ "Albums"                                ]
+    DIR   = CONFs                  [ "Template"                              ]
+    ##########################################################################
+    ALBUM = AlbumItem              (                                         )
+    ALBUM . Uuid     = uuid
+    ALBUM . Settings = self . Settings
+    ALBUM . Tables   = self . Tables
+    ##########################################################################
+    self  . BuildAlbum             ( DIR , path                              )
+    ##########################################################################
+    DB    = self . ConnectDB       ( UsePure = True                          )
+    if                             ( self . NotOkay ( DB )                 ) :
+      return
+    ##########################################################################
+    self  . UpdateAlbumInformation ( DB , uuid , path                        )
+    ##########################################################################
+    DB    . Close                  (                                         )
+    ##########################################################################
+    self  . Notify                 ( 5                                       )
     ##########################################################################
     return
   ############################################################################
@@ -521,30 +569,25 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateVideoAlbum          ( self , uuid , path                       ) :
+  def UpdateVideoAlbum             ( self , uuid , path                    ) :
     ##########################################################################
-    CONFs     = self . Settings  [ "Albums"                                  ]
-    DIR       = CONFs            [ "Template"                                ]
+    CONFs = self . Settings        [ "Albums"                                ]
+    DIR   = CONFs                  [ "Template"                              ]
     ##########################################################################
-    ALBUM     = AlbumItem        (                                           )
-    ALBUM     . Uuid     = uuid
-    ALBUM     . Settings = self . Settings
-    ALBUM     . Tables   = self . Tables
+    ALBUM = AlbumItem              (                                         )
+    ALBUM . Uuid     = uuid
+    ALBUM . Settings = self . Settings
+    ALBUM . Tables   = self . Tables
     ##########################################################################
-    DB        = self . ConnectDB ( UsePure = True                            )
-    if                           ( self . NotOkay ( DB )                   ) :
+    DB    = self . ConnectDB       ( UsePure = True                          )
+    if                             ( self . NotOkay ( DB )                 ) :
       return
     ##########################################################################
-    print(uuid,path)
-    print(json.dumps(CONFs))
+    self  . UpdateAlbumInformation ( DB , uuid , path                        )
     ##########################################################################
+    DB    . Close                  (                                         )
     ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    DB        . Close            (                                           )
-    ##########################################################################
-    self      . Notify           ( 5                                         )
+    self  . Notify                 ( 5                                       )
     ##########################################################################
     return
   ############################################################################
