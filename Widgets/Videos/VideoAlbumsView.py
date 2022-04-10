@@ -10,6 +10,7 @@ import requests
 import threading
 import gettext
 import json
+import shutil
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -415,6 +416,21 @@ class VideoAlbumsView              ( IconDock                              ) :
     ALBUM     . Uuid     = uuid
     ALBUM     . Settings = self . Settings
     ALBUM     . Tables   = self . Tables
+    ##########################################################################
+    """
+    rootdir = os . path . dirname ( os . path . abspath ( __file__ ) )
+    rootdir = rootdir + "/../../Templates/AV/Folder" ;
+    rootdir = os . path . abspath ( rootdir )
+    cwdir   = os . getcwd ( )
+    for i in range ( 1 , len ( sys . argv ) ) :
+      name   = sys . argv [ i ]
+      dname  = cwdir + "/" + name
+      fname  = dname + "/scripts/name.txt"
+      shutil . copytree ( rootdir , dname         )
+      f      = open     ( fname   , 'wb'          )
+      f      . write    ( name . encode ( "utf8") )
+      f      . close    (                         )
+    """
     ##########################################################################
     DB        = self . ConnectDB ( UsePure = True                            )
     if                           ( self . NotOkay ( DB )                   ) :
