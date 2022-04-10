@@ -10,6 +10,7 @@ import requests
 import threading
 import gettext
 import json
+import glob
 import shutil
 ##############################################################################
 from   PyQt5                          import QtCore
@@ -407,6 +408,25 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def BuildAlbum                 ( self , templDIR , path                  ) :
+    ##########################################################################
+    shutil     . copytree        ( DIR , path                                )
+    ##########################################################################
+    VIDPATH    = f"{path}/videos"
+    TAILs      =                 [ "*.mp4"                                 , \
+                                   "*.mkv"                                 , \
+                                   "*.avi"                                 , \
+                                   "*.wmv"                                 , \
+                                   "*.vob"                                 , \
+                                   "*.rmvb"                                  ]
+    ##########################################################################
+    for suffix in TAILs                                                      :
+      ########################################################################
+      for file in glob . glob    ( f"{path}/{suffix}"                      ) :
+        shutil . move            ( file , VIDPATH                            )
+    ##########################################################################
+    return
+  ############################################################################
   def GenerateVideoAlbum         ( self , uuid , path                      ) :
     ##########################################################################
     CONFs     = self . Settings  [ "Albums"                                  ]
@@ -417,20 +437,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ALBUM     . Settings = self . Settings
     ALBUM     . Tables   = self . Tables
     ##########################################################################
-    """
-    rootdir = os . path . dirname ( os . path . abspath ( __file__ ) )
-    rootdir = rootdir + "/../../Templates/AV/Folder" ;
-    rootdir = os . path . abspath ( rootdir )
-    cwdir   = os . getcwd ( )
-    for i in range ( 1 , len ( sys . argv ) ) :
-      name   = sys . argv [ i ]
-      dname  = cwdir + "/" + name
-      fname  = dname + "/scripts/name.txt"
-      shutil . copytree ( rootdir , dname         )
-      f      = open     ( fname   , 'wb'          )
-      f      . write    ( name . encode ( "utf8") )
-      f      . close    (                         )
-    """
+    self      . BuildAlbum       ( DIR , path                                )
     ##########################################################################
     DB        = self . ConnectDB ( UsePure = True                            )
     if                           ( self . NotOkay ( DB )                   ) :
