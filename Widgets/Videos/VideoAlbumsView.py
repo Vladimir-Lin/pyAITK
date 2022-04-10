@@ -65,6 +65,8 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . Documents  . Name      import Name        as NameItem
+from   AITK  . Documents  . JSON      import Load        as LoadJson
+from   AITK  . Documents  . JSON      import Save        as SaveJson
 from   AITK  . Pictures   . Picture   import Picture     as PictureItem
 from   AITK  . People     . People    import People      as PeopleItem
 from   AITK  . Videos     . Album     import Album       as AlbumItem
@@ -501,7 +503,7 @@ class VideoAlbumsView              ( IconDock                              ) :
           FILEs . append         ( FILE                                      )
     ##########################################################################
     if                           ( len ( FILEs ) <= 0                      ) :
-      return
+      return                     [                                           ]
     ##########################################################################
     M3UF        = f"{path}/Album.m3u"
     M3U         =                [ "#EXTM3U"                                 ]
@@ -518,13 +520,60 @@ class VideoAlbumsView              ( IconDock                              ) :
     with open                    ( M3UF , 'w' , encoding = "utf-8" ) as f    :
       f         . write          ( M3UX                                      )
     ##########################################################################
-    return
+    return FILEs
   ############################################################################
-  def UpdateAlbumInformation     ( self , DB , uuid , path                 ) :
+  def GetAlbumNames                 ( self , DB , uuid                     ) :
     ##########################################################################
-    self    . ExportAlbumM3U     ( path                                      )
+    NAMTAB   = self . Tables        [ "Names"                                ]
+    NIT      = NameItem             (                                        )
+    NIT      . Uuid      = uuid
+    NIT      . Relevance = 0
     ##########################################################################
-    NIT     = NameItem           (                                           )
+    IDs      = NIT . ObtainsIDs     ( DB , NAMTAB                            )
+    ##########################################################################
+    for ID in IDs                                                            :
+      ########################################################################
+      NIT    . Id = ID
+      ########################################################################
+      if                            ( NIT . ObtainsById ( DB , NAMTAB )    ) :
+        ######################################################################
+        X    = NIT . Name
+        ######################################################################
+        try                                                                  :
+          X  = X . decode           ( "utf-8"                                )
+        except                                                               :
+          pass
+        ######################################################################
+        J    =                      { "Name"     : X                       , \
+                                      "Locality" : NIT . Locality          , \
+                                      "Priority" : NIT . Priority            }
+        NAMEs . append              ( J                                      )
+    ##########################################################################
+    return NAMEs
+  ############################################################################
+  def UpdateAlbumInformation         ( self , DB , uuid , path             ) :
+    ##########################################################################
+    FILEs   = self . ExportAlbumM3U  (                    path               )
+    NAMEs   = self . GetAlbumNames   (        DB , uuid                      )
+    ##########################################################################
+    ALBUM   = AlbumItem              (                                       )
+    ALBUM   . Uuid     = uuid
+    ALBUM   . Settings = self . Settings
+    ALBUM   . Tables   = self . Tables
+    IDs     = ALBUM . GetIdentifiers ( DB                                    )
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    CONF    = f"{path}/Album.json"
+    JSON    =                        { "Uuid"        : uuid                , \
+                                       "NAMEs"       : NAMEs               , \
+                                       "VIDEOs"      : FILEs               , \
+                                       "Identifiers" : IDs                   }
+    ##########################################################################
+    SaveJson                         ( CONF , JSON                           )
     ##########################################################################
     return
   ############################################################################
