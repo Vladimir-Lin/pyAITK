@@ -525,6 +525,8 @@ class VideoAlbumsView              ( IconDock                              ) :
   def GetAlbumNames                 ( self , DB , uuid                     ) :
     ##########################################################################
     NAMTAB   = self . Tables        [ "Names"                                ]
+    NAMEs    =                      [                                        ]
+    ##########################################################################
     NIT      = NameItem             (                                        )
     NIT      . Uuid      = uuid
     NIT      . Relevance = 0
