@@ -68,6 +68,7 @@ from   AITK  . Documents  . Name      import Name        as NameItem
 from   AITK  . Documents  . JSON      import Load        as LoadJson
 from   AITK  . Documents  . JSON      import Save        as SaveJson
 from   AITK  . Pictures   . Picture   import Picture     as PictureItem
+from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
 from   AITK  . People     . People    import People      as PeopleItem
 from   AITK  . Videos     . Album     import Album       as AlbumItem
 ##############################################################################
@@ -587,30 +588,78 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateAlbumInformation         ( self , DB , uuid , path             ) :
+  def ExportAlbumCovers              ( self , DB , uuid , path             ) :
     ##########################################################################
-    FILEs   = self . ExportAlbumM3U  (                    path               )
-    NAMEs   = self . GetAlbumNames   (        DB , uuid                      )
+    RELTAB   = self . Tables         [ "Relation"                            ]
+    PICTAB   = "`pictures_covers`"
+    DPOTAB   = "`pictures_depot_covers`"
     ##########################################################################
-    ALBUM   = AlbumItem              (                                       )
+    GALM     = GalleryItem           (                                       )
+    COVERS   = GALM . GetPictures    ( DB , TABLE , uuid , 76 , 12           )
+    ##########################################################################
+    AT       = 0
+    for COVER in COVERS                                                      :
+      ########################################################################
+      FILE   = COVER
+      SUFFIX = ""
+      if                             ( AT == 0                             ) :
+        FILE = "Cover"
+      ########################################################################
+      QQ     = f"select `suffix` from {PICTAB} where ( `uuid` = {COVER} ) ;"
+      DB     . Query                 ( QQ                                    )
+      RR     = DB . FetchOne         (                                       )
+      if ( ( RR not in [ False , None ] ) and ( len ( RR ) > 0 ) )           :
+        ######################################################################
+        SUFFIX   = RR                [ 0                                     ]
+        try                                                                  :
+          SUFFIX = SUFFIX . decode   ( "utf-8"                               )
+        except                                                               :
+          pass
+      ########################################################################
+      if                             ( len ( SUFFIX ) > 0                  ) :
+        ######################################################################
+        FNAM = f"{path}/images/{FILE}.{SUFFIX}"
+        ######################################################################
+        QQ   = f"select `file` from {DPOTAB} where ( `uuid` = {COVER} ) ;"
+        DB   . Query                 ( QQ                                    )
+        RR   = DB . FetchOne         (                                       )
+        if ( ( RR not in [ False , None ] ) and ( len ( RR ) > 0 ) )         :
+          ####################################################################
+          if                         ( len ( RR [ 0 ] ) > 0                ) :
+            ##################################################################
+            with open                ( FNAM , 'wb' ) as f                    :
+              f . write              ( RR [ 0 ]                              )
+      ########################################################################
+      AT     = AT + 1
+    ##########################################################################
+    return COVERS
+  ############################################################################
+  def UpdateAlbumInformation           ( self , DB , uuid , path           ) :
+    ##########################################################################
+    FILEs   = self . ExportAlbumM3U    (                    path             )
+    NAMEs   = self . GetAlbumNames     (        DB , uuid                    )
+    ##########################################################################
+    ALBUM   = AlbumItem                (                                     )
     ALBUM   . Uuid     = uuid
     ALBUM   . Settings = self . Settings
     ALBUM   . Tables   = self . Tables
-    IDs     = ALBUM . GetIdentifiers ( DB                                    )
+    IDs     = ALBUM . GetIdentifiers   ( DB                                  )
     ##########################################################################
-    self    . UpdateAlbumName        ( path , IDs , NAMEs                    )
+    self    . UpdateAlbumName          ( path , IDs  , NAMEs                 )
     ##########################################################################
+    COVERS  = self . ExportAlbumCovers ( DB   , uuid , path                  )
     ##########################################################################
     ##########################################################################
     ##########################################################################
     ##########################################################################
     CONF    = f"{path}/Album.json"
-    JSON    =                        { "Uuid"        : uuid                , \
-                                       "NAMEs"       : NAMEs               , \
-                                       "VIDEOs"      : FILEs               , \
-                                       "Identifiers" : IDs                   }
+    JSON    =                          { "Uuid"        : uuid              , \
+                                         "NAMEs"       : NAMEs             , \
+                                         "VIDEOs"      : FILEs             , \
+                                         "Identifiers" : IDs               , \
+                                         "Covers"      : COVERS              }
     ##########################################################################
-    SaveJson                         ( CONF , JSON                           )
+    SaveJson                           ( CONF , JSON                         )
     ##########################################################################
     return
   ############################################################################
