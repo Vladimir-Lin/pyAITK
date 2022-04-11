@@ -595,7 +595,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     DPOTAB   = "`pictures_depot_covers`"
     ##########################################################################
     GALM     = GalleryItem           (                                       )
-    COVERS   = GALM . GetPictures    ( DB , TABLE , uuid , 76 , 12           )
+    COVERS   = GALM . GetPictures    ( DB , RELTAB , uuid , 76 , 12          )
     ##########################################################################
     AT       = 0
     for COVER in COVERS                                                      :
