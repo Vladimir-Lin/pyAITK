@@ -692,12 +692,13 @@ class VideoAlbumsView              ( IconDock                              ) :
     ICONs      = PEOW . GetIcons      ( DB , RELTAB , PUID                   )
     ##########################################################################
     if                                ( len ( ICONs ) <= 0                 ) :
-      return
+      return                          [                                      ]
     ##########################################################################
     AT         = 1
+    THUMBS     =                      [                                      ]
     PIC        = PictureItem          (                                      )
     ##########################################################################
-    for PCID in ICONs                                                     :
+    for PCID in ICONs                                                        :
       ########################################################################
       PIC      . UUID = PCID
       SUFFIX   = ""
@@ -711,12 +712,14 @@ class VideoAlbumsView              ( IconDock                              ) :
         ######################################################################
         ORDER  = f"{AT}" . zfill      ( 4                                    )
         ######################################################################
-        FNAM   = f"{path}/roles/{ORDER}-{PCID}.{SUFFIX}"
+        PID    = f"{PUID}-{ORDER}-{PCID}.{SUFFIX}"
+        FNAM   = f"{path}/roles/{PID}"
+        THUMBS . append               ( PID                                  )
         PIC    . Export               ( DB , DPOTAB , FNAM                   )
       ########################################################################
       AT       = AT + 1
     ##########################################################################
-    return
+    return THUMBS
   ############################################################################
   def ExportAlbumActors             ( self , DB , uuid , path              ) :
     ##########################################################################
@@ -733,11 +736,11 @@ class VideoAlbumsView              ( IconDock                              ) :
     for PUID in CROWDS                                                       :
       ########################################################################
       NAMEs = self . GetAlbumNames  ( DB , PUID                              )
-      J     =                       { "Uuid"  : PUID                       , \
-                                      "Names" : NAMEs                        }
+      THUMB = self . ExportActorThumbnails ( DB , PUID , path                )
+      J     =                       { "Uuid"   : PUID                      , \
+                                      "Names"  : NAMEs                     , \
+                                      "Thumbs" : THUMB                       }
       LISTS . append                ( J                                      )
-      ########################################################################
-      self  . ExportActorThumbnails ( DB , PUID , path                       )
     ##########################################################################
     return LISTS
   ############################################################################
