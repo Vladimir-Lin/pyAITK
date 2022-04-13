@@ -14,63 +14,64 @@ import glob
 import shutil
 import pathlib
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                           import QtCore
+from   PyQt5                           import QtGui
+from   PyQt5                           import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
-from   PyQt5 . QtCore                 import QMimeData
-from   PyQt5 . QtCore                 import QByteArray
+from   PyQt5 . QtCore                  import QObject
+from   PyQt5 . QtCore                  import pyqtSignal
+from   PyQt5 . QtCore                  import pyqtSlot
+from   PyQt5 . QtCore                  import Qt
+from   PyQt5 . QtCore                  import QPoint
+from   PyQt5 . QtCore                  import QPointF
+from   PyQt5 . QtCore                  import QSize
+from   PyQt5 . QtCore                  import QMimeData
+from   PyQt5 . QtCore                  import QByteArray
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QPixmap
-from   PyQt5 . QtGui                  import QImage
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
-from   PyQt5 . QtGui                  import QMouseEvent
-from   PyQt5 . QtGui                  import QDrag
+from   PyQt5 . QtGui                   import QIcon
+from   PyQt5 . QtGui                   import QPixmap
+from   PyQt5 . QtGui                   import QImage
+from   PyQt5 . QtGui                   import QCursor
+from   PyQt5 . QtGui                   import QKeySequence
+from   PyQt5 . QtGui                   import QMouseEvent
+from   PyQt5 . QtGui                   import QDrag
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAction
-from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QToolTip
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAbstractItemView
-from   PyQt5 . QtWidgets              import QListWidget
-from   PyQt5 . QtWidgets              import QListWidgetItem
-from   PyQt5 . QtWidgets              import QTreeWidget
-from   PyQt5 . QtWidgets              import QTreeWidgetItem
-from   PyQt5 . QtWidgets              import QLineEdit
-from   PyQt5 . QtWidgets              import QComboBox
-from   PyQt5 . QtWidgets              import QSpinBox
-from   PyQt5 . QtWidgets              import QFileDialog
+from   PyQt5 . QtWidgets               import QApplication
+from   PyQt5 . QtWidgets               import QWidget
+from   PyQt5 . QtWidgets               import qApp
+from   PyQt5 . QtWidgets               import QMenu
+from   PyQt5 . QtWidgets               import QAction
+from   PyQt5 . QtWidgets               import QShortcut
+from   PyQt5 . QtWidgets               import QToolTip
+from   PyQt5 . QtWidgets               import QMenu
+from   PyQt5 . QtWidgets               import QAbstractItemView
+from   PyQt5 . QtWidgets               import QListWidget
+from   PyQt5 . QtWidgets               import QListWidgetItem
+from   PyQt5 . QtWidgets               import QTreeWidget
+from   PyQt5 . QtWidgets               import QTreeWidgetItem
+from   PyQt5 . QtWidgets               import QLineEdit
+from   PyQt5 . QtWidgets               import QComboBox
+from   PyQt5 . QtWidgets               import QSpinBox
+from   PyQt5 . QtWidgets               import QFileDialog
 ##############################################################################
-from   AITK  . Qt . IconDock          import IconDock    as IconDock
+from   AITK  . Qt . IconDock           import IconDock    as IconDock
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
-from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
-from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
-from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
+from   AITK  . Qt . MenuManager        import MenuManager as MenuManager
+from   AITK  . Qt . LineEdit           import LineEdit    as LineEdit
+from   AITK  . Qt . ComboBox           import ComboBox    as ComboBox
+from   AITK  . Qt . SpinBox            import SpinBox     as SpinBox
 ##############################################################################
-from   AITK  . Essentials . Relation  import Relation
-from   AITK  . Calendars  . StarDate  import StarDate
-from   AITK  . Calendars  . Periode   import Periode
-from   AITK  . Documents  . Name      import Name        as NameItem
-from   AITK  . Documents  . JSON      import Load        as LoadJson
-from   AITK  . Documents  . JSON      import Save        as SaveJson
-from   AITK  . Pictures   . Picture   import Picture     as PictureItem
-from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
-from   AITK  . People     . People    import People      as PeopleItem
-from   AITK  . Videos     . Album     import Album       as AlbumItem
+from   AITK  . Essentials . Relation   import Relation
+from   AITK  . Calendars  . StarDate   import StarDate
+from   AITK  . Calendars  . Periode    import Periode
+from   AITK  . Documents  . Name       import Name        as NameItem
+from   AITK  . Documents  . JSON       import Load        as LoadJson
+from   AITK  . Documents  . JSON       import Save        as SaveJson
+from   AITK  . Documents  . Identifier import Identifier  as IdentifierItem
+from   AITK  . Pictures   . Picture    import Picture     as PictureItem
+from   AITK  . Pictures   . Gallery    import Gallery     as GalleryItem
+from   AITK  . People     . People     import People      as PeopleItem
+from   AITK  . Videos     . Album      import Album       as AlbumItem
 ##############################################################################
 class VideoAlbumsView              ( IconDock                              ) :
   ############################################################################
@@ -96,6 +97,8 @@ class VideoAlbumsView              ( IconDock                              ) :
     self . SearchLine         = None
     self . SearchKey          = ""
     self . UUIDs              = [                                            ]
+    self . PickedUuid         = 0
+    self . PickedUuids        = [                                            ]
     ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"
@@ -598,41 +601,66 @@ class VideoAlbumsView              ( IconDock                              ) :
     COVERS   = GALM . GetPictures    ( DB , RELTAB , uuid , 76 , 12          )
     ##########################################################################
     AT       = 0
+    PIC      = PictureItem           (                                       )
+    ##########################################################################
     for COVER in COVERS                                                      :
       ########################################################################
+      PIC    . UUID = COVER
       FILE   = COVER
       SUFFIX = ""
       if                             ( AT == 0                             ) :
         FILE = "Cover"
       ########################################################################
-      QQ     = f"select `suffix` from {PICTAB} where ( `uuid` = {COVER} ) ;"
-      DB     . Query                 ( QQ                                    )
-      RR     = DB . FetchOne         (                                       )
-      if ( ( RR not in [ False , None ] ) and ( len ( RR ) > 0 ) )           :
+      INFO   = PIC . GetInformation  ( DB , PICTAB , COVER                   )
+      if                             ( INFO not in [ False , None ]        ) :
         ######################################################################
-        SUFFIX   = RR                [ 0                                     ]
-        try                                                                  :
-          SUFFIX = SUFFIX . decode   ( "utf-8"                               )
-        except                                                               :
-          pass
+        SUFFIX = INFO                [ "Suffix"                              ]
       ########################################################################
       if                             ( len ( SUFFIX ) > 0                  ) :
         ######################################################################
         FNAM = f"{path}/images/{FILE}.{SUFFIX}"
-        ######################################################################
-        QQ   = f"select `file` from {DPOTAB} where ( `uuid` = {COVER} ) ;"
-        DB   . Query                 ( QQ                                    )
-        RR   = DB . FetchOne         (                                       )
-        if ( ( RR not in [ False , None ] ) and ( len ( RR ) > 0 ) )         :
-          ####################################################################
-          if                         ( len ( RR [ 0 ] ) > 0                ) :
-            ##################################################################
-            with open                ( FNAM , 'wb' ) as f                    :
-              f . write              ( RR [ 0 ]                              )
+        PIC  . Export                ( DB , DPOTAB , FNAM                    )
       ########################################################################
       AT     = AT + 1
     ##########################################################################
     return COVERS
+  ############################################################################
+  def ExportAlbumGalleries               ( self , DB , uuid , path         ) :
+    ##########################################################################
+    RELTAB    = self . Tables            [ "Relation"                        ]
+    PICTAB    = "`pictures_covers`"
+    DPOTAB    = "`pictures_depot_covers`"
+    ##########################################################################
+    GALM      = GalleryItem              (                                   )
+    GALLERIES = GALM . GetOwnerGalleries ( DB , RELTAB , "Album" , uuid      )
+    ##########################################################################
+    print("ExportAlbumGalleries")
+    for GALLERY in GALLERIES                                                 :
+      ########################################################################
+      print(GALLERY)
+    ##########################################################################
+    return
+  ############################################################################
+  def ExportAlbumActors                  ( self , DB , uuid , path         ) :
+    ##########################################################################
+    RELTAB    = self . Tables            [ "Relation"                        ]
+    PICTAB    = "`pictures_covers`"
+    DPOTAB    = "`pictures_depot_covers`"
+    ##########################################################################
+    PEOW      = PeopleItem               (                                   )
+    CROWDS    = PEOW . GetOwners         ( DB                              , \
+                                           RELTAB                          , \
+                                           uuid                            , \
+                                           "Album"                         , \
+                                           "Subordination"                   )
+    ##########################################################################
+    LISTS     =                          [                                   ]
+    print("ExportAlbumActors")
+    for PUID in CROWDS                                                       :
+      ########################################################################
+      print(PUID)
+    ##########################################################################
+    return CROWDS
   ############################################################################
   def UpdateAlbumInformation           ( self , DB , uuid , path           ) :
     ##########################################################################
@@ -648,16 +676,17 @@ class VideoAlbumsView              ( IconDock                              ) :
     self    . UpdateAlbumName          ( path , IDs  , NAMEs                 )
     ##########################################################################
     COVERS  = self . ExportAlbumCovers ( DB   , uuid , path                  )
+    CROWDS  = self . ExportAlbumActors ( DB   , uuid , path                  )
     ##########################################################################
-    ##########################################################################
-    ##########################################################################
+    self    . ExportAlbumGalleries     ( DB   , uuid , path                  )
     ##########################################################################
     CONF    = f"{path}/Album.json"
     JSON    =                          { "Uuid"        : uuid              , \
                                          "NAMEs"       : NAMEs             , \
                                          "VIDEOs"      : FILEs             , \
                                          "Identifiers" : IDs               , \
-                                         "Covers"      : COVERS              }
+                                         "Covers"      : COVERS            , \
+                                         "Actors"      : CROWDS              }
     ##########################################################################
     SaveJson                           ( CONF , JSON                         )
     ##########################################################################
@@ -884,6 +913,82 @@ class VideoAlbumsView              ( IconDock                              ) :
     self   . Notify                    ( 0                                   )
     ##########################################################################
     MSG    = self . getMenuItem        ( "SearchIdentifier"                  )
+    L      . setPlaceholderText        ( MSG                                 )
+    L      . setFocus                  ( Qt . TabFocusReason                 )
+    ##########################################################################
+    self   . SearchLine = L
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateIdentifier                ( self , UUID , identifier           ) :
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    MSG     = self . getMenuItem      ( "UpdateIdentifier"                   )
+    self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
+    ##########################################################################
+    IDFTAB  = self . Tables           [ "Identifiers"                        ]
+    IDF     = IdentifierItem          (                                      )
+    IDF     . Type = 76
+    IDF     . Name = identifier
+    ##########################################################################
+    IDF     . WipeOut                 ( DB , IDFTAB                          )
+    IDF     . Append                  ( DB , IDFTAB                          )
+    ##########################################################################
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
+    ##########################################################################
+    DB      . Close                   (                                      )
+    ##########################################################################
+    self    . Notify                  ( 1                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignIdentifier ( self                                              ) :
+    ##########################################################################
+    UUID = self . PickedUuid
+    L    = self . SearchLine
+    ##########################################################################
+    if                 ( UUID == 0                                         ) :
+      return
+    ##########################################################################
+    if                 ( L in [ False , None ]                             ) :
+      return
+    ##########################################################################
+    self . SearchLine = None
+    T    = L . text    (                                                     )
+    L    . deleteLater (                                                     )
+    ##########################################################################
+    if                 ( len ( T ) <= 0                                    ) :
+      return
+    ##########################################################################
+    self . Go          ( self . UpdateIdentifier , ( UUID , T , )            )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignAlbumIdentifier            ( self , uuid                       ) :
+    ##########################################################################
+    self   . PickedUuid = uuid
+    L      = LineEdit                  ( None , self . PlanFunc              )
+    OK     = self . attacheStatusBar   ( L , 1                               )
+    ##########################################################################
+    if                                 ( not OK                            ) :
+      ########################################################################
+      L    . deleteLater               (                                     )
+      self . Notify                    ( 1                                   )
+      ########################################################################
+      return
+    ##########################################################################
+    L      . blockSignals              ( True                                )
+    L      . editingFinished . connect ( self . AssignIdentifier             )
+    L      . blockSignals              ( False                               )
+    ##########################################################################
+    self   . Notify                    ( 0                                   )
+    ##########################################################################
+    MSG    = self . getMenuItem        ( "AssignIdentifier"                  )
     L      . setPlaceholderText        ( MSG                                 )
     L      . setFocus                  ( Qt . TabFocusReason                 )
     ##########################################################################
@@ -1124,8 +1229,11 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
-    MSG   = self . getMenuItem   ( "Crowds"                                  )
+    MSG   = self . getMenuItem   ( "AssignIdentifier"                        )
     mm    . addActionFromMenu    ( LOM , 34635201 , MSG                      )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "Crowds"                                  )
+    mm    . addActionFromMenu    ( LOM , 34635202 , MSG                      )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
@@ -1163,6 +1271,12 @@ class VideoAlbumsView              ( IconDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 34635201                        ) :
+      ########################################################################
+      self . AssignAlbumIdentifier ( uuid                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 34635202                        ) :
       ########################################################################
       text = item . text           (                                         )
       xsid = str                   ( uuid                                    )

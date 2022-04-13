@@ -207,6 +207,15 @@ class Gallery     (                                                        ) :
     REL . setRelation          ( "Subordination"                             )
     return REL . Subordination ( DB , TABLE                                  )
   ############################################################################
+  def GetOwnerGalleries        ( self , DB , TABLE , T1 , GUID             ) :
+    ##########################################################################
+    REL = Relation             (                                             )
+    REL . set                  ( "first" , GUID                              )
+    REL . setT1                ( T1                                          )
+    REL . setT2                ( "Gallery"                                   )
+    REL . setRelation          ( "Subordination"                             )
+    return REL . Subordination ( DB , TABLE                                  )
+  ############################################################################
   def RepositionIcons       ( self , DB , TABLE , FIRST , T1 , UUIDs       ) :
     ##########################################################################
     REL = Relation          (                                                )
