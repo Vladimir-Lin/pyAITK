@@ -625,6 +625,45 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return COVERS
   ############################################################################
+  def ExportGalleries                 ( self , DB , GUID , path            ) :
+    ##########################################################################
+    RELTAB     = self . Tables        [ "Relation"                           ]
+    PICTAB     = "`pictures`"
+    DPOTAB     = "`picturedepot`"
+    GALM       = GalleryItem          (                                      )
+    PICTURES   = GALM . GetPictures   ( DB , RELTAB , GUID , 64 , 1          )
+    ##########################################################################
+    if                                ( len ( PICTURES ) <= 0              ) :
+      return                          [                                      ]
+    ##########################################################################
+    GDIR       = f"{path}/images/{GUID}"
+    if                                ( not os . path . isdir ( GDIR )     ) :
+      os       . mkdir                ( GDIR                                 )
+    ##########################################################################
+    AT         = 1
+    PIC        = PictureItem          (                                      )
+    ##########################################################################
+    for PCID in PICTURES                                                     :
+      ########################################################################
+      PIC      . UUID = PCID
+      SUFFIX   = ""
+      ########################################################################
+      INFO     = PIC . GetInformation ( DB , PICTAB , PCID                   )
+      if                              ( INFO not in [ False , None ]       ) :
+        ######################################################################
+        SUFFIX = INFO                 [ "Suffix"                             ]
+      ########################################################################
+      if                              ( len ( SUFFIX ) > 0                 ) :
+        ######################################################################
+        ORDER  = f"{AT}" . zfill      ( 4                                    )
+        ######################################################################
+        FNAM   = f"{path}/images/{GUID}/{ORDER}-{PCID}.{SUFFIX}"
+        PIC    . Export               ( DB , DPOTAB , FNAM                   )
+      ########################################################################
+      AT       = AT + 1
+    ##########################################################################
+    return PICTURES
+  ############################################################################
   def ExportAlbumGalleries               ( self , DB , uuid , path         ) :
     ##########################################################################
     RELTAB    = self . Tables            [ "Relation"                        ]
@@ -634,61 +673,101 @@ class VideoAlbumsView              ( IconDock                              ) :
     GALM      = GalleryItem              (                                   )
     GALLERIES = GALM . GetOwnerGalleries ( DB , RELTAB , "Album" , uuid      )
     ##########################################################################
-    print("ExportAlbumGalleries")
+    JGALM     =                          { "Galleries" : GALLERIES           }
+    ##########################################################################
     for GALLERY in GALLERIES                                                 :
       ########################################################################
-      print(GALLERY)
+      PICS    = self . ExportGalleries   ( DB , GALLERY , path               )
+      JGALM [ GALLERY ] = PICS
+    ##########################################################################
+    return JGALM
+  ############################################################################
+  def ExportActorThumbnails           ( self , DB , PUID , path            ) :
+    ##########################################################################
+    RELTAB     = self . Tables        [ "Relation"                           ]
+    PICTAB     = "`pictures_faces`"
+    DPOTAB     = "`pictures_depot_faces`"
+    ##########################################################################
+    PEOW       = PeopleItem           (                                      )
+    ICONs      = PEOW . GetIcons      ( DB , RELTAB , PUID                   )
+    ##########################################################################
+    if                                ( len ( ICONs ) <= 0                 ) :
+      return
+    ##########################################################################
+    AT         = 1
+    PIC        = PictureItem          (                                      )
+    ##########################################################################
+    for PCID in ICONs                                                     :
+      ########################################################################
+      PIC      . UUID = PCID
+      SUFFIX   = ""
+      ########################################################################
+      INFO     = PIC . GetInformation ( DB , PICTAB , PCID                   )
+      if                              ( INFO not in [ False , None ]       ) :
+        ######################################################################
+        SUFFIX = INFO                 [ "Suffix"                             ]
+      ########################################################################
+      if                              ( len ( SUFFIX ) > 0                 ) :
+        ######################################################################
+        ORDER  = f"{AT}" . zfill      ( 4                                    )
+        ######################################################################
+        FNAM   = f"{path}/roles/{ORDER}-{PCID}.{SUFFIX}"
+        PIC    . Export               ( DB , DPOTAB , FNAM                   )
+      ########################################################################
+      AT       = AT + 1
     ##########################################################################
     return
   ############################################################################
-  def ExportAlbumActors                  ( self , DB , uuid , path         ) :
+  def ExportAlbumActors             ( self , DB , uuid , path              ) :
     ##########################################################################
-    RELTAB    = self . Tables            [ "Relation"                        ]
-    PICTAB    = "`pictures_covers`"
-    DPOTAB    = "`pictures_depot_covers`"
+    RELTAB  = self . Tables         [ "Relation"                             ]
     ##########################################################################
-    PEOW      = PeopleItem               (                                   )
-    CROWDS    = PEOW . GetOwners         ( DB                              , \
-                                           RELTAB                          , \
-                                           uuid                            , \
-                                           "Album"                         , \
-                                           "Subordination"                   )
+    PEOW    = PeopleItem            (                                        )
+    CROWDS  = PEOW . GetOwners      ( DB                                   , \
+                                      RELTAB                               , \
+                                      uuid                                 , \
+                                      "Album"                              , \
+                                      "Subordination"                        )
     ##########################################################################
-    LISTS     =                          [                                   ]
-    print("ExportAlbumActors")
+    LISTS   =                       [                                        ]
     for PUID in CROWDS                                                       :
       ########################################################################
-      print(PUID)
+      NAMEs = self . GetAlbumNames  ( DB , PUID                              )
+      J     =                       { "Uuid"  : PUID                       , \
+                                      "Names" : NAMEs                        }
+      LISTS . append                ( J                                      )
+      ########################################################################
+      self  . ExportActorThumbnails ( DB , PUID , path                       )
     ##########################################################################
-    return CROWDS
+    return LISTS
   ############################################################################
-  def UpdateAlbumInformation           ( self , DB , uuid , path           ) :
+  def UpdateAlbumInformation              ( self , DB , uuid , path        ) :
     ##########################################################################
-    FILEs   = self . ExportAlbumM3U    (                    path             )
-    NAMEs   = self . GetAlbumNames     (        DB , uuid                    )
+    FILEs   = self . ExportAlbumM3U       (                    path          )
+    NAMEs   = self . GetAlbumNames        (        DB , uuid                 )
     ##########################################################################
-    ALBUM   = AlbumItem                (                                     )
+    ALBUM   = AlbumItem                   (                                  )
     ALBUM   . Uuid     = uuid
     ALBUM   . Settings = self . Settings
     ALBUM   . Tables   = self . Tables
-    IDs     = ALBUM . GetIdentifiers   ( DB                                  )
+    IDs     = ALBUM . GetIdentifiers      ( DB                               )
     ##########################################################################
-    self    . UpdateAlbumName          ( path , IDs  , NAMEs                 )
+    self    . UpdateAlbumName             ( path , IDs  , NAMEs              )
     ##########################################################################
-    COVERS  = self . ExportAlbumCovers ( DB   , uuid , path                  )
-    CROWDS  = self . ExportAlbumActors ( DB   , uuid , path                  )
-    ##########################################################################
-    self    . ExportAlbumGalleries     ( DB   , uuid , path                  )
+    COVERS  = self . ExportAlbumCovers    ( DB   , uuid , path               )
+    CROWDS  = self . ExportAlbumActors    ( DB   , uuid , path               )
+    JGALM   = self . ExportAlbumGalleries ( DB   , uuid , path               )
     ##########################################################################
     CONF    = f"{path}/Album.json"
-    JSON    =                          { "Uuid"        : uuid              , \
-                                         "NAMEs"       : NAMEs             , \
-                                         "VIDEOs"      : FILEs             , \
-                                         "Identifiers" : IDs               , \
-                                         "Covers"      : COVERS            , \
-                                         "Actors"      : CROWDS              }
+    JSON    =                             { "Uuid"        : uuid           , \
+                                            "NAMEs"       : NAMEs          , \
+                                            "VIDEOs"      : FILEs          , \
+                                            "Identifiers" : IDs            , \
+                                            "Covers"      : COVERS         , \
+                                            "Galleries"   : JGALM          , \
+                                            "Actors"      : CROWDS           }
     ##########################################################################
-    SaveJson                           ( CONF , JSON                         )
+    SaveJson                              ( CONF , JSON                      )
     ##########################################################################
     return
   ############################################################################
@@ -708,8 +787,11 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                             ( self . NotOkay ( DB )                 ) :
       return
     ##########################################################################
+    self  . OnBusy  . emit         (                                         )
+    ##########################################################################
     self  . UpdateAlbumInformation ( DB , uuid , path                        )
     ##########################################################################
+    self  . GoRelax . emit         (                                         )
     DB    . Close                  (                                         )
     ##########################################################################
     self  . Notify                 ( 5                                       )
@@ -747,8 +829,11 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                             ( self . NotOkay ( DB )                 ) :
       return
     ##########################################################################
+    self  . OnBusy  . emit         (                                         )
+    ##########################################################################
     self  . UpdateAlbumInformation ( DB , uuid , path                        )
     ##########################################################################
+    self  . GoRelax . emit         (                                         )
     DB    . Close                  (                                         )
     ##########################################################################
     self  . Notify                 ( 5                                       )
