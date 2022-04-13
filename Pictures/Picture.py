@@ -164,6 +164,11 @@ class Picture     (                                                        ) :
     WIDTH    = int           ( RR [ 4 ]                                      )
     HEIGHT   = int           ( RR [ 5 ]                                      )
     ##########################################################################
+    SFX      = SUFFIX
+    SFX      = SFX . lower   (                                               )
+    if                       ( SFX in [ "jpeg" ]                           ) :
+      SUFFIX = "jpg"
+    ##########################################################################
     return { "Width"    : WIDTH                                            , \
              "Height"   : HEIGHT                                           , \
              "Filesize" : FILESIZE                                         , \

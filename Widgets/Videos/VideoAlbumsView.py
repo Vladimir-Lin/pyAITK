@@ -744,6 +744,18 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return LISTS
   ############################################################################
+  def InvestigateFilms            ( self , DB , path , FILEs               ) :
+    ##########################################################################
+    FILMs            =            {                                          }
+    ##########################################################################
+    for FILE in FILEs                                                        :
+      ########################################################################
+      DETAILs        =            {                                          }
+      ########################################################################
+      FILMs [ FILE ] = DETAILs
+    ##########################################################################
+    return FILMs
+  ############################################################################
   def UpdateAlbumInformation              ( self , DB , uuid , path        ) :
     ##########################################################################
     FILEs   = self . ExportAlbumM3U       (                    path          )
@@ -760,11 +772,13 @@ class VideoAlbumsView              ( IconDock                              ) :
     COVERS  = self . ExportAlbumCovers    ( DB   , uuid , path               )
     CROWDS  = self . ExportAlbumActors    ( DB   , uuid , path               )
     JGALM   = self . ExportAlbumGalleries ( DB   , uuid , path               )
+    FILMs   = self . InvestigateFilms     ( DB          , path , FILEs       )
     ##########################################################################
     CONF    = f"{path}/Album.json"
     JSON    =                             { "Uuid"        : uuid           , \
                                             "NAMEs"       : NAMEs          , \
                                             "VIDEOs"      : FILEs          , \
+                                            "FILMs"       : FILMs          , \
                                             "Identifiers" : IDs            , \
                                             "Covers"      : COVERS         , \
                                             "Galleries"   : JGALM          , \
