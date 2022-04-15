@@ -768,7 +768,6 @@ class VideoAlbumsView              ( IconDock                              ) :
         REMAINS      = int            ( SECONDS - ( HOURS   * 3600 )         )
         MINUTES      = int            ( REMAINS / 60                         )
         SECONDS      = int            ( REMAINS - ( MINUTES *   60 )         )
-        print(HOURS,MINUTES,SECONDS)
         ######################################################################
         if                            ( SECONDS < 10                       ) :
           ####################################################################
