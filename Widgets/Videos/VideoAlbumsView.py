@@ -760,11 +760,10 @@ class VideoAlbumsView              ( IconDock                              ) :
       except                                                                 :
         pass
       ########################################################################
-      print(json.dumps(DETAILs))
-      ########################################################################
       try                                                                    :
         ######################################################################
-        SECONDS      = int            ( DETAILs [ "format" ] [ "duration" ]  )
+        FSECS        = float          ( DETAILs [ "format" ] [ "duration" ]  )
+        SECONDS      = int            ( FSECS                                )
         HOURS        = int            ( SECONDS / 3600                       )
         REMAINS      = int            ( SECONDS - ( HOURS   * 3600 )         )
         MINUTES      = int            ( REMAINS / 60                         )
