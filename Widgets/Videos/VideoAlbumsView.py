@@ -315,15 +315,17 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     mtype   = self . DropInJSON     [ "Mime"                                 ]
     UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    atItem  = self . itemAt         ( mousePos                               )
     ##########################################################################
     if                              ( mtype in [ "people/uuids" ]          ) :
       ########################################################################
+      if                            ( atItem in [ False , None ]           ) :
+        return False
+      ########################################################################
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                   ( UUIDs                                  )
-      if                            ( self == sourceWidget                 ) :
-        MSG = f"移動{CNT}個人物"
-      else                                                                   :
-        MSG = f"從「{title}」複製{CNT}個人物"
+      FMT   = self . getMenuItem    ( "JoinPeople"                           )
+      MSG   = FMT  . format         ( title , CNT                            )
       ########################################################################
       self  . ShowStatus            ( MSG                                    )
     ##########################################################################
@@ -348,9 +350,15 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                         ( sourceWidget != self                      ) :
       return True
     ##########################################################################
+    mtype  = self . DropInJSON [ "Mime"                                      ]
+    UUIDs  = self . DropInJSON [ "UUIDs"                                     ]
     atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
+    ##########################################################################
+    if                         ( mtype in [ "people/uuids" ]               ) :
+      if                       ( atItem in [ False , None ]                ) :
+        return False
+      return True
+    ##########################################################################
     if                         ( atItem . isSelected ( )                   ) :
       return False
     ##########################################################################
@@ -360,13 +368,14 @@ class VideoAlbumsView              ( IconDock                              ) :
   def acceptPeopleDrop         ( self                                      ) :
     return True
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
+  def dropPeople                   ( self , source , pos , JSOX            ) :
     ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("PeopleView::dropPeople")
-    print(JSOX)
-    if ( atItem is not None ) :
-      print("TO:",atItem.text())
+    ATID , NAME = self . itemAtPos ( pos                                     )
+    ##########################################################################
+    ## 從外部加入
+    ##########################################################################
+    VAL         =                  ( ATID , NAME , JSOX ,                    )
+    self . Go                      ( self . PeopleAppending , VAL            )
     ##########################################################################
     return True
   ############################################################################
@@ -414,6 +423,43 @@ class VideoAlbumsView              ( IconDock                              ) :
   def RenameVideo     ( self                                               ) :
     ##########################################################################
     self . RenameItem (                                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def PeopleAppending          ( self , atUuid , NAME , JSON               ) :
+    ##########################################################################
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( DB == None                                ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationVideos"                            ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    ##########################################################################
+    REL    = Relation          (                                             )
+    REL    . set               ( "second" , atUuid                           )
+    REL    . setT1             ( "People"                                    )
+    REL    . setT2             ( "Album"                                     )
+    REL    . setRelation       ( "Subordination"                             )
+    ##########################################################################
+    for PUID in UUIDs                                                        :
+      ########################################################################
+      REL  . set               ( "first"  , PUID                             )
+      REL  . Join              ( DB       , RELTAB                           )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . Notify            ( 5                                           )
     ##########################################################################
     return
   ############################################################################
