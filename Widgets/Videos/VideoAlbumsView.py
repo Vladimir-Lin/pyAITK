@@ -989,7 +989,11 @@ class VideoAlbumsView              ( IconDock                              ) :
   <div class="row">&nbsp;</div>
   <div class="row">
     <div class="col-12">
-      <div>{GALLERY}</div>
+      <div>
+        <span>圖庫</span>
+        <span> : </span>
+        <span>{GALLERY}</span>
+      </div>
 """
           ####################################################################
           AT     = 0
@@ -1003,7 +1007,7 @@ class VideoAlbumsView              ( IconDock                              ) :
             ZAT  = ZAT . zfill ( 4                                           )
             ##################################################################
             CONTENT = f"""{CONTENT}
-        <img src="images/GALLERY/{ZAT}-{PIC}.jpg">
+        <img src="images/{GALLERY}/{ZAT}-{PIC}.jpg">
 """
           ####################################################################
           CONTENT = f"""{CONTENT}
