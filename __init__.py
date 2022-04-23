@@ -10,6 +10,7 @@ __all__ = [ "AI"                                                           , \
             "Decisions"                                                    , \
             "Documents"                                                    , \
             "Essentials"                                                   , \
+            "Finance"                                                      , \
             "Foundation"                                                   , \
             "Games"                                                        , \
             "Google"                                                       , \
