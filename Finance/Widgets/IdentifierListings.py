@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## ProjectListings
+## IdentifierListings
 ##############################################################################
 import os
 import sys
@@ -52,7 +52,7 @@ from   AITK  . Scheduler  . Events    import Events      as Events
 from   AITK  . Scheduler  . Task      import Task        as Task
 from   AITK  . Scheduler  . Tasks     import Tasks       as Tasks
 ##############################################################################
-class ProjectListings    ( MajorListings                                   ) :
+class IdentifierListings ( MajorListings                                   ) :
   ############################################################################
   def __init__           ( self , parent = None , plan = None              ) :
     ##########################################################################
