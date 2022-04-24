@@ -466,12 +466,12 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return RECORDs
   ############################################################################
-  def appendText                       ( self , message                    ) :
+  def appendText          ( self , message                                 ) :
     ##########################################################################
-    if                                 ( not self . ShowMessage            ) :
+    if                    ( not self . ShowMessage                         ) :
       return
     ##########################################################################
-    self . addText . emit              ( message                             )
+    self . addText . emit ( message                                          )
     ##########################################################################
     return
   ############################################################################
@@ -739,6 +739,25 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return LW
   ############################################################################
+  def RuleOutBettings        ( self , DB , TBLs , Bets                     ) :
+    ##########################################################################
+    NUMTAB  = self . Tables  [ "Numbers"                                     ]
+    DIFTAB  = self . Tables  [ "Differences"                                 ]
+    ##########################################################################
+    LASTEST = TBLs . Serials (                                               )
+    T       = TBLs . at      ( LASTEST                                       )
+    LW      =                [                                               ]
+    TBLZ    = TaiwanBL       (                                               )
+    ##########################################################################
+    for B in Bets                                                            :
+      ########################################################################
+      TBLZ  . N6 = B
+      ########################################################################
+      if                     ( TBLZ . isNumberAllowed ( DB , NUMTAB )      ) :
+        LW  . append         ( B                                             )
+    ##########################################################################
+    return LW
+  ############################################################################
   def Predicting                       ( self                              ) :
     ##########################################################################
     TRX     = self . Translations
@@ -790,11 +809,13 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     while                              ( not WORK                          ) :
       ########################################################################
-      LW    = self . GenerateBettings  ( TBLs , BALLS , WETMT49              )
-      LW    = self . FilterAllRules    ( TBLs , LW                           )
-      LW    = self . HistoryDuplicate  ( TBLs , LW                           )
-      LW    = self . HistoryInRange    ( TBLs , LW                           )
-      LW    = self . TripleDuplicate   ( TBLs , LW                           )
+      LW    = self . GenerateBettings  (      TBLs , BALLS , WETMT49         )
+      LW    = self . FilterAllRules    (      TBLs , LW                      )
+      LW    = self . HistoryDuplicate  (      TBLs , LW                      )
+      LW    = self . HistoryInRange    (      TBLs , LW                      )
+      LW    = self . TripleDuplicate   (      TBLs , LW                      )
+      LW    = self . RuleOutBettings   ( DB , TBLs , LW                      )
+      ########################################################################
       self  . appendText               ( json . dumps ( LW )                 )
       ########################################################################
       LZ    = len                      ( LW                                  )
@@ -871,6 +892,7 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
+  """
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
     IDPMSG = self . Translations [ "Docking" ] [ "None"                      ]
@@ -882,6 +904,7 @@ class tblPredictListings            ( TreeDock                             ) :
     self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
     ##########################################################################
     return
+  """
   ############################################################################
   def closeEvent           ( self , event                                  ) :
     ##########################################################################
@@ -1092,7 +1115,7 @@ class tblPredictListings            ( TreeDock                             ) :
         RESULT [ V ] = RESULT [ V ] + 1
       print                            ( tbl . toString ( ) , " - " , V      )
     ##########################################################################
-    print(RESULT)
+    print                              ( RESULT                              )
     ##########################################################################
     return
   ############################################################################
