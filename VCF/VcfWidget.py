@@ -50,6 +50,7 @@ from         . VcfManager             import VcfManager   as VcfManager
 from         . VcfItem                import VcfItem      as VcfItem
 from         . VcfRectangle           import VcfRectangle as VcfRectangle
 from         . VcfCanvas              import VcfCanvas    as VcfCanvas
+from         . VcfTimeScale           import VcfTimeScale as VcfTimeScale
 ##############################################################################
 class VcfWidget           ( QGraphicsView                                  , \
                             VirtualGui                                     , \
@@ -280,6 +281,15 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     self  . addItem          ( VRIT                                          )
     self  . Scene . addItem  ( VRIT                                          )
+    ##########################################################################
+    VTSI  = VcfTimeScale     ( self , None , self . PlanFunc                 )
+    VTSI  . setOptions       ( self . Options , False                        )
+    VTSI  . setRange         ( QRectF ( 0.0 , 0.0 , 30.0 , 1.0 )             )
+    VTSI  . setMenuCaller    ( self . MenuCallerEmitter                      )
+    ##########################################################################
+    self  . addItem          ( VTSI                                          )
+    self  . Scene . addItem  ( VTSI                                          )
+    ##########################################################################
     self  . setPrepared      ( True                                          )
     ##########################################################################
     return

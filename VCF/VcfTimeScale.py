@@ -67,15 +67,27 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     self . Painter . addPen   ( 0 , QColor ( 192 , 192 , 192 )               )
     self . Painter . addBrush ( 0 , QColor ( 224 , 224 , 224 )               )
     ##########################################################################
+    self . Mode = 2
+    ##########################################################################
     return
   ############################################################################
   def Painting                  ( self , p , region , clip , color         ) :
     ##########################################################################
     self . pushPainters         ( p                                          )
     ##########################################################################
+    if                            ( self . Mode == self . EmptyMode        ) :
+      pass
+    elif                          ( self . Mode == self . BorderMode       ) :
+      self . Painter . drawBorder ( p , "Default" , self . ScreenRect        )
+    elif                          ( self . Mode == self . BoardMode        ) :
+      self . Painter . drawRect   ( p , "Default" , self . ScreenRect        )
+    else                                                                     :
+      self . CustomPainting       (        p , region , clip , color         )
+    """
     self . Painter . setPainter ( p , "Default"                              )
     if                          ( 0 in self . Painter . pathes             ) :
       p  . drawPath             ( self . Painter . pathes [ 0 ]              )
+    """
     ##########################################################################
     self . popPainters          ( p                                          )
     ##########################################################################
