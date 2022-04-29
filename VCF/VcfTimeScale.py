@@ -22,6 +22,8 @@ from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
 from   PyQt5 . QtCore                 import QSizeF
+from   PyQt5 . QtCore                 import QRect
+from   PyQt5 . QtCore                 import QRectF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -32,11 +34,17 @@ from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
 from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtGui                  import QPainterPath
+from   PyQt5 . QtGui                  import QGradient
+from   PyQt5 . QtGui                  import QLinearGradient
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
+from   PyQt5 . QtWidgets              import QGraphicsItem
+##############################################################################
+from   AITK  . Calendars  . StarDate  import StarDate  as StarDate
+from   AITK  . Calendars  . Periode   import Periode   as Periode
 ##############################################################################
 from         . VcfCanvas              import VcfCanvas as VcfCanvas
 ##############################################################################
@@ -52,56 +60,162 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def __del__         ( self                                               ) :
+  def __del__ ( self                                                       ) :
     ##########################################################################
     ##########################################################################
     return
   ############################################################################
-  def setVcfTsDefaults        ( self                                       ) :
+  def setVcfTsDefaults           ( self                                    ) :
     ##########################################################################
-    self . Gap       = QSizeF ( 1.0  , 1.0                                   )
-    self . Dot       = QSizeF ( 0.02 , 0.02                                  )
-    self . LineWidth = QSizeF ( 0.1  , 0.1                                   )
+    self . Gap         = QSizeF  ( 1.0  , 1.0                                )
+    self . Dot         = QSizeF  ( 0.02 , 0.02                               )
+    self . LineWidth   = QSizeF  ( 0.1  , 0.1                                )
+    self . BackColor   = QColor  ( 240 , 240 , 240 , 255                     )
+    self . ForeColor   = QColor  ( 128 , 255 ,   0 , 224                     )
+    self . CenterRatio = 0.85
     ##########################################################################
-    self . Painter . addMap   ( "Default" , 0                                )
-    self . Painter . addPen   ( 0 , QColor ( 192 , 192 , 192 )               )
-    self . Painter . addBrush ( 0 , QColor ( 224 , 224 , 224 )               )
+    self . setFlag               ( QGraphicsItem . ItemIsMovable , False     )
+    self . setDirection          ( Qt . TopEdge                              )
     ##########################################################################
-    self . Mode = 2
+    self . CurrentRect = QRectF  ( 0.0 , 0.0 , 0.0 , 0.0                     )
+    self . Duration    = Periode (                                           )
+    self . Current     = 0
+    self . Gap         = 1
+    self . TimeZone    = "Asia/Taipei"
     ##########################################################################
     return
   ############################################################################
-  def Painting                  ( self , p , region , clip , color         ) :
+  def GetGradient                      ( self , Color                      ) :
     ##########################################################################
-    self . pushPainters         ( p                                          )
+    DARK = self . Painter . RatioColor ( Color , self . CenterRatio          )
+    LG   = QLinearGradient             (                                     )
+    LG   . setColorAt                  ( 0.0 , Color                         )
+    LG   . setColorAt                  ( 0.5 , DARK                          )
+    LG   . setColorAt                  ( 1.0 , Color                         )
+    ## LG = QGradient ( QGradient . Blessing                         )
+    ## LG = QGradient ( QGradient . FreshMilk                        )
     ##########################################################################
-    if                            ( self . Mode == self . EmptyMode        ) :
+    return LG
+  ############################################################################
+  def setDirection              ( self , Mode                              ) :
+    ##########################################################################
+    self . Mode = Mode
+    ##########################################################################
+    self . Painter . addMap     ( "Default" , 0                              )
+    self . Painter . addMap     ( "Current" , 1                              )
+    self . Painter . addMap     ( "Grid"    , 2                              )
+    ##########################################################################
+    BC   = self . GetGradient   ( self . BackColor                           )
+    FC   = self . GetGradient   ( self . ForeColor                           )
+    self . Painter .addGradient ( 0 , BC                                     )
+    self . Painter .addGradient ( 1 , BC                                     )
+    ##########################################################################
+    self . Painter . addPen     ( 0 , QColor ( 128 , 128 , 128 )             )
+    self . Painter . addPen     ( 1 , QColor ( 192 , 255 ,   0 )             )
+    self . Painter . addPen     ( 2 , QColor (   0 ,  64 , 255 )             )
+    self . Painter . addBrush   ( 0 , QColor ( 224 , 224 , 224 )             )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareItems                ( self                                   ) :
+    ##########################################################################
+    TL     = self . ScreenRect . topLeft     (                               )
+    TR     = self . ScreenRect . topRight    (                               )
+    BL     = self . ScreenRect . bottomLeft  (                               )
+    BR     = self . ScreenRect . bottomRight (                               )
+    ##########################################################################
+    if                            ( self . Mode == Qt . TopEdge            ) :
+      ########################################################################
+      self . Painter . gradients [ 0 ] . setStart     ( TL                   )
+      self . Painter . gradients [ 0 ] . setFinalStop ( BL                   )
+      ########################################################################
+    elif                          ( self . Mode == Qt . BottomEdge         ) :
+      ########################################################################
+      self . Painter . gradients [ 0 ] . setStart     ( TL                   )
+      self . Painter . gradients [ 0 ] . setFinalStop ( BL                   )
+      ########################################################################
+    elif                          ( self . Mode == Qt . LeftEdge           ) :
+      ########################################################################
+      self . Painter . gradients [ 0 ] . setStart     ( TL                   )
+      self . Painter . gradients [ 0 ] . setFinalStop ( TR                   )
+      ########################################################################
+    elif                          ( self . Mode == Qt . RightEdge          ) :
+      ########################################################################
+      self . Painter . gradients [ 0 ] . setStart     ( TL                   )
+      self . Painter . gradients [ 0 ] . setFinalStop ( TR                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def Painting                        ( self , p , region , clip , color   ) :
+    ##########################################################################
+    self . pushPainters               ( p                                    )
+    ##########################################################################
+    self . Painter . drawRectGradient ( p , "Default" , self . ScreenRect    )
+    self . Painter . drawPainterPath  ( p , "Grid"                           )
+    """
+    if                                  ( self . Mode == Qt . TopEdge      ) :
+      ########################################################################
       pass
-    elif                          ( self . Mode == self . BorderMode       ) :
-      self . Painter . drawBorder ( p , "Default" , self . ScreenRect        )
-    elif                          ( self . Mode == self . BoardMode        ) :
-      self . Painter . drawRect   ( p , "Default" , self . ScreenRect        )
+      ########################################################################
+    elif                                ( self . Mode == Qt . BottomEdge   ) :
+      ########################################################################
+      pass
+      ########################################################################
+    elif                                ( self . Mode == Qt . LeftEdge     ) :
+      ########################################################################
+      self . Painter . setPainter ( p , "Default"                              )
+      if                          ( 0 in self . Painter . pathes             ) :
+        p  . drawPath             ( self . Painter . pathes [ 0 ]              )
+      ########################################################################
+    elif                                ( self . Mode == Qt . RightEdge    ) :
+      ########################################################################
+      self . Painter . drawBorder       ( p , "Default" , self . ScreenRect  )
+      ########################################################################
     else                                                                     :
-      self . CustomPainting       (        p , region , clip , color         )
-    """
-    self . Painter . setPainter ( p , "Default"                              )
-    if                          ( 0 in self . Painter . pathes             ) :
-      p  . drawPath             ( self . Painter . pathes [ 0 ]              )
+      ########################################################################
+      self . CustomPainting             (        p , region , clip , color   )
     """
     ##########################################################################
-    self . popPainters          ( p                                          )
+    self . popPainters                ( p                                  )
     ##########################################################################
     return
   ############################################################################
-  def CreatePath       ( self                                              ) :
+  def setPeriod        ( self , START , FINAL , GAP                        ) :
     ##########################################################################
-    self . Painter . pathes [ 0 ] = QPainterPath (                           )
-    self . CreateShape ( self . Painter . pathes [ 0 ]                       )
+    self . Duration . Start = START
+    self . Duration . End   = FINAL
+    self . Gap              = GAP
+    ##########################################################################
+    self . PrepareGrid (                                                     )
     ##########################################################################
     return
   ############################################################################
-  def CreateShape ( self , p ) :
+  def PrepareGrid         ( self                                           ) :
     ##########################################################################
+    PP    = QPainterPath  (                                                  )
+    ##########################################################################
+    START = self . Duration . Start
+    END   = self . Duration . End
+    GAP   = self . Gap
+    AT    = START
+    TOTAL = float         ( END - START                                      )
+    ##########################################################################
+    B     = self . ScreenRect . bottom (                                     )
+    H     = self . ScreenRect . height (                                     )
+    H4    = H / 4.0
+    U     = B - H4
+    L     = self . ScreenRect . left   (                                     )
+    W     = self . ScreenRect . width  (                                     )
+    ##########################################################################
+    while                 ( AT <= END                                      ) :
+      ########################################################################
+      X   = float         ( AT - START                                       )
+      X   = X * W / TOTAL
+      ########################################################################
+      PP  . moveTo        ( X , U                                            )
+      PP  . lineTo        ( X , B                                            )
+      ########################################################################
+      AT = AT + GAP
     """
     QPointF G ( Gap . width () , Gap . height () ) ;
     QPointF D ( Dot . width () , Dot . height () ) ;
@@ -122,6 +236,8 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     } while (BP.x()<=ScreenRect.right ()          &&
              BP.y()<=ScreenRect.bottom()         ) ;
     """
+    ##########################################################################
+    self . Painter . pathes [ 2 ] = PP
     ##########################################################################
     return
 ##############################################################################

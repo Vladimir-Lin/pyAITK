@@ -20,6 +20,10 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
+from   PyQt5 . QtCore                 import QRect
+from   PyQt5 . QtCore                 import QRectF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor

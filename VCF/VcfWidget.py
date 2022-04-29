@@ -43,6 +43,9 @@ from   PyQt5 . QtWidgets              import QGraphicsView
 from   AITK  . Qt . VirtualGui        import VirtualGui   as VirtualGui
 from   AITK  . Qt . AttachDock        import AttachDock   as AttachDock
 ##############################################################################
+from   AITK  . Calendars  . StarDate  import StarDate     as StarDate
+from   AITK  . Calendars  . Periode   import Periode      as Periode
+##############################################################################
 from         . VcfFont                import VcfFont      as VcfFont
 from         . VcfDisplay             import VcfDisplay   as VcfDisplay
 from         . VcfOptions             import VcfOptions   as VcfOptions
@@ -275,17 +278,37 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     VRIT  = VcfCanvas        ( self , None , self . PlanFunc                 )
     VRIT  . setOptions       ( self . Options , False                        )
-    VRIT  . Mode = 1
-    VRIT  . setRange         ( QRectF ( 1.0 , 1.0 , 5.0 , 5.0 )              )
+    ## VRIT  . Mode = 1
+    VRIT  . Mode = 2
+    VRIT  . setRange         ( QRectF     ( 1.0 , 1.0 , 5.0 , 5.0 )          )
+    ## VRIT  . Painter . addPen ( 0 , QColor ( 255 , 192 , 192       )          )
+    VRIT  . Painter . addBrush ( 0 , QColor ( 255 , 240 , 240 )              )
     VRIT  . setMenuCaller    ( self . MenuCallerEmitter                      )
+    VRIT  . setZValue        ( 10000                                         )
+    VRIT  . setOpacity       ( 0.75                                          )
     ##########################################################################
     self  . addItem          ( VRIT                                          )
     self  . Scene . addItem  ( VRIT                                          )
     ##########################################################################
+    NOW   = StarDate         (                                               )
+    NOW   . Now              (                                               )
+    SDT   = int              ( NOW . Stardate - 60                           )
+    EDT   = int              ( SDT + 180                                     )
+    ##########################################################################
     VTSI  = VcfTimeScale     ( self , None , self . PlanFunc                 )
     VTSI  . setOptions       ( self . Options , False                        )
     VTSI  . setRange         ( QRectF ( 0.0 , 0.0 , 30.0 , 1.0 )             )
+    VTSI  . PrepareItems     (                                               )
     VTSI  . setMenuCaller    ( self . MenuCallerEmitter                      )
+    VTSI  . setZValue        ( 1000                                          )
+    VTSI  . setOpacity       ( 0.95                                          )
+    ##########################################################################
+    VTSI  . setPeriod        ( SDT , EDT , 1                                 )
+    VTSI  . Duration . Start = SDT
+    VTSI  . Duration . End   = EDT
+    VTSI  . Current          = NOW . Stardate
+    VTSI  . Gap              = 1
+    ##########################################################################
     ##########################################################################
     self  . addItem          ( VTSI                                          )
     self  . Scene . addItem  ( VTSI                                          )
