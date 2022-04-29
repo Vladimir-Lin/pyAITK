@@ -71,7 +71,7 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     self . Dot         = QSizeF  ( 0.02 , 0.02                               )
     self . LineWidth   = QSizeF  ( 0.1  , 0.1                                )
     self . BackColor   = QColor  ( 240 , 240 , 240 , 255                     )
-    self . ForeColor   = QColor  ( 128 , 255 ,   0 , 224                     )
+    self . ForeColor   = QColor  ( 128 , 255 ,   0 ,  64                     )
     self . CenterRatio = 0.85
     ##########################################################################
     self . setFlag               ( QGraphicsItem . ItemIsMovable , False     )
@@ -108,12 +108,12 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     BC   = self . GetGradient   ( self . BackColor                           )
     FC   = self . GetGradient   ( self . ForeColor                           )
     self . Painter .addGradient ( 0 , BC                                     )
-    self . Painter .addGradient ( 1 , BC                                     )
+    self . Painter .addGradient ( 1 , FC                                     )
     ##########################################################################
-    self . Painter . addPen     ( 0 , QColor ( 128 , 128 , 128 )             )
-    self . Painter . addPen     ( 1 , QColor ( 192 , 255 ,   0 )             )
-    self . Painter . addPen     ( 2 , QColor (   0 ,  64 , 255 )             )
-    self . Painter . addBrush   ( 0 , QColor ( 224 , 224 , 224 )             )
+    self . Painter . addPen     ( 0 , QColor ( 128 , 128 , 128 , 255 )       )
+    self . Painter . addPen     ( 1 , QColor ( 255 , 192 ,   0 ,  64 )       )
+    self . Painter . addPen     ( 2 , QColor (   0 ,  64 , 255 , 255 )       )
+    self . Painter . addBrush   ( 0 , QColor ( 224 , 224 , 224 , 255 )       )
     ##########################################################################
     return
   ############################################################################
@@ -152,31 +152,37 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     ##########################################################################
     self . Painter . drawRectGradient ( p , "Default" , self . ScreenRect    )
     self . Painter . drawPainterPath  ( p , "Grid"                           )
-    """
-    if                                  ( self . Mode == Qt . TopEdge      ) :
+    self . CurrentTimeBlock           (        p , region , clip , color     )
+    ##########################################################################
+    self . popPainters                ( p                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def CurrentTimeBlock                ( self , p , region , clip , color   ) :
+    ##########################################################################
+    if ( self . Current <  self . Duration . Start )                         :
+      return
+    ##########################################################################
+    if ( self . Current >= self . Duration . End   )                         :
       ########################################################################
-      pass
-      ########################################################################
-    elif                                ( self . Mode == Qt . BottomEdge   ) :
-      ########################################################################
-      pass
-      ########################################################################
-    elif                                ( self . Mode == Qt . LeftEdge     ) :
-      ########################################################################
-      self . Painter . setPainter ( p , "Default"                              )
-      if                          ( 0 in self . Painter . pathes             ) :
-        p  . drawPath             ( self . Painter . pathes [ 0 ]              )
-      ########################################################################
-    elif                                ( self . Mode == Qt . RightEdge    ) :
-      ########################################################################
-      self . Painter . drawBorder       ( p , "Default" , self . ScreenRect  )
+      CTB   = self . ScreenRect
       ########################################################################
     else                                                                     :
       ########################################################################
-      self . CustomPainting             (        p , region , clip , color   )
-    """
+      START = self . Duration . Start
+      END   = self . Duration . End
+      TOTAL = float         ( END            - START                         )
+      PASS  = float         ( self . Current - START                         )
+      ########################################################################
+      T     = self . ScreenRect . top    (                                   )
+      H     = self . ScreenRect . height (                                   )
+      L     = self . ScreenRect . left   (                                   )
+      W     = self . ScreenRect . width  (                                   )
+      W     = W * PASS / TOTAL
+      ########################################################################
+      CTB   = QRectF                     ( T , L , W , H                     )
     ##########################################################################
-    self . popPainters                ( p                                  )
+    self . Painter . drawRectGradient ( p , "Current" , CTB                  )
     ##########################################################################
     return
   ############################################################################
