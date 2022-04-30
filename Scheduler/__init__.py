@@ -8,7 +8,8 @@ from . Task     import Task     as Task
 from . Tasks    import Tasks    as Tasks
 from . Manager  import Manager  as Manager
 ##############################################################################
-__all__ = [ "Project"                                                      , \
+__all__ = [ "Widgets"                                                      , \
+            "Project"                                                      , \
             "Projects"                                                     , \
             "Event"                                                        , \
             "Events"                                                       , \

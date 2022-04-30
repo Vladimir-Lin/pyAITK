@@ -25,7 +25,6 @@ from . VcfRuler        import VcfRuler        as VcfRuler
 from . VcfShape        import VcfShape        as VcfShape
 from . VcfPicture      import VcfPicture      as VcfPicture
 from . VcfSlider       import VcfSlider       as VcfSlider
-from . VcfTimeScale    import VcfTimeScale    as VcfTimeScale
 from . VcfWidget       import VcfWidget       as VcfWidget
 ##############################################################################
 __all__ = [ "VcfBlock"                                                     , \
@@ -53,6 +52,5 @@ __all__ = [ "VcfBlock"                                                     , \
             "VcfShape"                                                     , \
             "VcfPicture"                                                   , \
             "VcfSlider"                                                    , \
-            "VcfTimeScale"                                                 , \
             "VcfWidget"                                                      ]
 ##############################################################################
