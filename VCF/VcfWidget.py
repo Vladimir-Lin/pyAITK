@@ -53,7 +53,6 @@ from         . VcfManager             import VcfManager   as VcfManager
 from         . VcfItem                import VcfItem      as VcfItem
 from         . VcfRectangle           import VcfRectangle as VcfRectangle
 from         . VcfCanvas              import VcfCanvas    as VcfCanvas
-from         . VcfTimeScale           import VcfTimeScale as VcfTimeScale
 ##############################################################################
 class VcfWidget           ( QGraphicsView                                  , \
                             VirtualGui                                     , \
@@ -289,22 +288,6 @@ class VcfWidget           ( QGraphicsView                                  , \
     ##########################################################################
     self  . addItem          ( VRIT                                          )
     self  . Scene . addItem  ( VRIT                                          )
-    ##########################################################################
-    NOW   = StarDate         (                                               )
-    NOW   . Now              (                                               )
-    SDT   = int              ( NOW . Stardate - 60                           )
-    EDT   = int              ( SDT + 600                                     )
-    ##########################################################################
-    VTSI  = VcfTimeScale     ( self , None , self . PlanFunc                 )
-    VTSI  . setOptions       ( self . Options , False                        )
-    VTSI  . setRange         ( QRectF ( 0.0 , 0.0 , 63.0 , 1.0 )             )
-    VTSI  . PrepareItems     (                                               )
-    VTSI  . setPeriod        ( SDT , EDT                                     )
-    VTSI  . setCurrent       (                                               )
-    VTSI  . setMenuCaller    ( self . MenuCallerEmitter                      )
-    ##########################################################################
-    self  . addItem          ( VTSI                                          )
-    self  . Scene . addItem  ( VTSI                                          )
     ##########################################################################
     self  . setPrepared      ( True                                          )
     ##########################################################################
