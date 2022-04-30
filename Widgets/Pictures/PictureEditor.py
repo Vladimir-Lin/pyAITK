@@ -57,7 +57,7 @@ from   AITK  . Qt       . MenuManager  import MenuManager  as MenuManager
 from   AITK  . VCF      . VcfWidget    import VcfWidget    as VcfWidget
 from   AITK  . VCF      . VcfItem      import VcfItem      as VcfItem
 from   AITK  . VCF      . VcfRectangle import VcfRectangle as VcfRectangle
-from   AITK  . VCF      . VcfPicture   import VcfPicture   as VcfPicture
+from   AITK  . People . Widgets . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
 ##############################################################################
 class PictureEditor        ( VcfWidget                                     ) :
   ############################################################################
@@ -86,7 +86,7 @@ class PictureEditor        ( VcfWidget                                     ) :
     ##########################################################################
     self . PerfectView          (                                            )
     ##########################################################################
-    VRIT = VcfPicture           ( self , None , self . PlanFunc              )
+    VRIT = VcfPeoplePicture     ( self , None , self . PlanFunc              )
     VRIT . setOptions           ( self . Options , False                     )
     self . assignItemProperties ( VRIT                                       )
     VRIT . LoadImage            ( Uuid                                       )
