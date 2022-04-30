@@ -67,6 +67,8 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
   ############################################################################
   def setVcfTsDefaults           ( self                                    ) :
     ##########################################################################
+    self . Scaling     = False
+    ##########################################################################
     self . Gap         = QSizeF  ( 1.0  , 1.0                                )
     self . Dot         = QSizeF  ( 0.02 , 0.02                               )
     self . LineWidth   = QSizeF  ( 0.1  , 0.1                                )
@@ -77,9 +79,13 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     self . setFlag               ( QGraphicsItem . ItemIsMovable , False     )
     self . setDirection          ( Qt . TopEdge                              )
     ##########################################################################
+    self . setZValue             ( 1000.0                                    )
+    self . setOpacity            ( 0.95                                      )
+    ##########################################################################
     self . CurrentRect = QRectF  ( 0.0 , 0.0 , 0.0 , 0.0                     )
     self . Duration    = Periode (                                           )
     self . Current     = 0
+    self . Base        = 0
     self . Gap         = 1
     self . TimeZone    = "Asia/Taipei"
     ##########################################################################
@@ -92,8 +98,6 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     LG   . setColorAt                  ( 0.0 , Color                         )
     LG   . setColorAt                  ( 0.5 , DARK                          )
     LG   . setColorAt                  ( 1.0 , Color                         )
-    ## LG = QGradient ( QGradient . Blessing                         )
-    ## LG = QGradient ( QGradient . FreshMilk                        )
     ##########################################################################
     return LG
   ############################################################################
@@ -186,64 +190,117 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def setPeriod        ( self , START , FINAL , GAP                        ) :
+  def setCurrent    ( self                                                 ) :
     ##########################################################################
-    self . Duration . Start = START
-    self . Duration . End   = FINAL
-    self . Gap              = GAP
-    ##########################################################################
-    self . PrepareGrid (                                                     )
+    NOW  = StarDate (                                                        )
+    NOW  . Now      (                                                        )
+    self . Current = NOW . Stardate
     ##########################################################################
     return
   ############################################################################
-  def PrepareGrid         ( self                                           ) :
+  def setPeriod                ( self , START , FINAL                      ) :
     ##########################################################################
-    PP    = QPainterPath  (                                                  )
+    self . Duration . Start = START
+    self . Duration . End   = FINAL
     ##########################################################################
-    START = self . Duration . Start
-    END   = self . Duration . End
-    GAP   = self . Gap
-    AT    = START
-    TOTAL = float         ( END - START                                      )
+    self . Gap              = 1
     ##########################################################################
-    B     = self . ScreenRect . bottom (                                     )
-    H     = self . ScreenRect . height (                                     )
-    H4    = H / 4.0
-    U     = B - H4
-    L     = self . ScreenRect . left   (                                     )
-    W     = self . ScreenRect . width  (                                     )
+    NOW  = StarDate            (                                             )
+    NOW  . Stardate = START
+    SOD  = NOW  . SecondsOfDay ( self . TimeZone                             )
+    self . Base = int          ( START - SOD                                 )
     ##########################################################################
-    while                 ( AT <= END                                      ) :
+    self . PrepareGrid         (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareTopGrid60                    ( self , GRID                    ) :
+    ##########################################################################
+    START    = self . Duration . Start
+    END      = self . Duration . End
+    BASE     = self . Base
+    GAP      = self . Gap
+    AT       = START
+    TOTAL    = float                      ( END - START                      )
+    ##########################################################################
+    B        = self . ScreenRect . bottom (                                  )
+    H        = self . ScreenRect . height (                                  )
+    H6       = float                      ( H / 6.0                          )
+    U1       = float                      ( B - ( H6 * 1.4 )                 )
+    U2       = float                      ( B - ( H6 * 2.0 )                 )
+    U3       = float                      ( B - ( H6 * 2.6 )                 )
+    U4       = float                      ( B - ( H6 * 3.2 )                 )
+    U5       = float                      ( B - ( H6 * 4.0 )                 )
+    L        = self . ScreenRect . left   (                                  )
+    W        = self . ScreenRect . width  (                                  )
+    ##########################################################################
+    while                                 ( AT <= END                      ) :
       ########################################################################
-      X   = float         ( AT - START                                       )
-      X   = X * W / TOTAL
+      X      = float                      ( AT - START                       )
+      X      = X * W / TOTAL
       ########################################################################
-      PP  . moveTo        ( X , U                                            )
-      PP  . lineTo        ( X , B                                            )
+      E      = int                        ( AT - BASE                        )
+      E      = int                        ( E  / GAP                         )
       ########################################################################
-      AT = AT + GAP
-    """
-    QPointF G ( Gap . width () , Gap . height () ) ;
-    QPointF D ( Dot . width () , Dot . height () ) ;
-    QPointF GS = toPaper ( G )                     ;
-    QPointF DT = toPaper ( D )                     ;
-    QSizeF  DS (DT.x(),DT.y())                     ;
-    QPointF DH = DT / 2                            ;
-    QPointF BP(ScreenRect.left(),ScreenRect.top()) ;
-    QPointF GP                                     ;
-    do                                             {
-      GP = BP - DH                                 ;
-      p -> addEllipse ( QRectF ( GP , DS ) )       ;
-      BP . setX ( BP . x ( ) + GS . x ( )  )       ;
-      if ( BP . x () > ScreenRect . right () )     {
-        BP . setX ( ScreenRect . left () )         ;
-        BP . setY ( BP . y () + GS . y() )         ;
-      }                                            ;
-    } while (BP.x()<=ScreenRect.right ()          &&
-             BP.y()<=ScreenRect.bottom()         ) ;
-    """
+      if                                  ( ( E % 60 ) == 0                ) :
+        GRID . moveTo                     ( X , U5                           )
+      elif                                ( ( E % 30 ) == 0                ) :
+        GRID . moveTo                     ( X , U4                           )
+      elif                                ( ( E % 15 ) == 0                ) :
+        GRID . moveTo                     ( X , U3                           )
+      elif                                ( ( E %  5 ) == 0                ) :
+        GRID . moveTo                     ( X , U2                           )
+      else                                                                   :
+        GRID . moveTo                     ( X , U1                           )
+      ########################################################################
+      GRID   . lineTo                     ( X , B                            )
+      ########################################################################
+      AT     = AT + GAP
     ##########################################################################
-    self . Painter . pathes [ 2 ] = PP
+    return GRID
+  ############################################################################
+  def PrepareTopGrid               ( self , GRID                           ) :
+    ##########################################################################
+    GRID = self . PrepareTopGrid60 (        GRID                             )
+    ##########################################################################
+    return GRID
+  ############################################################################
+  def PrepareBottomGrid   ( self , GRID                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return GRID
+  ############################################################################
+  def PrepareLeftGrid     ( self , GRID                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return GRID
+  ############################################################################
+  def PrepareRightGrid    ( self , GRID                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return GRID
+  ############################################################################
+  def PrepareGrid                     ( self                               ) :
+    ##########################################################################
+    GRID   = QPainterPath             (                                      )
+    ##########################################################################
+    if                                ( self . Mode == Qt . TopEdge        ) :
+      ########################################################################
+      GRID = self . PrepareTopGrid    ( GRID                                 )
+      ########################################################################
+    elif                              ( self . Mode == Qt . BottomEdge     ) :
+      ########################################################################
+      GRID = self . PrepareBottomGrid ( GRID                                 )
+      ########################################################################
+    elif                              ( self . Mode == Qt . LeftEdge       ) :
+      ########################################################################
+      GRID = self . PrepareLeftGrid   ( GRID                                 )
+      ########################################################################
+    elif                              ( self . Mode == Qt . RightEdge      ) :
+      ########################################################################
+      GRID = self . PrepareRightGrid  ( GRID                                 )
+    ##########################################################################
+    self   . Painter . pathes [ 2 ] = GRID
     ##########################################################################
     return
 ##############################################################################

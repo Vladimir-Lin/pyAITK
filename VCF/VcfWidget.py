@@ -293,22 +293,15 @@ class VcfWidget           ( QGraphicsView                                  , \
     NOW   = StarDate         (                                               )
     NOW   . Now              (                                               )
     SDT   = int              ( NOW . Stardate - 60                           )
-    EDT   = int              ( SDT + 180                                     )
+    EDT   = int              ( SDT + 600                                     )
     ##########################################################################
     VTSI  = VcfTimeScale     ( self , None , self . PlanFunc                 )
     VTSI  . setOptions       ( self . Options , False                        )
-    VTSI  . setRange         ( QRectF ( 0.0 , 0.0 , 30.0 , 1.0 )             )
+    VTSI  . setRange         ( QRectF ( 0.0 , 0.0 , 63.0 , 1.0 )             )
     VTSI  . PrepareItems     (                                               )
+    VTSI  . setPeriod        ( SDT , EDT                                     )
+    VTSI  . setCurrent       (                                               )
     VTSI  . setMenuCaller    ( self . MenuCallerEmitter                      )
-    VTSI  . setZValue        ( 1000                                          )
-    VTSI  . setOpacity       ( 0.95                                          )
-    ##########################################################################
-    VTSI  . setPeriod        ( SDT , EDT , 1                                 )
-    VTSI  . Duration . Start = SDT
-    VTSI  . Duration . End   = EDT
-    VTSI  . Current          = NOW . Stardate
-    VTSI  . Gap              = 1
-    ##########################################################################
     ##########################################################################
     self  . addItem          ( VTSI                                          )
     self  . Scene . addItem  ( VTSI                                          )
