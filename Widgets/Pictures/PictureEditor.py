@@ -57,15 +57,69 @@ from   AITK  . Qt       . MenuManager  import MenuManager  as MenuManager
 from   AITK  . VCF      . VcfWidget    import VcfWidget    as VcfWidget
 from   AITK  . VCF      . VcfItem      import VcfItem      as VcfItem
 from   AITK  . VCF      . VcfRectangle import VcfRectangle as VcfRectangle
+from   AITK  . People . Faces   . VcfFaceRegion    import VcfFaceRegion    as VcfFaceRegion
 from   AITK  . People . Widgets . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
 ##############################################################################
-class PictureEditor        ( VcfWidget                                     ) :
+class PictureEditor         ( VcfWidget                                    ) :
   ############################################################################
-  Adjustment = pyqtSignal  ( QWidget , QSize                                 )
+  Adjustment   = pyqtSignal ( QWidget , QSize                                )
+  JsonCallback = pyqtSignal ( dict                                           )
   ############################################################################
-  def __init__             ( self , parent = None , plan = None            ) :
+  def __init__              ( self , parent = None , plan = None           ) :
     ##########################################################################
-    super ( ) . __init__   (        parent ,        plan                     )
+    super ( ) . __init__    (        parent ,        plan                    )
+    ##########################################################################
+    self . JsonCallback . connect ( self . JsonAccepter                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def JsonCaller               ( self , JSON                               ) :
+    ##########################################################################
+    self . JsonCallback . emit (        JSON                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def JsonAccepter             ( self , JSON                               ) :
+    ##########################################################################
+    CALLER     = JSON          [ "Function"                                  ]
+    ##########################################################################
+    if                         ( CALLER == "AddFaceRegion"                 ) :
+      ########################################################################
+      ITEM     = JSON          [ "Item"                                      ]
+      RECT     = JSON          [ "Rectangle"                                 ]
+      self     . AddFaceRegion ( ITEM , RECT                                 )
+      ########################################################################
+      return
+    ##########################################################################
+    return
+  ############################################################################
+  def AddFaceRegion              ( self , parent , rect                    ) :
+    ##########################################################################
+    PM   = QPoint                ( rect . x     ( ) , rect . y      ( )      )
+    SP   = self   . mapToScene   ( PM                                        )
+    XS   = parent . mapFromScene ( SP                                        )
+    XP   = parent . pointToPaper ( XS                                        )
+    ##########################################################################
+    PM   = QPoint                ( rect . width ( ) , rect . height ( )      )
+    SP   = self   . mapToScene   ( PM                                        )
+    FS   = parent . mapFromScene ( SP                                        )
+    MP   = parent . pointToPaper ( FS                                        )
+    ##########################################################################
+    RR   = QRectF                ( XP . x ( ) , XP . y ( )                 , \
+                                   MP . x ( ) , MP . y ( )                   )
+    ##########################################################################
+    VRIT = VcfFaceRegion         ( self , parent  , self . PlanFunc          )
+    VRIT . setOptions            ( self . Options , False                    )
+    self . assignItemProperties  ( VRIT                                      )
+    VRIT . setMenuCaller         ( self . MenuCallerEmitter                  )
+    VRIT . Region      = rect
+    VRIT . PictureItem = parent
+    VRIT . setRange              ( RR                                        )
+    ##########################################################################
+    self . addItem               ( VRIT , parent                             )
+    self . Scene . addItem       ( VRIT                                      )
+    ##########################################################################
+    VRIT . prepareGeometryChange (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -87,8 +141,10 @@ class PictureEditor        ( VcfWidget                                     ) :
     self . PerfectView          (                                            )
     ##########################################################################
     VRIT = VcfPeoplePicture     ( self , None , self . PlanFunc              )
+    VRIT . JsonCaller = self . JsonCaller
     VRIT . setOptions           ( self . Options , False                     )
     self . assignItemProperties ( VRIT                                       )
+    VRIT . setMenuCaller        ( self . MenuCallerEmitter                   )
     VRIT . LoadImage            ( Uuid                                       )
     VRIT . asImageRect          (                                            )
     FS   = VRIT . ImageSize     (                                            )
