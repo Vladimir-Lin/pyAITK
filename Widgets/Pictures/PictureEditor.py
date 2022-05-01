@@ -79,22 +79,31 @@ class PictureEditor         ( VcfWidget                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def JsonAccepter             ( self , JSON                               ) :
+  def JsonAccepter              ( self , JSON                              ) :
     ##########################################################################
-    CALLER     = JSON          [ "Function"                                  ]
+    CALLER = JSON               [ "Function"                                 ]
     ##########################################################################
-    if                         ( CALLER == "DeleteItem"                    ) :
+    if                          ( CALLER == "DeleteItem"                   ) :
       ########################################################################
-      ITEM     = JSON          [ "Item"                                      ]
-      self     . takeItem      ( ITEM                                        )
+      ITEM = JSON               [ "Item"                                     ]
+      self . takeItem           ( ITEM                                       )
+      self . Scene . removeItem ( ITEM                                       )
       ########################################################################
       return
     ##########################################################################
-    if                         ( CALLER == "AddFaceRegion"                 ) :
+    if                          ( CALLER == "AddFaceRegion"                ) :
       ########################################################################
-      ITEM     = JSON          [ "Item"                                      ]
-      RECT     = JSON          [ "Rectangle"                                 ]
-      self     . AddFaceRegion ( ITEM , RECT                                 )
+      ITEM = JSON               [ "Item"                                     ]
+      RECT = JSON               [ "Rectangle"                                ]
+      self . AddFaceRegion      ( ITEM , RECT                                )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( CALLER == "AddPicture"                   ) :
+      ########################################################################
+      PIC  = JSON               [ "Picture"                                  ]
+      Z    = JSON               [ "Z"                                        ]
+      self . AddPicture         ( PIC , Z                                    )
       ########################################################################
       return
     ##########################################################################
@@ -141,6 +150,23 @@ class PictureEditor         ( VcfWidget                                    ) :
       return
     ##########################################################################
     self . Adjustment . emit   ( pw , SIZE                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def AddPicture                  ( self , PIC , Z                         ) :
+    ##########################################################################
+    VRIT = VcfPeoplePicture       ( self , None , self . PlanFunc            )
+    VRIT . JsonCaller = self . JsonCaller
+    VRIT . setOptions             ( self . Options , False                   )
+    self . assignItemProperties   ( VRIT                                     )
+    VRIT . setMenuCaller          ( self . MenuCallerEmitter                 )
+    VRIT . setZValue              ( Z                                        )
+    VRIT . PICOP = PIC
+    VRIT . Image = PIC . toQImage (                                          )
+    VRIT . asImageRect            (                                          )
+    ##########################################################################
+    self . addItem                ( VRIT                                     )
+    self . Scene . addItem        ( VRIT                                     )
     ##########################################################################
     return
   ############################################################################

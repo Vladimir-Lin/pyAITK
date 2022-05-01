@@ -49,6 +49,7 @@ from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QWidget
+from   PyQt5 . QtWidgets              import QFileDialog
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
 ##############################################################################
@@ -82,8 +83,17 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   def setVcfPeoplePictureDefaults ( self                                   ) :
     ##########################################################################
     self . JsonCaller = None
+    self . LastestZ   = None
     self . setFlag                ( QGraphicsItem . ItemIsMovable , False    )
     self . setZValue              ( 10000                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def DeleteItem      ( self                                               ) :
+    ##########################################################################
+    JSON =            { "Function"  : "DeleteItem"                         , \
+                        "Item"      : self                                   }
+    self . JsonCaller ( JSON                                                 )
     ##########################################################################
     return
   ############################################################################
@@ -171,6 +181,71 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ProduceRotateImage         ( self , degree                           ) :
+    ##########################################################################
+    PIC  = self . PICOP . Rotate ( degree                                    )
+    ##########################################################################
+    if                           ( self . LastestZ in [ False , None ]     ) :
+      self . LastestZ = self . zValue ( ) + 10.0
+    else                                                                     :
+      self . LastestZ = self . LastestZ   + 10.0
+    ##########################################################################
+    JSON =                       { "Function"  : "AddPicture"              , \
+                                   "Picture"   : PIC                       , \
+                                   "Z"         : self . LastestZ             }
+    self . JsonCaller            ( JSON                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def CreateRotateImage            ( self , degree                         ) :
+    ##########################################################################
+    VAL  =                         ( degree ,                                )
+    self . Go                      ( self . ProduceRotateImage , VAL         )
+    ##########################################################################
+    return
+  ############################################################################
+  def ProduceCropImage           ( self , region                           ) :
+    ##########################################################################
+    X    = region . x            (                                           )
+    Y    = region . y            (                                           )
+    W    = region . width        (                                           )
+    H    = region . height       (                                           )
+    PIC  = self . PICOP . Crop   ( X , Y , W , H                             )
+    ##########################################################################
+    if                           ( self . LastestZ in [ False , None ]     ) :
+      self . LastestZ = self . zValue ( ) + 10.0
+    else                                                                     :
+      self . LastestZ = self . LastestZ   + 10.0
+    ##########################################################################
+    JSON =                       { "Function"  : "AddPicture"              , \
+                                   "Picture"   : PIC                       , \
+                                   "Z"         : self . LastestZ             }
+    self . JsonCaller            ( JSON                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def CreateCropImage              ( self , region                         ) :
+    ##########################################################################
+    VAL  =                         ( region ,                                )
+    self . Go                      ( self . ProduceRotateImage , VAL         )
+    ##########################################################################
+    return
+  ############################################################################
+  def SaveAs                       ( self                                  ) :
+    ##########################################################################
+    Filename , _ = QFileDialog . getSaveFileName                             (
+                                     self                                    ,
+                                     "匯出圖片" ,
+                                     ""                                      ,
+                                     "JPEG (*.jpg);;PNG (*.png)"             )
+    if                             ( len ( Filename ) <= 0                 ) :
+      return
+    ##########################################################################
+    self . Image . save            ( Filename                                )
+    self . Notify                  ( 5                                       )
+    ##########################################################################
+    return
+  ############################################################################
   def PeopleFaceMenu               ( self , mm , Menu                      ) :
     ##########################################################################
     MSG   = self . getMenuItem     ( "FacialRecognition"                     )
@@ -235,22 +310,44 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                    ( self , gview , pos , spos                  ) :
+  def Menu                      ( self , gview , pos , spos                ) :
     ##########################################################################
-    mm     = MenuManager      ( gview                                        )
-    self   . InformationMenu  ( mm                                           )
-    self   . RecognitionMenu  ( mm                                           )
-    self   . StatesMenu       ( mm                                           )
+    mm     = MenuManager        ( gview                                      )
     ##########################################################################
-    mm     . setFont          ( gview   . menuFont ( )                       )
-    aa     = mm . exec_       ( QCursor . pos      ( )                       )
-    at     = mm . at          ( aa                                           )
+    TRX    = self . Translations
     ##########################################################################
-    if                        ( self . RunStatesMenu      ( at           ) ) :
+    msg    = TRX                [ "UI::Delete"                               ]
+    icon   = QIcon              ( ":/images/delete.png"                      )
+    mm     . addActionWithIcon  ( 1001 , icon , msg                          )
+    ##########################################################################
+    msg    = self . getMenuItem ( "SaveImage"                                )
+    mm     . addAction          ( 1002 , msg                                 )
+    ##########################################################################
+    self   . InformationMenu   ( mm                                          )
+    self   . RecognitionMenu   ( mm                                          )
+    self   . StatesMenu        ( mm                                          )
+    ##########################################################################
+    mm     . setFont           ( gview   . menuFont ( )                      )
+    aa     = mm . exec_        ( QCursor . pos      ( )                      )
+    at     = mm . at           ( aa                                          )
+    ##########################################################################
+    if                         ( self . RunStatesMenu      ( at          ) ) :
       return True
     ##########################################################################
-    if                        ( self . RunRecognitionMenu ( at           ) ) :
+    if                         ( self . RunRecognitionMenu ( at          ) ) :
       return True
+    ##########################################################################
+    if                         ( at == 1001                                ) :
+      ########################################################################
+      self . DeleteItem        (                                             )
+      ########################################################################
+      return
+    ##########################################################################
+    if                         ( at == 1002                                ) :
+      ########################################################################
+      self . SaveAs            (                                             )
+      ########################################################################
+      return
     ##########################################################################
     return
 ##############################################################################
