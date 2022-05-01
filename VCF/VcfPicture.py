@@ -89,6 +89,8 @@ class VcfPicture                 ( VcfRectangle                            , \
     self . PICOP      = None
     self . Printable  = True
     self . Scaling    = False
+    self . Xratio     = 0.0
+    self . Yratio     = 0.0
     self . Details    =     {                                                }
     ##########################################################################
     self . setFlag ( QGraphicsItem . ItemIsSelectable         , True         )
@@ -481,6 +483,9 @@ class VcfPicture                 ( VcfRectangle                            , \
     SP   = self . Gui . mapToScene   ( PM                                    )
     FS   = self       . mapFromScene ( SP                                    )
     MP   = self       . pointToPaper ( FS                                    )
+    ##########################################################################
+    self . Xratio     = SM . width  ( ) / FS . x (                           )
+    self . Yratio     = SM . height ( ) / FS . y (                           )
     ##########################################################################
     self . ScreenRect = QRectF       ( 0.0 , 0.0 , FS . x ( ) , FS . y ( )   )
     self . PaperRect  = QRectF       ( 0.0 , 0.0 , MP . x ( ) , MP . y ( )   )

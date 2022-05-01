@@ -86,9 +86,9 @@ class VcfCanvas                 ( VcfRectangle                             , \
     self . setFlag ( QGraphicsItem . ItemIsMovable            , True         )
     self . setFlag ( QGraphicsItem . ItemIsSelectable         , True         )
     self . setFlag ( QGraphicsItem . ItemIsFocusable          , True         )
+    ## self . setFlag ( QGraphicsItem . ItemSendsGeometryChanges , True         )
     self . setFlag ( QGraphicsItem . ItemClipsToShape         , False        )
     self . setFlag ( QGraphicsItem . ItemClipsChildrenToShape , False        )
-    ##########################################################################
     ##########################################################################
     return
   ############################################################################

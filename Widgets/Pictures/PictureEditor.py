@@ -83,6 +83,13 @@ class PictureEditor         ( VcfWidget                                    ) :
     ##########################################################################
     CALLER     = JSON          [ "Function"                                  ]
     ##########################################################################
+    if                         ( CALLER == "DeleteItem"                    ) :
+      ########################################################################
+      ITEM     = JSON          [ "Item"                                      ]
+      self     . takeItem      ( ITEM                                        )
+      ########################################################################
+      return
+    ##########################################################################
     if                         ( CALLER == "AddFaceRegion"                 ) :
       ########################################################################
       ITEM     = JSON          [ "Item"                                      ]
@@ -109,6 +116,7 @@ class PictureEditor         ( VcfWidget                                    ) :
                                    MP . x ( ) , MP . y ( )                   )
     ##########################################################################
     VRIT = VcfFaceRegion         ( self , parent  , self . PlanFunc          )
+    VRIT . JsonCaller = self . JsonCaller
     VRIT . setOptions            ( self . Options , False                    )
     self . assignItemProperties  ( VRIT                                      )
     VRIT . setMenuCaller         ( self . MenuCallerEmitter                  )
@@ -117,7 +125,7 @@ class PictureEditor         ( VcfWidget                                    ) :
     VRIT . setRange              ( RR                                        )
     ##########################################################################
     self . addItem               ( VRIT , parent                             )
-    self . Scene . addItem       ( VRIT                                      )
+    ## self . Scene . addItem       ( VRIT                                      )
     ##########################################################################
     VRIT . prepareGeometryChange (                                           )
     ##########################################################################
