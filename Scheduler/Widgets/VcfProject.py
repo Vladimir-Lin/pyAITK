@@ -13,60 +13,82 @@ import json
 ##############################################################################
 import vtk
 ##############################################################################
-from   PyQt5                            import QtCore
-from   PyQt5                            import QtGui
-from   PyQt5                            import QtWidgets
+from   PyQt5                               import QtCore
+from   PyQt5                               import QtGui
+from   PyQt5                               import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                   import QObject
-from   PyQt5 . QtCore                   import pyqtSignal
-from   PyQt5 . QtCore                   import Qt
-from   PyQt5 . QtCore                   import QPoint
-from   PyQt5 . QtCore                   import QPointF
-from   PyQt5 . QtCore                   import QSize
-from   PyQt5 . QtCore                   import QSizeF
-from   PyQt5 . QtCore                   import QRect
-from   PyQt5 . QtCore                   import QRectF
+from   PyQt5 . QtCore                      import QObject
+from   PyQt5 . QtCore                      import pyqtSignal
+from   PyQt5 . QtCore                      import Qt
+from   PyQt5 . QtCore                      import QPoint
+from   PyQt5 . QtCore                      import QPointF
+from   PyQt5 . QtCore                      import QSize
+from   PyQt5 . QtCore                      import QSizeF
+from   PyQt5 . QtCore                      import QRect
+from   PyQt5 . QtCore                      import QRectF
 ##############################################################################
-from   PyQt5 . QtGui                    import QIcon
-from   PyQt5 . QtGui                    import QColor
-from   PyQt5 . QtGui                    import QCursor
-from   PyQt5 . QtGui                    import QKeySequence
-from   PyQt5 . QtGui                    import QPen
-from   PyQt5 . QtGui                    import QBrush
-from   PyQt5 . QtGui                    import QPainter
+from   PyQt5 . QtGui                       import QIcon
+from   PyQt5 . QtGui                       import QColor
+from   PyQt5 . QtGui                       import QCursor
+from   PyQt5 . QtGui                       import QKeySequence
+from   PyQt5 . QtGui                       import QPen
+from   PyQt5 . QtGui                       import QBrush
+from   PyQt5 . QtGui                       import QPainter
 ##############################################################################
-from   PyQt5 . QtWidgets                import QApplication
-from   PyQt5 . QtWidgets                import qApp
-from   PyQt5 . QtWidgets                import QWidget
-from   PyQt5 . QtWidgets                import QGraphicsView
+from   PyQt5 . QtWidgets                   import QApplication
+from   PyQt5 . QtWidgets                   import qApp
+from   PyQt5 . QtWidgets                   import QWidget
+from   PyQt5 . QtWidgets                   import QGraphicsView
 ##############################################################################
-from   AITK  . Qt        . VirtualGui   import VirtualGui   as VirtualGui
-from   AITK  . Qt        . AttachDock   import AttachDock   as AttachDock
+from   AITK  . Qt        . VirtualGui      import VirtualGui      as VirtualGui
+from   AITK  . Qt        . AttachDock      import AttachDock      as AttachDock
 ##############################################################################
-from   AITK  . Calendars . StarDate     import StarDate     as StarDate
-from   AITK  . Calendars . Periode      import Periode      as Periode
+from   AITK  . Calendars . StarDate        import StarDate        as StarDate
+from   AITK  . Calendars . Periode         import Periode         as Periode
 ##############################################################################
-from   AITK  . VCF       . VcfFont      import VcfFont      as VcfFont
-from   AITK  . VCF       . VcfDisplay   import VcfDisplay   as VcfDisplay
-from   AITK  . VCF       . VcfOptions   import VcfOptions   as VcfOptions
-from   AITK  . VCF       . VcfManager   import VcfManager   as VcfManager
-from   AITK  . VCF       . VcfItem      import VcfItem      as VcfItem
-from   AITK  . VCF       . VcfRectangle import VcfRectangle as VcfRectangle
-from   AITK  . VCF       . VcfCanvas    import VcfCanvas    as VcfCanvas
-from   AITK  . VCF       . VcfWidget    import VcfWidget    as VcfWidget
+from   AITK  . VCF       . VcfFont         import VcfFont         as VcfFont
+from   AITK  . VCF       . VcfDisplay      import VcfDisplay      as VcfDisplay
+from   AITK  . VCF       . VcfOptions      import VcfOptions      as VcfOptions
+from   AITK  . VCF       . VcfManager      import VcfManager      as VcfManager
+from   AITK  . VCF       . VcfItem         import VcfItem         as VcfItem
+from   AITK  . VCF       . VcfRectangle    import VcfRectangle    as VcfRectangle
+from   AITK  . VCF       . VcfCanvas       import VcfCanvas       as VcfCanvas
+from   AITK  . VCF       . VcfWidget       import VcfWidget       as VcfWidget
 ##############################################################################
-from                     . VcfTimeScale import VcfTimeScale as VcfTimeScale
+from                     . VcfTimeScale    import VcfTimeScale    as VcfTimeScale
+from                     . VcfTimeSelector import VcfTimeSelector as VcfTimeSelector
 ##############################################################################
-class VcfProject          ( VcfWidget                                      ) :
+class VcfProject                  ( VcfWidget                              ) :
   ############################################################################
-  attachNone     = pyqtSignal ( QWidget                                      )
-  attachDock     = pyqtSignal ( QWidget , str , int , int                    )
-  attachMdi      = pyqtSignal ( QWidget , int                                )
-  emitMenuCaller = pyqtSignal ( dict                                         )
+  Adjustment   = pyqtSignal       ( QWidget , QSize                          )
+  JsonCallback = pyqtSignal       ( dict                                     )
   ############################################################################
-  def __init__            ( self , parent = None , plan = None             ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__  (        parent        , plan                      )
+    super ( ) . __init__          (        parent        , plan              )
+    ##########################################################################
+    self . setJsonCaller          ( self . JsonCaller                        )
+    self . JsonCallback . connect ( self . JsonAccepter                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def JsonCaller               ( self , JSON                               ) :
+    ##########################################################################
+    self . JsonCallback . emit (        JSON                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def JsonAccepter              ( self , JSON                              ) :
+    ##########################################################################
+    CALLER = JSON               [ "Function"                                 ]
+    ##########################################################################
+    if                          ( CALLER == "DeleteItem"                   ) :
+      ########################################################################
+      ITEM = JSON               [ "Item"                                     ]
+      self . takeItem           ( ITEM                                       )
+      self . Scene . removeItem ( ITEM                                       )
+      ########################################################################
+      return
     ##########################################################################
     return
   ############################################################################

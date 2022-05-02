@@ -48,11 +48,18 @@ class VcfManager      (                                                    ) :
     ##########################################################################
     return
   ############################################################################
-  def InitializeManager   ( self , widget                                  ) :
+  def InitializeManager       ( self , widget                              ) :
     ##########################################################################
-    self . vcfItems     = [                                                  ]
-    self . vcfMaps      = {                                                  }
-    self . MasterWidget = widget
+    self . vcfItems         = [                                              ]
+    self . vcfMaps          = {                                              }
+    self . MasterWidget     = widget
+    self . MasterJsonCaller = None
+    ##########################################################################
+    return
+  ############################################################################
+  def setJsonCaller          ( self , jsonCaller                           ) :
+    ##########################################################################
+    self . MasterJsonCaller = jsonCaller
     ##########################################################################
     return
   ############################################################################
@@ -68,6 +75,7 @@ class VcfManager      (                                                    ) :
       return len             ( self . vcfItems                               )
     ##########################################################################
     item . setMenuCaller     ( self . MasterWidget . MenuCallerEmitter       )
+    item . JsonCaller = self . MasterJsonCaller
     ##########################################################################
     self . vcfItems . append ( item                                          )
     self . vcfMaps [ item ] = parent

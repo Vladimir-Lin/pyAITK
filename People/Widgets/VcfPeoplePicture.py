@@ -82,18 +82,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def setVcfPeoplePictureDefaults ( self                                   ) :
     ##########################################################################
-    self . JsonCaller = None
     self . LastestZ   = None
     self . setFlag                ( QGraphicsItem . ItemIsMovable , False    )
     self . setZValue              ( 10000                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def DeleteItem      ( self                                               ) :
-    ##########################################################################
-    JSON =            { "Function"  : "DeleteItem"                         , \
-                        "Item"      : self                                   }
-    self . JsonCaller ( JSON                                                 )
     ##########################################################################
     return
   ############################################################################
@@ -115,12 +106,12 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return QRect         ( X , Y , W , H                                     )
   ############################################################################
-  def AddFaceRegion   ( self , rect                                        ) :
+  def AddFaceRegion     ( self , rect                                      ) :
     ##########################################################################
-    JSON =            { "Function"  : "AddFaceRegion"                      , \
-                        "Item"      : self                                 , \
-                        "Rectangle" : rect                                   }
-    self . JsonCaller ( JSON                                                 )
+    JSON =              { "Function"  : "AddFaceRegion"                    , \
+                          "Item"      : self                               , \
+                          "Rectangle" : rect                                 }
+    self . DoJsonCaller ( JSON                                               )
     ##########################################################################
     return
   ############################################################################
@@ -193,7 +184,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     JSON =                       { "Function"  : "AddPicture"              , \
                                    "Picture"   : PIC                       , \
                                    "Z"         : self . LastestZ             }
-    self . JsonCaller            ( JSON                                      )
+    self . DoJsonCaller          ( JSON                                      )
     ##########################################################################
     return
   ############################################################################
@@ -220,7 +211,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     JSON =                       { "Function"  : "AddPicture"              , \
                                    "Picture"   : PIC                       , \
                                    "Z"         : self . LastestZ             }
-    self . JsonCaller            ( JSON                                      )
+    self . DoJsonCaller          ( JSON                                      )
     ##########################################################################
     return
   ############################################################################

@@ -60,15 +60,16 @@ from   AITK  . VCF      . VcfRectangle import VcfRectangle as VcfRectangle
 from   AITK  . People . Faces   . VcfFaceRegion    import VcfFaceRegion    as VcfFaceRegion
 from   AITK  . People . Widgets . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
 ##############################################################################
-class PictureEditor         ( VcfWidget                                    ) :
+class PictureEditor               ( VcfWidget                              ) :
   ############################################################################
-  Adjustment   = pyqtSignal ( QWidget , QSize                                )
-  JsonCallback = pyqtSignal ( dict                                           )
+  Adjustment   = pyqtSignal       ( QWidget , QSize                          )
+  JsonCallback = pyqtSignal       ( dict                                     )
   ############################################################################
-  def __init__              ( self , parent = None , plan = None           ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__    (        parent ,        plan                    )
+    super ( ) . __init__          (        parent ,        plan              )
     ##########################################################################
+    self . setJsonCaller          ( self . JsonCaller                        )
     self . JsonCallback . connect ( self . JsonAccepter                      )
     ##########################################################################
     return
@@ -125,7 +126,6 @@ class PictureEditor         ( VcfWidget                                    ) :
                                    MP . x ( ) , MP . y ( )                   )
     ##########################################################################
     VRIT = VcfFaceRegion         ( self , parent  , self . PlanFunc          )
-    VRIT . JsonCaller = self . JsonCaller
     VRIT . setOptions            ( self . Options , False                    )
     self . assignItemProperties  ( VRIT                                      )
     VRIT . setMenuCaller         ( self . MenuCallerEmitter                  )
@@ -156,7 +156,6 @@ class PictureEditor         ( VcfWidget                                    ) :
   def AddPicture                  ( self , PIC , Z                         ) :
     ##########################################################################
     VRIT = VcfPeoplePicture       ( self , None , self . PlanFunc            )
-    VRIT . JsonCaller = self . JsonCaller
     VRIT . setOptions             ( self . Options , False                   )
     self . assignItemProperties   ( VRIT                                     )
     VRIT . setMenuCaller          ( self . MenuCallerEmitter                 )
@@ -175,7 +174,6 @@ class PictureEditor         ( VcfWidget                                    ) :
     self . PerfectView          (                                            )
     ##########################################################################
     VRIT = VcfPeoplePicture     ( self , None , self . PlanFunc              )
-    VRIT . JsonCaller = self . JsonCaller
     VRIT . setOptions           ( self . Options , False                     )
     self . assignItemProperties ( VRIT                                       )
     VRIT . setMenuCaller        ( self . MenuCallerEmitter                   )
