@@ -158,7 +158,7 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     self . Painter . drawPainterPath  ( p , "Grid"                           )
     self . CurrentTimeBlock           (        p , region , clip , color     )
     ##########################################################################
-    self . popPainters                ( p                                  )
+    self . popPainters                ( p                                    )
     ##########################################################################
     return
   ############################################################################

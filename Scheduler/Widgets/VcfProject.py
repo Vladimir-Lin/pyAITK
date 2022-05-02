@@ -26,6 +26,7 @@ from   PyQt5 . QtCore                      import QSize
 from   PyQt5 . QtCore                      import QSizeF
 from   PyQt5 . QtCore                      import QRect
 from   PyQt5 . QtCore                      import QRectF
+from   PyQt5 . QtCore                      import QTimer
 ##############################################################################
 from   PyQt5 . QtGui                       import QIcon
 from   PyQt5 . QtGui                       import QColor
@@ -70,6 +71,18 @@ class VcfProject                  ( VcfWidget                              ) :
     self . setJsonCaller          ( self . JsonCaller                        )
     self . JsonCallback . connect ( self . JsonAccepter                      )
     ##########################################################################
+    self . TimeSelector = None
+    self . Tracker      = QTimer  ( self                                     )
+    self . Tracker . setInterval  ( 1000                                     )
+    self . Tracker . timeout . connect ( self . RefreshRegularly             )
+    ##########################################################################
+    return
+  ############################################################################
+  def __del__               ( self                                         ) :
+    ##########################################################################
+    if                      ( self . Tracker . isActive ( )                ) :
+      self . Tracker . stop (                                                )
+    ##########################################################################
     return
   ############################################################################
   def JsonCaller               ( self , JSON                               ) :
@@ -91,6 +104,38 @@ class VcfProject                  ( VcfWidget                              ) :
       return
     ##########################################################################
     return
+  ############################################################################
+  def WindowSizeView             ( self , size                             ) :
+    ##########################################################################
+    self . View = self . asPaper ( self . available ( size )                 )
+    self . Scene . setSceneRect  ( self . View                               )
+    self . setTransform          ( self . Transform                          )
+    ##########################################################################
+    if                           ( self . IsOkay ( self . TimeSelector )   ) :
+      self . TimeSelector . ViewChanged ( self . View                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def RefreshRegularly      ( self                                         ) :
+    ##########################################################################
+    if                      ( self . IsOkay ( self . TimeSelector )        ) :
+      ########################################################################
+      self . TimeSelector . setCurrent            (                          )
+      self . TimeSelector . prepareGeometryChange (                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def addTimeSelector       ( self                                         ) :
+    ##########################################################################
+    VTS  = VcfTimeSelector  ( self , None , self . PlanFunc                  )
+    VTS  . setOptions       ( self . Options , False                         )
+    VTS  . setRange         ( QRectF     ( 0.0 , 0.0 , 0.1 , 0.1 )           )
+    ## VTS  . setMenuCaller    ( self . MenuCallerEmitter                       )
+    ##########################################################################
+    self . addItem          ( VTS                                            )
+    self . Scene . addItem  ( VTS                                            )
+    ##########################################################################
+    return VTS
   ############################################################################
   def startup                ( self                                        ) :
     ##########################################################################
@@ -128,7 +173,16 @@ class VcfProject                  ( VcfWidget                              ) :
     self  . addItem          ( VTSI                                          )
     self  . Scene . addItem  ( VTSI                                          )
     ##########################################################################
+    self  . TimeSelector = self . addTimeSelector (                          )
+    self  . TimeSelector . setPeriod  ( SDT , EDT                            )
+    self  . TimeSelector . setCurrent (                                      )
+    ##########################################################################
     self  . setPrepared      ( True                                          )
+    ##########################################################################
+    VW    = self . asPaper   ( self . available ( self . size ( ) )          )
+    self  . TimeSelector . ViewChanged ( self . View , False                 )
+    ##########################################################################
+    self  . Tracker . start  (                                               )
     ##########################################################################
     return
 ##############################################################################
