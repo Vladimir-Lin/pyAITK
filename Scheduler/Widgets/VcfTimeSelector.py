@@ -161,7 +161,7 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     FX   = self . TrackingPos . x       (                                    )
     FY   = self . TrackingPos . y       (                                    )
     FX   = float                        ( FX + 48.0                          )
-    FY   = float                        ( FY + 48.0                          )
+    FY   = float                        ( FY + 60.0                          )
     FW   = RF . width                   (                                    )
     FH   = RF . height                  (                                    )
     FW   = float                        ( FW * 2                             )
@@ -171,7 +171,7 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     if                                  ( FR > RP                          ) :
       FX = float                        ( FX - 52.0 - FW                     )
     if                                  ( FB > BP                          ) :
-      FY = float                        ( FY - 52.0 - FH                     )
+      FY = float                        ( FY - 64.0 - FH                     )
     PT   = QRectF                       ( FX , FY , FW , FH                  )
     ##########################################################################
     p    . setFont                      ( self . Painter . fonts [ 3 ]       )
