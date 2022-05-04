@@ -65,6 +65,7 @@ class PictureEditor               ( VcfWidget                              ) :
   ############################################################################
   Adjustment   = pyqtSignal       ( QWidget , QSize                          )
   JsonCallback = pyqtSignal       ( dict                                     )
+  Leave        = pyqtSignal       ( QWidget                                  )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -81,31 +82,39 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def JsonAccepter              ( self , JSON                              ) :
+  def JsonAccepter               ( self , JSON                             ) :
     ##########################################################################
-    CALLER = JSON               [ "Function"                                 ]
+    CALLER = JSON                [ "Function"                                ]
     ##########################################################################
-    if                          ( CALLER == "DeleteItem"                   ) :
+    if                           ( CALLER == "DeleteItem"                  ) :
       ########################################################################
-      ITEM = JSON               [ "Item"                                     ]
-      self . takeItem           ( ITEM                                       )
-      self . Scene . removeItem ( ITEM                                       )
+      ITEM = JSON                [ "Item"                                    ]
+      self . takeItem            ( ITEM                                      )
+      self . Scene . removeItem  ( ITEM                                      )
       ########################################################################
       return
     ##########################################################################
-    if                          ( CALLER == "AddFaceRegion"                ) :
+    if                           ( CALLER == "AddFaceRegion"               ) :
       ########################################################################
-      ITEM = JSON               [ "Item"                                     ]
-      RECT = JSON               [ "Rectangle"                                ]
-      self . AddFaceRegion      ( ITEM , RECT                                )
+      ITEM = JSON                [ "Item"                                    ]
+      RECT = JSON                [ "Rectangle"                               ]
+      self . AddFaceRegion       ( ITEM , RECT                               )
       ########################################################################
       return
     ##########################################################################
-    if                          ( CALLER == "AddPicture"                   ) :
+    if                           ( CALLER == "AddPicture"                  ) :
       ########################################################################
-      PIC  = JSON               [ "Picture"                                  ]
-      Z    = JSON               [ "Z"                                        ]
-      self . AddPicture         ( PIC , Z                                    )
+      PIC  = JSON                [ "Picture"                                 ]
+      Z    = JSON                [ "Z"                                       ]
+      self . AddPicture          ( PIC , Z                                   )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( CALLER == "AttachPeopleDetails"         ) :
+      ########################################################################
+      ITEM = JSON                [ "Item"                                    ]
+      NAME = JSON                [ "Name"                                    ]
+      self . AttachPeopleDetails ( NAME , ITEM                               )
       ########################################################################
       return
     ##########################################################################
@@ -116,6 +125,15 @@ class PictureEditor               ( VcfWidget                              ) :
     self . View = self . asPaper ( self . available ( size )                 )
     self . Scene . setSceneRect  ( self . View                               )
     self . setTransform          ( self . Transform                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachPeopleDetails         ( self , Name , Item                     ) :
+    ##########################################################################
+    PDW  = PeopleDetails          ( None , self . PlanFunc                   )
+    self . addControl             ( Name , PDW , self                        )
+    Item . PeopleDetailsUI = PDW
+    PDW  . AttachExternalFunction ( Item . PeopleDetailsChanged              )
     ##########################################################################
     return
   ############################################################################
