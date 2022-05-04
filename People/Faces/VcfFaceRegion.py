@@ -86,6 +86,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . PictureItem     = None
     self . Region          = None
     self . NoseBridge      = None
+    self . PeopleDetailsUI = None
     self . FACEs           =   [                                             ]
     self . EYEs            =   [                                             ]
     self . MOUTHs          =   [                                             ]
@@ -477,6 +478,10 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return
   ############################################################################
+  def PeopleDetailsChanged          ( self , WhatJSON                      ) :
+    ##########################################################################
+    ##########################################################################
+    return
   ############################################################################
   def Menu                          ( self , gview , pos , spos            ) :
     ##########################################################################
