@@ -20,8 +20,15 @@ class Ui_PeopleDetailsUI(object):
         self.PeopleUuid = QtWidgets.QLineEdit(PeopleDetailsUI)
         self.PeopleUuid.setGeometry(QtCore.QRect(20, 180, 160, 28))
         self.PeopleUuid.setObjectName("PeopleUuid")
+        self.Functions = QtWidgets.QComboBox(PeopleDetailsUI)
+        self.Functions.setGeometry(QtCore.QRect(20, 208, 160, 28))
+        self.Functions.setObjectName("Functions")
+        self.Stacked = QtWidgets.QStackedWidget(PeopleDetailsUI)
+        self.Stacked.setGeometry(QtCore.QRect(20, 240, 251, 311))
+        self.Stacked.setObjectName("Stacked")
 
         self.retranslateUi(PeopleDetailsUI)
+        self.PeopleUuid.editingFinished.connect(PeopleDetailsUI.PeopleUuidChanged)
         QtCore.QMetaObject.connectSlotsByName(PeopleDetailsUI)
 
     def retranslateUi(self, PeopleDetailsUI):
