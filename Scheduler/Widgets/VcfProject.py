@@ -91,15 +91,23 @@ class VcfProject                  ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def JsonAccepter              ( self , JSON                              ) :
+  def JsonAccepter                ( self , JSON                            ) :
     ##########################################################################
-    CALLER = JSON               [ "Function"                                 ]
+    CALLER = JSON                 [ "Function"                               ]
     ##########################################################################
-    if                          ( CALLER == "DeleteItem"                   ) :
+    if                            ( CALLER == "DeleteItem"                 ) :
       ########################################################################
-      ITEM = JSON               [ "Item"                                     ]
-      self . takeItem           ( ITEM                                       )
-      self . Scene . removeItem ( ITEM                                       )
+      ITEM   = JSON               [ "Item"                                   ]
+      self   . takeItem           ( ITEM                                     )
+      self   . Scene . removeItem ( ITEM                                     )
+      ########################################################################
+      return
+    ##########################################################################
+    if                            ( CALLER == "AppendItem"                 ) :
+      ########################################################################
+      ITEM   = JSON               [ "Item"                                   ]
+      PARENT = JSON               [ "Parent"                                 ]
+      self   . addItem            ( ITEM , PARENT                            )
       ########################################################################
       return
     ##########################################################################
@@ -125,6 +133,26 @@ class VcfProject                  ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
+  def addTimeScale             ( self , Selector                           ) :
+    ##########################################################################
+    SDT      = Selector . Duration . Start
+    EDT      = Selector . Duration . End
+    ##########################################################################
+    VTSI     = VcfTimeScale    ( self , None , self . PlanFunc               )
+    VTSI     . setOptions      ( self . Options , False                      )
+    VTSI     . setRange        ( QRectF ( 0.0 , 0.0 , 0.1 , 1.0 )            )
+    VTSI     . PrepareItems    (                                             )
+    VTSI     . setPeriod       ( SDT , EDT                                   )
+    VTSI     . setCurrent      (                                             )
+    ## VTSI     . setMenuCaller ( self . MenuCallerEmitter                   )
+    ##########################################################################
+    self     . addItem         ( VTSI , Selector                             )
+    self     . Scene . addItem ( VTSI                                        )
+    ##########################################################################
+    Selector . TimeScale = VTSI
+    ##########################################################################
+    return
+  ############################################################################
   def addTimeSelector       ( self                                         ) :
     ##########################################################################
     VTS  = VcfTimeSelector  ( self , None , self . PlanFunc                  )
@@ -137,52 +165,27 @@ class VcfProject                  ( VcfWidget                              ) :
     ##########################################################################
     return VTS
   ############################################################################
-  def startup                ( self                                        ) :
+  def startup                         ( self                               ) :
     ##########################################################################
-    self . PerfectView       (                                               )
-    PUID  = 3800400000000000042
-    ## print(PUID)
+    self . PerfectView                (                                      )
     ##########################################################################
-    VRIT  = VcfCanvas        ( self , None , self . PlanFunc                 )
-    VRIT  . setOptions       ( self . Options , False                        )
-    ## VRIT  . Mode = 1
-    VRIT  . Mode = 2
-    VRIT  . setRange         ( QRectF     ( 1.0 , 1.0 , 5.0 , 5.0 )          )
-    ## VRIT  . Painter . addPen ( 0 , QColor ( 255 , 192 , 192       )          )
-    VRIT  . Painter . addBrush ( 0 , QColor ( 255 , 240 , 240 )              )
-    VRIT  . setMenuCaller    ( self . MenuCallerEmitter                      )
-    VRIT  . setZValue        ( 10000                                         )
-    VRIT  . setOpacity       ( 0.75                                          )
+    NOW  = StarDate                   (                                      )
+    NOW  . Now                        (                                      )
+    SDT  = int                        ( NOW . Stardate - 60                  )
+    EDT  = int                        ( SDT + 600                            )
     ##########################################################################
-    self  . addItem          ( VRIT                                          )
-    self  . Scene . addItem  ( VRIT                                          )
+    TSIW = self . addTimeSelector     (                                      )
+    self . TimeSelector = TSIW
+    self . TimeSelector . setPeriod   ( SDT , EDT                            )
+    self . TimeSelector . setCurrent  (                                      )
+    self . addTimeScale               ( TSIW                                 )
     ##########################################################################
-    NOW   = StarDate         (                                               )
-    NOW   . Now              (                                               )
-    SDT   = int              ( NOW . Stardate - 60                           )
-    EDT   = int              ( SDT + 600                                     )
+    self . setPrepared                ( True                                 )
     ##########################################################################
-    VTSI  = VcfTimeScale     ( self , None , self . PlanFunc                 )
-    VTSI  . setOptions       ( self . Options , False                        )
-    VTSI  . setRange         ( QRectF ( 0.0 , 0.0 , 63.0 , 1.0 )             )
-    VTSI  . PrepareItems     (                                               )
-    VTSI  . setPeriod        ( SDT , EDT                                     )
-    VTSI  . setCurrent       (                                               )
-    VTSI  . setMenuCaller    ( self . MenuCallerEmitter                      )
+    VW   = self . asPaper             ( self . available ( self . size ( ) ) )
+    self . TimeSelector . ViewChanged ( self . View , False                  )
     ##########################################################################
-    self  . addItem          ( VTSI                                          )
-    self  . Scene . addItem  ( VTSI                                          )
-    ##########################################################################
-    self  . TimeSelector = self . addTimeSelector (                          )
-    self  . TimeSelector . setPeriod  ( SDT , EDT                            )
-    self  . TimeSelector . setCurrent (                                      )
-    ##########################################################################
-    self  . setPrepared      ( True                                          )
-    ##########################################################################
-    VW    = self . asPaper   ( self . available ( self . size ( ) )          )
-    self  . TimeSelector . ViewChanged ( self . View , False                 )
-    ##########################################################################
-    self  . Tracker . start  (                                               )
+    self . Tracker . start            (                                      )
     ##########################################################################
     return
 ##############################################################################

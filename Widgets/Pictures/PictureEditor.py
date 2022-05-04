@@ -59,6 +59,7 @@ from   AITK  . VCF      . VcfItem      import VcfItem      as VcfItem
 from   AITK  . VCF      . VcfRectangle import VcfRectangle as VcfRectangle
 from   AITK  . People . Faces   . VcfFaceRegion    import VcfFaceRegion    as VcfFaceRegion
 from   AITK  . People . Widgets . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
+from   AITK  . People . Widgets . PeopleDetails    import PeopleDetails    as PeopleDetails
 ##############################################################################
 class PictureEditor               ( VcfWidget                              ) :
   ############################################################################
