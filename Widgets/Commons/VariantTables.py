@@ -72,6 +72,8 @@ class VariantTables                ( TreeDock                              ) :
     self . Uuid               = 0
     self . Type               = 0
     self . Name               = ""
+    self . Mode               = 0
+    self . CallbackFunction   = None
     self . JSON               = { }
     self . SortOrder          = "desc"
     ##########################################################################

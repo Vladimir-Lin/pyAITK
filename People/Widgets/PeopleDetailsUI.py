@@ -24,11 +24,20 @@ class Ui_PeopleDetailsUI(object):
         self.Functions.setGeometry(QtCore.QRect(20, 208, 160, 28))
         self.Functions.setObjectName("Functions")
         self.Stacked = QtWidgets.QStackedWidget(PeopleDetailsUI)
-        self.Stacked.setGeometry(QtCore.QRect(20, 240, 251, 311))
+        self.Stacked.setGeometry(QtCore.QRect(20, 236, 251, 311))
         self.Stacked.setObjectName("Stacked")
+        self.Tables = QtWidgets.QToolButton(PeopleDetailsUI)
+        self.Tables.setGeometry(QtCore.QRect(180, 20, 32, 32))
+        self.Tables.setText("")
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap(":/images/tableproperties.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.Tables.setIcon(icon)
+        self.Tables.setIconSize(QtCore.QSize(32, 32))
+        self.Tables.setObjectName("Tables")
 
         self.retranslateUi(PeopleDetailsUI)
         self.PeopleUuid.editingFinished.connect(PeopleDetailsUI.PeopleUuidChanged)
+        self.Tables.clicked.connect(PeopleDetailsUI.TablesEditing)
         QtCore.QMetaObject.connectSlotsByName(PeopleDetailsUI)
 
     def retranslateUi(self, PeopleDetailsUI):

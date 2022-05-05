@@ -71,6 +71,8 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     super ( ) . __init__          (        parent ,        plan              )
     ##########################################################################
+    self . MainGui      = None
+    self . MainTables   =         {                                          }
     self . setJsonCaller          ( self . JsonCaller                        )
     self . JsonCallback . connect ( self . JsonAccepter                      )
     ##########################################################################
@@ -131,9 +133,16 @@ class PictureEditor               ( VcfWidget                              ) :
   def AttachPeopleDetails         ( self , Name , Item                     ) :
     ##########################################################################
     PDW  = PeopleDetails          ( None , self . PlanFunc                   )
+    ##########################################################################
+    PDW  . Settings = self . Settings
+    PDW  . Tables   = self . MainTables [ "PeopleDetails"                    ]
+    PDW  . DB       = self . Settings   [ "Database"                         ]
+    PDW  . DynamicVariantTables . connect ( self . MainGui . DynamicVariantTables )
+    ##########################################################################
     self . addControl             ( Name , PDW , self                        )
     Item . PeopleDetailsUI = PDW
     PDW  . AttachExternalFunction ( Item . PeopleDetailsChanged              )
+    PDW  . startup                (                                          )
     ##########################################################################
     return
   ############################################################################
