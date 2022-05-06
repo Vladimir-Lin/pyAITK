@@ -59,6 +59,9 @@ from   AITK  . Documents  . Notes          import Notes          as Notes
 from   AITK  . Documents  . Variables      import Variables      as Variables
 from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 ##############################################################################
+from   AITK  . Pictures   . Picture        import Picture        as PictureItem
+from   AITK  . Pictures   . Gallery        import Gallery        as GalleryItem
+##############################################################################
 from   AITK  . Scheduler  . Project        import Project        as Project
 from   AITK  . Scheduler  . Projects       import Projects       as Projects
 from   AITK  . Scheduler  . Event          import Event          as Event
@@ -198,28 +201,23 @@ class PeopleDetails                 ( Widget                               ) :
     ##########################################################################
     return self   . FetchQIcon ( DB , TUBTAB , PUID , ISIZE                  )
   ############################################################################
-  def LoadPeopleIcon             ( self , DB , PUID                        ) :
+  def LoadPeopleIcon               ( self , DB , PUID                      ) :
     ##########################################################################
-    RELTAB = self . Tables       [ "Relation"                                ]
+    RELTAB = self . Tables         [ "Relation"                              ]
     ##########################################################################
-    REL    = Relation            (                                           )
-    REL    . set                 ( "first" , PUID                            )
-    REL    . setT1               ( "People"                                  )
-    REL    . setT2               ( "Picture"                                 )
-    REL    . setRelation         ( "Using"                                   )
+    GALM   = GalleryItem           (                                         )
+    PICS   = GALM . GetIcons       ( DB , RELTAB , PUID , "People"           )
     ##########################################################################
-    PICS   = REL . Subordination ( DB      , RELTAB                          )
-    ##########################################################################
-    if                           ( len ( PICS ) <= 0                       ) :
+    if                             ( len ( PICS ) <= 0                     ) :
       return
     ##########################################################################
-    PUID   = PICS                [ 0                                         ]
-    ICON   = self . FetchIcon    ( DB , PUID                                 )
+    PUID   = PICS                  [ 0                                       ]
+    ICON   = self . FetchIcon      ( DB , PUID                               )
     ##########################################################################
-    if                           ( self . NotOkay ( ICON )                 ) :
+    if                             ( self . NotOkay ( ICON )               ) :
       return
     ##########################################################################
-    self   . emitAssignIcon      ( ICON                                      )
+    self   . emitAssignIcon . emit ( ICON                                    )
     ##########################################################################
     return
   ############################################################################
