@@ -223,15 +223,16 @@ class VariantTables                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                           (                                      )
-  def DeleteItems                     ( self                               ) :
+  @pyqtSlot                             (                                    )
+  def DeleteItems                       ( self                             ) :
     ##########################################################################
-    items  = self . selectedItems     (                                      )
+    items  = self . selectedItems       (                                    )
     for item in items                                                        :
-      self . pendingRemoveItem . emit ( item                                 )
+      self . pendingRemoveItem . emit   ( item                               )
     ##########################################################################
-    self . Notify                     ( 0                                    )
-    self . JSON = self . GetTableJson (                                      )
+    self   . Notify                     ( 0                                  )
+    self   . JSON = self . GetTableJson (                                    )
+    self   . FeedbackToCallback         (                                    )
     ##########################################################################
     return
   ############################################################################
@@ -289,6 +290,19 @@ class VariantTables                ( TreeDock                              ) :
     ##########################################################################
     self   . removeParked       (                                            )
     self   . JSON = self . GetTableJson (                                    )
+    self   . FeedbackToCallback (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def FeedbackToCallback    ( self                                           ) :
+    ##########################################################################
+    if                      ( self . Mode not in [ 1 ]                     ) :
+      return
+    ##########################################################################
+    if                      ( self . NotOkay ( self . CallbackFunction )   ) :
+      return
+    ##########################################################################
+    self . CallbackFunction ( self . JSON                                    )
     ##########################################################################
     return
   ############################################################################
@@ -353,12 +367,15 @@ class VariantTables                ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    self   . AppendRefreshAction   ( mm , 1001                               )
+    if                             ( self . Mode in [ 0 ]                  ) :
+      self . AppendRefreshAction   ( mm , 1001                               )
+    ##########################################################################
     self   . AppendInsertAction    ( mm , 1101                               )
     ##########################################################################
-    msg    = self . getMenuItem    ( "Save"                                  )
-    icon   = QIcon                 ( ":/images/save.png"                     )
-    mm     . addActionWithIcon     ( 1102 , icon , msg                       )
+    if                             ( self . Mode in [ 0 ]                  ) :
+      msg  = self . getMenuItem    ( "Save"                                  )
+      icon = QIcon                 ( ":/images/save.png"                     )
+      mm   . addActionWithIcon     ( 1102 , icon , msg                       )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
       ########################################################################
@@ -377,11 +394,13 @@ class VariantTables                ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( self . RunSortingMenu     ( at )      ) :
-      self . restart               (                                         )
+      if                           ( self . Mode in [ 0 ]                  ) :
+        self . restart             (                                         )
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
-      self . restart               (                                         )
+      if                           ( self . Mode in [ 0 ]                  ) :
+        self . restart             (                                         )
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
