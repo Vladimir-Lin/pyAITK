@@ -64,6 +64,10 @@ from         . PeopleDetailsUI             import Ui_PeopleDetailsUI
 class PeopleDetails                 ( Widget                               ) :
   ############################################################################
   emitAssignIcon       = pyqtSignal ( QIcon                                  )
+  emitBustle           = pyqtSignal (                                        )
+  emitVacancy          = pyqtSignal (                                        )
+  OnBusy               = pyqtSignal (                                        )
+  GoRelax              = pyqtSignal (                                        )
   Leave                = pyqtSignal ( QWidget                                )
   DynamicVariantTables = pyqtSignal ( str , dict                             )
   ############################################################################
@@ -78,6 +82,10 @@ class PeopleDetails                 ( Widget                               ) :
     self . Callbacks  =             [                                        ]
     ##########################################################################
     self . emitAssignIcon . connect ( self . AssignIcon                      )
+    self . emitBustle     . connect ( self . DoBustle                        )
+    self . emitVacancy    . connect ( self . DoVacancy                       )
+    self . OnBusy         . connect ( self . AtBusy                          )
+    self . GoRelax        . connect ( self . OnRelax                         )
     ##########################################################################
     return
   ############################################################################
@@ -134,6 +142,24 @@ class PeopleDetails                 ( Widget                               ) :
     if                          ( FUNC not in self . Callbacks             ) :
       self . Callbacks . append (        FUNC                                )
     ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DoBustle                ( self                                       ) :
+    self . Bustle             (                                              )
+    return
+  ############################################################################
+  def setBustle               ( self                                       ) :
+    self . emitBustle  . emit (                                              )
+    return
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DoVacancy               ( self                                       ) :
+    self . Vacancy            (                                              )
+    return
+  ############################################################################
+  def setVacancy              ( self                                       ) :
+    self . emitVacancy . emit (                                              )
     return
   ############################################################################
   @pyqtSlot                      (       QIcon                               )
