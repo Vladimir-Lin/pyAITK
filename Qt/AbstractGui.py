@@ -31,10 +31,13 @@ from   PyQt5 . QtCore                 import QDateTime
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QPixmap
 from   PyQt5 . QtGui                  import QImage
+from   PyQt5 . QtGui                  import QColor
+from   PyQt5 . QtGui                  import QPainter
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtGui                  import QDrag
 from   PyQt5 . QtGui                  import QFont
+from   PyQt5 . QtGui                  import QFontMetrics
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -1637,6 +1640,81 @@ class AbstractGui        (                                                 ) :
     p . SystemVariables [ key ] = value
     ##########################################################################
     return
+  ############################################################################
+  def FetchIconBlob                   ( self , DB , TABLE , PUID           ) :
+    ##########################################################################
+    QQ   = self . FetchThumbSqlSyntax ( TABLE , PUID                         )
+    ##########################################################################
+    return self . FetchIconBlobSql    ( DB , QQ                              )
+  ############################################################################
+  def FetchThumbSqlSyntax  ( self , TABLE , PUID                           ) :
+    ##########################################################################
+    WH   = f"where ( `usage` = 'ICON' ) and ( `uuid` = {PUID} )"
+    OPTS = "order by `id` desc limit 0 , 1"
+    QQ   = f"select `thumb` from {TABLE} {WH} {OPTS} ;"
+    ##########################################################################
+    return QQ
+  ############################################################################
+  def FetchIconBlobSql     ( self , DB , QQ                                ) :
+    ##########################################################################
+    DB     . Query         ( QQ                                              )
+    THUMB  = DB . FetchOne (                                                 )
+    ##########################################################################
+    if                     ( THUMB == None                                 ) :
+      return None
+    ##########################################################################
+    if                     ( len ( THUMB ) <= 0                            ) :
+      return None
+    ##########################################################################
+    BLOB   = THUMB         [ 0                                               ]
+    if                     ( isinstance ( BLOB , bytearray )               ) :
+      BLOB = bytes         ( BLOB                                            )
+    ##########################################################################
+    if                     ( len ( BLOB ) <= 0                             ) :
+      return None
+    ##########################################################################
+    return BLOB
+  ############################################################################
+  def BlobToImage      ( self , BLOB , FORMAT                              ) :
+    ##########################################################################
+    IMG = QImage       (                                                     )
+    IMG . loadFromData ( QByteArray ( BLOB ) , FORMAT                        )
+    ##########################################################################
+    return IMG
+  ############################################################################
+  def ImageToIcon          ( self , IMAGE , SIZE = QSize ( 128 , 128 )     ) :
+    ##########################################################################
+    TSI = IMAGE . size     (                                                 )
+    ICZ = QImage           ( SIZE , QImage . Format_ARGB32                   )
+    ICZ . fill             ( QColor ( 255 , 255 , 255 )                      )
+    ##########################################################################
+    W   = int              ( ( SIZE . width  ( ) - TSI . width  ( ) ) / 2    )
+    H   = int              ( ( SIZE . height ( ) - TSI . height ( ) ) / 2    )
+    PTS = QPoint           ( W , H                                           )
+    ##########################################################################
+    p   = QPainter         (                                                 )
+    p   . begin            ( ICZ                                             )
+    p   . drawImage        ( PTS , IMAGE                                     )
+    p   . end              (                                                 )
+    ##########################################################################
+    PIX = QPixmap          (                                                 )
+    PIX . convertFromImage ( ICZ                                             )
+    ##########################################################################
+    return QIcon           ( PIX                                             )
+  ############################################################################
+  def FetchQIcon ( self , DB , TABLE , PUID , SIZE = QSize ( 128 , 128 )   ) :
+    ##########################################################################
+    BLOB = self . FetchIconBlob ( DB , TABLE , PUID                          )
+    ##########################################################################
+    if                          ( self . NotOkay ( BLOB )                  ) :
+      return None
+    ##########################################################################
+    IMG  = self . BlobToImage   ( BLOB , "PNG"                               )
+    ##########################################################################
+    return self . ImageToIcon   ( IMG , SIZE                                 )
+    ##########################################################################
+    return
+  ############################################################################
   ############################################################################
 ##############################################################################
 

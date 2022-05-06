@@ -24,10 +24,17 @@ from   PyQt5 . QtCore                      import QPoint
 from   PyQt5 . QtCore                      import QPointF
 from   PyQt5 . QtCore                      import QSize
 from   PyQt5 . QtCore                      import QDateTime
+from   PyQt5 . QtCore                      import QByteArray
 ##############################################################################
-from   PyQt5 . QtGui                       import QIcon
 from   PyQt5 . QtGui                       import QCursor
 from   PyQt5 . QtGui                       import QKeySequence
+from   PyQt5 . QtGui                       import QPainter
+from   PyQt5 . QtGui                       import QColor
+from   PyQt5 . QtGui                       import QIcon
+from   PyQt5 . QtGui                       import QPixmap
+from   PyQt5 . QtGui                       import QImage
+from   PyQt5 . QtGui                       import QFont
+from   PyQt5 . QtGui                       import QFontMetrics
 ##############################################################################
 from   PyQt5 . QtWidgets                   import QApplication
 from   PyQt5 . QtWidgets                   import QWidget
@@ -162,6 +169,18 @@ class PeopleDetails                 ( Widget                               ) :
     self . emitVacancy . emit (                                              )
     return
   ############################################################################
+  def AtBusy           ( self                                              ) :
+    ##########################################################################
+    self . doStartBusy (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OnRelax          ( self                                              ) :
+    ##########################################################################
+    self . doStopBusy  (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
   @pyqtSlot                      (       QIcon                               )
   def AssignIcon                 ( self , icon                             ) :
     ##########################################################################
@@ -169,52 +188,15 @@ class PeopleDetails                 ( Widget                               ) :
     ##########################################################################
     return
   ############################################################################
-  def FetchIcon                       ( self , DB , PUID                   ) :
+  def FetchIcon                ( self , DB , PUID                          ) :
     ##########################################################################
-    if                                ( PUID <= 0                          ) :
+    if                         ( PUID <= 0                                 ) :
       return None
     ##########################################################################
-    TUBTAB     = self . Tables        [ "Thumb"                              ]
-    WH         = f"where ( `usage` = 'ICON' ) and ( `uuid` = {PUID} )"
-    OPTS       = "order by `id` desc limit 0 , 1"
-    QQ         = f"select `thumb` from {TUBTAB} {WH} {OPTS} ;"
-    DB         . Query                ( QQ                                   )
-    THUMB      = DB . FetchOne        (                                      )
+    TUBTAB = self . Tables     [ "Thumb"                                     ]
+    ISIZE  = QSize             ( 128 , 128                                   )
     ##########################################################################
-    if                                ( THUMB == None                      ) :
-      return None
-    ##########################################################################
-    if                                ( len ( THUMB ) <= 0                 ) :
-      return None
-    ##########################################################################
-    BLOB       = THUMB                [ 0                                    ]
-    if                                ( isinstance ( BLOB , bytearray )    ) :
-      BLOB = bytes                    ( BLOB                                 )
-    ##########################################################################
-    if                                ( len ( BLOB ) <= 0                  ) :
-      return None
-    ##########################################################################
-    IMG        = QImage               (                                      )
-    IMG        . loadFromData         ( QByteArray ( BLOB ) , "PNG"          )
-    TSIZE      = IMG . size           (                                      )
-    ##########################################################################
-    ISIZE      = self . iconSize      (                                      )
-    ICZ        = QImage               ( ISIZE , QImage . Format_ARGB32       )
-    ICZ        . fill                 ( QColor ( 255 , 255 , 255 )           )
-    ##########################################################################
-    W          = int       ( ( ISIZE . width  ( ) - TSIZE . width  ( ) ) / 2 )
-    H          = int       ( ( ISIZE . height ( ) - TSIZE . height ( ) ) / 2 )
-    PTS        = QPoint               ( W , H                                )
-    ##########################################################################
-    p          = QPainter             (                                      )
-    p          . begin                ( ICZ                                  )
-    p          . drawImage            ( PTS , IMG                            )
-    p          . end                  (                                      )
-    ##########################################################################
-    PIX        = QPixmap              (                                      )
-    PIX        . convertFromImage     ( ICZ                                  )
-    ##########################################################################
-    return QIcon                      ( PIX                                  )
+    return self   . FetchQIcon ( DB , TUBTAB , PUID , ISIZE                  )
   ############################################################################
   def LoadPeopleIcon             ( self , DB , PUID                        ) :
     ##########################################################################
@@ -243,7 +225,7 @@ class PeopleDetails                 ( Widget                               ) :
   ############################################################################
   def ReloadPeopleInformation         ( self                               ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
+    DB      = self . ConnectDB        ( UsePure = True                       )
     if                                ( DB == None                         ) :
       return
     ##########################################################################
