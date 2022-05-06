@@ -87,6 +87,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . Region          = None
     self . NoseBridge      = None
     self . PeopleDetailsUI = None
+    self . PeopleUuid      = 0
     self . FACEs           =   [                                             ]
     self . EYEs            =   [                                             ]
     self . MOUTHs          =   [                                             ]
@@ -503,10 +504,18 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return
   ############################################################################
-  def PeopleDetailsChanged          ( self , WhatJSON                      ) :
+  def PeopleDetailsChanged ( self , WhatJSON                               ) :
     ##########################################################################
+    Action   = WhatJSON    [ "Action"                                        ]
     ##########################################################################
-    return
+    if                     ( Action == "Detach"                            ) :
+      WIDGET = WhatJSON    [ "Widget"                                        ]
+      if                   ( WIDGET == self . PeopleDetailsUI              ) :
+        self . PeopleDetailsUI = None
+    elif                   ( Action == "People"                            ) :
+      self   . PeopleUuid      = WhatJSON [ "People"                         ]
+    ##########################################################################
+    return                 { "Answer" : "Okay"                               }
   ############################################################################
   def AttachPeopleDetails ( self                                           ) :
     ##########################################################################
@@ -552,8 +561,10 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     MSG    = self . getMenuItem     ( "AdjustToSquare"                       )
     mm     . addAction              ( 1007 , MSG                             )
     ##########################################################################
-    MSG    = self . getMenuItem     ( "AttachPeopleDetails"                  )
-    mm     . addAction              ( 2001 , MSG                             )
+    if ( self . NotOkay ( self . PeopleDetailsUI ) )                         :
+      ########################################################################
+      MSG  = self . getMenuItem     ( "AttachPeopleDetails"                  )
+      mm   . addAction              ( 2001 , MSG                             )
     ##########################################################################
     mm     . setFont                ( gview   . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )

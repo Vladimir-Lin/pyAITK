@@ -130,14 +130,16 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachPeopleDetails         ( self , Name , Item                     ) :
+  def AttachPeopleDetails ( self , Name , Item                             ) :
     ##########################################################################
-    PDW  = PeopleDetails          ( None , self . PlanFunc                   )
+    PDW = PeopleDetails   ( None , self . PlanFunc                           )
     ##########################################################################
-    PDW  . Settings = self . Settings
-    PDW  . Tables   = self . MainTables [ "PeopleDetails"                    ]
-    PDW  . DB       = self . Settings   [ "Database"                         ]
-    PDW  . DynamicVariantTables . connect ( self . MainGui . DynamicVariantTables )
+    FUNC               = self  . MainGui . DynamicVariantTables
+    PDW . Settings     = self  . Settings
+    PDW . Translations = self  . Translations
+    PDW . Tables       = self  . MainTables [ "PeopleDetails"                ]
+    PDW . DB           = self  . Settings   [ "Database"                     ]
+    PDW . DynamicVariantTables . connect    ( FUNC                           )
     ##########################################################################
     self . addControl             ( Name , PDW , self                        )
     Item . PeopleDetailsUI = PDW
