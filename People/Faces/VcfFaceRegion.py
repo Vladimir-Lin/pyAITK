@@ -644,7 +644,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     if ( self . NoseBridge not in [ False , None ] )                         :
       ########################################################################
       FMT = self . getMenuItem ( "RotateImage"                               )
-      MSG = FMT  . format      ( self . RotateAngle ( )                      )
+      msg = FMT  . format      ( self . RotateAngle ( )                      )
       mm  . addActionFromMenu  ( COL , 21451202 , msg                        )
     ##########################################################################
     return mm
