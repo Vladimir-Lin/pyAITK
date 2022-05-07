@@ -57,8 +57,9 @@ class ColorWidget                 ( Widget                                 ) :
   ############################################################################
   HavingMenu   = 1371434312
   ############################################################################
-  emitSetColor = pyqtSignal       ( QColor                                   )
-  Leave        = pyqtSignal       ( QWidget                                  )
+  emitSetColor     = pyqtSignal   ( QColor                                   )
+  emitColorChanged = pyqtSignal   ( QColor                                   )
+  Leave            = pyqtSignal   ( QWidget                                  )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -146,11 +147,12 @@ class ColorWidget                 ( Widget                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def setColor             ( self , color                                  ) :
+  def setColor                     ( self , color                          ) :
     ##########################################################################
     self . Color = color
-    self . PrepareImage    (                                                 )
-    self . setColorToolTip (                                                 )
+    self . PrepareImage            (                                         )
+    self . setColorToolTip         (                                         )
+    self . emitColorChanged . emit ( self . Color                            )
     ##########################################################################
     return
   ############################################################################
