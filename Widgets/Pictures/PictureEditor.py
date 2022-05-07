@@ -98,9 +98,18 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     if                           ( CALLER == "AddFaceRegion"               ) :
       ########################################################################
-      ITEM = JSON                [ "Item"                                    ]
-      RECT = JSON                [ "Rectangle"                               ]
-      self . AddFaceRegion       ( ITEM , RECT                               )
+      ITEM   = JSON              [ "Item"                                    ]
+      RECT   = JSON              [ "Rectangle"                               ]
+      self   . AddFaceRegion     ( ITEM , RECT                               )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( CALLER == "AdjustFaceRegion"            ) :
+      ########################################################################
+      ITEM   = JSON              [ "Item"                                    ]
+      PARENT = JSON              [ "Parent"                                  ]
+      RECT   = JSON              [ "Rectangle"                               ]
+      self   . AdjustFaceRegion  ( ITEM , PARENT , RECT                      )
       ########################################################################
       return
     ##########################################################################
@@ -175,6 +184,26 @@ class PictureEditor               ( VcfWidget                              ) :
     ## self . Scene . addItem       ( VRIT                                      )
     ##########################################################################
     VRIT . prepareGeometryChange (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def AdjustFaceRegion           ( self , item , parent , rect             ) :
+    ##########################################################################
+    PM   = QPoint                ( rect . x     ( ) , rect . y      ( )      )
+    SP   = self   . mapToScene   ( PM                                        )
+    XS   = parent . mapFromScene ( SP                                        )
+    XP   = parent . pointToPaper ( XS                                        )
+    ##########################################################################
+    PM   = QPoint                ( rect . width ( ) , rect . height ( )      )
+    SP   = self   . mapToScene   ( PM                                        )
+    FS   = parent . mapFromScene ( SP                                        )
+    MP   = parent . pointToPaper ( FS                                        )
+    ##########################################################################
+    RR   = QRectF                ( XP . x ( ) , XP . y ( )                 , \
+                                   MP . x ( ) , MP . y ( )                   )
+    ##########################################################################
+    item . Region = rect
+    item . setRange              ( RR                                        )
     ##########################################################################
     return
   ############################################################################
