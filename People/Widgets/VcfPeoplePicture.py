@@ -19,7 +19,7 @@ import cv2
 import dlib
 import skimage
 import numpy                          as np
-import MediaPipe                      as mp
+import mediapipe                      as mp
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -61,6 +61,7 @@ from   AITK  . Pictures   . Picture   import Picture      as PictureItem
 from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
 from   AITK  . Pictures   . Face      import Face         as FaceItem
 ##############################################################################
+from   AITK  . People . Body . Tit    import Tit          as TitItem
 from   AITK  . People . Body . Body   import Body         as BodyItem
 ##############################################################################
 from   AITK  . VCF . VcfPicture       import VcfPicture   as VcfPicture
@@ -188,6 +189,48 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
+  def BodyPoseEstimation                  ( self                           ) :
+    ##########################################################################
+    IMG         = self . PICOP . toOpenCV (                                  )
+    RGB         = cv2  . cvtColor         ( IMG , cv2 . COLOR_BGR2RGB        )
+    WW          = self . PICOP . Width    (                                  )
+    HH          = self . PICOP . Height   (                                  )
+    ##########################################################################
+    BDI         = BodyItem                (                                  )
+    KPS         = BDI . GetBodyKeyPoints  ( RGB , WW , HH                    )
+    print(KPS)
+    ##########################################################################
+    return
+  ############################################################################
+  def BoobsRecognition          ( self                                     ) :
+    ##########################################################################
+    AI       = self . Settings  [ "AI"                                       ]
+    SVM      = AI               [ "Boobs-SVM"                                ]
+    CASCADE  = AI               [ "Boobs-Cascade"                            ]
+    PAIRED   = AI               [ "Boobs-Paired"                             ]
+    SINGLE   = AI               [ "Boobs-Single"                             ]
+    ##########################################################################
+    BCC      = cv2  . CascadeClassifier      ( CASCADE                       )
+    DETECTOR = dlib . simple_object_detector ( SVM                           )
+    ##########################################################################
+    IMG      = self . PICOP . toOpenCV       (                               )
+    GRAY     = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2GRAY    )
+    RGB      = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2RGB     )
+    WW       = self . PICOP . Width          (                               )
+    HH       = self . PICOP . Height         (                               )
+    ##########################################################################
+    TIT     = TitItem           (                                            )
+    TIT     . Classifier = BBC
+    TIT     . Detector   = DETECTOR
+    ##########################################################################
+    BOOBs   = TIT . ToBoobs     ( GRAY                                       )
+    DLIBs   = TIT . ToDlibBoobs ( RGB                                        )
+    ##########################################################################
+    print(BOOBs)
+    print(DLIBs)
+    ##########################################################################
+    return
+  ############################################################################
   def ProduceRotateImage         ( self , degree                           ) :
     ##########################################################################
     PIC  = self . PICOP . Rotate ( degree                                    )
@@ -274,6 +317,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     MSG   = self . getMenuItem     ( "PoseEstimation"                        )
     mm    . addActionFromMenu      ( LOM , 98438601 , MSG                    )
     ##########################################################################
+    MSG   = self . getMenuItem     ( "BoobsRecognition"                      )
+    mm    . addActionFromMenu      ( LOM , 98438602 , MSG                    )
+    ##########################################################################
     return
   ############################################################################
   def RecognitionMenu            ( self , mm                               ) :
@@ -321,6 +367,13 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     if                          ( at == 98438601                           ) :
       ########################################################################
+      self . Go                 ( self . BodyPoseEstimation                  )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 98438602                           ) :
+      ########################################################################
+      self . Go                 ( self . BoobsRecognition                    )
       ########################################################################
       return True
     ##########################################################################
