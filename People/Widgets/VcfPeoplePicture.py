@@ -207,11 +207,6 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     AI       = self . Settings  [ "AI"                                       ]
     SVM      = AI               [ "Boobs-SVM"                                ]
     CASCADE  = AI               [ "Boobs-Cascade"                            ]
-    PAIRED   = AI               [ "Boobs-Paired"                             ]
-    SINGLE   = AI               [ "Boobs-Single"                             ]
-    ##########################################################################
-    BCC      = cv2  . CascadeClassifier      ( CASCADE                       )
-    DETECTOR = dlib . simple_object_detector ( SVM                           )
     ##########################################################################
     IMG      = self . PICOP . toOpenCV       (                               )
     GRAY     = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2GRAY    )
@@ -220,14 +215,31 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     HH       = self . PICOP . Height         (                               )
     ##########################################################################
     TIT     = TitItem           (                                            )
-    TIT     . Classifier = BBC
-    TIT     . Detector   = DETECTOR
+    TIT     . LoadClassifier    ( CASCADE                                    )
+    TIT     . LoadDetector      ( SVM                                        )
     ##########################################################################
     BOOBs   = TIT . ToBoobs     ( GRAY                                       )
     DLIBs   = TIT . ToDlibBoobs ( RGB                                        )
     ##########################################################################
-    print(BOOBs)
-    print(DLIBs)
+    for F in BOOBs                                                           :
+      ########################################################################
+      X     = F                 [ 0                                          ]
+      Y     = F                 [ 1                                          ]
+      W     = F                 [ 2                                          ]
+      H     = F                 [ 3                                          ]
+      R     = QRect             ( X , Y , W , H                              )
+      ########################################################################
+      self  . AddFaceRegion     ( R                                          )
+    ##########################################################################
+    for id in range ( 0 , len ( DLIBs ) )                                    :
+      ########################################################################
+      X     = DLIBs [ id ] . left   (                                        )
+      Y     = DLIBs [ id ] . top    (                                        )
+      W     = DLIBs [ id ] . width  (                                        )
+      H     = DLIBs [ id ] . height (                                        )
+      R     = QRect             ( X , Y , W , H                              )
+      ########################################################################
+      self  . AddFaceRegion     ( R                                          )
     ##########################################################################
     return
   ############################################################################
