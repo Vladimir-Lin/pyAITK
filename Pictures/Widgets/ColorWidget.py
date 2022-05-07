@@ -21,6 +21,7 @@ from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QRect
 from   PyQt5 . QtCore                 import QSize
 from   PyQt5 . QtCore                 import QByteArray
 ##############################################################################
@@ -43,6 +44,7 @@ from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QMenu
+from   PyQt5 . QtWidgets              import QColorDialog
 ##############################################################################
 from   AITK . Qt       . AttachDock   import AttachDock        as AttachDock
 from   AITK . Qt       . MenuManager  import MenuManager       as MenuManager
@@ -51,24 +53,29 @@ from   AITK . Qt       . SpinBox      import SpinBox           as SpinBox
 from   AITK . Pictures . Colors       import WaveLengthToRGB   as waveToRGB
 from   AITK . Pictures . Colors       import RatioToWaveLength as RatioToWave
 ##############################################################################
-class ColorWidget         ( Widget                                         ) :
+class ColorWidget                 ( Widget                                 ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu   = 1371434312
   ############################################################################
-  Leave      = pyqtSignal ( QWidget                                          )
+  emitSetColor = pyqtSignal       ( QColor                                   )
+  Leave        = pyqtSignal       ( QWidget                                  )
   ############################################################################
-  def __init__            ( self , parent = None , plan = None             ) :
+  def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
-    super ( ) . __init__  (        parent        , plan                      )
+    super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
-    self . setFunction    ( self . HavingMenu    , True                      )
+    self . setFunction            ( self . HavingMenu    , True              )
     ##########################################################################
-    self . Color = QColor ( 255 , 255 , 255 , 255                            )
+    self . Color = QColor         ( 255 , 255 , 255 , 255                    )
+    self . Image = None
+    self . setColorToolTip        (                                          )
+    ##########################################################################
+    self . emitSetColor . connect ( self . setColor                          )
     ##########################################################################
     return
   ############################################################################
   def sizeHint   ( self                                                    ) :
-    return QSize ( 40 , 24                                                   )
+    return QSize ( 32 , 24                                                   )
   ############################################################################
   def contextMenuEvent           ( self , event                            ) :
     ##########################################################################
@@ -123,15 +130,45 @@ class ColorWidget         ( Widget                                         ) :
     p    . begin          ( self . Image                                     )
     p    . setPen         ( QPen   ( self . Color  )                         )
     p    . setBrush       ( QBrush ( self . Color  )                         )
-    p    . fillRect       ( QRect  ( 0 , 0 , w , h )                         )
+    p    . drawRect       ( QRect  ( 0 , 0 , w , h )                         )
     p    . end            (                                                  )
     ##########################################################################
     return
   ############################################################################
-  def setColor          ( self , color                                     ) :
+  def setColorToolTip           ( self                                     ) :
+    ##########################################################################
+    R    = self . Color . red   (                                            )
+    G    = self . Color . green (                                            )
+    B    = self . Color . blue  (                                            )
+    A    = self . Color . alpha (                                            )
+    M    = f"{R} , {G} , {B} , {A}"
+    self . setToolTip           ( M                                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def setColor             ( self , color                                  ) :
     ##########################################################################
     self . Color = color
-    self . PrepareImage (                                                    )
+    self . PrepareImage    (                                                 )
+    self . setColorToolTip (                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateColor              ( self , color                              ) :
+    ##########################################################################
+    self . emitSetColor . emit (        color                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def SystemPickColor              ( self                                  ) :
+    ##########################################################################
+    C    = self . Color
+    R    = QColorDialog . getColor ( C , self                                )
+    if                             ( not R . isValid ( )                   ) :
+      return
+    ##########################################################################
+    self . setColor                ( R                                       )
+    self . update                  (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -145,21 +182,18 @@ class ColorWidget         ( Widget                                         ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
+    MSG    = self . getMenuItem     ( "DefaultSelectColor"                   )
+    mm     . addAction              ( 1001 , MSG                             )
     ##########################################################################
     mm     . setFont                ( self    . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
-    """
-    if                              ( at == 2001                           ) :
+    if                              ( at == 1001                           ) :
       ########################################################################
-      if                            ( self . ShowToolTip                   ) :
-        self . ShowToolTip = False
-      else                                                                   :
-        self . ShowToolTip = True
+      self . SystemPickColor        (                                        )
       ########################################################################
       return True
-    """
     ##########################################################################
     return True
 ##############################################################################

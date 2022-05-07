@@ -40,24 +40,26 @@ from   . PurePlan import PurePlan as PurePlan
 ##############################################################################
 class Plan                    ( PurePlan                                   ) :
   ############################################################################
-  def __init__                ( self                                       ) :
+  def __init__                  ( self                                     ) :
     ##########################################################################
-    super ( ) . __init__      (                                              )
+    super ( ) . __init__        (                                            )
     ##########################################################################
-    self . Actions          = {                                              }
-    self . Shortcuts        = {                                              }
-    self . SystemVariables  = {                                              }
-    self . Stacked          = None
-    self . Mdi              = None
-    self . statusMessage    = None
-    self . statusBar        = None
-    self . Ratio            = None
-    self . VoiceWidget      = None
-    self . progressManager  = None
-    self . Pad              = None
-    self . Indicator        = None
-    self . IndicatorCreator = None
-    self . MyFunc           = None
+    self . Actions            = {                                            }
+    self . Shortcuts          = {                                            }
+    self . SystemVariables    = {                                            }
+    self . Stacked            = None
+    self . Mdi                = None
+    self . statusMessage      = None
+    self . statusBar          = None
+    self . Ratio              = None
+    self . VoiceWidget        = None
+    self . progressManager    = None
+    self . Pad                = None
+    self . Indicator          = None
+    self . IndicatorCreator   = None
+    self . MyFunc             = None
+    self . getSystemColorFunc = None
+    self . setSystemColorFunc = None
     ##########################################################################
     return
   ############################################################################
@@ -408,6 +410,20 @@ class Plan                    ( PurePlan                                   ) :
     self . Pad . addControl (        name , widget , parent                  )
     ##########################################################################
     return
+  ############################################################################
+  def getSystemColor ( self                                                ) :
+    ##########################################################################
+    if               ( self . getSystemColorFunc in [ False , None ]       ) :
+      return None
+    ##########################################################################
+    return self . getSystemColorFunc (                                       )
+  ############################################################################
+  def setSystemColor ( self , color                                        ) :
+    ##########################################################################
+    if               ( self . setSystemColorFunc in [ False , None ]       ) :
+      return None
+    ##########################################################################
+    return self . setSystemColorFunc ( color                                 )
 ##############################################################################
 """
 class Q_COMPONENTS_EXPORT Plan : public PurePlan
