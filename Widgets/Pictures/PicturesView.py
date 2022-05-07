@@ -437,7 +437,7 @@ class PicturesView                 ( IconDock                              ) :
   ############################################################################
   def ImportPicturesToDB       ( self , FILEs                              ) :
     ##########################################################################
-    DB     = self . ConnectDB  ( UsePure = False                             )
+    DB     = self . ConnectDB  ( UsePure = True                              )
     if                         ( DB == None                                ) :
       return
     ##########################################################################
@@ -457,7 +457,7 @@ class PicturesView                 ( IconDock                              ) :
   ############################################################################
   def SavePictureAs                ( self , Filename , UUID                ) :
     ##########################################################################
-    DB      = self . ConnectDB     ( UsePure = False                         )
+    DB      = self . ConnectDB     ( UsePure = True                          )
     if                             ( DB == None                            ) :
       return
     ##########################################################################
@@ -465,7 +465,7 @@ class PicturesView                 ( IconDock                              ) :
     self    . setBustle            (                                         )
     ##########################################################################
     PICTAB  = self . Tables        [ "Information"                           ]
-    DPOTAB  = self . Tables        [ "Depot"                                 ]
+    DOPTAB  = self . Tables        [ "Depot"                                 ]
     ##########################################################################
     PIC     = PictureItem          (                                         )
     DOE     = False
@@ -495,7 +495,7 @@ class PicturesView                 ( IconDock                              ) :
   def ExportPicturesToDIR       ( self , DB , DIR , UUIDs                  ) :
     ##########################################################################
     PICTAB  = self . Tables     [ "Information"                              ]
-    DPOTAB  = self . Tables     [ "Depot"                                    ]
+    DOPTAB  = self . Tables     [ "Depot"                                    ]
     ##########################################################################
     PIC     = PictureItem       (                                            )
     ##########################################################################
@@ -512,13 +512,13 @@ class PicturesView                 ( IconDock                              ) :
       if                              ( len ( SUFFIX ) > 0                 ) :
         ######################################################################
         FNAM   = f"{DIR}/{PCID}.{SUFFIX}"
-        PIC    . Export               ( DB , DPOTAB , FNAM                   )
+        PIC    . Export               ( DB , DOPTAB , FNAM                   )
     ##########################################################################
     return
   ############################################################################
   def ExportAllPictures         ( self , DIR                               ) :
     ##########################################################################
-    DB      = self . ConnectDB  ( UsePure = False                            )
+    DB      = self . ConnectDB  ( UsePure = True                             )
     if                          ( DB == None                               ) :
       return
     ##########################################################################
@@ -551,7 +551,7 @@ class PicturesView                 ( IconDock                              ) :
   ############################################################################
   def ExportPictureUUIDs       ( self , DIR , UUIDs                        ) :
     ##########################################################################
-    DB   = self . ConnectDB    ( UsePure = False                             )
+    DB   = self . ConnectDB    ( UsePure = True                              )
     if                         ( DB == None                                ) :
       return
     ##########################################################################
