@@ -20,6 +20,7 @@ from . VcfPaper        import VcfPaper        as VcfPaper
 from . VcfPaperConf    import VcfPaperConf    as VcfPaperConf
 from . VcfPaperManager import VcfPaperManager as VcfPaperManager
 from . VcfPath         import VcfPath         as VcfPath
+from . VcfPoints       import VcfPoints       as VcfPoints
 from . VcfRectangle    import VcfRectangle    as VcfRectangle
 from . VcfRuler        import VcfRuler        as VcfRuler
 from . VcfShape        import VcfShape        as VcfShape
@@ -47,6 +48,7 @@ __all__ = [ "VcfBlock"                                                     , \
             "VcfPaperConf"                                                 , \
             "VcfPaperManager"                                              , \
             "VcfPath"                                                      , \
+            "VcfPoints"                                                    , \
             "VcfRectangle"                                                 , \
             "VcfRuler"                                                     , \
             "VcfShape"                                                     , \

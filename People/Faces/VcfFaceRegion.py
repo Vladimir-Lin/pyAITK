@@ -60,6 +60,9 @@ from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
 from   AITK  . Pictures   . Face      import Face         as FaceItem
 ##############################################################################
 from   AITK  . VCF . VcfItem          import VcfItem      as VcfItem
+from   AITK  . VCF . VcfLines         import VcfLines     as VcfLines
+from   AITK  . VCF . VcfContours      import VcfContours  as VcfContours
+from   AITK  . VCF . VcfPoints        import VcfPoints    as VcfPoints
 from   AITK  . VCF . VcfRectangle     import VcfRectangle as VcfRectangle
 from   AITK  . VCF . VcfCanvas        import VcfCanvas    as VcfCanvas
 ##############################################################################
