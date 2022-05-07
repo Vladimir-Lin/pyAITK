@@ -184,10 +184,10 @@ class PeopleDetails                 ( Widget                               ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (       QIcon                               )
-  def AssignIcon                 ( self , icon                             ) :
+  @pyqtSlot                           (       QIcon                          )
+  def AssignIcon                      ( self , icon                        ) :
     ##########################################################################
-    self . ThumbButton . setIcon (        icon                               )
+    self . ui . ThumbButton . setIcon (        icon                          )
     ##########################################################################
     return
   ############################################################################
@@ -236,7 +236,6 @@ class PeopleDetails                 ( Widget                               ) :
     self    . setBustle               (                                      )
     ##########################################################################
     self    . LoadPeopleIcon          ( DB , self . PeopleUuid               )
-    print("ReloadPeopleInformation")
     ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax . emit          (                                      )
@@ -245,21 +244,21 @@ class PeopleDetails                 ( Widget                               ) :
     ##########################################################################
     return
   ############################################################################
-  def PeopleUuidChanged  ( self                                            ) :
+  def PeopleUuidChanged    ( self                                          ) :
     ##########################################################################
     PUID   = self . ui . PeopleUuid . text (                                 )
     try                                                                      :
-      PUID = int         ( PUID                                              )
+      PUID = int           ( PUID                                            )
     except                                                                   :
       return
     ##########################################################################
     self   . PeopleUuid = PUID
     ##########################################################################
-    JSON =               { "Action" : "People"                             , \
+    JSON   =               { "Action" : "People"                           , \
                            "People" : self . PeopleUuid                      }
-    self . EmitCallbacks ( JSON                                              )
+    self   . EmitCallbacks ( JSON                                            )
     ##########################################################################
-    self   . Go          ( self . ReloadPeopleInformation                    )
+    self   . Go            ( self . ReloadPeopleInformation                  )
     ##########################################################################
     return
   ############################################################################

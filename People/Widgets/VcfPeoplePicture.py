@@ -126,49 +126,62 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FacialRecognition                  ( self                            ) :
+  def FacialRecognition                      ( self , Square = False       ) :
     ##########################################################################
-    ## self      . Gui . OnBusy  . emit     (                                   )
+    ## self        . Gui . OnBusy  . emit       (                               )
     ##########################################################################
-    AI        = self . Settings          [ "AI"                              ]
-    HAAR      = AI                       [ "HAAR"                            ]
-    EYES      = AI                       [ "Eyes"                            ]
-    MOUTH     = AI                       [ "Mouth"                           ]
-    FIVEMARKS = AI                       [ "Fivemarks"                       ]
-    LANDMARKS = AI                       [ "Landmarks"                       ]
-    RESNET    = AI                       [ "Resnet"                          ]
+    AI          = self . Settings            [ "AI"                          ]
+    HAAR        = AI                         [ "HAAR"                        ]
+    EYES        = AI                         [ "Eyes"                        ]
+    MOUTH       = AI                         [ "Mouth"                       ]
+    FIVEMARKS   = AI                         [ "Fivemarks"                   ]
+    LANDMARKS   = AI                         [ "Landmarks"                   ]
+    RESNET      = AI                         [ "Resnet"                      ]
     ##########################################################################
-    FC        = cv2  . CascadeClassifier ( HAAR                              )
-    FIVE      = dlib . shape_predictor   ( FIVEMARKS                         )
-    PREDICTOR = dlib . shape_predictor   ( LANDMARKS                         )
-    FACIAL    = dlib . face_recognition_model_v1 ( RESNET                    )
+    FC          = cv2  . CascadeClassifier   ( HAAR                          )
+    FIVE        = dlib . shape_predictor     ( FIVEMARKS                     )
+    PREDICTOR   = dlib . shape_predictor     ( LANDMARKS                     )
+    FACIAL      = dlib . face_recognition_model_v1 ( RESNET                  )
     ##########################################################################
-    IMG       = self . PICOP . toOpenCV  (                                   )
-    GRAY      = cv2  . cvtColor          ( IMG , cv2 . COLOR_BGR2GRAY        )
-    WW        = self . PICOP . Width     (                                   )
-    HH        = self . PICOP . Height    (                                   )
+    IMG         = self . PICOP . toOpenCV    (                               )
+    GRAY        = cv2  . cvtColor            ( IMG , cv2 . COLOR_BGR2GRAY    )
+    WW          = self . PICOP . Width       (                               )
+    HH          = self . PICOP . Height      (                               )
     ##########################################################################
-    FACE      = FaceItem                 (                                   )
-    FACE      . Classifier = FC
-    FACE      . Fivemarks  = FIVE
-    FACE      . Predictor  = PREDICTOR
-    FACE      . Facial     = FACIAL
+    FACE        = FaceItem                   (                               )
+    FACE        . Classifier = FC
+    FACE        . Fivemarks  = FIVE
+    FACE        . Predictor  = PREDICTOR
+    FACE        . Facial     = FACIAL
     ##########################################################################
-    FACEs     = FACE . ToFaces           ( GRAY                              )
+    FACEs       = FACE . ToFaces             ( GRAY                          )
     ##########################################################################
     for F in FACEs                                                           :
       ########################################################################
-      X       = F                        [ 0                                 ]
-      Y       = F                        [ 1                                 ]
-      W       = F                        [ 2                                 ]
-      H       = F                        [ 3                                 ]
-      R       = QRect                    ( X , Y , W , H                     )
+      if                                     ( Square                      ) :
+        ######################################################################
+        FACE    . setFull                    ( WW , HH                       )
+        SRQ     = FACE . RectangleFromOpenCV ( F                             )
+        KRQ     = FACE . ScaleRectangle      ( SRQ , 1.4                     )
+        KQQ     = FACE . ToSquareRectangle   ( KRQ                           )
+        SSK     = FACE . RestraintRectangle  ( FACE . Full , KQQ             )
+        ######################################################################
+        F [ 0 ] = SSK                        [ "X"                           ]
+        F [ 1 ] = SSK                        [ "Y"                           ]
+        F [ 2 ] = SSK                        [ "W"                           ]
+        F [ 3 ] = SSK                        [ "H"                           ]
       ########################################################################
-      self    . AddFaceRegion            ( R                                 )
+      X         = F                          [ 0                             ]
+      Y         = F                          [ 1                             ]
+      W         = F                          [ 2                             ]
+      H         = F                          [ 3                             ]
+      R         = QRect                      ( X , Y , W , H                 )
+      ########################################################################
+      self      . AddFaceRegion              ( R                             )
     ##########################################################################
-    ## self      . Gui . GoRelax . emit     (                                   )
-    ## self      . prepareGeometryChange    (                                   )
-    self      . Notify                   ( 5                                 )
+    ## self        . Gui . GoRelax . emit       (                               )
+    ## self        . prepareGeometryChange      (                               )
+    self        . Notify                     ( 5                             )
     ##########################################################################
     return
   ############################################################################
@@ -245,6 +258,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     MSG   = self . getMenuItem     ( "BasicFacial"                           )
     mm    . addActionFromMenu      ( LOM , 98438501 , MSG                    )
     ##########################################################################
+    MSG   = self . getMenuItem     ( "SquareFacial"                          )
+    mm    . addActionFromMenu      ( LOM , 98438502 , MSG                    )
+    ##########################################################################
     return
   ############################################################################
   def PeopleBodyMenu               ( self , mm , Menu                      ) :
@@ -290,7 +306,13 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     if                          ( at == 98438501                           ) :
       ########################################################################
-      self . Go                 ( self . FacialRecognition                   )
+      self . Go                 ( self . FacialRecognition , ( False , )     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 98438502                           ) :
+      ########################################################################
+      self . Go                 ( self . FacialRecognition , ( True  , )     )
       ########################################################################
       return True
     ##########################################################################
