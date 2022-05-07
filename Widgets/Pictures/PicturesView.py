@@ -388,50 +388,55 @@ class PicturesView                 ( IconDock                              ) :
   ############################################################################
   ############################################################################
   ############################################################################
-  def ImportPictureToDB  ( self , Filename                                 ) :
+  def ImportPictureToDB              ( self , Filename                     ) :
     ##########################################################################
     print ( Filename )
-    PIC   = PictureItem  (                                                   )
-    OKAY  = PIC . Load   (        Filename                                   )
+    PIC            = PictureItem     (                                       )
+    OKAY           = PIC . Load      (        Filename                       )
     ##########################################################################
-    if                   ( not OKAY                                        ) :
+    if                               ( not OKAY                            ) :
       return False
     ##########################################################################
+    BaseUuid       = int             ( self . Tables [ "BaseUuid" ]          )
+    PICTAB         = self . Tables   [ "Information"                         ]
+    DOPTAB         = self . Tables   [ "Depot"                               ]
+    THUTAB         = self . Tables   [ "ThumbsInformation"                   ]
+    THUDOP         = self . Tables   [ "Thumb"                               ]
+    HASH           = self . Tables   [ "PictureHash"                         ]
+    STAT           = self . Tables   [ "PictureStatistics"                   ]
+    RELTAB         = self . Tables   [ "Relation"                            ]
     ##########################################################################
-    PIC   . PrepareForDB (                                                   )
-    """
-    PIC   . ImportDB             ( DB , OPTS                                   )
-    ############################################################################
-    return int                   ( PIC . UUID                                  )
-    OPTS           =                                                           {
-      "Base"       : 3800700000000000001                                       ,
-      "Prefer"     : -1                                                        ,
-      "Master"     : f"pictures_covers"                                        ,
-      "Depot"      : f"pictures_depot_covers"                                  ,
-      "Thumb"      : f"thumbs_covers"                                          ,
-      "ThumbDepot" : f"thumbs_depot_covers"                                    ,
-      "Hash"       : "pictureproperties_hash"                                  ,
-      "Histogram"  : "pictureproperties_statistics"                            ,
+    OPTS           =                                                         {
+      "Base"       : BaseUuid                                                ,
+      "Prefer"     : -1                                                      ,
+      "Master"     : PICTAB                                                  ,
+      "Depot"      : DOPTAB                                                  ,
+      "Thumb"      : THUTAB                                                  ,
+      "ThumbDepot" : THUDOP                                                  ,
+      "Hash"       : HASH                                                    ,
+      "Histogram"  : STAT                                                    ,
     }
-    "PicturesView"         :                                                   {
-      "Pictures"           : "`pictureorders`"                                 ,
-      "Information"        : "`pictures`"                                      ,
-      "Depot"              : "`picturedepot`"                                  ,
-      "Parameters"         : "`parameters`"                                    ,
-      "Variables"          : "`variables`"                                     ,
-      "Names"              : "`names`"                                         ,
-      "NamesEditing"       : "`names`"                                         ,
-      "ThumbsInformation"  : "`thumbs`"                                        ,
-      "Thumb"              : "`thumbdepot`"                                    ,
-      "Relation"           : "`relations`"                                     ,
-      "RelationPeople"     : "`relations_people`"                              ,
-      "RelationPictures"   : "`relations_pictures`"                            ,
-      "PictureHash"        : "`pictureproperties_hash`"                        ,
-      "PictureStatistics"  : "`pictureproperties_statistics`"                  ,
-      "BaseUuid"           : "3800000000000000001"
-    }                                                                          ,
-    """
     ##########################################################################
+    PIC            . PrepareForDB    (                                       )
+    PIC            . ImportDB        ( DB , OPTS                             )
+    PUID           = int             ( PIC . UUID                            )
+    ##########################################################################
+    if                               ( PUID <= 0                           ) :
+      return False
+    ##########################################################################
+    if                               ( self . isSubordination ( )          ) :
+      ########################################################################
+      self         . Relation . set  ( "second" , PUID                       )
+      DB           . LockWrites      ( [ RELTAB                            ] )
+      self         . Relation . Join ( DB , RELTAB                           )
+      DB           . UnlockTables    (                                       )
+      ########################################################################
+    elif                             ( self . isReverse       ( )          ) :
+      ########################################################################
+      self         . Relation . set  ( "first"  , PUID                       )
+      DB           . LockWrites      ( [ RELTAB                            ] )
+      self         . Relation . Join ( DB , RELTAB                           )
+      DB           . UnlockTables    (                                       )
     ##########################################################################
     return True
   ############################################################################
@@ -452,6 +457,7 @@ class PicturesView                 ( IconDock                              ) :
     DB     . Close             (                                             )
     ##########################################################################
     self   . Notify            ( 5                                           )
+    self   . restart           (                                             )
     ##########################################################################
     return
   ############################################################################
@@ -478,7 +484,7 @@ class PicturesView                 ( IconDock                              ) :
       ########################################################################
       if                           ( OKAY                                  ) :
         ######################################################################
-        PIC . Image . save         ( Filename                                )
+        PIC . Image . save         ( filename = Filename                     )
         DOE = True
     ##########################################################################
     self    . setVacancy           (                                         )
@@ -981,15 +987,13 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     if                                  ( self . HandleLocalityMenu ( at ) ) :
       ########################################################################
-      self . clear                      (                                    )
-      self . startup                    (                                    )
+      self . restart                    (                                    )
       ########################################################################
       return True
     ##########################################################################
     if                                  ( at == 1001                       ) :
       ########################################################################
-      self . clear                      (                                    )
-      self . startup                    (                                    )
+      self . restart                    (                                    )
       ########################################################################
       return True
     ##########################################################################
