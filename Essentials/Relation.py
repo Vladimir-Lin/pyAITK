@@ -52,7 +52,17 @@ Relations         =                                                        { \
   "Facebook"      : 30                                                     , \
   "Prerequisite"  : 31                                                     , \
   "Successor"     : 32                                                     , \
-  "End"           : 33                                                     , \
+  "Candidate"     : 33                                                     , \
+  "Face"          : 34                                                     , \
+  "Mouth"         : 35                                                     , \
+  "Eye"           : 36                                                     , \
+  "Iris"          : 37                                                     , \
+  "Nose"          : 38                                                     , \
+  "Tit"           : 39                                                     , \
+  "Umbilicus"     : 40                                                     , \
+  "Pussy"         : 41                                                     , \
+  "Tattoo"        : 42                                                     , \
+  "End"           : 43                                                     , \
 }
 ##############################################################################
 Types                 =                                                    { \

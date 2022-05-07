@@ -19,6 +19,7 @@ import cv2
 import dlib
 import skimage
 import numpy                          as np
+import MediaPipe                      as mp
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -59,6 +60,8 @@ from   AITK  . Essentials . Object    import Object       as Object
 from   AITK  . Pictures   . Picture   import Picture      as PictureItem
 from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
 from   AITK  . Pictures   . Face      import Face         as FaceItem
+##############################################################################
+from   AITK  . People . Body . Body   import Body         as BodyItem
 ##############################################################################
 from   AITK  . VCF . VcfPicture       import VcfPicture   as VcfPicture
 from   AITK  . People . Faces . VcfFaceRegion import VcfFaceRegion as VcfFaceRegion
