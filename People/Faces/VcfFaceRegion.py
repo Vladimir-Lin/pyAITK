@@ -94,6 +94,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . FACEs           =   [                                             ]
     self . EYEs            =   [                                             ]
     self . MOUTHs          =   [                                             ]
+    self . POSEs           =   { "Pose" : False                              }
     self . GeometryChanged = self . FaceGeometryChanged
     self . setZValue           ( 50000                                       )
     self . setOpacity          ( 1.0                                         )
