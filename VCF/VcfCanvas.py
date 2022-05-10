@@ -11,39 +11,41 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                             import QtCore
+from   PyQt5                             import QtGui
+from   PyQt5                             import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
-from   PyQt5 . QtCore                 import QSizeF
-from   PyQt5 . QtCore                 import QRect
-from   PyQt5 . QtCore                 import QRectF
+from   PyQt5 . QtCore                    import QObject
+from   PyQt5 . QtCore                    import pyqtSignal
+from   PyQt5 . QtCore                    import Qt
+from   PyQt5 . QtCore                    import QPoint
+from   PyQt5 . QtCore                    import QPointF
+from   PyQt5 . QtCore                    import QSize
+from   PyQt5 . QtCore                    import QSizeF
+from   PyQt5 . QtCore                    import QRect
+from   PyQt5 . QtCore                    import QRectF
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QFont
-from   PyQt5 . QtGui                  import QFontMetricsF
-from   PyQt5 . QtGui                  import QColor
-from   PyQt5 . QtGui                  import QPen
-from   PyQt5 . QtGui                  import QBrush
-from   PyQt5 . QtGui                  import QKeySequence
-from   PyQt5 . QtGui                  import QTransform
+from   PyQt5 . QtGui                     import QIcon
+from   PyQt5 . QtGui                     import QCursor
+from   PyQt5 . QtGui                     import QFont
+from   PyQt5 . QtGui                     import QFontMetricsF
+from   PyQt5 . QtGui                     import QColor
+from   PyQt5 . QtGui                     import QPen
+from   PyQt5 . QtGui                     import QBrush
+from   PyQt5 . QtGui                     import QKeySequence
+from   PyQt5 . QtGui                     import QTransform
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import QGraphicsView
-from   PyQt5 . QtWidgets              import QGraphicsItem
+from   PyQt5 . QtWidgets                 import QApplication
+from   PyQt5 . QtWidgets                 import qApp
+from   PyQt5 . QtWidgets                 import QWidget
+from   PyQt5 . QtWidgets                 import QGraphicsView
+from   PyQt5 . QtWidgets                 import QGraphicsItem
 ##############################################################################
-from   AITK  . Essentials . Object    import Object       as Object
-from         . VcfItem                import VcfItem      as VcfItem
-from         . VcfRectangle           import VcfRectangle as VcfRectangle
+from   AITK  . Essentials . Object       import Object       as Object
+from         . VcfItem                   import VcfItem      as VcfItem
+from         . VcfRectangle              import VcfRectangle as VcfRectangle
+##############################################################################
+from   AITK  . Math . Geometry . Contour import Contour      as Contour
 ##############################################################################
 class VcfCanvas                 ( VcfRectangle                             , \
                                   Object                                   ) :
@@ -78,6 +80,9 @@ class VcfCanvas                 ( VcfRectangle                             , \
     self . GradientEditing = False
     self . Printable       = False
     self . Scaling         = True
+    ##########################################################################
+    self . EditingContour  = Contour (                                       )
+    self . ContourMode     = 0
     ##########################################################################
     self . Painter . addMap   ( "Default" , 0                                )
     self . Painter . addPen   ( 0 , QColor ( 192 , 192 , 192 )               )
