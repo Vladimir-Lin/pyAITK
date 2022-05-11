@@ -110,6 +110,21 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return QRect         ( X , Y , W , H                                     )
   ############################################################################
+  def AddBodyRegion            ( self , KeyPoints                          ) :
+    ##########################################################################
+    SIZE = self . Image . size (                                             )
+    W    = SIZE . width        (                                             )
+    H    = SIZE . height       (                                             )
+    RECT = QRect               ( 0 , 0 , W , H                               )
+    ##########################################################################
+    JSON =                     { "Function"  : "AddBodyRegion"             , \
+                                 "Item"      : self                        , \
+                                 "Region"    : RECT                        , \
+                                 "Points"    : KeyPoints                     }
+    self . DoJsonCaller        ( JSON                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def AddFaceRegion     ( self , rect                                      ) :
     ##########################################################################
     JSON =              { "Function"  : "AddFaceRegion"                    , \
@@ -189,16 +204,17 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def BodyPoseEstimation                  ( self                           ) :
+  def BodyPoseEstimation           ( self                                  ) :
     ##########################################################################
-    IMG         = self . PICOP . toOpenCV (                                  )
-    RGB         = cv2  . cvtColor         ( IMG , cv2 . COLOR_BGR2RGB        )
-    WW          = self . PICOP . Width    (                                  )
-    HH          = self . PICOP . Height   (                                  )
+    IMG  = self . PICOP . toOpenCV (                                         )
+    RGB  = cv2  . cvtColor         ( IMG , cv2 . COLOR_BGR2RGB               )
+    WW   = self . PICOP . Width    (                                         )
+    HH   = self . PICOP . Height   (                                         )
     ##########################################################################
-    BDI         = BodyItem                (                                  )
-    KPS         = BDI . GetBodyKeyPoints  ( RGB , WW , HH                    )
-    print(KPS)
+    BDI  = BodyItem                (                                         )
+    KPS  = BDI . GetBodyKeyPoints  ( RGB , WW , HH                           )
+    ##########################################################################
+    self . AddBodyRegion           ( KPS                                     )
     ##########################################################################
     return
   ############################################################################

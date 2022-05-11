@@ -59,6 +59,9 @@ from   AITK  . Pictures   . Picture   import Picture      as PictureItem
 from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
 from   AITK  . Pictures   . Face      import Face         as FaceItem
 ##############################################################################
+from   AITK  . People . Body . Tit    import Tit          as TitItem
+from   AITK  . People . Body . Body   import Body         as BodyItem
+##############################################################################
 from   AITK  . VCF . VcfItem          import VcfItem      as VcfItem
 from   AITK  . VCF . VcfLines         import VcfLines     as VcfLines
 from   AITK  . VCF . VcfContours      import VcfContours  as VcfContours
@@ -94,7 +97,8 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . FACEs           =   [                                             ]
     self . EYEs            =   [                                             ]
     self . MOUTHs          =   [                                             ]
-    self . POSEs           =   { "Pose" : False                              }
+    self . POSEs           =   { "Pose"   : False                            }
+    self . NIPPLEs         =   { "Nipple" : False                            }
     self . GeometryChanged = self . FaceGeometryChanged
     self . setZValue           ( 50000                                       )
     self . setOpacity          ( 1.0                                         )
@@ -172,7 +176,255 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . Painter . drawPainterPath ( p , "OuterMouth"                      )
     self . Painter . drawPainterPath ( p , "InnerMouth"                      )
     ##########################################################################
+    if                               ( self . POSEs   [ "Pose"   ]         ) :
+      ########################################################################
+      self . DrawPoseEstimation      ( p                                     )
+    ##########################################################################
+    if                               ( self . NIPPLEs [ "Nipple" ]         ) :
+      ########################################################################
+      self . DrawNipples             ( p                                     )
+    ##########################################################################
     self . popPainters               ( p                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def pjsonToQPointF ( self , JSON                                         ) :
+    return QPointF   ( JSON [ "X" ] , JSON [ "Y" ]                           )
+  ############################################################################
+  def pjsonDrawLine  ( self , p , M , PTS , FK , FI , TK , TI              ) :
+    ##########################################################################
+    self . Painter . setPainter     ( p , M                                  )
+    ##########################################################################
+    P1   = self    . pjsonToQPointF ( PTS [ FK ] [ FI ]                      )
+    P2   = self    . pjsonToQPointF ( PTS [ TK ] [ TI ]                      )
+    p    . drawLine                 ( P1 , P2                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def DrawPoseEstimation            ( self , p                             ) :
+    ##########################################################################
+    PTS  = self . POSEs             [ "Draws"                                ]
+    ##########################################################################
+    self . pjsonDrawLine            ( p                                    , \
+                                      "NoseNostril"                        , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Shoulder"                           , \
+                                      "Right"                              , \
+                                      "Shoulder"                             )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "NoseNostril"                        , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Hip"                                , \
+                                      "Right"                              , \
+                                      "Hip"                                  )
+    ##########################################################################
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Shoulder"                           , \
+                                      "Left"                               , \
+                                      "Elbow"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Elbow"                              , \
+                                      "Left"                               , \
+                                      "Wrist"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Shoulder"                           , \
+                                      "Left"                               , \
+                                      "Hip"                                  )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Hip"                                , \
+                                      "Left"                               , \
+                                      "Knee"                                 )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Knee"                               , \
+                                      "Left"                               , \
+                                      "Ankle"                                )
+    ##########################################################################
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Ankle"                              , \
+                                      "Left"                               , \
+                                      "Heel"                                 )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "FootIndex"                          , \
+                                      "Left"                               , \
+                                      "Heel"                                 )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "FootIndex"                          , \
+                                      "Left"                               , \
+                                      "Ankle"                                )
+    ##########################################################################
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Wrist"                              , \
+                                      "Left"                               , \
+                                      "Thumb"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Wrist"                              , \
+                                      "Left"                               , \
+                                      "Index"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Wrist"                              , \
+                                      "Left"                               , \
+                                      "Pinky"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Left"                               , \
+                                      "Index"                              , \
+                                      "Left"                               , \
+                                      "Pinky"                                )
+    ##########################################################################
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Shoulder"                           , \
+                                      "Right"                              , \
+                                      "Elbow"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Elbow"                              , \
+                                      "Right"                              , \
+                                      "Wrist"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Shoulder"                           , \
+                                      "Right"                              , \
+                                      "Hip"                                  )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Hip"                                , \
+                                      "Right"                              , \
+                                      "Knee"                                 )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Eyes"                               , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Knee"                               , \
+                                      "Right"                              , \
+                                      "Ankle"                                )
+    ##########################################################################
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Ankle"                              , \
+                                      "Right"                              , \
+                                      "Heel"                                 )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "FootIndex"                          , \
+                                      "Right"                              , \
+                                      "Heel"                                 )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "FootIndex"                          , \
+                                      "Right"                              , \
+                                      "Ankle"                                )
+    ##########################################################################
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Wrist"                              , \
+                                      "Right"                              , \
+                                      "Thumb"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Wrist"                              , \
+                                      "Right"                              , \
+                                      "Index"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Wrist"                              , \
+                                      "Right"                              , \
+                                      "Pinky"                                )
+    self . pjsonDrawLine            ( p                                    , \
+                                      "Mouth"                              , \
+                                      PTS                                  , \
+                                      "Right"                              , \
+                                      "Index"                              , \
+                                      "Right"                              , \
+                                      "Pinky"                                )
+    ##########################################################################
+    self . Painter . setPainter     ( p , "Face"                             )
+    ##########################################################################
+    VT   = self . pjsonToQPointF    ( PTS [ "Nose" ]                         )
+    p    . drawEllipse              ( VT , 8 , 8                             )
+    ##########################################################################
+    for Side in                     [ "Left" , "Right"                     ] :
+      ########################################################################
+      KEYs = PTS [ Side ] . keys    (                                        )
+      ########################################################################
+      for KEY in KEYs                                                        :
+        ######################################################################
+        JP = PTS                    [ Side ] [ KEY                           ]
+        VT = self . pjsonToQPointF  ( JP                                     )
+        p  . drawEllipse            ( VT , 8 , 8                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def DrawNipples                ( self , p                                ) :
+    ##########################################################################
+    self  . Painter . setPainter ( p , "RightEye"                            )
+    ##########################################################################
+    DRAWs = self . NIPPLEs       [ "Draws"                                   ]
+    ##########################################################################
+    for R in DRAWs                                                           :
+      ########################################################################
+      X   = R                    [ "X"                                       ]
+      Y   = R                    [ "Y"                                       ]
+      W   = R                    [ "W"                                       ]
+      H   = R                    [ "H"                                       ]
+      ########################################################################
+      p   . drawRect             ( X , Y , W , H                             )
     ##########################################################################
     return
   ############################################################################
@@ -483,6 +735,85 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return
   ############################################################################
+  def NippleRecognition         ( self                                     ) :
+    ##########################################################################
+    AI      = self . Settings   [ "AI"                                       ]
+    SVM     = AI                [ "Boobs-SVM"                                ]
+    CASCADE = AI                [ "Boobs-Cascade"                            ]
+    ##########################################################################
+    IMG     = self . PictureItem . PICOP . toOpenCV (                        )
+    GRAY    = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2GRAY     )
+    RGB     = cv2  . cvtColor               ( IMG , cv2 . COLOR_BGR2RGB      )
+    WW      = self . PictureItem . PICOP . Width  (                          )
+    HH      = self . PictureItem . PICOP . Height (                          )
+    ##########################################################################
+    TIT     = TitItem           (                                            )
+    TIT     . LoadClassifier    ( CASCADE                                    )
+    TIT     . LoadDetector      ( SVM                                        )
+    ##########################################################################
+    BOOBs   = TIT . ToBoobs     ( GRAY                                       )
+    DLIBs   = TIT . ToDlibBoobs ( RGB                                        )
+    ##########################################################################
+    RECTs   =                   [                                            ]
+    ##########################################################################
+    for F in BOOBs                                                           :
+      ########################################################################
+      X     = F                 [ 0                                          ]
+      Y     = F                 [ 1                                          ]
+      W     = F                 [ 2                                          ]
+      H     = F                 [ 3                                          ]
+      R     =                   { "X" : X , "Y" : Y , "W" : W , "H"          }
+      ########################################################################
+      RECTs . append            ( R                                          )
+    ##########################################################################
+    for id in range ( 0 , len ( DLIBs ) )                                    :
+      ########################################################################
+      X     = DLIBs [ id ] . left   (                                        )
+      Y     = DLIBs [ id ] . top    (                                        )
+      W     = DLIBs [ id ] . width  (                                        )
+      H     = DLIBs [ id ] . height (                                        )
+      R     =                   { "X" : X , "Y" : Y , "W" : W , "H"          }
+      ########################################################################
+      RECTs . append            ( R                                          )
+    ##########################################################################
+    DRAWs   =                   [                                            ]
+    RX      = self . PictureItem . Xratio
+    RY      = self . PictureItem . Yratio
+    ##########################################################################
+    for R in RECTs                                                           :
+      ########################################################################
+      X     = R                 [ "X"                                        ]
+      Y     = R                 [ "Y"                                        ]
+      W     = R                 [ "W"                                        ]
+      H     = R                 [ "H"                                        ]
+      ########################################################################
+      XX    = float             ( float ( X ) / RX                           )
+      YY    = float             ( float ( Y ) / RY                           )
+      PT    = QPointF           ( XX , YY                                    )
+      ########################################################################
+      PX    = self . PictureItem . mapToItem ( self , PT                     )
+      ########################################################################
+      WW    = float             ( float ( W ) / RX                           )
+      HH    = float             ( float ( H ) / RY                           )
+      PT    = QPointF           ( WW , HH                                    )
+      ########################################################################
+      PW    = self . PictureItem . mapToItem ( self , PT                     )
+      ########################################################################
+      X     = PX . x            (                                            )
+      Y     = PX . y            (                                            )
+      W     = PW . x            (                                            )
+      H     = PH . y            (                                            )
+      ########################################################################
+      R     =                   { "X" : X , "Y" : Y , "W" : W , "H"          }
+      ########################################################################
+      DRAWs . append            ( R                                          )
+    ##########################################################################
+    self     . NIPPLEs =        { "Nipple" : True                          , \
+                                  "Boobs"  : RECTs                         , \
+                                  "Draws"  : DRAWs                           }
+    ##########################################################################
+    return
+  ############################################################################
   def AdjustToSquare                      ( self                           ) :
     ##########################################################################
     RT   = self . ScreenRect
@@ -610,6 +941,9 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     msg = self . getMenuItem ( "68Facial"                                    )
     mm  . addActionFromMenu  ( COL , 21451103 , msg                          )
     ##########################################################################
+    msg = self . getMenuItem ( "Nipple"                                      )
+    mm  . addActionFromMenu  ( COL , 21451104 , msg                          )
+    ##########################################################################
     return mm
   ############################################################################
   def RunRecognitionMenu            ( self , at                            ) :
@@ -629,6 +963,12 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     if                              ( at == 21451103                       ) :
       ########################################################################
       self . Mark68Recognition      (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 21451104                       ) :
+      ########################################################################
+      self . NippleRecognition      (                                        )
       ########################################################################
       return True
     ##########################################################################
