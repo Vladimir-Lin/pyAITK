@@ -76,6 +76,7 @@ class PeopleView                     ( IconDock                            ) :
   ShowWebPages          = pyqtSignal ( str , int , str , str , QIcon         )
   OwnedOccupation       = pyqtSignal ( str , int , str , str , QIcon         )
   OpenVariantTables     = pyqtSignal ( str , str , int , str , dict          )
+  OpenBodyShape         = pyqtSignal ( str , str                             )
   emitOpenSmartNote     = pyqtSignal ( str                                   )
   ############################################################################
   def __init__                       ( self , parent = None , plan = None  ) :
@@ -1071,6 +1072,11 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
+    MSG = self . getMenuItem   ( "BodyShapes"                                )
+    mm  . addActionFromMenu    ( LOM , 24231351 , MSG                        )
+    ##########################################################################
+    mm  . addSeparatorFromMenu ( LOM                                         )
+    ##########################################################################
     MSG = self . getMenuItem   ( "Videos"                                    )
     mm  . addActionFromMenu    ( LOM , 24231411 , MSG                        )
     ##########################################################################
@@ -1230,6 +1236,15 @@ class PeopleView                     ( IconDock                            ) :
       relz = "Tattoo"
       ########################################################################
       self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231351                   ) :
+      ########################################################################
+      text = item . text                (                                    )
+      xsid = str                        ( uuid                               )
+      ########################################################################
+      self . OpenBodyShape . emit       ( text , xsid                        )
       ########################################################################
       return True
     ##########################################################################
