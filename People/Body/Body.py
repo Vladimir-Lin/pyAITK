@@ -26,45 +26,39 @@ import numpy        as np
 import mediapipe    as mp
 ##############################################################################
 """
-int	LEFT_ANKLE	The landmark which corresponds to the left ankle.
-int	LEFT_EAR	The landmark which corresponds to the left ear.
-int	LEFT_ELBOW	The landmark which corresponds to the left elbow.
-int	LEFT_EYE	The landmark which corresponds to the left eye.
-int	LEFT_EYE_INNER	The landmark which corresponds to the inner left eye.
-
-int	LEFT_EYE_OUTER	The landmark which corresponds to the outer left eye.
-int	LEFT_FOOT_INDEX	The landmark which corresponds to the left foot index.
-int	LEFT_HEEL	The landmark which corresponds to the left heel.
-int	LEFT_HIP	The landmark which corresponds to the left hip.
-int	LEFT_INDEX	The landmark which corresponds to the left index finger.
-
-int	LEFT_KNEE	The landmark which corresponds to the left knee.
-int	MOUTH_LEFT	The landmark which corresponds to the left mouth.
-int	LEFT_PINKY	The landmark which corresponds to the left pinky.
-int	LEFT_SHOULDER	The landmark which corresponds to the left shoulder.
-int	LEFT_THUMB	The landmark which corresponds to the left thumb.
-int	LEFT_WRIST	The landmark which corresponds to the left wrist.
-
-int	NOSE	The landmark which corresponds to the nose.
-
-int	RIGHT_ANKLE	The landmark which corresponds to the right ankle.
-int	RIGHT_EAR	The landmark which corresponds to the right ear.
-int	RIGHT_ELBOW	The landmark which corresponds to the right elbow.
-int	RIGHT_EYE	The landmark which corresponds to the left eye.
-int	RIGHT_EYE_INNER	The landmark which corresponds to the inner left eye.
-
-int	RIGHT_EYE_OUTER	The landmark which corresponds to the outer left eye.
-int	RIGHT_FOOT_INDEX	The landmark which corresponds to the right foot index.
-int	RIGHT_HEEL	The landmark which corresponds to the right heel.
-int	RIGHT_HIP	The landmark which corresponds to the right hip.
-int	RIGHT_INDEX	The landmark which corresponds to the right index finger.
-
-int	RIGHT_KNEE	The landmark which corresponds to the right knee.
-int	MOUTH_RIGHT	The landmark which corresponds to the right mouth.
-int	RIGHT_PINKY	The landmark which corresponds to the right pinky.
-int	RIGHT_SHOULDER	The landmark which corresponds to the right shoulder.
-int	RIGHT_THUMB	The landmark which corresponds to the right thumb.
-int	RIGHT_WRIST	The landmark which corresponds to the right wrist.
+int LEFT_ANKLE The landmark which corresponds to the left ankle.
+int LEFT_EAR The landmark which corresponds to the left ear.
+int LEFT_ELBOW The landmark which corresponds to the left elbow.
+int LEFT_EYE The landmark which corresponds to the left eye.
+int LEFT_EYE_INNER The landmark which corresponds to the inner left eye.
+int LEFT_EYE_OUTER The landmark which corresponds to the outer left eye.
+int LEFT_FOOT_INDEX The landmark which corresponds to the left foot index.
+int LEFT_HEEL The landmark which corresponds to the left heel.
+int LEFT_HIP The landmark which corresponds to the left hip.
+int LEFT_INDEX The landmark which corresponds to the left index finger.
+int LEFT_KNEE The landmark which corresponds to the left knee.
+int MOUTH_LEFT The landmark which corresponds to the left mouth.
+int LEFT_PINKY The landmark which corresponds to the left pinky.
+int LEFT_SHOULDER The landmark which corresponds to the left shoulder.
+int LEFT_THUMB The landmark which corresponds to the left thumb.
+int LEFT_WRIST The landmark which corresponds to the left wrist.
+int NOSE The landmark which corresponds to the nose.
+int RIGHT_ANKLE The landmark which corresponds to the right ankle.
+int RIGHT_EAR The landmark which corresponds to the right ear.
+int RIGHT_ELBOW The landmark which corresponds to the right elbow.
+int RIGHT_EYE The landmark which corresponds to the left eye.
+int RIGHT_EYE_INNER The landmark which corresponds to the inner left eye.
+int RIGHT_EYE_OUTER The landmark which corresponds to the outer left eye.
+int RIGHT_FOOT_INDEX The landmark which corresponds to the right foot index.
+int RIGHT_HEEL The landmark which corresponds to the right heel.
+int RIGHT_HIP The landmark which corresponds to the right hip.
+int RIGHT_INDEX The landmark which corresponds to the right index finger.
+int RIGHT_KNEE The landmark which corresponds to the right knee.
+int MOUTH_RIGHT The landmark which corresponds to the right mouth.
+int RIGHT_PINKY The landmark which corresponds to the right pinky.
+int RIGHT_SHOULDER The landmark which corresponds to the right shoulder.
+int RIGHT_THUMB The landmark which corresponds to the right thumb.
+int RIGHT_WRIST The landmark which corresponds to the right wrist.
 """
 ##############################################################################
 class Body        (                                                        ) :

@@ -19,6 +19,7 @@ import cv2
 import dlib
 import skimage
 import numpy                          as np
+import mediapipe                      as mp
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -98,6 +99,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . EYEs            =   [                                             ]
     self . MOUTHs          =   [                                             ]
     self . POSEs           =   { "Pose"   : False                            }
+    self . MESHs           =   { "Mesh"   : False                            }
     self . NIPPLEs         =   { "Nipple" : False                            }
     self . GeometryChanged = self . FaceGeometryChanged
     self . setZValue           ( 50000                                       )
@@ -176,6 +178,10 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . Painter . drawPainterPath ( p , "OuterMouth"                      )
     self . Painter . drawPainterPath ( p , "InnerMouth"                      )
     ##########################################################################
+    if                               ( self . MESHs   [ "Mesh"   ]         ) :
+      ########################################################################
+      self . DrawFaceMeshes          ( p                                     )
+    ##########################################################################
     if                               ( self . POSEs   [ "Pose"   ]         ) :
       ########################################################################
       self . DrawPoseEstimation      ( p                                     )
@@ -198,6 +204,18 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     P1   = self    . pjsonToQPointF ( PTS [ FK ] [ FI ]                      )
     P2   = self    . pjsonToQPointF ( PTS [ TK ] [ TI ]                      )
     p    . drawLine                 ( P1 , P2                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def DrawFaceMeshes                ( self , p                             ) :
+    ##########################################################################
+    self . Painter . setPainter     ( p , "NoseBridge"                       )
+    ##########################################################################
+    PTS  = self . MESHs             [ "Points" ] [ "Draws"                   ]
+    ##########################################################################
+    for JP in PTS                                                            :
+      VT = self . pjsonToQPointF    ( JP                                     )
+      p  . drawEllipse              ( VT , 8 , 8                             )
     ##########################################################################
     return
   ############################################################################
@@ -737,20 +755,42 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
   ## MediaPipe Face Mesh Recognition
   ############################################################################
-  def Mark468Recognition                 ( self                            ) :
+  def Mark468Recognition                   ( self                          ) :
     ##########################################################################
-    self      . CalculateGeometry        (                                   )
+    self      . CalculateGeometry          (                                 )
     ##########################################################################
-    X         = self . Region . x        (                                   )
-    Y         = self . Region . y        (                                   )
-    W         = self . Region . width    (                                   )
-    H         = self . Region . height   (                                   )
+    X         = self . Region . x          (                                 )
+    Y         = self . Region . y          (                                 )
+    W         = self . Region . width      (                                 )
+    H         = self . Region . height     (                                 )
     PIC       = self . PictureItem . PICOP . Crop ( X , Y , W , H            )
-    if                                   ( PIC in [ False , None ]         ) :
+    if                                     ( PIC in [ False , None ]       ) :
       return
     ##########################################################################
+    IMG       = PIC  . toOpenCV            (                                 )
+    RGB       = cv2  . cvtColor            ( IMG , cv2 . COLOR_BGR2RGB       )
+    WW        = PIC  . Width               (                                 )
+    HH        = PIC  . Height              (                                 )
+    BX        = self . ScreenRect . x      (                                 )
+    BY        = self . ScreenRect . y      (                                 )
+    SW        = self . ScreenRect . width  (                                 )
+    SH        = self . ScreenRect . height (                                 )
     ##########################################################################
-    self      . Notify                   ( 5                                 )
+    F         = FaceItem                   (                                 )
+    PTS       = F . Detect468Landmarks     ( RGB                           , \
+                                             WW                            , \
+                                             HH                            , \
+                                             BX                            , \
+                                             BY                            , \
+                                             SW                            , \
+                                             SH                              )
+    ##########################################################################
+    self . MESHs = { "Mesh" : False                                          }
+    if                                     ( PTS [ "Ready" ]               ) :
+      ########################################################################
+      self . MESHs = { "Mesh" : True , "Points" : PTS                        }
+    ##########################################################################
+    self      . Notify                     ( 5                               )
     ##########################################################################
     return
   ############################################################################

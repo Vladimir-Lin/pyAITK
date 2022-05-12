@@ -22,7 +22,8 @@ from   PIL          import Image as Pillow
 import cv2
 import dlib
 import skimage
-import numpy as np
+import numpy                     as np
+import mediapipe                 as mp
 ##############################################################################
 class Face        (                                                        ) :
   ############################################################################
@@ -754,5 +755,66 @@ class Face        (                                                        ) :
     ##########################################################################
     return DB . FetchAll (                                                   )
   ############################################################################
+  def Detect468Landmarks ( self                                            , \
+                           Image                                           , \
+                           Width                                           , \
+                           Height                                          , \
+                           BaseX                                           , \
+                           BaseY                                           , \
+                           ScreenWidth                                     , \
+                           ScreenHeight                                    , \
+                           STATIC        = True                            , \
+                           FACEs         = 1                               , \
+                           REFINE        = True                            , \
+                           MinConfidence = 0.5                             ) :
+    ##########################################################################
+    FM = mp . solutions . face_mesh
+    FD = FM . FaceMesh   ( static_image_mode        = STATIC               , \
+                           max_num_faces            = FACEs                , \
+                           refine_landmarks         = REFINE               , \
+                           min_detection_confidence = MinConfidence          )
+    RR = FD . process    ( Image                                             )
+    ##########################################################################
+    if                   ( not RR . multi_face_landmarks                   ) :
+      return             { "Ready" : False                                   }
+    ##########################################################################
+    PW = Width
+    PH = Height
+    SW = ScreenWidth
+    SH = ScreenHeight
+    LL =                 [                                                   ]
+    PL =                 [                                                   ]
+    SL =                 [                                                   ]
+    ##########################################################################
+    for F in RR . multi_face_landmarks                                       :
+      ########################################################################
+      for P in F . landmark                                                  :
+        ######################################################################
+        XX = P . x
+        YY = P . y
+        ZZ = P . z
+        ######################################################################
+        PX = XX * PW
+        PY = YY * PH
+        ######################################################################
+        SX = XX * SW
+        SY = YY * SH
+        ######################################################################
+        SX = SX + BaseX
+        SY = SY + BaseY
+        ######################################################################
+        LL . append      ( { "X" : XX , "Y" : YY , "Z" : ZZ }                )
+        PL . append      ( { "X" : PX , "Y" : PY , "Z" : ZZ }                )
+        SL . append      ( { "X" : SX , "Y" : SY , "Z" : ZZ }                )
+    ##########################################################################
+    if                   ( len ( LL ) <= 0                                 ) :
+      return             { "Ready" : False                                   }
+    ##########################################################################
+    return               { "Ready"    : True                               , \
+                           "Width"    : Width                              , \
+                           "Height"   : Height                             , \
+                           "Original" : LL                                 , \
+                           "Pixels"   : PL                                 , \
+                           "Draws"    : SL                                   }
   ############################################################################
 ##############################################################################
