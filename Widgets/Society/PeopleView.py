@@ -68,15 +68,15 @@ class PeopleView                     ( IconDock                            ) :
   ############################################################################
   HavingMenu            = 1371434312
   ############################################################################
-  ShowPersonalGallery   = pyqtSignal ( str , int , str ,       QIcon         )
-  ShowPersonalIcons     = pyqtSignal ( str , int , str , str , QIcon         )
-  ShowGalleries         = pyqtSignal ( str , int , str ,       QIcon         )
-  ShowGalleriesRelation = pyqtSignal ( str , int , str , str , QIcon         )
-  ShowVideoAlbums       = pyqtSignal ( str , int , str ,       QIcon         )
-  ShowWebPages          = pyqtSignal ( str , int , str , str , QIcon         )
-  OwnedOccupation       = pyqtSignal ( str , int , str , str , QIcon         )
-  OpenVariantTables     = pyqtSignal ( str , str , int , str , dict          )
-  OpenBodyShape         = pyqtSignal ( str , str                             )
+  ShowPersonalGallery   = pyqtSignal ( str , int , str  ,       QIcon        )
+  ShowPersonalIcons     = pyqtSignal ( str , int , str  , str , QIcon        )
+  ShowGalleries         = pyqtSignal ( str , int , str  ,       QIcon        )
+  ShowGalleriesRelation = pyqtSignal ( str , int , str  , str , QIcon        )
+  ShowVideoAlbums       = pyqtSignal ( str , int , str  ,       QIcon        )
+  ShowWebPages          = pyqtSignal ( str , int , str  , str , QIcon        )
+  OwnedOccupation       = pyqtSignal ( str , int , str  , str , QIcon        )
+  OpenVariantTables     = pyqtSignal ( str , str , int  , str , dict         )
+  OpenBodyShape         = pyqtSignal ( str , str , dict                      )
   emitOpenSmartNote     = pyqtSignal ( str                                   )
   ############################################################################
   def __init__                       ( self , parent = None , plan = None  ) :
@@ -1244,7 +1244,7 @@ class PeopleView                     ( IconDock                            ) :
       text = item . text                (                                    )
       xsid = str                        ( uuid                               )
       ########################################################################
-      self . OpenBodyShape . emit       ( text , xsid                        )
+      self . OpenBodyShape . emit       ( text , xsid , { }                  )
       ########################################################################
       return True
     ##########################################################################
