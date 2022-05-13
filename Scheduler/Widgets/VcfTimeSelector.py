@@ -50,7 +50,10 @@ from   AITK  . VCF        . VcfRectangle   import VcfRectangle   as VcfRectangle
 from   AITK  . VCF        . VcfCanvas      import VcfCanvas      as VcfCanvas
 ##############################################################################
 from                      . VcfTimeScale   import VcfTimeScale   as VcfTimeScale
+from                      . VcfDurationBar import VcfDurationBar as VcfDurationBar
+from                      . VcfPeriodeBar  import VcfPeriodeBar  as VcfPeriodeBar
 from                      . VcfGanttPicker import VcfGanttPicker as VcfGanttPicker
+from                      . VcfGantt       import VcfGantt       as VcfGantt
 ##############################################################################
 class VcfTimeSelector         ( VcfCanvas                                  ) :
   ############################################################################
@@ -105,6 +108,7 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     ##########################################################################
     self . TimeScale     = None
     self . Picker        = None
+    self . Gantt         = None
     ##########################################################################
     return
   ############################################################################
