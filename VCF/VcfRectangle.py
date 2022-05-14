@@ -1254,8 +1254,8 @@ class VcfRectangle              ( VcfItem                                  ) :
     self   . RollImageSpin = ROLL
     ROLL   . setPrefix            ( PREFIX                                   )
     ROLL   . setSingleStep        ( step                                     )
-    ROLL   . setMinimum           ( step                                     )
-    ROLL   . setMaximum           ( 1080.0                                   )
+    ROLL   . setMinimum           ( -1080.0                                  )
+    ROLL   . setMaximum           (  1080.0                                  )
     ROLL   . setValue             ( angle                                    )
     ##########################################################################
     mm     . addSeparatorFromMenu ( ROM                                      )
