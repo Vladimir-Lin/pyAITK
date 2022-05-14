@@ -39,6 +39,7 @@ from   PyQt5 . QtWidgets                   import QTreeWidgetItem
 from   PyQt5 . QtWidgets                   import QLineEdit
 from   PyQt5 . QtWidgets                   import QComboBox
 from   PyQt5 . QtWidgets                   import QSpinBox
+from   PyQt5 . QtWidgets                   import QFileDialog
 ##############################################################################
 from   AITK  . Qt . MenuManager            import MenuManager as MenuManager
 from   AITK  . Qt . TreeDock               import TreeDock    as TreeDock
@@ -189,11 +190,12 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItemContent ( self , IT , KEY , VALUE                         ) :
+  def PrepareItemContent  ( self , IT , KEY , VALUE                        ) :
     ##########################################################################
-    IT . setText         ( 0 , str ( KEY   )                                 )
-    IT . setData         ( 0 , Qt . UserRole , 0                             )
-    IT . setText         ( 1 , str ( VALUE )                                 )
+    IT . setText          ( 0 , str ( KEY   )                                )
+    IT . setData          ( 0 , Qt . UserRole , 0                            )
+    IT . setText          ( 1 , str ( VALUE )                                )
+    IT . setTextAlignment ( 1 , Qt . AlignRight                              )
     ##########################################################################
     return
   ############################################################################
@@ -338,6 +340,10 @@ class BodyShapeWidget              ( TreeDock                              ) :
                      "JSON (*.json);;任意檔案類型 (*.*)" )
     if            ( len ( Filename ) <= 0                                  ) :
       return
+    ##########################################################################
+    J            = self . JSON
+    J [ "Uuid" ] = self . Uuid
+    J [ "Name" ] = self . windowTitle (                                      )
     ##########################################################################
     SaveJson      ( Filename , self . JSON                                   )
     self . Notify ( 5                                                        )
