@@ -968,6 +968,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
       self . ScreenRect = QRectF          ( XX , YY , HY , HH                )
     ##########################################################################
     self . PaperRect = self . rectToPaper ( self . ScreenRect                )
+    self . CalculateGeometry              (                                  )
     ##########################################################################
     return
   ############################################################################

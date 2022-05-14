@@ -1260,7 +1260,7 @@ class VcfRectangle              ( VcfItem                                  ) :
     ##########################################################################
     mm     . addSeparatorFromMenu ( ROM                                      )
     ##########################################################################
-    MSG    = self . getMenuItem   ( "RollImage"                              )
+    msg    = self . getMenuItem   ( "RollImage"                              )
     mm     . addActionFromMenu    ( ROM , 21451251 , msg                     )
     mm     . addWidgetWithMenu    ( ROM , 21451252 , ROLL                    )
     ##########################################################################
