@@ -125,7 +125,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . Painter . addBrush     ( 34621147 , QColor ( 255 , 0 , 0 , 192 )  )
     ##########################################################################
     FNT  = QFont                  (                                          )
-    FNT  . setPixelSize           ( 40.0                                     )
+    FNT  . setPixelSize           ( 60.0                                     )
     self . Painter . fonts [ 34621148 ] = FNT
     ##########################################################################
     return
@@ -222,32 +222,36 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PaintMeasurePoints        ( self , p , region , clip , color         ) :
+  def PaintMeasurePoints ( self , p , region , clip , color                ) :
     ##########################################################################
-    if                          ( len ( self . MeasurePoints ) <= 0        ) :
+    if                   ( len ( self . MeasurePoints ) <= 0               ) :
       return
     ##########################################################################
     for MP in self . MeasurePoints                                           :
       ########################################################################
-      CC  = MP                  [ "Color"                                    ]
-      L1  = MP                  [ "P1"                                       ]
-      L2  = MP                  [ "P2"                                       ]
-      LL  = self . CalculateMeasureLength ( L1 , L2                          )
+      CC = MP            [ "Color"                                           ]
+      L1 = MP            [ "P1"                                              ]
+      L2 = MP            [ "P2"                                              ]
+      LL = self . CalculateMeasureLength ( L1 , L2                           )
       ########################################################################
-      QC  = QColor              ( CC [ "R" ] , CC [ "G" ] , CC [ "B" ]       )
-      p   . setPen              ( QPen    ( QC                             ) )
-      p   . setBrush            ( QBrushh ( QC                             ) )
+      QC = QColor        ( CC [ "R" ] , CC [ "G" ] , CC [ "B" ]              )
+      PX = QPen          ( QC                                                )
+      PX . setWidthF     ( 7.0                                               )
+      p  . setPen        ( PX                                                )
+      p  . setBrush      ( QBrush ( QC                                     ) )
       ########################################################################
-      P1  = QPointF             ( L1 [ "X" ] , L1 [ "Y" ]                    )
-      P2  = QPointF             ( L2 [ "X" ] , L2 [ "Y" ]                    )
+      P1 = QPointF       ( L1 [ "X" ] , L1 [ "Y" ]                           )
+      P2 = QPointF       ( L2 [ "X" ] , L2 [ "Y" ]                           )
       ########################################################################
-      p    . drawLine           ( P1 , P2                                    )
+      p  . drawLine      ( P1 , P2                                           )
       ########################################################################
-      p    . setFont            ( self . Painter . fonts [ 34621148 ]        )
+      p  . setFont       ( self . Painter . fonts [ 34621148 ]               )
+      PX . setWidthF     ( 2.54                                              )
+      p  . setPen        ( PX                                                )
       ########################################################################
-      LT   = int                ( LL                                         )
-      LT   = f"{LT}"
-      p    . drawText           ( P2 . x ( ) + 48 , P2 . y ( ) + 48 , LT     )
+      LT = int           ( LL                                                )
+      LT = f"{LT}"
+      p  . drawText      ( P2 . x ( ) + 60 , P2 . y ( ) + 60 , LT            )
     ##########################################################################
     return
   ############################################################################
@@ -789,6 +793,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     MSG = self . getMenuItem     ( "AddMeasuring"                            )
     mm  . addActionFromMenu      ( ROM , 78021201 , MSG                      )
     ##########################################################################
+    MSG = self . getMenuItem     ( "ClearMeasurePoints"                      )
+    mm  . addActionFromMenu      ( ROM , 78021202 , MSG                      )
+    ##########################################################################
     return mm
   ############################################################################
   def MeasureMenu                   ( self , mm                            ) :
@@ -829,6 +836,13 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                               ( at == 78021201                      ) :
       ########################################################################
       self . AddingMeasuringLine     (                                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                               ( at == 78021202                      ) :
+      ########################################################################
+      self . MeasurePoints =         [                                       ]
+      self . update                  (                                       )
       ########################################################################
       return True
     ##########################################################################
