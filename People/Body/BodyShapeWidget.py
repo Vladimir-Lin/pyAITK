@@ -47,6 +47,7 @@ from   AITK  . Essentials . Relation       import Relation
 from   AITK  . Calendars  . StarDate       import StarDate
 from   AITK  . Calendars  . Periode        import Periode
 from   AITK  . Documents  . Notes          import Notes
+from   AITK  . Documents  . JSON           import Save           as SaveJson
 from   AITK  . Documents  . Variables      import Variables      as VariableItem
 from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 ##############################################################################
@@ -158,6 +159,13 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def setJson                  ( self , JSON                               ) :
+    ##########################################################################
+    self . JSON = JSON
+    self . emitAllNames . emit (                                             )
+    ##########################################################################
+    return
+  ############################################################################
   def singleClicked           ( self , item , column                       ) :
     ##########################################################################
     if                        ( self . isItemPicked ( )                    ) :
@@ -183,9 +191,9 @@ class BodyShapeWidget              ( TreeDock                              ) :
   ############################################################################
   def PrepareItemContent ( self , IT , KEY , VALUE                         ) :
     ##########################################################################
-    IT . setText         ( 0 , KEY                                           )
+    IT . setText         ( 0 , str ( KEY   )                                 )
     IT . setData         ( 0 , Qt . UserRole , 0                             )
-    IT . setText         ( 1 , VALUE                                         )
+    IT . setText         ( 1 , str ( VALUE )                                 )
     ##########################################################################
     return
   ############################################################################
@@ -321,6 +329,21 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ExportJson  ( self                                                   ) :
+    ##########################################################################
+    Filename , _ = QFileDialog . getSaveFileName                             (
+                     self                                                    ,
+                     "匯出JSON" ,
+                     ""                                                      ,
+                     "JSON (*.json);;任意檔案類型 (*.*)" )
+    if            ( len ( Filename ) <= 0                                  ) :
+      return
+    ##########################################################################
+    SaveJson      ( Filename , self . JSON                                   )
+    self . Notify ( 5                                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
     self . DoCopyToClipboard (                                               )
@@ -367,14 +390,18 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     self   . AppendInsertAction    ( mm , 1101                               )
     ##########################################################################
-    if                             ( self . Mode in [ 0 ]                  ) :
-      msg  = self . getMenuItem    ( "Save"                                  )
-      icon = QIcon                 ( ":/images/save.png"                     )
-      mm   . addActionWithIcon     ( 1102 , icon , msg                       )
-    ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
       ########################################################################
-      self . AppendDeleteAction    ( mm , 1103                               )
+      self . AppendDeleteAction    ( mm , 1102                               )
+    ##########################################################################
+    if                             ( self . Mode in [ 0 ]                  ) :
+      ########################################################################
+      msg  = self . getMenuItem    ( "Save"                                  )
+      icon = QIcon                 ( ":/images/save.png"                     )
+      mm   . addActionWithIcon     ( 1103 , icon , msg                       )
+      ########################################################################
+      msg  = self . getMenuItem    ( "ExportJson"                            )
+      mm   . addAction             ( 1104 , msg                              )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
@@ -403,11 +430,15 @@ class BodyShapeWidget              ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1102                            ) :
-      self . SaveToDatabase        (                                         )
+      self . DeleteItems           (                                         )
       return True
     ##########################################################################
     if                             ( at == 1103                            ) :
-      self . DeleteItems           (                                         )
+      self . SaveToDatabase        (                                         )
+      return True
+    ##########################################################################
+    if                             ( at == 1104                            ) :
+      self . ExportJson            (                                         )
       return True
     ##########################################################################
     return True
