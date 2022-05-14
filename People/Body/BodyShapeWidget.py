@@ -64,7 +64,8 @@ class BodyShapeWidget              ( TreeDock                              ) :
     self . ClassTag           = "BodyShapeWidget"
     self . Uuid               = 0
     self . Mode               = 0
-    self . CallbackFunction   = None
+    self . Scope              = "Features"
+    self . CallbackFunctions  =    {                                         }
     self . JSON               =    {                                         }
     ##########################################################################
     self . dockingOrientation = 0
@@ -141,16 +142,19 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def setOwner ( self , UUID                                               ) :
+  def setOwner ( self , UUID , Scope = "Features"                          ) :
     ##########################################################################
-    self . Uuid = UUID
+    self . Uuid  = UUID
+    self . Scope = Scope
     ##########################################################################
     return
   ############################################################################
-  def setConf                        ( self , CONF                         ) :
+  def setConf                           ( self , CONF                      ) :
     ##########################################################################
-    if                               ( "Callback" in CONF                  ) :
-      self . CallbackFunction = CONF [ "Callback"                            ]
+    if                                  ( "Callback" in CONF               ) :
+      CF   = CONF                       [ "Callback"                         ]
+      if                                ( CF not in [ False , None ]       ) :
+      self . CallbackFunctions . append ( CF                                 )
     ##########################################################################
     return
   ############################################################################
@@ -200,10 +204,17 @@ class BodyShapeWidget              ( TreeDock                              ) :
       ########################################################################
       IT    = self . topLevelItem ( i                                        )
       KEY   = IT   . text         ( 0                                        )
-      TABLE = IT   . text         ( 1                                        )
+      VALUE = IT   . text         ( 1                                        )
       ########################################################################
       if                          ( len ( KEY ) > 0                        ) :
-        J [ KEY ] = TABLE
+        ######################################################################
+        V   = 0
+        try                                                                  :
+          V = int                 ( VALUE                                    )
+        except                                                               :
+          pass
+        ######################################################################
+        J [ KEY ] = V
     ##########################################################################
     return J
   ############################################################################
@@ -230,78 +241,70 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                       (                                          )
-  def refresh                     ( self                                   ) :
+  @pyqtSlot                          (                                       )
+  def refresh                        ( self                                ) :
     ##########################################################################
-    self   . clear                (                                          )
+    self   . clear                   (                                       )
     ##########################################################################
-    """
-    for K , V in self . JSON . items ( )                                     :
+    for K , V in self . JSON . items (                                     ) :
       ########################################################################
-      IT   = self . PrepareItem   ( K , V                                    )
-      self . addTopLevelItem      ( IT                                       )
-    """
+      IT   = self . PrepareItem      ( K , int ( V )                         )
+      self . addTopLevelItem         ( IT                                    )
     ##########################################################################
-    self   . emitNamesShow . emit (                                          )
-    self   . Notify               ( 5                                        )
+    self   . emitNamesShow . emit    (                                       )
+    self   . Notify                  ( 5                                     )
     ##########################################################################
     return
   ############################################################################
-  def loading                         ( self                               ) :
+  def loading                             ( self                           ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB in [ False , None ]             ) :
-      self  . emitNamesShow . emit    (                                      )
+    DB          = self . ConnectDB        (                                  )
+    if                                    ( DB in [ False , None ]         ) :
+      self      . emitNamesShow . emit    (                                  )
       return
     ##########################################################################
-    """
-    self    . JSON = self . ObtainsOwnerVariantTables                      ( \
-                                        DB                                 , \
-                                        self . Uuid                        , \
-                                        self . Type                        , \
-                                        self . Name                        , \
-                                        self . JSON                          )
-    """
+    PAMTAB      = self . Tables           [ "Parameters"                     ]
+    PQ          = ParameterQuery          ( 7 , 113 , self . Scope , PAMTAB  )
+    self . JSON = PQ . GetJsonScopeValues ( DB , self . Uuid                 )
     ##########################################################################
-    DB      . Close                   (                                      )
+    DB          . Close                   (                                  )
     ##########################################################################
-    self    . emitAllNames  . emit    (                                      )
-    self    . FeedbackToCallback      (                                      )
+    self        . emitAllNames  . emit    (                                  )
+    self        . FeedbackToCallback      (                                  )
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                     (                                            )
-  def nameChanged               ( self                                     ) :
+  @pyqtSlot                             (                                    )
+  def nameChanged                       ( self                             ) :
     ##########################################################################
-    if                          ( not self . isItemPicked ( )              ) :
+    if                                  ( not self . isItemPicked ( )      ) :
       return False
     ##########################################################################
-    item   = self . CurrentItem [ "Item"                                     ]
-    column = self . CurrentItem [ "Column"                                   ]
-    line   = self . CurrentItem [ "Widget"                                   ]
-    text   = self . CurrentItem [ "Text"                                     ]
-    msg    = line . text        (                                            )
+    item   = self . CurrentItem         [ "Item"                             ]
+    column = self . CurrentItem         [ "Column"                           ]
+    line   = self . CurrentItem         [ "Widget"                           ]
+    text   = self . CurrentItem         [ "Text"                             ]
+    msg    = line . text                (                                    )
     ##########################################################################
-    if                          ( msg != text                              ) :
+    if                                  ( msg != text                      ) :
       ########################################################################
-      item . setText            ( column ,              msg                  )
-      self . Notify             ( 0                                          )
+      item . setText                    ( column , msg                       )
+      self . Notify                     ( 0                                  )
     ##########################################################################
-    self   . removeParked       (                                            )
+    self   . removeParked               (                                    )
     self   . JSON = self . GetTableJson (                                    )
-    self   . FeedbackToCallback (                                            )
+    self   . FeedbackToCallback         (                                    )
     ##########################################################################
     return
   ############################################################################
-  def FeedbackToCallback    ( self                                         ) :
+  def FeedbackToCallback ( self                                            ) :
     ##########################################################################
-    if                      ( self . Mode not in [ 0 ]                     ) :
+    if                   ( self . Mode not in [ 0 ]                        ) :
       return
     ##########################################################################
-    if                      ( self . NotOkay ( self . CallbackFunction )   ) :
-      return
-    ##########################################################################
-    self . CallbackFunction ( self . JSON                                    )
+    for CF in self . CallbackFunctions                                       :
+      ########################################################################
+      CF                 ( self . JSON                                       )
     ##########################################################################
     return
   ############################################################################
@@ -324,33 +327,24 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PushTablesToDatabase            ( self                               ) :
+  def PushTablesToDatabase           ( self                                ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB in [ False , None ]             ) :
+    DB     = self . ConnectDB        (                                       )
+    if                               ( self . NotOkay ( DB )               ) :
       return
     ##########################################################################
-    """
-    BODY    = json . dumps            ( self . JSON , ensure_ascii = False   )
-    try                                                                      :
-      BODY  = BODY . encode           ( 'utf8'                               )
-    except                                                                   :
-      pass
+    PAMTAB = self . Tables           [ "Parameters"                          ]
+    PQ     = ParameterQuery          ( 7 , 113 , self . Scope , PAMTAB       )
     ##########################################################################
-    VARTAB  = self . Tables           [ "Variables"                          ]
-    DB      . LockWrites              ( [ VARTAB                           ] )
-    VARI    = VariableItem            (                                      )
-    VARI    . Uuid  = self . Uuid
-    VARI    . Type  = self . Type
-    VARI    . Name  = self . Name
-    VARI    . Value = BODY
-    VARI    . AssureValue             ( DB,VARTAB                            )
-    DB      . UnlockTables            (                                      )
-    """
+    DB     . LockWrites              ( [ PAMTAB                            ] )
     ##########################################################################
-    DB      . Close                   (                                      )
+    for K , V in self . JSON . items (                                     ) :
+      ########################################################################
+      PQ   . assureValue             ( DB , self . Uuid , K , V              )
     ##########################################################################
-    self    . Notify                  ( 5                                    )
+    DB     . UnlockTables            (                                       )
+    DB     . Close                   (                                       )
+    self   . Notify                  ( 5                                     )
     ##########################################################################
     return
   ############################################################################
