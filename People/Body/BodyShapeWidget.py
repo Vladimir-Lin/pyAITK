@@ -149,12 +149,12 @@ class BodyShapeWidget              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def setConf                           ( self , CONF                      ) :
+  def setConf                             ( self , CONF                    ) :
     ##########################################################################
-    if                                  ( "Callback" in CONF               ) :
-      CF   = CONF                       [ "Callback"                         ]
-      if                                ( CF not in [ False , None ]       ) :
-      self . CallbackFunctions . append ( CF                                 )
+    if                                    ( "Callback" in CONF             ) :
+      CF   = CONF                         [ "Callback"                       ]
+      if                                  ( CF not in [ False , None ]     ) :
+        self . CallbackFunctions . append ( CF                               )
     ##########################################################################
     return
   ############################################################################

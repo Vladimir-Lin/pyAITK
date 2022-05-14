@@ -221,7 +221,7 @@ class ParameterQuery       (                                               ) :
     ##########################################################################
     QQ    = f"""select `name` , `value` from {T}
                 where ( `uuid` = {UUID} )
-                  and ( `type` = {T} )
+                  and ( `type` = {Y} )
                   and ( `variety` = {V} )
                   and ( `scope` = '{S}' )
                 order by `id` asc ;"""
