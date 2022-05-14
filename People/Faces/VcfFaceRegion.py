@@ -49,9 +49,13 @@ from   PyQt5 . QtGui                  import QTransform
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
+from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QWidget
+from   PyQt5 . QtWidgets              import QFileDialog
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
+from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager  as MenuManager
 ##############################################################################
@@ -936,21 +940,32 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     RT   = self . ScreenRect
     WW   = RT   . width                   (                                  )
     HH   = RT   . height                  (                                  )
-    if                                    ( WW > HH                        ) :
+    ##########################################################################
+    RX   = self . PictureItem . Xratio
+    RY   = self . PictureItem . Yratio
+    ##########################################################################
+    RW   = float                          ( RX * WW                          )
+    RH   = float                          ( RY * HH                          )
+    ##########################################################################
+    if                                    ( RW > RH                        ) :
       ########################################################################
       XX = RT   . x                       (                                  )
       YY = RT   . y                       (                                  )
+      ########################################################################
+      WX = float                          ( RW / RY                          )
       CC = float                          ( YY + float ( HH / 2 )            )
-      YY = float                          ( CC - float ( WW / 2 )            )
-      self . ScreenRect = QRectF          ( XX , YY , WW , WW                )
+      YY = float                          ( CC - float ( WX / 2 )            )
+      self . ScreenRect = QRectF          ( XX , YY , WW , WX                )
       ########################################################################
     else                                                                     :
       ########################################################################
       XX = RT   . x                       (                                  )
       YY = RT   . y                       (                                  )
+      ########################################################################
+      HY = float                          ( RH / RX                          )
       CC = float                          ( XX + float ( WW / 2 )            )
-      XX = float                          ( CC - float ( HH / 2 )            )
-      self . ScreenRect = QRectF          ( XX , YY , HH , HH                )
+      XX = float                          ( CC - float ( HY / 2 )            )
+      self . ScreenRect = QRectF          ( XX , YY , HY , HH                )
     ##########################################################################
     self . PaperRect = self . rectToPaper ( self . ScreenRect                )
     ##########################################################################
@@ -1123,23 +1138,28 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     return False
   ############################################################################
-  def PicturesMenu             ( self , mm                                 ) :
+  def PicturesMenu               ( self , mm                               ) :
     ##########################################################################
-    MSG   = self . getMenuItem ( "PicturesOperation"                         )
-    COL   = mm   . addMenu     ( MSG                                         )
+    MSG   = self . getMenuItem   ( "PicturesOperation"                       )
+    COL   = mm   . addMenu       ( MSG                                       )
     ##########################################################################
-    msg   = self . getMenuItem ( "CropImage"                                 )
-    mm    . addActionFromMenu  ( COL , 21451201 , msg                        )
+    msg   = self . getMenuItem   ( "CropImage"                               )
+    mm    . addActionFromMenu    ( COL , 21451201 , msg                      )
     ##########################################################################
-    if ( self . NoseBridge not in [ False , None ] )                         :
+    if                           ( self . IsOkay ( self . NoseBridge )     ) :
       ########################################################################
-      FMT = self . getMenuItem ( "RotateImage"                               )
-      msg = FMT  . format      ( self . RotateAngle ( )                      )
-      mm  . addActionFromMenu  ( COL , 21451202 , msg                        )
+      FMT = self . getMenuItem   ( "RotateImage"                             )
+      msg = FMT  . format        ( self . RotateAngle ( )                    )
+      mm  . addActionFromMenu    ( COL , 21451202 , msg                      )
+    ##########################################################################
+    mm    = self . RollImageMenu ( mm , COL                                  )
     ##########################################################################
     return mm
   ############################################################################
   def RunPicturesMenu         ( self , at                                  ) :
+    ##########################################################################
+    angle = self . RollImageSpin . value    (                                )
+    self  . LimitValues [ "RollImageAngle" ] = angle
     ##########################################################################
     if                        ( at == 21451201                             ) :
       ########################################################################
@@ -1150,6 +1170,12 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     if                        ( at == 21451202                             ) :
       ########################################################################
       self . PictureItem . CreateRotateImage ( self . RotateAngle ( )        )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                        ( at == 21451251                             ) :
+      ########################################################################
+      self  . PictureItem . CreateRotateImage ( angle                        )
       ########################################################################
       return True
     ##########################################################################

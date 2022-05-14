@@ -130,6 +130,10 @@ class VcfRectangle              ( VcfItem                                  ) :
     self . MeasureLineWidth = None
     self . MeasurePoints    =      [                                         ]
     ##########################################################################
+    self . LimitValues [ "RollImageAngle"     ] = 0.0
+    self . LimitValues [ "RollImageAngleStep" ] = 0.001
+    self . RollImageSpin = None
+    ##########################################################################
     return
   ############################################################################
   def boundingRect ( self                                                  ) :
@@ -1238,4 +1242,27 @@ class VcfRectangle              ( VcfItem                                  ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def RollImageMenu               ( self , mm , ROM                        ) :
+    ##########################################################################
+    angle  = self . LimitValues   [ "RollImageAngle"                         ]
+    step   = self . LimitValues   [ "RollImageAngleStep"                     ]
+    ##########################################################################
+    ROLL   = QDoubleSpinBox       (                                          )
+    PREFIX = self . getMenuItem   ( "RollAngle:"                             )
+    ROLL   = QDoubleSpinBox       (                                          )
+    self   . RollImageSpin = ROLL
+    ROLL   . setPrefix            ( PREFIX                                   )
+    ROLL   . setSingleStep        ( step                                     )
+    ROLL   . setMinimum           ( step                                     )
+    ROLL   . setMaximum           ( 1080.0                                   )
+    ROLL   . setValue             ( angle                                    )
+    ##########################################################################
+    mm     . addSeparatorFromMenu ( ROM                                      )
+    ##########################################################################
+    MSG    = self . getMenuItem   ( "RollImage"                              )
+    mm     . addActionFromMenu    ( ROM , 21451251 , msg                     )
+    mm     . addWidgetWithMenu    ( ROM , 21451252 , ROLL                    )
+    ##########################################################################
+    return mm
 ##############################################################################
