@@ -55,6 +55,7 @@ from   PyQt5 . QtWidgets              import QFileDialog
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
 from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager  as MenuManager
 ##############################################################################
@@ -94,43 +95,51 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     self . LineEditing    = False
     self . LineEditPoints = 0
-    self . LimitValues [ "LineEditingId"    ] = 34621145
-    self . LimitValues [ "LineEditingWidth" ] = 4.5
+    self . LimitValues [ "LineEditingId"     ] = 34621145
+    self . LimitValues [ "LineEditingWidth"  ] = 6.0
+    self . LimitValues [ "LineEditingCircle" ] = 20
     self . LineStartPoint =       {                                          }
     self . LineEndPoint   =       {                                          }
     ##########################################################################
-    self . EditingMode    = 0
-    self . MeasureRule    =       {                                          }
-    self . AddingRule     = False
-    self . AddMeasuring   = False
-    self . MeasureSpin    = None
-    self . MeasurePoints  =       [                                          ]
+    self . EditingMode      = 0
+    self . MeasureRule      =     {                                          }
+    self . AddingRule       = False
+    self . AddMeasuring     = False
+    self . MeasureSpin      = None
+    self . MeasureLineWidth = None
+    self . MeasurePoints    =     [                                          ]
     ##########################################################################
     self . Painter . addMap       ( "LineEditing"   , 34621145               )
     self . Painter . addMap       ( "LineEditingPt" , 34621146               )
     self . Painter . addMap       ( "MeasureRule"   , 34621147               )
     ##########################################################################
     self . Painter . addPen       ( 34621145 , QColor ( 0 , 0 , 255 , 192 )  )
-    self . Painter . addPen       ( 34621146 , QColor ( 255 , 0 , 0 , 192 )  )
+    self . Painter . addPen       ( 34621146 , QColor ( 255 , 0 , 192 , 192 )  )
     self . Painter . addPen       ( 34621147 , QColor ( 255 , 0 , 0 , 192 )  )
     ##########################################################################
-    self . Painter . pens [ 34621147 ] . setWidthF ( 3.0                     )
+    self . Painter . pens [ 34621146 ] . setWidthF ( 2.5                     )
+    self . Painter . pens [ 34621147 ] . setWidthF ( 8.0                     )
     ##########################################################################
     self . Painter . addBrush     ( 34621145 , QColor ( 0 , 0 , 255 , 192 )  )
     self . Painter . addBrush     ( 34621146 , QColor ( 0 , 0 ,   0 ,   0 )  )
     self . Painter . addBrush     ( 34621147 , QColor ( 255 , 0 , 0 , 192 )  )
     ##########################################################################
+    FNT  = QFont                  (                                          )
+    FNT  . setPixelSize           ( 40.0                                     )
+    self . Painter . fonts [ 34621148 ] = FNT
+    ##########################################################################
     return
   ############################################################################
-  def Painting                ( self , p , region , clip , color           ) :
+  def Painting                  ( self , p , region , clip , color         ) :
     ##########################################################################
-    if                        ( clip                                       ) :
-      self . PaintImageClip   (        p , region , clip , color             )
+    if                          ( clip                                     ) :
+      self . PaintImageClip     (        p , region , clip , color           )
     else                                                                     :
-      self . PaintImage       (        p , region , clip , color             )
+      self . PaintImage         (        p , region , clip , color           )
     ##########################################################################
-    self   . PaintMeasureRule (        p , region , clip , color             )
-    self   . PaintLineEditing (        p , region , clip , color             )
+    self   . PaintMeasureRule   (        p , region , clip , color           )
+    self   . PaintMeasurePoints (        p , region , clip , color           )
+    self   . PaintLineEditing   (        p , region , clip , color           )
     ##########################################################################
     return
   ############################################################################
@@ -175,6 +184,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     ID   = self . LimitValues   [ "LineEditingId"                            ]
     PW   = self . LimitValues   [ "LineEditingWidth"                         ]
+    CR   = self . LimitValues   [ "LineEditingCircle"                        ]
     self . Painter . pens [ ID ] . setWidthF ( PW                            )
     self . Painter . setPainter ( p , "LineEditing"                          )
     ##########################################################################
@@ -187,8 +197,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     p    . drawLine             ( P1 , P2                                    )
     ##########################################################################
     self . Painter . setPainter ( p , "LineEditingPt"                        )
-    p    . drawEllipse          ( P1 , 10 , 10                               )
-    p    . drawEllipse          ( P2 , 10 , 10                               )
+    p    . drawEllipse          ( P1 , CR , CR                               )
+    p    . drawEllipse          ( P2 , CR , CR                               )
     ##########################################################################
     return
   ############################################################################
@@ -209,6 +219,35 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     P2   = QPointF              ( L2 [ "X" ] , L2 [ "Y" ]                    )
     ##########################################################################
     p    . drawLine             ( P1 , P2                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def PaintMeasurePoints        ( self , p , region , clip , color         ) :
+    ##########################################################################
+    if                          ( len ( self . MeasurePoints ) <= 0        ) :
+      return
+    ##########################################################################
+    for MP in self . MeasurePoints                                           :
+      ########################################################################
+      CC  = MP                  [ "Color"                                    ]
+      L1  = MP                  [ "P1"                                       ]
+      L2  = MP                  [ "P2"                                       ]
+      LL  = self . CalculateMeasureLength ( L1 , L2                          )
+      ########################################################################
+      QC  = QColor              ( CC [ "R" ] , CC [ "G" ] , CC [ "B" ]       )
+      p   . setPen              ( QPen    ( QC                             ) )
+      p   . setBrush            ( QBrushh ( QC                             ) )
+      ########################################################################
+      P1  = QPointF             ( L1 [ "X" ] , L1 [ "Y" ]                    )
+      P2  = QPointF             ( L2 [ "X" ] , L2 [ "Y" ]                    )
+      ########################################################################
+      p    . drawLine           ( P1 , P2                                    )
+      ########################################################################
+      p    . setFont            ( self . Painter . fonts [ 34621148 ]        )
+      ########################################################################
+      LT   = int                ( LL                                         )
+      LT   = f"{LT}"
+      p    . drawText           ( P2 . x ( ) + 48 , P2 . y ( ) + 48 , LT     )
     ##########################################################################
     return
   ############################################################################
@@ -522,37 +561,88 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def LinePointsEditingFinished    ( self , P1 , P2                        ) :
+  def LinePointsEditingFinished        ( self , P1 , P2                    ) :
     ##########################################################################
     EM     = self . EditingMode
     self   . EditingMode = 0
     ##########################################################################
-    if                             ( EM == 23521001                        ) :
+    if                                 ( EM == 23521001                    ) :
       ########################################################################
-      MM   = 100
-      if                           ( "Value" in self . MeasureRule         ) :
-        ######################################################################
-        MM = self . MeasureRule    [ "Value"                                 ]
+      self . MeasureRule [ "P1" ] = P1
+      self . MeasureRule [ "P2" ] = P2
       ########################################################################
-      dX   = float                 ( P1 [ "X" ] - P2 [ "X" ]                 )
-      dY   = float                 ( P1 [ "Y" ] - P2 [ "Y" ]                 )
-      L    = math . sqrt           ( ( dX * dX ) + ( dY * dY )               )
-      F    = float                 ( float ( MM ) / L                        )
+      self . RecalculateMeasureFactors (                                     )
+      self . AddingRule   = False
       ########################################################################
-      self . MeasureRule [ "P1"     ] = P1
-      self . MeasureRule [ "P2"     ] = P2
-      self . MeasureRule [ "Value"  ] = MM
-      self . MeasureRule [ "Length" ] = L
-      self . MeasureRule [ "Factor" ] = F
+      return
+    ##########################################################################
+    if                                 ( EM == 23521002                    ) :
       ########################################################################
-      self . AddingRule     = False
+      CC   = self . getSystemColor     (                                     )
+      R    = CC   . red                (                                     )
+      G    = CC   . green              (                                     )
+      B    = CC   . blue               (                                     )
+      CW   =                           { "R" : R , "G" : G , "B" : B         }
+      JP   =                           { "Color" : CW                        ,
+                                         "P1"    : P1                        ,
+                                         "P2"    : P2                        }
+      self . MeasurePoints . append    ( JP                                  )
+      self . AddMeasuring = False
       ########################################################################
       return
     ##########################################################################
     return
   ############################################################################
-  def ClearMeasures                ( self                                  ) :
+  def CalculateMeasureLength    ( self , P1 , P2                           ) :
     ##########################################################################
+    if                          ( "Factor" not in self . MeasureRule       ) :
+      return 1.0
+    ##########################################################################
+    FACTOR = self . MeasureRule [ "Factor"                                   ]
+    ##########################################################################
+    dX     = float              ( P1 [ "X" ] - P2 [ "X" ]                    )
+    dY     = float              ( P1 [ "Y" ] - P2 [ "Y" ]                    )
+    L      = math . sqrt        ( ( dX * dX ) + ( dY * dY )                  )
+    ##########################################################################
+    return float                ( L * FACTOR                                 )
+  ############################################################################
+  def RecalculateMeasureFactors ( self                                     ) :
+    ##########################################################################
+    if                          ( "P1" not in self . MeasureRule           ) :
+      return
+    ##########################################################################
+    if                          ( "P2" not in self . MeasureRule           ) :
+      return
+    ##########################################################################
+    MM   = 100
+    ##########################################################################
+    if                          ( "Value" in self . MeasureRule            ) :
+      ########################################################################
+      MM = self . MeasureRule   [ "Value"                                    ]
+    ##########################################################################
+    P1   = self . MeasureRule   [ "P1"                                       ]
+    P2   = self . MeasureRule   [ "P2"                                       ]
+    ##########################################################################
+    dX   = float                ( P1 [ "X" ] - P2 [ "X" ]                    )
+    dY   = float                ( P1 [ "Y" ] - P2 [ "Y" ]                    )
+    L    = math . sqrt          ( ( dX * dX ) + ( dY * dY )                  )
+    F    = float                ( float ( MM ) / L                           )
+    ##########################################################################
+    self . MeasureRule [ "Value"  ] = MM
+    self . MeasureRule [ "Length" ] = L
+    self . MeasureRule [ "Factor" ] = F
+    ##########################################################################
+    return
+  ############################################################################
+  def ClearMeasures        ( self                                          ) :
+    ##########################################################################
+    self . EditingMode   = 0
+    self . MeasureRule   = {                                                 }
+    self . AddingRule    = False
+    self . AddMeasuring  = False
+    self . MeasureSpin   = None
+    self . MeasurePoints = [                                                 ]
+    self . update          (                                                 )
     ##########################################################################
     return
   ############################################################################
@@ -566,6 +656,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def AddingMeasuringLine          ( self                                  ) :
     ##########################################################################
+    self . EditingMode  = 23521002
+    self . AddMeasuring = True
+    self . StartLineEditing        (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -652,41 +745,90 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def MeasureMenu                ( self , mm                               ) :
+  def MeasureRuleMenu               ( self , mm , LOM                      ) :
     ##########################################################################
-    MSG   = self . getMenuItem   ( "Measurements"                            )
-    LOM   = mm   . addMenu       ( MSG                                       )
+    MM     = 100
+    if                              ( "Value" in self . MeasureRule        ) :
+      ########################################################################
+      MM   = self . MeasureRule     [ "Value"                                ]
     ##########################################################################
-    MSG   = self . getMenuItem   ( "ClearMeasures"                           )
-    mm    . addActionFromMenu    ( LOM , 78021001 , MSG                      )
+    PREFIX = self . getMenuItem     ( "RuleLength:"                          )
+    LSP    = QSpinBox               (                                        )
+    self   . MeasureSpin = LSP
+    LSP    . setPrefix              ( PREFIX                                 )
+    LSP    . setMinimum             ( 1                                      )
+    LSP    . setMaximum             ( 2000000000                             )
+    LSP    . setValue               ( MM                                     )
+    ##########################################################################
+    WF     = self . Painter . pens [ 34621147 ] . widthF (                   )
+    PREFIX = self . getMenuItem     ( "RuleLineWidth:"                       )
+    LWF    = QDoubleSpinBox         (                                        )
+    self   . MeasureLineWidth = LWF
+    LWF    . setPrefix              ( PREFIX                                 )
+    LWF    . setSingleStep          ( 0.1                                    )
+    LWF    . setMinimum             ( 0.1                                    )
+    LWF    . setMaximum             ( 1000.0                                 )
+    LWF    . setValue               ( WF                                     )
+    ##########################################################################
+    MSG    = self . getMenuItem     ( "MeasureRule"                          )
+    ROM    = mm   . addMenuFromMenu ( LOM , MSG                              )
+    ##########################################################################
+    MSG    = self . getMenuItem     ( "AddingRule"                           )
+    mm     . addActionFromMenu      ( ROM , 78021101 , MSG                   )
+    ##########################################################################
+    mm     . addWidgetWithMenu      ( ROM , 78021151 , LSP                   )
+    mm     . addWidgetWithMenu      ( ROM , 78021152 , LWF                   )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def MeasureLinesMenu           ( self , mm , LOM                         ) :
+    ##########################################################################
+    MSG = self . getMenuItem     ( "MeasuringLines"                          )
+    ROM = mm   . addMenuFromMenu ( LOM , MSG                                 )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "AddMeasuring"                            )
+    mm  . addActionFromMenu      ( ROM , 78021201 , MSG                      )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def MeasureMenu                   ( self , mm                            ) :
+    ##########################################################################
+    MSG   = self . getMenuItem      ( "Measurements"                         )
+    LOM   = mm   . addMenu          ( MSG                                    )
+    ##########################################################################
+    MSG   = self . getMenuItem      ( "ClearMeasures"                        )
+    mm    . addActionFromMenu       ( LOM , 78021001 , MSG                   )
     ##########################################################################
     if ( ( not self . AddingRule ) and ( not self . AddMeasuring ) )         :
       ########################################################################
-      MSG = self . getMenuItem   ( "AddingRule"                              )
-      mm  . addActionFromMenu    ( LOM , 78021101 , MSG                      )
-      ########################################################################
-      MSG = self . getMenuItem   ( "AddMeasuring"                            )
-      mm  . addActionFromMenu    ( LOM , 78021201 , MSG                      )
+      mm  = self . MeasureRuleMenu  ( mm , LOM                               )
+      mm  = self . MeasureLinesMenu ( mm , LOM                               )
     ##########################################################################
     return
   ############################################################################
-  def RunMeasureMenu             ( self , at                               ) :
+  def RunMeasureMenu                 ( self , at                           ) :
     ##########################################################################
-    if                           ( at == 78021001                          ) :
+    self . MeasureRule [ "Value" ] = self . MeasureSpin . value (            )
+    self . RecalculateMeasureFactors (                                       )
+    ##########################################################################
+    WF   = self . MeasureLineWidth . value (                                 )
+    self . Painter . pens [ 34621147 ] . setWidthF ( WF                      )
+    ##########################################################################
+    if                               ( at == 78021001                      ) :
       ########################################################################
-      self . ClearMeasures       (                                           )
+      self . ClearMeasures           (                                       )
       ########################################################################
       return True
     ##########################################################################
-    if                           ( at == 78021101                          ) :
+    if                               ( at == 78021101                      ) :
       ########################################################################
-      self . AddingRuleLine      (                                           )
+      self . AddingRuleLine          (                                       )
       ########################################################################
       return True
     ##########################################################################
-    if                           ( at == 78021201                          ) :
+    if                               ( at == 78021201                      ) :
       ########################################################################
-      self . AddingMeasuringLine (                                           )
+      self . AddingMeasuringLine     (                                       )
       ########################################################################
       return True
     ##########################################################################
