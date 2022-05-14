@@ -10,6 +10,7 @@ import requests
 import threading
 import gettext
 import json
+import math
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -29,6 +30,7 @@ from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QFont
 from   PyQt5 . QtGui                  import QFontMetricsF
+from   PyQt5 . QtGui                  import QColor
 from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
 from   PyQt5 . QtGui                  import QKeySequence
@@ -40,6 +42,8 @@ from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
+from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
 from         . VcfItem                import VcfItem    as VcfItem
 ##############################################################################
@@ -1149,8 +1153,8 @@ class VcfRectangle              ( VcfItem                                  ) :
     LSP    . setMaximum             ( 2000000000                             )
     LSP    . setValue               ( MM                                     )
     ##########################################################################
-    PID    = self . Names           [ "MeasureRule"                          ]
-    WF     = self . Painter . pens [ PID ] . widthF (                        )
+    PID    = self . Painter . Names [ "MeasureRule"                          ]
+    WF     = self . Painter . pens  [ PID ] . widthF (                       )
     PREFIX = self . getMenuItem     ( "RuleLineWidth:"                       )
     LWF    = QDoubleSpinBox         (                                        )
     self   . MeasureLineWidth = LWF
@@ -1205,7 +1209,7 @@ class VcfRectangle              ( VcfItem                                  ) :
     self . RecalculateMeasureFactors (                                       )
     ##########################################################################
     WF   = self . MeasureLineWidth . value (                                 )
-    PID  = self . Names              [ "MeasureRule"                         ]
+    PID  = self . Painter . Names    [ "MeasureRule"                         ]
     self . Painter . pens [ PID ] . setWidthF ( WF                           )
     ##########################################################################
     if                               ( at == 78021001                      ) :
