@@ -56,6 +56,10 @@ from   AITK  . VCF       . VcfRectangle    import VcfRectangle    as VcfRectangl
 from   AITK  . VCF       . VcfCanvas       import VcfCanvas       as VcfCanvas
 from   AITK  . VCF       . VcfWidget       import VcfWidget       as VcfWidget
 ##############################################################################
+from                     . VcfDurationBar  import VcfDurationBar  as VcfDurationBar
+from                     . VcfPeriodeBar   import VcfPeriodeBar   as VcfPeriodeBar
+from                     . VcfGanttPicker  import VcfGanttPicker  as VcfGanttPicker
+from                     . VcfGantt        import VcfGantt        as VcfGantt
 from                     . VcfTimeScale    import VcfTimeScale    as VcfTimeScale
 from                     . VcfTimeSelector import VcfTimeSelector as VcfTimeSelector
 ##############################################################################
@@ -178,7 +182,8 @@ class VcfProject                  ( VcfWidget                              ) :
     self . TimeSelector = TSIW
     self . TimeSelector . setPeriod   ( SDT , EDT                            )
     self . TimeSelector . setCurrent  (                                      )
-    self . addTimeScale               ( TSIW                                 )
+    ## self . addTimeScale               ( TSIW                                 )
+    self . TimeSelector . addGadgets  ( self                                 )
     ##########################################################################
     self . setPrepared                ( True                                 )
     ##########################################################################

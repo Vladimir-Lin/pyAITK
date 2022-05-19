@@ -61,7 +61,7 @@ class VcfGantt                    ( VcfCanvas                              ) :
                                     plan   = None                          ) :
     ##########################################################################
     super ( ) . __init__          ( parent , item , plan                     )
-    self . setGanttPickerDefaults (                                          )
+    self . setGanttDefaults       (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -70,7 +70,7 @@ class VcfGantt                    ( VcfCanvas                              ) :
     ##########################################################################
     return
   ############################################################################
-  def setGanttPickerDefaults  ( self                                       ) :
+  def setGanttDefaults        ( self                                       ) :
     ##########################################################################
     self . Painter . addMap   ( "Default"  , 0                               )
     self . Painter . addMap   ( "Outdated" , 1                               )
@@ -88,8 +88,8 @@ class VcfGantt                    ( VcfCanvas                              ) :
     FNT  . setPixelSize       ( 48.0                                         )
     self . Painter . fonts [ 3 ] = FNT
     ##########################################################################
-    self . setZValue          ( 10000000.0                                   )
-    self . setOpacity         ( 1.0                                          )
+    self . setZValue          ( 10000.0                                      )
+    self . setOpacity         ( 0.95                                         )
     self . setPos             ( QPointF ( 0.0 , 0.0 )                        )
     ##########################################################################
     self . setFlag            ( QGraphicsItem . ItemIsMovable    , False     )
@@ -102,6 +102,7 @@ class VcfGantt                    ( VcfCanvas                              ) :
     ##########################################################################
     self . pushPainters               ( p                                    )
     ##########################################################################
+    self . Painter . drawRect         ( p , "Tracking" , self . ScreenRect   )
     ##########################################################################
     self . popPainters                ( p                                    )
     ##########################################################################

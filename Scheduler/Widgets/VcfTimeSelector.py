@@ -191,27 +191,84 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def TimeScaleViewChanged ( self , View , Update = True                   ) :
+    ##########################################################################
+    if                     ( self . NotOkay ( self . TimeScale )           ) :
+      return
+    ##########################################################################
+    XX   = self . TimeScale . ScreenRect . x      (                          )
+    YY   = self . TimeScale . ScreenRect . y      (                          )
+    WW   = View . width                           (                          )
+    HH   = self . TimeScale . ScreenRect . height (                          )
+    ##########################################################################
+    SRV  = QRectF                                 ( XX , YY , WW , HH        )
+    PRV  = self . TimeScale . rectToPaper         ( SRV                      )
+    ##########################################################################
+    self . TimeScale . ScreenRect = SRV
+    self . TimeScale . PaperRect  = PRV
+    self . TimeScale . PrepareGrid                (                          )
+    ##########################################################################
+    if                                            ( Update                 ) :
+      self . TimeScale . prepareGeometryChange    (                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def PickerViewChanged    ( self , View , Update = True                   ) :
+    ##########################################################################
+    if                     ( self . NotOkay ( self . Picker )              ) :
+      return
+    ##########################################################################
+    XX   = self . Picker . ScreenRect . x      (                             )
+    YY   = self . Picker . ScreenRect . y      (                             )
+    WW   = View . width                        (                             )
+    HH   = self . Picker . ScreenRect . height (                             )
+    ##########################################################################
+    SRV  = QRectF                              ( XX , YY , WW , HH           )
+    PRV  = self . Picker . rectToPaper         ( SRV                         )
+    ##########################################################################
+    self . Picker . ScreenRect = SRV
+    self . Picker . PaperRect  = PRV
+    ## self . Picker . PrepareGrid                (                             )
+    ##########################################################################
+    if                                         ( Update                    ) :
+      self . Picker . prepareGeometryChange    (                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def GanttViewChanged     ( self , View , Update = True                   ) :
+    ##########################################################################
+    if                     ( self . NotOkay ( self . Gantt )               ) :
+      return
+    ##########################################################################
+    XX   = self . Gantt . ScreenRect . x      (                              )
+    YY   = self . Gantt . ScreenRect . y      (                              )
+    WW   = View . width                       (                              )
+    HH   = View . height                      (                              )
+    PM   = self . paperToPoint                ( self . Gantt . PaperPos      )
+    YP   = PM   . y                           (                              )
+    ##########################################################################
+    HH   = HH - YP - 4
+    ##########################################################################
+    SRV  = QRectF                             ( XX , YY , WW , HH            )
+    PRV  = self . Gantt . rectToPaper         ( SRV                          )
+    ##########################################################################
+    self . Gantt . ScreenRect = SRV
+    self . Gantt . PaperRect  = PRV
+    ## self . Gantt . PrepareGrid                (                              )
+    ##########################################################################
+    if                                        ( Update                     ) :
+      self . Gantt . prepareGeometryChange    (                              )
+    ##########################################################################
+    return
+  ############################################################################
   def ViewChanged                            ( self , View , Update = True ) :
     ##########################################################################
     self   . ScreenRect = View
-    self   . PaperRect  = self . rectToPaper ( View                          )
+    self   . PaperRect  = self . rectToPaper (        View                   )
     ##########################################################################
-    if ( self . TimeScale not in [ False , None ] )                          :
-      ########################################################################
-      XX   = self . TimeScale . ScreenRect . x      (                        )
-      YY   = self . TimeScale . ScreenRect . y      (                        )
-      WW   = View . width                           (                        )
-      HH   = self . TimeScale . ScreenRect . height (                        )
-      ########################################################################
-      SRV  = QRectF                          ( XX , YY , WW , HH             )
-      PRV  = self . TimeScale . rectToPaper  ( SRV                           )
-      ########################################################################
-      self . TimeScale . ScreenRect = SRV
-      self . TimeScale . PaperRect  = PRV
-      self . TimeScale . PrepareGrid         (                               )
-      ########################################################################
-      if                                     ( Update                      ) :
-        self . TimeScale . prepareGeometryChange (                           )
+    self   . TimeScaleViewChanged            (        View , Update          )
+    self   . PickerViewChanged               (        View , Update          )
+    self   . GanttViewChanged                (        View , Update          )
     ##########################################################################
     if                                       ( Update                      ) :
       self . prepareGeometryChange           (                               )
@@ -252,6 +309,59 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
                                         "%Y/%m/%d"                         , \
                                         "%H:%M:%S"                           )
     self . CursorTime = CDT
+    ##########################################################################
+    return
+  ############################################################################
+  def addTimeScale          ( self , gview                                 ) :
+    ##########################################################################
+    SDT   = self . Duration . Start
+    EDT   = self . Duration . End
+    ##########################################################################
+    VTSI  = VcfTimeScale    ( gview , None , self . PlanFunc                 )
+    VTSI  . setOptions      ( gview . Options , False                        )
+    VTSI  . setRange        ( QRectF ( 0.0 , 0.0 , 0.1 , 1.0 )               )
+    VTSI  . PrepareItems    (                                                )
+    VTSI  . setPeriod       ( SDT , EDT                                      )
+    VTSI  . setCurrent      (                                                )
+    ##########################################################################
+    gview . addItem         ( VTSI , self                                    )
+    gview . Scene . addItem ( VTSI                                           )
+    ##########################################################################
+    self  . TimeScale = VTSI
+    ##########################################################################
+    return
+  ############################################################################
+  def addPicker             ( self , gview                                 ) :
+    ##########################################################################
+    VTSI  = VcfGanttPicker  ( gview , None , self . PlanFunc                 )
+    VTSI  . setOptions      ( gview . Options , False                        )
+    VTSI  . setRange        ( QRectF ( 0.0 , 1.1 , 0.1 , 1.5 )               )
+    ##########################################################################
+    gview . addItem         ( VTSI , self                                    )
+    gview . Scene . addItem ( VTSI                                           )
+    ##########################################################################
+    self  . Picker = VTSI
+    ##########################################################################
+    return
+  ############################################################################
+  def addGantt              ( self , gview                                 ) :
+    ##########################################################################
+    VTSI  = VcfGantt        ( gview , None , self . PlanFunc                 )
+    VTSI  . setOptions      ( gview . Options , False                        )
+    VTSI  . setRange        ( QRectF ( 0.0 , 2.7 , 0.1 , 1.0 )               )
+    ##########################################################################
+    gview . addItem         ( VTSI , self                                    )
+    gview . Scene . addItem ( VTSI                                           )
+    ##########################################################################
+    self  . Gantt = VTSI
+    ##########################################################################
+    return
+  ############################################################################
+  def addGadgets        ( self , gview                                     ) :
+    ##########################################################################
+    self . addTimeScale (        gview                                       )
+    self . addPicker    (        gview                                       )
+    self . addGantt     (        gview                                       )
     ##########################################################################
     return
   ############################################################################

@@ -79,7 +79,7 @@ class VcfTimeScale            ( VcfCanvas                                  ) :
     self . setFlag               ( QGraphicsItem . ItemIsMovable , False     )
     self . setDirection          ( Qt . TopEdge                              )
     ##########################################################################
-    self . setZValue             ( 1000.0                                    )
+    self . setZValue             ( 10000.0                                   )
     self . setOpacity            ( 0.95                                      )
     ##########################################################################
     self . CurrentRect = QRectF  ( 0.0 , 0.0 , 0.0 , 0.0                     )

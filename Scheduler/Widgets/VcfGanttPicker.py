@@ -86,8 +86,8 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     FNT  . setPixelSize       ( 48.0                                         )
     self . Painter . fonts [ 3 ] = FNT
     ##########################################################################
-    self . setZValue          ( 10000000.0                                   )
-    self . setOpacity         ( 1.0                                          )
+    self . setZValue          ( 10000.0                                      )
+    self . setOpacity         ( 0.95                                         )
     self . setPos             ( QPointF ( 0.0 , 0.0 )                        )
     ##########################################################################
     self . setFlag            ( QGraphicsItem . ItemIsMovable    , False     )
@@ -100,6 +100,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     ##########################################################################
     self . pushPainters               ( p                                    )
     ##########################################################################
+    self . Painter . drawRect         ( p , "Outdated" , self . ScreenRect   )
     ##########################################################################
     self . popPainters                ( p                                    )
     ##########################################################################
