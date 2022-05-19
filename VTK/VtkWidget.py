@@ -13,27 +13,27 @@ import json
 ##############################################################################
 import vtk
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                                   import QtCore
+from   PyQt5                                   import QtGui
+from   PyQt5                                   import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                          import QObject
+from   PyQt5 . QtCore                          import pyqtSignal
+from   PyQt5 . QtCore                          import Qt
+from   PyQt5 . QtCore                          import QPoint
+from   PyQt5 . QtCore                          import QPointF
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                           import QIcon
+from   PyQt5 . QtGui                           import QCursor
+from   PyQt5 . QtGui                           import QKeySequence
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QWidget
+from   PyQt5 . QtWidgets                       import QApplication
+from   PyQt5 . QtWidgets                       import qApp
+from   PyQt5 . QtWidgets                       import QWidget
 ##############################################################################
 from   vtk   . qt . QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 ##############################################################################
-from         . VirtualGui             import VirtualGui  as VirtualGui
+from   AITK  . Qt . VirtualGui                 import VirtualGui  as VirtualGui
 ##############################################################################
 class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui                ) :
   ############################################################################

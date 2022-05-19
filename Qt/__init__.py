@@ -31,7 +31,6 @@ from . IconDock        import IconDock        as IconDock
 from . TableWidget     import TableWidget     as TableWidget
 from . GraphicsView    import GraphicsView    as GraphicsView
 from . OpenGLWidget    import OpenGLWidget    as OpenGLWidget
-from . VtkWidget       import VtkWidget       as VtkWidget
 from . TextEdit        import TextEdit        as TextEdit
 from . PlainTextEdit   import PlainTextEdit   as PlainTextEdit
 from . MajorListings   import MajorListings   as MajorListings
