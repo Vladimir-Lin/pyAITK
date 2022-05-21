@@ -65,7 +65,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ## self . setDragEnabled  ( True                                            )
     ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
     ##########################################################################
-    self . PrepareObjects  ( self                                          ) :
+    self . PrepareObjects  (                                                 )
     ##########################################################################
     return
   ############################################################################
@@ -152,7 +152,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     X = ControlPoint         (                                               )
     X . setXYZ               ( R . x + D , R . y + D , R . z + D             )
     ##########################################################################
-    return
+    return X
   ############################################################################
   def setRadius                     ( self , R                             ) :
     ##########################################################################
@@ -511,35 +511,35 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def CreatePlanet                  ( self                                 ) :
+  def CreatePlanet                    ( self                               ) :
     ##########################################################################
     NAMEs    = self . ObjectNAMEs
-    self     . setRadius            ( self . Radius                          )
+    self     . setRadius              ( self . Radius                        )
     ##########################################################################
     for NAME in NAMEs                                                        :
       ########################################################################
-      JSON   = self . PlanetObjects [ NAME ] [ "Sphere" ] . GenerateMesh (   )
+      JSON   = self . PlanetObjects   [ NAME ] [ "Sphere" ] . GenerateMesh ( )
       self   . PlanetObjects [ NAME ] [ "JSON" ] = JSON
     ##########################################################################
-    E        = self . PlanetObjects [ "Points"   ] [ "Enabled"               ]
-    if                              ( E                                    ) :
-      self   . PreparePoints        ( self , "Points"                        )
+    E        = self . PlanetObjects   [ "Points"   ] [ "Enabled"             ]
+    if                                ( E                                  ) :
+      self   . PreparePoints          ( "Points"                             )
     ##########################################################################
-    E        = self . PlanetObjects [ "Lines"    ] [ "Enabled"               ]
-    if                              ( E                                    ) :
-      self   . PrepareLines         ( self , "Lines"                         )
+    E        = self . PlanetObjects   [ "Lines"    ] [ "Enabled"             ]
+    if                                ( E                                  ) :
+      self   . PrepareLines           ( "Lines"                              )
     ##########################################################################
-    E        = self . PlanetObjects [ "Polygons" ] [ "Enabled"               ]
-    if                                    ( E                              ) :
-      self   . PreparePolygons      ( self , "Polygons"                      )
+    E        = self . PlanetObjects   [ "Polygons" ] [ "Enabled"             ]
+    if                                ( E                                  ) :
+      self   . PreparePolygons        ( "Polygons"                           )
     ##########################################################################
-    for NAME in                     [ "Texture" , "Atmosphere"             ] :
+    for NAME in                       [ "Texture" , "Atmosphere"           ] :
       ########################################################################
-      E      = self . PlanetObjects [ NAME       ] [ "Enabled"               ]
-      if                            ( E                                    ) :
-        self . PrepareTexture       ( self , NAME                            )
+      E      = self . PlanetObjects   [ NAME       ] [ "Enabled"             ]
+      if                              ( E                                  ) :
+        self . PrepareTexture         ( NAME                                 )
     ##########################################################################
-    self     . renderer . ResetCamera   (                                  )
+    self     . renderer . ResetCamera (                                      )
     ##########################################################################
     return
   ############################################################################
