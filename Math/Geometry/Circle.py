@@ -78,18 +78,23 @@ class Circle     (                                                         ) :
     ##########################################################################
     return True
   ############################################################################
-  def GeneratePoints               ( self , StartId , JSON                 ) :
+  def GeneratePoints               ( self , StartId , TextureId , JSON     ) :
     ##########################################################################
     for id in range                ( 0 , self . N                          ) :
       ########################################################################
       DEGREE = float               ( float ( id * 2 ) / float ( self . N )   )
-      PID    = StartId + id
+      PID    = StartId   + id
+      TID    = TextureId + id
       P      = ControlPoint        (                                         )
       self   . Angle               ( DEGREE , P                              )
       ########################################################################
       JSON [ "Points"   ] [ PID ] = P
+      JSON [ "TPoints"  ] [ TID ] = P
       JSON [ "Vertices" ] . append ( PID                                     )
       JSON [ "Dots"     ] . append ( PID                                     )
+    ##########################################################################
+    TID      = TID + 1
+    JSON   [ "TPoints"  ] [ TID ] = JSON [ "Points" ] [ StartId              ]
     ##########################################################################
     return JSON
 ##############################################################################

@@ -235,129 +235,97 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareLines  ( self , Item ) :
+  def PrepareLines                    ( self , Item                        ) :
     ##########################################################################
-    """
-    E       = self   . PlanetObjects [ NAME ] [ "Enabled"  ]
-    if              ( not E ) :
+    E          = self . PlanetObjects [ Item ] [ "Enabled"                   ]
+    if                                ( not E                              ) :
       return
     ##########################################################################
-    JSON    = self   . PlanetObjects [ Item ] [ "JSON"     ]
-    ACTOR   = self   . PlanetObjects [ NAME ] [ "Actor"    ]
-    MAPPER  = self   . PlanetObjects [ NAME ] [ "Mapper"   ]
-    MODEL   = self   . PlanetObjects [ NAME ] [ "Model"    ]
-    TEXTURE = self   . PlanetObjects [ NAME ] [ "Texture"  ]
-    LOADED  = self   . PlanetObjects [ NAME ] [ "Loaded"   ]
+    JSON       = self . PlanetObjects [ Item ] [ "JSON"                      ]
+    ACTOR      = self . PlanetObjects [ Item ] [ "Actor"                     ]
+    MAPPER     = self . PlanetObjects [ Item ] [ "Mapper"                    ]
+    MODEL      = self . PlanetObjects [ Item ] [ "Model"                     ]
     ##########################################################################
-    C       = self   . PlanetObjects [ Item ] [ "Color"    ]
-    R       = int ( C . x * 255 )
-    G       = int ( C . y * 255 )
-    B       = int ( C . z * 255 )
-    T       = int ( C . t * 255 )
+    C          = self . PlanetObjects [ Item ] [ "Color"                     ]
+    R          = int                           ( C . x * 255                 )
+    G          = int                           ( C . y * 255                 )
+    B          = int                           ( C . z * 255                 )
+    T          = int                           ( C . t * 255                 )
     ##########################################################################
-    HH         = JSON                     [ "Sectors"  ] [ "Horizontal"      ]
-    VV         = JSON                     [ "Sectors"  ] [ "Vertical"        ]
+    HH         = JSON                          [ "Sectors"  ] [ "Horizontal" ]
+    VV         = JSON                          [ "Sectors"  ] [ "Vertical"   ]
+    PIDs       = JSON                          [ "Vertices"                  ]
     ##########################################################################
-    TOTALs     = len                      ( PIDs                             )
-    Points     = vtk . vtkPoints          (                                  )
-    Vertices   = vtk . vtkCellArray       (                                  )
-    Lines      = vtk . vtkCellArray       (                                  )
-    Polygons   = vtk . vtkCellArray       (                                  )
+    TOTALs     = len                           ( PIDs                        )
+    Points     = vtk . vtkPoints               (                             )
+    Lines      = vtk . vtkCellArray            (                             )
     ##########################################################################
-    Points     . SetNumberOfPoints        ( TOTALs                           )
-    Vertices   . InsertNextCell           ( TOTALs                           )
+    Points     . SetNumberOfPoints             ( TOTALs                      )
     ##########################################################################
-    Colors     = vtk.vtkUnsignedCharArray (                                  )
-    Colors     . SetNumberOfComponents    ( 4                                )
-    Colors     . SetNumberOfTuples        ( TOTALs                           )
-    Colors     . SetName                  ( "Colors"                         )
+    Colors     = vtk.vtkUnsignedCharArray      (                             )
+    Colors     . SetNumberOfComponents         ( 4                           )
+    Colors     . SetNumberOfTuples             ( TOTALs                      )
+    Colors     . SetName                       ( "Colors"                    )
     ##########################################################################
     for id in PIDs                                                           :
       ########################################################################
-      Vertices . InsertCellPoint          ( id                               )
-      Colors   . SetTuple4                ( id , R , G , B , T               )
-      ########################################################################
+      Colors   . SetTuple4                     ( id , R , G , B , T          )
       PS       = JSON [ "Points" ] [ id ] . toList3 (                        )
-      Points   . SetPoint                 ( id , PS                          )
+      Points   . SetPoint                      ( id , PS                     )
     ##########################################################################
-    for id in range                       ( 1 , 12                         ) :
+    for id in range                            ( 1 , 12                    ) :
       ########################################################################
-      LAT      = int                      ( id * 15                          )
-      Lines    . InsertNextCell           ( HH + 1                           )
+      LAT      = int                           ( id * 15                     )
+      Lines    . InsertNextCell                ( HH + 1                      )
       ########################################################################
       for PID in JSON [ "Lines" ] [ "Weft" ] [ LAT ]                         :
         ######################################################################
-        Lines  . InsertCellPoint          ( PID                              )
+        Lines  . InsertCellPoint               ( PID                         )
     ##########################################################################
-    for id in range                       ( 0 , 12                         ) :
+    for id in range                            ( 0 , 12                    ) :
       ########################################################################
-      LOA      = int                      ( id * 15                          )
-      ## CNT      = len ( JSON [ "Lines" ] [ "Vertical" ] [ LOA ] )
-      Lines    . InsertNextCell           ( ( VV * 2 ) + 1                   )
-      ## Lines    . InsertNextCell           ( CNT                              )
+      LOA      = int                           ( id * 15                     )
+      Lines    . InsertNextCell                ( ( VV * 2 ) + 1              )
       ########################################################################
       for PID in JSON [ "Lines" ] [ "Warp" ] [ LOA ]                         :
         ######################################################################
-        Lines  . InsertCellPoint          ( PID                              )
+        Lines  . InsertCellPoint               ( PID                         )
     ##########################################################################
-    for POLY  in JSON                     [ "Polygons"                     ] :
-      ########################################################################
-      P        = vtk . vtkPolygon         (                                  )
-      CNT      = len                      ( POLY                             )
-      IDX      = 0
-      P        . GetPointIds ( ) . SetNumberOfIds ( CNT                      )
-      ########################################################################
-      for PID in POLY                                                        :
-        ######################################################################
-        P      . GetPointIds ( ) . SetId  ( IDX , PID                        )
-        ######################################################################
-        IDX    = IDX + 1
-      ########################################################################
-      Polygons . InsertNextCell           ( P                                )
+    MODEL      . SetPoints                     ( Points                      )
+    MODEL      . SetLines                      ( Lines                       )
+    MODEL      . GetPointData ( ) . SetScalars ( Colors                      )
+    MODEL      . Modified                      (                             )
     ##########################################################################
-    self       . Model . SetPoints        ( Points                           )
-    self       . Model . SetVerts         ( Vertices                         )
-    self       . Model . SetLines         ( Lines                            )
-    self       . Model . SetPolys         ( Polygons                         )
-    self       . Model . GetPointData ( ) . SetScalars ( Colors              )
-    self       . Model . Modified         (                                  )
-    ##########################################################################
-    self       . Mapper   . SetInputData  ( self . Model                     )
-    """
+    MAPPER     . SetInputData                  ( MODEL                       )
     ##########################################################################
     return
   ############################################################################
-  def PreparePolygons  ( self , Item ) :
+  def PreparePolygons                     ( self , Item                    ) :
     ##########################################################################
-    """
-    E       = self   . PlanetObjects [ NAME ] [ "Enabled"  ]
-    if              ( not E ) :
+    E          = self . PlanetObjects     [ Item ] [ "Enabled"               ]
+    if                                    ( not E                          ) :
       return
     ##########################################################################
-    JSON    = self   . PlanetObjects [ Item ] [ "JSON"     ]
-    ACTOR   = self   . PlanetObjects [ NAME ] [ "Actor"    ]
-    MAPPER  = self   . PlanetObjects [ NAME ] [ "Mapper"   ]
-    MODEL   = self   . PlanetObjects [ NAME ] [ "Model"    ]
-    TEXTURE = self   . PlanetObjects [ NAME ] [ "Texture"  ]
-    LOADED  = self   . PlanetObjects [ NAME ] [ "Loaded"   ]
+    JSON       = self . PlanetObjects     [ Item ] [ "JSON"                  ]
+    ACTOR      = self . PlanetObjects     [ Item ] [ "Actor"                 ]
+    MAPPER     = self . PlanetObjects     [ Item ] [ "Mapper"                ]
+    MODEL      = self . PlanetObjects     [ Item ] [ "Model"                 ]
     ##########################################################################
-    C       = self   . PlanetObjects [ Item ] [ "Color"    ]
-    R       = int ( C . x * 255 )
-    G       = int ( C . y * 255 )
-    B       = int ( C . z * 255 )
-    T       = int ( C . t * 255 )
+    C          = self . PlanetObjects     [ Item ] [ "Color"                 ]
+    R          = int                      ( C . x * 255                      )
+    G          = int                      ( C . y * 255                      )
+    B          = int                      ( C . z * 255                      )
+    T          = int                      ( C . t * 255                      )
     ##########################################################################
     HH         = JSON                     [ "Sectors"  ] [ "Horizontal"      ]
     VV         = JSON                     [ "Sectors"  ] [ "Vertical"        ]
+    PIDs       = JSON                     [ "Vertices"                       ]
     ##########################################################################
     TOTALs     = len                      ( PIDs                             )
     Points     = vtk . vtkPoints          (                                  )
-    Vertices   = vtk . vtkCellArray       (                                  )
-    Lines      = vtk . vtkCellArray       (                                  )
     Polygons   = vtk . vtkCellArray       (                                  )
     ##########################################################################
     Points     . SetNumberOfPoints        ( TOTALs                           )
-    Vertices   . InsertNextCell           ( TOTALs                           )
     ##########################################################################
     Colors     = vtk.vtkUnsignedCharArray (                                  )
     Colors     . SetNumberOfComponents    ( 4                                )
@@ -366,31 +334,9 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     for id in PIDs                                                           :
       ########################################################################
-      Vertices . InsertCellPoint          ( id                               )
       Colors   . SetTuple4                ( id , R , G , B , T               )
-      ########################################################################
       PS       = JSON [ "Points" ] [ id ] . toList3 (                        )
       Points   . SetPoint                 ( id , PS                          )
-    ##########################################################################
-    for id in range                       ( 1 , 12                         ) :
-      ########################################################################
-      LAT      = int                      ( id * 15                          )
-      Lines    . InsertNextCell           ( HH + 1                           )
-      ########################################################################
-      for PID in JSON [ "Lines" ] [ "Weft" ] [ LAT ]                         :
-        ######################################################################
-        Lines  . InsertCellPoint          ( PID                              )
-    ##########################################################################
-    for id in range                       ( 0 , 12                         ) :
-      ########################################################################
-      LOA      = int                      ( id * 15                          )
-      ## CNT      = len ( JSON [ "Lines" ] [ "Vertical" ] [ LOA ] )
-      Lines    . InsertNextCell           ( ( VV * 2 ) + 1                   )
-      ## Lines    . InsertNextCell           ( CNT                              )
-      ########################################################################
-      for PID in JSON [ "Lines" ] [ "Warp" ] [ LOA ]                         :
-        ######################################################################
-        Lines  . InsertCellPoint          ( PID                              )
     ##########################################################################
     for POLY  in JSON                     [ "Polygons"                     ] :
       ########################################################################
@@ -407,31 +353,30 @@ class VtkPlanet                 ( VtkWidget                                ) :
       ########################################################################
       Polygons . InsertNextCell           ( P                                )
     ##########################################################################
-    self       . Model . SetPoints        ( Points                           )
-    self       . Model . SetVerts         ( Vertices                         )
-    self       . Model . SetLines         ( Lines                            )
-    self       . Model . SetPolys         ( Polygons                         )
-    self       . Model . GetPointData ( ) . SetScalars ( Colors              )
-    self       . Model . Modified         (                                  )
+    MODEL      . SetPoints                ( Points                           )
+    MODEL      . SetPolys                 ( Polygons                         )
+    MODEL      . GetPointData ( ) . SetScalars ( Colors                      )
+    MODEL      . Modified                 (                                  )
     ##########################################################################
-    self       . Mapper   . SetInputData  ( self . Model                     )
-    """
+    MAPPER     . SetInputData             ( MODEL                            )
     ##########################################################################
     return
   ############################################################################
   def PrepareTexture  ( self , Item ) :
     ##########################################################################
-    """
-    E       = self   . PlanetObjects [ NAME ] [ "Enabled"  ]
+    E       = self   . PlanetObjects [ Item ] [ "Enabled"  ]
+    LOADED  = self   . PlanetObjects [ Item ] [ "Loaded"   ]
+    ##########################################################################
     if              ( not E ) :
+      return
+    if              ( not LOADED ) :
       return
     ##########################################################################
     JSON    = self   . PlanetObjects [ Item ] [ "JSON"     ]
-    ACTOR   = self   . PlanetObjects [ NAME ] [ "Actor"    ]
-    MAPPER  = self   . PlanetObjects [ NAME ] [ "Mapper"   ]
-    MODEL   = self   . PlanetObjects [ NAME ] [ "Model"    ]
-    TEXTURE = self   . PlanetObjects [ NAME ] [ "Texture"  ]
-    LOADED  = self   . PlanetObjects [ NAME ] [ "Loaded"   ]
+    ACTOR   = self   . PlanetObjects [ Item ] [ "Actor"    ]
+    MAPPER  = self   . PlanetObjects [ Item ] [ "Mapper"   ]
+    MODEL   = self   . PlanetObjects [ Item ] [ "Model"    ]
+    TEXTURE = self   . PlanetObjects [ Item ] [ "Texture"  ]
     ##########################################################################
     C       = self   . PlanetObjects [ Item ] [ "Color"    ]
     R       = int ( C . x * 255 )
@@ -441,50 +386,22 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     HH         = JSON                     [ "Sectors"  ] [ "Horizontal"      ]
     VV         = JSON                     [ "Sectors"  ] [ "Vertical"        ]
+    KIDs       = JSON                     [ "TPoints"                        ]
+    PIDs       = KIDs . keys              (                                  )
     ##########################################################################
     TOTALs     = len                      ( PIDs                             )
     Points     = vtk . vtkPoints          (                                  )
-    Vertices   = vtk . vtkCellArray       (                                  )
-    Lines      = vtk . vtkCellArray       (                                  )
     Polygons   = vtk . vtkCellArray       (                                  )
+    TCoords    = vtk . vtkTCoords         (                                  )
     ##########################################################################
     Points     . SetNumberOfPoints        ( TOTALs                           )
-    Vertices   . InsertNextCell           ( TOTALs                           )
-    ##########################################################################
-    Colors     = vtk.vtkUnsignedCharArray (                                  )
-    Colors     . SetNumberOfComponents    ( 4                                )
-    Colors     . SetNumberOfTuples        ( TOTALs                           )
-    Colors     . SetName                  ( "Colors"                         )
     ##########################################################################
     for id in PIDs                                                           :
       ########################################################################
-      Vertices . InsertCellPoint          ( id                               )
-      Colors   . SetTuple4                ( id , R , G , B , T               )
-      ########################################################################
-      PS       = JSON [ "Points" ] [ id ] . toList3 (                        )
+      PS       = JSON [ "TPoints" ] [ id ] . toList3 (                       )
       Points   . SetPoint                 ( id , PS                          )
     ##########################################################################
-    for id in range                       ( 1 , 12                         ) :
-      ########################################################################
-      LAT      = int                      ( id * 15                          )
-      Lines    . InsertNextCell           ( HH + 1                           )
-      ########################################################################
-      for PID in JSON [ "Lines" ] [ "Weft" ] [ LAT ]                         :
-        ######################################################################
-        Lines  . InsertCellPoint          ( PID                              )
-    ##########################################################################
-    for id in range                       ( 0 , 12                         ) :
-      ########################################################################
-      LOA      = int                      ( id * 15                          )
-      ## CNT      = len ( JSON [ "Lines" ] [ "Vertical" ] [ LOA ] )
-      Lines    . InsertNextCell           ( ( VV * 2 ) + 1                   )
-      ## Lines    . InsertNextCell           ( CNT                              )
-      ########################################################################
-      for PID in JSON [ "Lines" ] [ "Warp" ] [ LOA ]                         :
-        ######################################################################
-        Lines  . InsertCellPoint          ( PID                              )
-    ##########################################################################
-    for POLY  in JSON                     [ "Polygons"                     ] :
+    for POLY  in JSON                     [ "TPolygons"                    ] :
       ########################################################################
       P        = vtk . vtkPolygon         (                                  )
       CNT      = len                      ( POLY                             )
@@ -499,15 +416,16 @@ class VtkPlanet                 ( VtkWidget                                ) :
       ########################################################################
       Polygons . InsertNextCell           ( P                                )
     ##########################################################################
+    for COOR  in JSON                     [ "TCoords"                      ] :
+      ########################################################################
+      TCoords  . InsertNextTCoord         ( COOR . x , COOR . y , COOR . z   )
+    ##########################################################################
     self       . Model . SetPoints        ( Points                           )
-    self       . Model . SetVerts         ( Vertices                         )
-    self       . Model . SetLines         ( Lines                            )
     self       . Model . SetPolys         ( Polygons                         )
-    self       . Model . GetPointData ( ) . SetScalars ( Colors              )
+    self       . Model . GetPointData ( ) . SetTCoords ( TCoords             )
     self       . Model . Modified         (                                  )
     ##########################################################################
     self       . Mapper   . SetInputData  ( self . Model                     )
-    """
     ##########################################################################
     return
   ############################################################################
@@ -564,6 +482,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
       Reader = vtk . vtkPNGReader            (                               )
     else                                                                     :
       Reader = vtk . vtkJPEGReader           (                               )
+    ##########################################################################
     Reader   . SetFileName                   ( F                             )
     ##########################################################################
     T        . SetInputConnection            ( Reader . GetOutputPort ( )    )
@@ -575,6 +494,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     self     . renderer . AddActor           ( A                             )
     self     . PlanetObjects [ Item  ] [ "Enabled" ] = True
+    self     . PlanetObjects [ Item  ] [ "Loaded"  ] = True
     ##########################################################################
     return
   ############################################################################
