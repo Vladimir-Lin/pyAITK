@@ -369,8 +369,8 @@ class Sphere     (                                                         ) :
       C      . setSectors               ( H                                  )
       C      . GeneratePoints           ( PID , TID , JSON                   )
       ########################################################################
-      PID    = PID + H
-      TID    = TID + H + 1
+      PID    = int                      ( PID + H                            )
+      TID    = int                      ( TID + H + 1                        )
     ##########################################################################
     ZP       . assign                   ( Z                                  )
     ZP       . multiply                 ( -1.0                               )

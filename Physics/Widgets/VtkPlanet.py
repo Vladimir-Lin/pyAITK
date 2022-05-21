@@ -362,27 +362,27 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareTexture  ( self , Item ) :
+  def PrepareTexture                      ( self , Item                    ) :
     ##########################################################################
-    E       = self   . PlanetObjects [ Item ] [ "Enabled"  ]
-    LOADED  = self   . PlanetObjects [ Item ] [ "Loaded"   ]
+    E          = self . PlanetObjects     [ Item ] [ "Enabled"               ]
+    LOADED     = self . PlanetObjects     [ Item ] [ "Loaded"                ]
     ##########################################################################
-    if              ( not E ) :
+    if                                    ( not E                          ) :
       return
-    if              ( not LOADED ) :
+    if                                    ( not LOADED                     ) :
       return
     ##########################################################################
-    JSON    = self   . PlanetObjects [ Item ] [ "JSON"     ]
-    ACTOR   = self   . PlanetObjects [ Item ] [ "Actor"    ]
-    MAPPER  = self   . PlanetObjects [ Item ] [ "Mapper"   ]
-    MODEL   = self   . PlanetObjects [ Item ] [ "Model"    ]
-    TEXTURE = self   . PlanetObjects [ Item ] [ "Texture"  ]
+    JSON       = self . PlanetObjects     [ Item ] [ "JSON"                  ]
+    ACTOR      = self . PlanetObjects     [ Item ] [ "Actor"                 ]
+    MAPPER     = self . PlanetObjects     [ Item ] [ "Mapper"                ]
+    MODEL      = self . PlanetObjects     [ Item ] [ "Model"                 ]
+    TEXTURE    = self . PlanetObjects     [ Item ] [ "Texture"               ]
     ##########################################################################
-    C       = self   . PlanetObjects [ Item ] [ "Color"    ]
-    R       = int ( C . x * 255 )
-    G       = int ( C . y * 255 )
-    B       = int ( C . z * 255 )
-    T       = int ( C . t * 255 )
+    C          = self . PlanetObjects     [ Item ] [ "Color"                 ]
+    R          = int                      ( C . x * 255                      )
+    G          = int                      ( C . y * 255                      )
+    B          = int                      ( C . z * 255                      )
+    T          = int                      ( C . t * 255                      )
     ##########################################################################
     HH         = JSON                     [ "Sectors"  ] [ "Horizontal"      ]
     VV         = JSON                     [ "Sectors"  ] [ "Vertical"        ]
@@ -390,16 +390,24 @@ class VtkPlanet                 ( VtkWidget                                ) :
     PIDs       = KIDs . keys              (                                  )
     ##########################################################################
     TOTALs     = len                      ( PIDs                             )
+    AT         = 0
     Points     = vtk . vtkPoints          (                                  )
     Polygons   = vtk . vtkCellArray       (                                  )
-    TCoords    = vtk . vtkTCoords         (                                  )
+    TCoords    = vtk . vtkFloatArray      (                                  )
     ##########################################################################
     Points     . SetNumberOfPoints        ( TOTALs                           )
+    TCoords    . SetNumberOfComponents    ( 2                                )
+    TCoords    . SetNumberOfTuples        ( TOTALs                           )
+    TCoords    . SetName                  ( "TextureCoordinates"             )
     ##########################################################################
     for id in PIDs                                                           :
       ########################################################################
       PS       = JSON [ "TPoints" ] [ id ] . toList3 (                       )
+      CR       = JSON [ "TCoords" ] [ AT                                     ]
       Points   . SetPoint                 ( id , PS                          )
+      TCoords  . SetTuple2                ( id , CR . x , CR . y             )
+      ########################################################################
+      AT       = AT + 1
     ##########################################################################
     for POLY  in JSON                     [ "TPolygons"                    ] :
       ########################################################################
@@ -416,16 +424,12 @@ class VtkPlanet                 ( VtkWidget                                ) :
       ########################################################################
       Polygons . InsertNextCell           ( P                                )
     ##########################################################################
-    for COOR  in JSON                     [ "TCoords"                      ] :
-      ########################################################################
-      TCoords  . InsertNextTCoord         ( COOR . x , COOR . y , COOR . z   )
+    MODEL      . SetPoints                ( Points                           )
+    MODEL      . SetPolys                 ( Polygons                         )
+    MODEL      . GetPointData ( ) . SetTCoords ( TCoords                     )
+    MODEL      . Modified                 (                                  )
     ##########################################################################
-    self       . Model . SetPoints        ( Points                           )
-    self       . Model . SetPolys         ( Polygons                         )
-    self       . Model . GetPointData ( ) . SetTCoords ( TCoords             )
-    self       . Model . Modified         (                                  )
-    ##########################################################################
-    self       . Mapper   . SetInputData  ( self . Model                     )
+    MAPPER     . SetInputData             ( MODEL                            )
     ##########################################################################
     return
   ############################################################################
@@ -458,6 +462,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
         self . PrepareTexture         ( NAME                                 )
     ##########################################################################
     self     . renderer . ResetCamera (                                      )
+    self     . Notify                 ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -488,6 +493,8 @@ class VtkPlanet                 ( VtkWidget                                ) :
     T        . SetInputConnection            ( Reader . GetOutputPort ( )    )
     T        . InterpolateOn                 (                               )
     A        . SetTexture                    ( T                             )
+    ##########################################################################
+    self     . Notify                        ( 5                             )
     ##########################################################################
     if                                       ( E                           ) :
       return
