@@ -10,6 +10,7 @@ import requests
 import threading
 import gettext
 import json
+import math
 ##############################################################################
 import vtk
 ##############################################################################
@@ -69,11 +70,19 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     self . Actor    . SetMapper               ( self . Mapper                )
     self . renderer . AddActor                ( self . Actor                 )
+    self . Actor    . GetProperty ( ) . SetPointSize ( 1                     )
     ##########################################################################
-    self . Sphere = Sphere (                                                 )
-    self . Sphere . R . x = 100000000.0
-    self . Sphere . R . y = 100000000.0
-    self . Sphere . R . z = 100000000.0
+    self . Sphere = Sphere     (                                             )
+    self . Sphere . O . setXYZ (    0.0 ,    0.0 ,    0.0                    )
+    self . Sphere . X . setXYZ ( 1000.0 ,    0.0 ,    0.0                    )
+    self . Sphere . Y . setXYZ (    0.0 , 1000.0 ,    0.0                    )
+    self . Sphere . Z . setXYZ (    0.0 ,    0.0 , 1000.0                    )
+    self . Sphere . O . Unit = 108  ## Physics::Kilometer
+    self . Sphere . X . Unit = 108  ## Physics::Kilometer
+    self . Sphere . Y . Unit = 108  ## Physics::Kilometer
+    self . Sphere . Z . Unit = 108  ## Physics::Kilometer
+    ##########################################################################
+    self . Planet = None
     ##########################################################################
     return
   ############################################################################
@@ -86,62 +95,52 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def CreatePlanet                       ( self                            ) :
+  def CreatePlanet                        ( self                           ) :
     ##########################################################################
-    source = vtk.vtkSphereSource         (                                   )
-    source . SetCenter                   ( 0 , 0 , 0                         )
-    source . SetRadius                   ( 5.0                               )
+    JSON       =                          { "Points"       : {           } , \
+                                            "Vertices"     : [           ] , \
+                                            "Poles"        :               { \
+                                              "North"      : -1            , \
+                                              "South"      : -1          } , \
+                                            "Sectors"      :               { \
+                                              "Horizontal" : 0             , \
+                                              "Vertical"   : 0             } }
+    JSON       = self . Sphere . GeneratePoints ( 0 , JSON                   )
+    PIDs       = JSON                     [ "Vertices"                       ]
+    self . Planet = JSON
     ##########################################################################
-    self   . Mapper . SetInputConnection ( source . GetOutputPort ( )        )
-    self   . renderer   . ResetCamera    (                                   )
+    C    = self . getSystemColor    (                                        )
+    R    = C    . red               (                                        )
+    G    = C    . green             (                                        )
+    B    = C    . blue              (                                        )
     ##########################################################################
-    """
-    source = vtk.vtkSphereSource()
-    source . SetCenter(0, 0, 0)
-    source . SetRadius(5.0)
+    TOTALs     = len                      ( PIDs                             )
+    Points     = vtk . vtkPoints          (                                  )
+    Vertices   = vtk . vtkCellArray       (                                  )
     ##########################################################################
-    ## Create a mapper
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(source.GetOutputPort())
+    Points     . SetNumberOfPoints        ( TOTALs                           )
+    Vertices   . InsertNextCell           ( TOTALs                           )
     ##########################################################################
-    # Create an actor
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
+    Colors     = vtk.vtkUnsignedCharArray (                                  )
+    Colors     . SetNumberOfComponents    ( 4                                )
+    Colors     . SetNumberOfTuples        ( TOTALs                           )
+    Colors     . SetName                  ( "Colors"                         )
     ##########################################################################
-    self . renderer . AddActor     ( actor )
-    
-    
-    # Create the geometry of a point (the coordinate)
-    points = vtk.vtkPoints()
-    p = [1.0, 2.0, 3.0]
-    
-    # Create the topology of the point (a vertex)
-    vertices = vtk.vtkCellArray()
-    
-    id = points.InsertNextPoint(p)
-    vertices.InsertNextCell(1)
-    vertices.InsertCellPoint(id)
-    
-    # Create a polydata object
-    point = vtk.vtkPolyData()
-    
-    # Set the points and vertices we created as the geometry and topology of the polydata
-    point.SetPoints(points)
-    point.SetVerts(vertices)
-    
-    # Visualize
-    mapper = vtk.vtkPolyDataMapper()
-    if vtk.VTK_MAJOR_VERSION <= 5:
-        mapper.SetInput(point)
-    else:
-        mapper.SetInputData(point)
-    
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
-    actor.GetProperty().SetPointSize(20)
-    
-    self . renderer . AddActor(actor)
-    """
+    for id in PIDs                                                           :
+      ########################################################################
+      Vertices . InsertCellPoint          ( id                               )
+      Colors   . SetTuple4                ( id , R , G , B , 192             )
+      ########################################################################
+      PS       = JSON [ "Points" ] [ id ] . toList3 (                        )
+      Points   . SetPoint                 ( id , PS                          )
+    ##########################################################################
+    self       . Model . SetPoints        ( Points                           )
+    self       . Model . SetVerts         ( Vertices                         )
+    self       . Model . GetPointData ( ) . SetScalars ( Colors              )
+    self       . Model . Modified         (                                  )
+    ##########################################################################
+    self       . Mapper   . SetInputData  ( self . Model                     )
+    self       . renderer . ResetCamera   (                                  )
     ##########################################################################
     return
   ############################################################################
