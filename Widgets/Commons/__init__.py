@@ -12,6 +12,7 @@ from . VariantTables         import VariantTables         as VariantTables
 from . ClipboardView         import ClipboardView         as ClipboardView
 from . TimeZoneListings      import TimeZoneListings      as TimeZoneListings
 from . VoiceTracker          import VoiceTracker          as VoiceTracker
+from . KeyValueEditor        import KeyValueEditor        as KeyValueEditor
 ##############################################################################
 __all__ = [ "NamesEditor"                                                  , \
             "ObjectTypesEditor"                                            , \
@@ -24,5 +25,6 @@ __all__ = [ "NamesEditor"                                                  , \
             "VariantTables"                                                , \
             "ClipboardView"                                                , \
             "TimeZoneListings"                                             , \
-            "VoiceTracker"                                                   ]
+            "VoiceTracker"                                                 , \
+            "KeyValueEditor"                                                 ]
 ##############################################################################

@@ -62,32 +62,32 @@ class ControlPoint        (                                                ) :
     ##########################################################################
     return
   ############################################################################
-  def toJson           ( self                                              ) :
-    return             { "Uuid" : self . Uuid                              , \
-                         "Type" : self . Type                              , \
-                         "DOF"  : self . DOF                               , \
-                         "Unit" : self . Unit                              , \
-                         "Flag" : self . Flag                              , \
-                         "X"    : self . x                                 , \
-                         "Y"    : self . y                                 , \
-                         "Z"    : self . z                                 , \
-                         "T"    : self . t                                 , \
-                         "R"    : self . r                                 , \
-                         "F"    : self . f                                   }
+  def toJson            ( self                                             ) :
+    return              { "Uuid" : self . Uuid                             , \
+                          "Type" : self . Type                             , \
+                          "DOF"  : self . DOF                              , \
+                          "Unit" : self . Unit                             , \
+                          "Flag" : self . Flag                             , \
+                          "X"    : self . x                                , \
+                          "Y"    : self . y                                , \
+                          "Z"    : self . z                                , \
+                          "T"    : self . t                                , \
+                          "R"    : self . r                                , \
+                          "F"    : self . f                                  }
   ############################################################################
-  def fromJson         ( self , JSON                                       ) :
+  def fromJson          ( self , JSON                                      ) :
     ##########################################################################
-    self . Uuid = JSON [ "Uuid"                                              ]
-    self . Type = JSON [ "Type"                                              ]
-    self . DOF  = JSON [ "DOF"                                               ]
-    self . Unit = JSON [ "Unit"                                              ]
-    self . Flag = JSON [ "Flag"                                              ]
-    self . x    = JSON [ "X"                                                 ]
-    self . y    = JSON [ "Y"                                                 ]
-    self . z    = JSON [ "Z"                                                 ]
-    self . t    = JSON [ "T"                                                 ]
-    self . r    = JSON [ "R"                                                 ]
-    self . f    = JSON [ "F"                                                 ]
+    self . Uuid = int   ( JSON [ "Uuid"                                    ] )
+    self . Type = int   ( JSON [ "Type"                                    ] )
+    self . DOF  = int   ( JSON [ "DOF"                                     ] )
+    self . Unit = int   ( JSON [ "Unit"                                    ] )
+    self . Flag = int   ( JSON [ "Flag"                                    ] )
+    self . x    = float ( JSON [ "X"                                       ] )
+    self . y    = float ( JSON [ "Y"                                       ] )
+    self . z    = float ( JSON [ "Z"                                       ] )
+    self . t    = float ( JSON [ "T"                                       ] )
+    self . r    = float ( JSON [ "R"                                       ] )
+    self . f    = float ( JSON [ "F"                                       ] )
     ##########################################################################
     return self
   ############################################################################

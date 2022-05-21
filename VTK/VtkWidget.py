@@ -56,11 +56,23 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui                ) :
   ############################################################################
   def PrepareRenderer      ( self                                          ) :
     ##########################################################################
-    self . renderer   = vtk  . vtkRenderer   (                               )
-    self . renderer   . SetBackground        ( 255 , 255 , 255               )
-    self . GetRenderWindow ( ) . AddRenderer ( self . renderer               )
-    self . interactor = self . GetRenderWindow ( ) . GetInteractor (         )
+    self . rWindow    = self . GetRenderWindow (                             )
+    self . renderer   = vtk  . vtkRenderer     (                             )
+    self . renderer   . SetBackground          ( 1.0 , 1.0 , 1.0             )
+    self . rWindow    . AddRenderer            ( self . renderer             )
+    self . interactor = self . rWindow . GetInteractor (                     )
     ## self . Initialize      (                                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def ChangeBackgroundColor         ( self                                 ) :
+    ##########################################################################
+    C    = self . getSystemColor    (                                        )
+    R    = C    . redF              (                                        )
+    G    = C    . greenF            (                                        )
+    B    = C    . blueF             (                                        )
+    ##########################################################################
+    self . renderer . SetBackground ( R , G , B                              )
     ##########################################################################
     return
   ############################################################################
@@ -79,18 +91,6 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui                ) :
     ##########################################################################
     return
   ############################################################################
-  def ChangeBackgroundColor          ( self                                ) :
-    ##########################################################################
-    C    = self     . getSystemColor (                                       )
-    R    = C . red                   (                                       )
-    G    = C . green                 (                                       )
-    B    = C . blue                  (                                       )
-    self . renderer . SetBackground  ( R , G , B                             )
-    ##########################################################################
-    self . GetRenderWindow ( ) . RemoveRenderer ( self . renderer            )
-    self . GetRenderWindow ( ) . AddRenderer    ( self . renderer            )
-    ##########################################################################
-    return
   ############################################################################
   ############################################################################
   ############################################################################
