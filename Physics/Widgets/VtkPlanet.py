@@ -151,10 +151,10 @@ class VtkPlanet                 ( VtkWidget                                ) :
     self . PlanetObjects [ "Shadow"     ] [ "Distance" ] = 1.0
     ##########################################################################
     A    = self . PlanetObjects [ "Points"     ] [ "Actor" ]
-    A    . GetProperty ( ) . SetPointSize ( 1.5                              )
+    A    . GetProperty ( ) . SetPointSize ( 1.25                             )
     ##########################################################################
     A    = self . PlanetObjects [ "Lines"      ] [ "Actor" ]
-    A    . GetProperty ( ) . SetLineWidth ( 2.5                              )
+    A    . GetProperty ( ) . SetLineWidth ( 2.0                              )
     ##########################################################################
     A    = self . PlanetObjects [ "Atmosphere" ] [ "Actor" ]
     A    . GetProperty ( ) . SetOpacity ( 0.25                               )
@@ -621,6 +621,32 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
+  def GetMenuParameters           ( self , at                              ) :
+    ##########################################################################
+    self . Radius . x = self . SpinBoxs [ "RadiusX" ] . value ( ) / 1000.0
+    self . Radius . y = self . SpinBoxs [ "RadiusY" ] . value ( ) / 1000.0
+    self . Radius . z = self . SpinBoxs [ "RadiusZ" ] . value ( ) / 1000.0
+    ##########################################################################
+    V    = self . SpinBoxs [ "PointSize"              ] . value (            )
+    A    = self . PlanetObjects [ "Points"     ] [ "Actor" ]
+    A    . GetProperty ( ) . SetPointSize ( V                                )
+    ##########################################################################
+    V    = self . SpinBoxs [ "LineWidth"              ] . value (            )
+    A    = self . PlanetObjects [ "Lines"      ] [ "Actor" ]
+    A    . GetProperty ( ) . SetLineWidth ( V                                )
+    ##########################################################################
+    V    = self . SpinBoxs [ "AtmosphereTransparency" ] . value (            )
+    V    = float           ( 1.0 - ( V / 10000.0 )                           )
+    A    = self . PlanetObjects [ "Atmosphere" ] [ "Actor" ]
+    A    . GetProperty ( ) . SetOpacity ( V                                  )
+    ##########################################################################
+    V    = self . SpinBoxs [ "ShadowTransparency"     ] . value (            )
+    V    = float           ( 1.0 - ( V / 10000.0 )                           )
+    A    = self . PlanetObjects [ "Shadow"     ] [ "Actor" ]
+    A    . GetProperty ( ) . SetOpacity ( V                                  )
+    ##########################################################################
+    return
+  ############################################################################
   def ElementsMenu             ( self , mm                                 ) :
     ##########################################################################
     MSG = self . getMenuItem   ( "DisplayObjects"                            )
@@ -706,6 +732,62 @@ class VtkPlanet                 ( VtkWidget                                ) :
     msg   = self . getMenuItem ( "ImportAtmosphere"                          )
     mm    . addActionFromMenu  ( LOM , 54232002 , msg                        )
     ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    A     = self . PlanetObjects [ "Points"     ] [ "Actor"                  ]
+    V     = A    . GetProperty ( ) . GetPointSize (                          )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "PointSize:"                              )
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( msg                                       )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 1000.0                                    )
+    DSB   . setValue             ( V                                         )
+    mm    . addWidgetWithMenu    ( LOM , 54232701 , DSB                      )
+    self  . SpinBoxs [ "PointSize" ] = DSB
+    ##########################################################################
+    A     = self . PlanetObjects [ "Lines"      ] [ "Actor"                  ]
+    V     = A    . GetProperty ( ) . GetLineWidth (                          )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "LineWidth:"                              )
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( msg                                       )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 1000.0                                    )
+    DSB   . setValue             ( V                                         )
+    mm    . addWidgetWithMenu    ( LOM , 54232702 , DSB                      )
+    self  . SpinBoxs [ "LineWidth" ] = DSB
+    ##########################################################################
+    A     = self . PlanetObjects [ "Atmosphere" ] [ "Actor"                  ]
+    V     = A    . GetProperty ( ) . GetOpacity (                            )
+    V     = float                ( 10000.0 * ( 1.0 - V )                     )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "AtmosphereTransparency:"                 )
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( msg                                       )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 10000.0                                   )
+    DSB   . setValue             ( V                                         )
+    mm    . addWidgetWithMenu    ( LOM , 54232703 , DSB                      )
+    self  . SpinBoxs [ "AtmosphereTransparency" ] = DSB
+    ##########################################################################
+    A     = self . PlanetObjects [ "Shadow"   ] [ "Actor"                    ]
+    V     = A    . GetProperty ( ) . GetOpacity (                            )
+    V     = float                ( 10000.0 * ( 1.0 - V )                     )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "ShadowTransparency:"                     )
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( msg                                       )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 10000.0                                   )
+    DSB   . setValue             ( self . Radius . z * 1000                  )
+    mm    . addWidgetWithMenu    ( LOM , 54232704 , DSB                      )
+    self  . SpinBoxs [ "ShadowTransparency" ] = DSB
+    ##########################################################################
     return mm
   ############################################################################
   def RunRenderMenu                ( self , at                             ) :
@@ -740,7 +822,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
-    KM    = self . getMenuItem   ( " Kilometers"                             )
+    KM    = self . getMenuItem   ( " Meters"                                 )
     ##########################################################################
     DSB   = QDoubleSpinBox       (                                           )
     DSB   . setPrefix            ( "X : "                                    )
@@ -772,13 +854,19 @@ class VtkPlanet                 ( VtkWidget                                ) :
     mm    . addWidgetWithMenu    ( LOM , 54235703 , DSB                      )
     self  . SpinBoxs [ "RadiusZ" ] = DSB
     ##########################################################################
+    ## mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    """
+    self . PlanetObjects [ "Points"     ] [ "Distance" ] = 0.030
+    self . PlanetObjects [ "Lines"      ] [ "Distance" ] = 0.020
+    self . PlanetObjects [ "Polygons"   ] [ "Distance" ] = 0.010
+    self . PlanetObjects [ "Atmosphere" ] [ "Distance" ] = 2.0
+    self . PlanetObjects [ "Shadow"     ] [ "Distance" ] = 1.0
+    """
+    ##########################################################################
     return mm
   ############################################################################
   def RunGeometryMenu     ( self , at                                      ) :
-    ##########################################################################
-    self . Radius . x = self . SpinBoxs [ "RadiusX" ] . value ( ) / 1000.0
-    self . Radius . y = self . SpinBoxs [ "RadiusY" ] . value ( ) / 1000.0
-    self . Radius . z = self . SpinBoxs [ "RadiusZ" ] . value ( ) / 1000.0
     ##########################################################################
     if                    ( at == 54235201                                 ) :
       ########################################################################
@@ -821,6 +909,8 @@ class VtkPlanet                 ( VtkWidget                                ) :
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
+    ##########################################################################
+    self   . GetMenuParameters     ( at                                      )
     ##########################################################################
     if                             ( self . RunGeometryMenu ( at )         ) :
       return True
