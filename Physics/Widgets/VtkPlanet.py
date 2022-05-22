@@ -134,10 +134,10 @@ class VtkPlanet                 ( VtkWidget                                ) :
     PG       = ControlPoint             (                                    )
     PW       = ControlPoint             (                                    )
     ##########################################################################
-    PP       . setXYZT                  ( 1.0 , 0.0 , 0.0 , 0.75             )
-    PL       . setXYZT                  ( 0.0 , 0.0 , 1.0 , 0.75             )
-    PG       . setXYZT                  ( 0.8 , 0.8 , 0.8 , 0.25             )
-    PW       . setXYZT                  ( 0.0 , 0.0 , 0.0 , 0.20             )
+    PP       . setXYZT                  ( 0.23 , 0.97 , 0.90 , 0.75          )
+    PL       . setXYZT                  ( 0.0  , 1.0  , 0.0  , 0.75          )
+    PG       . setXYZT                  ( 0.8  , 0.8  , 0.8  , 0.25          )
+    PW       . setXYZT                  ( 0.0  , 0.0  , 0.0  , 0.20          )
     ##########################################################################
     self . PlanetObjects [ "Points"     ] [ "Color"    ] . assign ( PP       )
     self . PlanetObjects [ "Lines"      ] [ "Color"    ] . assign ( PL       )
