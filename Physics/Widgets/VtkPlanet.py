@@ -776,9 +776,9 @@ class VtkPlanet                 ( VtkWidget                                ) :
   ############################################################################
   def RunGeometryMenu     ( self , at                                      ) :
     ##########################################################################
-    self . Radius . x = self  . SpinBoxs [ "RadiusX" ] . value ( ) / 1000.0
-    self . Radius . y = self  . SpinBoxs [ "RadiusY" ] . value ( ) / 1000.0
-    self . Radius . z = self  . SpinBoxs [ "RadiusZ" ] . value ( ) / 1000.0
+    self . Radius . x = self . SpinBoxs [ "RadiusX" ] . value ( ) / 1000.0
+    self . Radius . y = self . SpinBoxs [ "RadiusY" ] . value ( ) / 1000.0
+    self . Radius . z = self . SpinBoxs [ "RadiusZ" ] . value ( ) / 1000.0
     ##########################################################################
     if                    ( at == 54235201                                 ) :
       ########################################################################
