@@ -184,7 +184,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     A    = self . PlanetObjects       [ Name ] [ "Actor"                     ]
     A    . GetProperty ( ) . SetColor ( R , G , B                            )
     ##########################################################################
-    return X
+    return
   ############################################################################
   def GetRadius              ( self , R , Name                             ) :
     ##########################################################################
@@ -587,7 +587,8 @@ class VtkPlanet                 ( VtkWidget                                ) :
     camera   . SetPosition            ( 0 , CY , 0                           )
     camera   . SetViewUp              ( 0 ,  0 , 1                           )
     ## camera   . SetRoll                ( 110.0                                )
-    ## camera   . SetViewAngle           (  23.0                                )
+    ## camera   . SetViewAngle           ( 30.0                                 )
+    self     . rWindow . Render       (                                      )
     ##########################################################################
     self     . Notify                 ( 5                                    )
     ##########################################################################
