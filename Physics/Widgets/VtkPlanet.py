@@ -745,30 +745,30 @@ class VtkPlanet                 ( VtkWidget                                ) :
     DSB   = QDoubleSpinBox       (                                           )
     DSB   . setPrefix            ( "X : "                                    )
     DSB   . setSuffix            ( KM                                        )
-    DSB   . setSingleStep        ( 0.00001                                   )
-    DSB   . setMinimum           ( 0.00001                                   )
-    DSB   . setMaximum           ( 100000000.0                               )
-    DSB   . setValue             ( self . Radius . x                         )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 100000000000.0                            )
+    DSB   . setValue             ( self . Radius . x * 1000                  )
     mm    . addWidgetWithMenu    ( LOM , 54235701 , DSB                      )
     self  . SpinBoxs [ "RadiusX" ] = DSB
     ##########################################################################
     DSB   = QDoubleSpinBox       (                                           )
     DSB   . setPrefix            ( "Y : "                                    )
     DSB   . setSuffix            ( KM                                        )
-    DSB   . setSingleStep        ( 0.00001                                   )
-    DSB   . setMinimum           ( 0.00001                                   )
-    DSB   . setMaximum           ( 100000000.0                               )
-    DSB   . setValue             ( self . Radius . y                         )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 100000000000.0                            )
+    DSB   . setValue             ( self . Radius . y * 1000                  )
     mm    . addWidgetWithMenu    ( LOM , 54235702 , DSB                      )
     self  . SpinBoxs [ "RadiusY" ] = DSB
     ##########################################################################
     DSB   = QDoubleSpinBox       (                                           )
     DSB   . setPrefix            ( "Z : "                                    )
     DSB   . setSuffix            ( KM                                        )
-    DSB   . setSingleStep        ( 0.00001                                   )
-    DSB   . setMinimum           ( 0.00001                                   )
-    DSB   . setMaximum           ( 100000000.0                               )
-    DSB   . setValue             ( self . Radius . z                         )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 100000000000.0                            )
+    DSB   . setValue             ( self . Radius . z * 1000                  )
     mm    . addWidgetWithMenu    ( LOM , 54235703 , DSB                      )
     self  . SpinBoxs [ "RadiusZ" ] = DSB
     ##########################################################################
@@ -776,9 +776,9 @@ class VtkPlanet                 ( VtkWidget                                ) :
   ############################################################################
   def RunGeometryMenu     ( self , at                                      ) :
     ##########################################################################
-    self . Radius . x = self  . SpinBoxs [ "RadiusX" ] . value (             )
-    self . Radius . y = self  . SpinBoxs [ "RadiusY" ] . value (             )
-    self . Radius . z = self  . SpinBoxs [ "RadiusZ" ] . value (             )
+    self . Radius . x = self  . SpinBoxs [ "RadiusX" ] . value ( ) / 1000.0
+    self . Radius . y = self  . SpinBoxs [ "RadiusY" ] . value ( ) / 1000.0
+    self . Radius . z = self  . SpinBoxs [ "RadiusZ" ] . value ( ) / 1000.0
     ##########################################################################
     if                    ( at == 54235201                                 ) :
       ########################################################################
