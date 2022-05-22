@@ -32,6 +32,8 @@ from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QFileDialog
+from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
 from   AITK  . VTK . VtkWidget        import VtkWidget   as VtkWidget
 ##############################################################################
@@ -66,6 +68,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
     ##########################################################################
     self . PrepareObjects  (                                                 )
+    self . SpinBoxs =      {                                                 }
     ##########################################################################
     return
   ############################################################################
@@ -75,10 +78,12 @@ class VtkPlanet                 ( VtkWidget                                ) :
                                    "Lines"                                 , \
                                    "Polygons"                              , \
                                    "Texture"                               , \
-                                   "Atmosphere"                              ]
+                                   "Atmosphere"                            , \
+                                   "Shadow"                                  ]
     self     . PlanetObjects =   {                                           }
     self     . ObjectNAMEs   = NAMEs
     ##########################################################################
+    TAS      =                   [ "Texture" , "Atmosphere"                  ]
     self . Radius = ControlPoint (                                           )
     self . Radius . setXYZ       ( 1000.0 , 1000.0 , 1000.0                  )
     ##########################################################################
@@ -87,7 +92,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
       E      = True
       T      = None
       ########################################################################
-      if                         ( NAME in [ "Texture" , "Atmosphere" ]    ) :
+      if                         ( NAME in TAS                             ) :
         ######################################################################
         E    = False
         T    = vtk . vtkTexture  (                                           )
@@ -127,21 +132,38 @@ class VtkPlanet                 ( VtkWidget                                ) :
     PP       = ControlPoint             (                                    )
     PL       = ControlPoint             (                                    )
     PG       = ControlPoint             (                                    )
+    PW       = ControlPoint             (                                    )
     ##########################################################################
     PP       . setXYZT                  ( 1.0 , 0.0 , 0.0 , 0.75             )
     PL       . setXYZT                  ( 0.0 , 0.0 , 1.0 , 0.75             )
     PG       . setXYZT                  ( 0.8 , 0.8 , 0.8 , 0.25             )
+    PW       . setXYZT                  ( 0.0 , 0.0 , 0.0 , 0.20             )
     ##########################################################################
     self . PlanetObjects [ "Points"     ] [ "Color"    ] . assign ( PP       )
     self . PlanetObjects [ "Lines"      ] [ "Color"    ] . assign ( PL       )
     self . PlanetObjects [ "Polygons"   ] [ "Color"    ] . assign ( PG       )
+    self . PlanetObjects [ "Shadow"     ] [ "Color"    ] . assign ( PW       )
     ##########################################################################
     self . PlanetObjects [ "Points"     ] [ "Distance" ] = 0.030
     self . PlanetObjects [ "Lines"      ] [ "Distance" ] = 0.020
     self . PlanetObjects [ "Polygons"   ] [ "Distance" ] = 0.010
     self . PlanetObjects [ "Atmosphere" ] [ "Distance" ] = 2.0
+    self . PlanetObjects [ "Shadow"     ] [ "Distance" ] = 1.0
+    ##########################################################################
+    A    = self . PlanetObjects [ "Points"     ] [ "Actor" ]
+    A    . GetProperty ( ) . SetPointSize ( 1.5                              )
+    ##########################################################################
+    A    = self . PlanetObjects [ "Lines"      ] [ "Actor" ]
+    A    . GetProperty ( ) . SetLineWidth ( 2.5                              )
+    ##########################################################################
+    A    = self . PlanetObjects [ "Atmosphere" ] [ "Actor" ]
+    A    . GetProperty ( ) . SetOpacity ( 0.25                               )
+    ##########################################################################
+    A    = self . PlanetObjects [ "Shadow"     ] [ "Actor" ]
+    A    . GetProperty ( ) . SetOpacity ( 0.40                               )
     ##########################################################################
     self . setRadius                    ( self . Radius                      )
+    self . Shadow = None
     ##########################################################################
     return
   ############################################################################
@@ -362,6 +384,77 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
+  def PrepareShadow                       ( self , Item                    ) :
+    ##########################################################################
+    E          = self . PlanetObjects     [ Item ] [ "Enabled"               ]
+    if                                    ( not E                          ) :
+      return
+    ##########################################################################
+    JSON       = self . PlanetObjects     [ Item ] [ "JSON"                  ]
+    ACTOR      = self . PlanetObjects     [ Item ] [ "Actor"                 ]
+    MAPPER     = self . PlanetObjects     [ Item ] [ "Mapper"                ]
+    MODEL      = self . PlanetObjects     [ Item ] [ "Model"                 ]
+    ##########################################################################
+    C          = self . PlanetObjects     [ Item ] [ "Color"                 ]
+    R          = int                      ( C . x * 255                      )
+    G          = int                      ( C . y * 255                      )
+    B          = int                      ( C . z * 255                      )
+    T          = int                      ( C . t * 255                      )
+    ##########################################################################
+    HH         = JSON                     [ "Sectors"  ] [ "Horizontal"      ]
+    VV         = JSON                     [ "Sectors"  ] [ "Vertical"        ]
+    PIDs       = JSON                     [ "Vertices"                       ]
+    ##########################################################################
+    TOTALs     = len                      ( PIDs                             )
+    Points     = vtk . vtkPoints          (                                  )
+    Polygons   = vtk . vtkCellArray       (                                  )
+    ##########################################################################
+    Points     . SetNumberOfPoints        ( TOTALs                           )
+    ##########################################################################
+    Colors     = vtk.vtkUnsignedCharArray (                                  )
+    Colors     . SetNumberOfComponents    ( 4                                )
+    Colors     . SetNumberOfTuples        ( TOTALs                           )
+    Colors     . SetName                  ( "Colors"                         )
+    ##########################################################################
+    SHADOW     = self . Shadow
+    ##########################################################################
+    for id in PIDs                                                           :
+      ########################################################################
+      if                                  ( self . IsOkay ( SHADOW )       ) :
+        ######################################################################
+        R      = SHADOW . x
+        G      = SHADOW . y
+        B      = SHADOW . z
+        T      = SHADOW . t
+      ########################################################################
+      Colors   . SetTuple4                ( id , R , G , B , T               )
+      PS       = JSON [ "Points" ] [ id ] . toList3 (                        )
+      Points   . SetPoint                 ( id , PS                          )
+    ##########################################################################
+    for POLY  in JSON                     [ "Polygons"                     ] :
+      ########################################################################
+      P        = vtk . vtkPolygon         (                                  )
+      CNT      = len                      ( POLY                             )
+      IDX      = 0
+      P        . GetPointIds ( ) . SetNumberOfIds ( CNT                      )
+      ########################################################################
+      for PID in POLY                                                        :
+        ######################################################################
+        P      . GetPointIds ( ) . SetId  ( IDX , PID                        )
+        ######################################################################
+        IDX    = IDX + 1
+      ########################################################################
+      Polygons . InsertNextCell           ( P                                )
+    ##########################################################################
+    MODEL      . SetPoints                ( Points                           )
+    MODEL      . SetPolys                 ( Polygons                         )
+    MODEL      . GetPointData ( ) . SetScalars ( Colors                      )
+    MODEL      . Modified                 (                                  )
+    ##########################################################################
+    MAPPER     . SetInputData             ( MODEL                            )
+    ##########################################################################
+    return
+  ############################################################################
   def PrepareTexture                      ( self , Item                    ) :
     ##########################################################################
     E          = self . PlanetObjects     [ Item ] [ "Enabled"               ]
@@ -455,6 +548,10 @@ class VtkPlanet                 ( VtkWidget                                ) :
     if                                ( E                                  ) :
       self   . PreparePolygons        ( "Polygons"                           )
     ##########################################################################
+    E        = self . PlanetObjects   [ "Shadow"   ] [ "Enabled"             ]
+    if                                ( E                                  ) :
+      self   . PrepareShadow          ( "Shadow"                             )
+    ##########################################################################
     for NAME in                       [ "Texture" , "Atmosphere"           ] :
       ########################################################################
       E      = self . PlanetObjects   [ NAME       ] [ "Enabled"             ]
@@ -531,63 +628,65 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     E   = self . PlanetObjects [ "Texture"    ] [ "Enabled"                  ]
     msg = self . getMenuItem   ( "DisplayTextured"                           )
-    mm  . addActionFromMenu    ( LOM , 54233001 , msg , True , E             )
+    mm  . addActionFromMenu    ( LOM , 54233101 , msg , True , E             )
     ##########################################################################
     E   = self . PlanetObjects [ "Points"     ] [ "Enabled"                  ]
     msg = self . getMenuItem   ( "DisplayPoints"                             )
-    mm  . addActionFromMenu    ( LOM , 54233002 , msg , True , E             )
+    mm  . addActionFromMenu    ( LOM , 54233102 , msg , True , E             )
     ##########################################################################
     E   = self . PlanetObjects [ "Lines"      ] [ "Enabled"                  ]
     msg = self . getMenuItem   ( "DisplayLines"                              )
-    mm  . addActionFromMenu    ( LOM , 54233003 , msg , True , E             )
+    mm  . addActionFromMenu    ( LOM , 54233103 , msg , True , E             )
     ##########################################################################
     E   = self . PlanetObjects [ "Polygons"   ] [ "Enabled"                  ]
     msg = self . getMenuItem   ( "DisplayPolygons"                           )
-    mm  . addActionFromMenu    ( LOM , 54233004 , msg , True , E             )
+    mm  . addActionFromMenu    ( LOM , 54233104 , msg , True , E             )
     ##########################################################################
     E   = self . PlanetObjects [ "Atmosphere" ] [ "Enabled"                  ]
     msg = self . getMenuItem   ( "DisplayAtmosphere"                         )
-    mm  . addActionFromMenu    ( LOM , 54233005 , msg , True , E             )
+    mm  . addActionFromMenu    ( LOM , 54233105 , msg , True , E             )
     ##########################################################################
+    E   = self . PlanetObjects [ "Shadow"     ] [ "Enabled"                  ]
     msg = self . getMenuItem   ( "DisplayShadow"                             )
-    mm  . addActionFromMenu    ( LOM , 54233006 , msg , True , False         )
+    mm  . addActionFromMenu    ( LOM , 54233106 , msg , True , E             )
     ##########################################################################
     return mm
   ############################################################################
   def RunElementsMenu             ( self , at                              ) :
     ##########################################################################
-    if                            ( at == 54233001                         ) :
+    if                            ( at == 54233101                         ) :
       ########################################################################
       self . SwitchDisplayElement ( "Texture"                               )
       ########################################################################
       return
     ##########################################################################
-    if                            ( at == 54233002                         ) :
+    if                            ( at == 54233102                         ) :
       ########################################################################
       self . SwitchDisplayElement ( "Points"                                 )
       ########################################################################
       return
     ##########################################################################
-    if                            ( at == 54233003                         ) :
+    if                            ( at == 54233103                         ) :
       ########################################################################
       self . SwitchDisplayElement ( "Lines"                                  )
       ########################################################################
       return
     ##########################################################################
-    if                            ( at == 54233004                         ) :
+    if                            ( at == 54233104                         ) :
       ########################################################################
       self . SwitchDisplayElement ( "Polygons"                               )
       ########################################################################
       return
     ##########################################################################
-    if                            ( at == 54233005                         ) :
+    if                            ( at == 54233105                         ) :
       ########################################################################
       self . SwitchDisplayElement ( "Atmosphere"                             )
       ########################################################################
       return
     ##########################################################################
-    if                            ( at == 54233006                         ) :
+    if                            ( at == 54233106                         ) :
       ########################################################################
+      self . SwitchDisplayElement ( "Shadow"                                 )
       ########################################################################
       return
     ##########################################################################
@@ -631,17 +730,55 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return False
   ############################################################################
-  def GeometryMenu             ( self , mm                                 ) :
+  def GeometryMenu               ( self , mm                               ) :
     ##########################################################################
-    MSG   = self . getMenuItem ( "ModelParameters"                           )
-    LOM   = mm   . addMenu     ( MSG                                         )
+    MSG   = self . getMenuItem   ( "ModelParameters"                         )
+    LOM   = mm   . addMenu       ( MSG                                       )
     ##########################################################################
-    msg   = self . getMenuItem ( "CreatePlanet"                              )
-    mm    . addActionFromMenu  ( LOM , 54235201 , msg                        )
+    msg   = self . getMenuItem   ( "CreatePlanet"                            )
+    mm    . addActionFromMenu    ( LOM , 54235201 , msg                      )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    KM    = self . getMenuItem   ( " Kilometers"                             )
+    ##########################################################################
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( "X : "                                    )
+    DSB   . setSuffix            ( KM                                        )
+    DSB   . setSingleStep        ( 0.00001                                   )
+    DSB   . setMinimum           ( 0.00001                                   )
+    DSB   . setMaximum           ( 100000000.0                               )
+    DSB   . setValue             ( self . Radius . x                         )
+    mm    . addWidgetWithMenu    ( LOM , 54235701 , DSB                      )
+    self  . SpinBoxs [ "RadiusX" ] = DSB
+    ##########################################################################
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( "Y : "                                    )
+    DSB   . setSuffix            ( KM                                        )
+    DSB   . setSingleStep        ( 0.00001                                   )
+    DSB   . setMinimum           ( 0.00001                                   )
+    DSB   . setMaximum           ( 100000000.0                               )
+    DSB   . setValue             ( self . Radius . y                         )
+    mm    . addWidgetWithMenu    ( LOM , 54235702 , DSB                      )
+    self  . SpinBoxs [ "RadiusY" ] = DSB
+    ##########################################################################
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( "Z : "                                    )
+    DSB   . setSuffix            ( KM                                        )
+    DSB   . setSingleStep        ( 0.00001                                   )
+    DSB   . setMinimum           ( 0.00001                                   )
+    DSB   . setMaximum           ( 100000000.0                               )
+    DSB   . setValue             ( self . Radius . z                         )
+    mm    . addWidgetWithMenu    ( LOM , 54235703 , DSB                      )
+    self  . SpinBoxs [ "RadiusZ" ] = DSB
     ##########################################################################
     return mm
   ############################################################################
   def RunGeometryMenu     ( self , at                                      ) :
+    ##########################################################################
+    self . Radius . x = self  . SpinBoxs [ "RadiusX" ] . value (             )
+    self . Radius . y = self  . SpinBoxs [ "RadiusY" ] . value (             )
+    self . Radius . z = self  . SpinBoxs [ "RadiusZ" ] . value (             )
     ##########################################################################
     if                    ( at == 54235201                                 ) :
       ########################################################################
@@ -685,10 +822,10 @@ class VtkPlanet                 ( VtkWidget                                ) :
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
-    if                             ( self . RunRenderMenu   ( at )         ) :
+    if                             ( self . RunGeometryMenu ( at )         ) :
       return True
     ##########################################################################
-    if                             ( self . RunGeometryMenu ( at )         ) :
+    if                             ( self . RunRenderMenu   ( at )         ) :
       return True
     ##########################################################################
     if                             ( self . RunElementsMenu ( at )         ) :
