@@ -580,10 +580,13 @@ class VtkPlanet                 ( VtkWidget                                ) :
     self     . renderer . ResetCamera (                                      )
     ##########################################################################
     camera   = self . renderer . GetActiveCamera (                           )
-    CX       = float                  ( self . Radius . x * 3 / 2            )
-    CY       = float                  ( self . Radius . y     / 3            )
-    CZ       = float                  ( self . Radius . z     / 4            )
-    camera   . SetPosition            ( CX , CY , CZ                         )
+    CX       = float                  ( self . Radius . x * 2                )
+    CY       = float                  ( self . Radius . y / 2                )
+    CZ       = float                  ( self . Radius . z / 4                )
+    camera   . SetPosition            ( CX ,  0 ,  0                         )
+    camera   . SetViewUp              ( 0  ,  0 ,  1                         )
+    ## camera   . SetRoll                ( 110.0                                )
+    ## camera   . SetViewAngle           (  23.0                                )
     ##########################################################################
     self     . Notify                 ( 5                                    )
     ##########################################################################
