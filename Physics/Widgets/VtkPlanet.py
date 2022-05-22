@@ -744,7 +744,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     DSB   . setMinimum           ( 0.01                                      )
     DSB   . setMaximum           ( 1000.0                                    )
     DSB   . setValue             ( V                                         )
-    mm    . addWidgetWithMenu    ( LOM , 54232701 , DSB                      )
+    mm    . addWidgetWithMenu    ( LOM , 54232721 , DSB                      )
     self  . SpinBoxs [ "PointSize" ] = DSB
     ##########################################################################
     A     = self . PlanetObjects [ "Lines"      ] [ "Actor"                  ]
@@ -757,7 +757,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     DSB   . setMinimum           ( 0.01                                      )
     DSB   . setMaximum           ( 1000.0                                    )
     DSB   . setValue             ( V                                         )
-    mm    . addWidgetWithMenu    ( LOM , 54232702 , DSB                      )
+    mm    . addWidgetWithMenu    ( LOM , 54232722 , DSB                      )
     self  . SpinBoxs [ "LineWidth" ] = DSB
     ##########################################################################
     A     = self . PlanetObjects [ "Atmosphere" ] [ "Actor"                  ]
@@ -771,7 +771,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     DSB   . setMinimum           ( 0.01                                      )
     DSB   . setMaximum           ( 10000.0                                   )
     DSB   . setValue             ( V                                         )
-    mm    . addWidgetWithMenu    ( LOM , 54232703 , DSB                      )
+    mm    . addWidgetWithMenu    ( LOM , 54232723 , DSB                      )
     self  . SpinBoxs [ "AtmosphereTransparency" ] = DSB
     ##########################################################################
     A     = self . PlanetObjects [ "Shadow"   ] [ "Actor"                    ]
@@ -784,8 +784,8 @@ class VtkPlanet                 ( VtkWidget                                ) :
     DSB   . setSingleStep        ( 0.01                                      )
     DSB   . setMinimum           ( 0.01                                      )
     DSB   . setMaximum           ( 10000.0                                   )
-    DSB   . setValue             ( self . Radius . z * 1000                  )
-    mm    . addWidgetWithMenu    ( LOM , 54232704 , DSB                      )
+    DSB   . setValue             ( V                                         )
+    mm    . addWidgetWithMenu    ( LOM , 54232724 , DSB                      )
     self  . SpinBoxs [ "ShadowTransparency" ] = DSB
     ##########################################################################
     return mm
