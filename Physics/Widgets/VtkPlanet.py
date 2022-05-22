@@ -559,6 +559,13 @@ class VtkPlanet                 ( VtkWidget                                ) :
         self . PrepareTexture         ( NAME                                 )
     ##########################################################################
     self     . renderer . ResetCamera (                                      )
+    ##########################################################################
+    camera   = self . renderer . GetActiveCamera (                           )
+    CX       = float                  ( self . Radius . x * 3 / 2            )
+    CY       = float                  ( self . Radius . y     / 3            )
+    CZ       = float                  ( self . Radius . z     / 4            )
+    camera   . setPosition            ( CX , CY , CZ                         )
+    ##########################################################################
     self     . Notify                 ( 5                                    )
     ##########################################################################
     return
