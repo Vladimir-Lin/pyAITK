@@ -75,14 +75,19 @@ class GalleryGroupView             ( IconDock                              ) :
     self . ExtraINFOs   = True
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
-    self . Relation     = Relation (                                         )
-    self . Relation . setRelation  ( "Subordination"                         )
+    self . Relation     = Relation    (                                      )
+    self . Relation     . set         ( "first" , 0                          )
+    self . Relation     . set         ( "t1"    , 75                         )
+    self . Relation     . set         ( "t2"    , 158                        )
+    self . Relation     . setRelation ( "Subordination"                      )
     ##########################################################################
     self . Grouping     = "Tag"
     self . OldGrouping  = "Tag"
     ## self . Grouping     = "Catalog"
     ## self . Grouping     = "Subgroup"
     ## self . Grouping     = "Reverse"
+    ##########################################################################
+    self . FetchTableKey = "GalleryGroupView"
     ##########################################################################
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
@@ -132,6 +137,14 @@ class GalleryGroupView             ( IconDock                              ) :
     super ( ) . closeEvent ( event                                           )
     ##########################################################################
     return
+  ############################################################################
+  def setGrouping ( self , group                                           ) :
+    ##########################################################################
+    self . Grouping      = group
+    self . OldGrouping   = group
+    self . FetchTableKey = f"GalleryGroupView-{group}"
+    ##########################################################################
+    return self . Grouping
   ############################################################################
   def singleClicked ( self , item                                          ) :
     ##########################################################################
@@ -600,6 +613,50 @@ class GalleryGroupView             ( IconDock                              ) :
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
   ############################################################################
+  def FunctionsMenu          ( self , mm , uuid , item                     ) :
+    ##########################################################################
+    msg = self . getMenuItem ( "Functions"                                   )
+    LOM = mm   . addMenu     ( msg                                           )
+    ##########################################################################
+    msg = self . getMenuItem ( "AssignTables"                                )
+    mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunFunctionsMenu                 ( self , at , uuid , item           ) :
+    ##########################################################################
+    if                                 ( at == 25351301                    ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      ########################################################################
+      if                               ( self . isTagging  (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "first"                             )
+        TYPE = self . Relation  . get  ( "t1"                                )
+        TYPE = int                     ( TYPE                                )
+        ######################################################################
+      elif                             ( self . isSubgroup (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "first"                             )
+        TYPE = self . Relation  . get  ( "t1"                                )
+        TYPE = int                     ( TYPE                                )
+        ######################################################################
+      elif                             ( self . isReverse  (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "second"                            )
+        TYPE = self . Relation  . get  ( "t2"                                )
+        TYPE = int                     ( TYPE                                )
+      ########################################################################
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         self . FetchTableKey              , \
+                                         self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
   def Menu                           ( self , pos                          ) :
     ##########################################################################
     if                               ( not self . isPrepared ( )           ) :
@@ -648,8 +705,9 @@ class GalleryGroupView             ( IconDock                              ) :
         mm  . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]       )
         mm  . addSeparator           (                                       )
     ##########################################################################
-    mm      = self . SortingMenu     ( mm                                    )
-    mm      = self . LocalityMenu    ( mm                                    )
+    self    . FunctionsMenu          ( mm , uuid , atItem                    )
+    self    . SortingMenu            ( mm                                    )
+    self    . LocalityMenu           ( mm                                    )
     self    . DockingMenu            ( mm                                    )
     ##########################################################################
     mm      . setFont                ( self    . menuFont ( )                )
@@ -657,6 +715,9 @@ class GalleryGroupView             ( IconDock                              ) :
     at      = mm . at                ( aa                                    )
     ##########################################################################
     if                               ( self . RunDocking   ( mm , aa )     ) :
+      return True
+    ##########################################################################
+    if ( self . RunFunctionsMenu ( at , uuid , atItem ) )                    :
       return True
     ##########################################################################
     if                               ( self . HandleLocalityMenu ( at )    ) :
