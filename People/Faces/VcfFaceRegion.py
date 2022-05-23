@@ -106,6 +106,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self . MESHs           =   { "Mesh"   : False                            }
     self . NIPPLEs         =   { "Nipple" : False                            }
     self . GeometryChanged = self . FaceGeometryChanged
+    self . FaceCallbacks   =   [                                             ]
     self . setZValue           ( 50000                                       )
     self . setOpacity          ( 1.0                                         )
     ##########################################################################
@@ -1030,7 +1031,13 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     ##########################################################################
     elif                   ( Action == "Face"                              ) :
       ########################################################################
-      print(json.dumps(WhatJSON))
+      Entry  = WhatJSON    [ "Entry"                                         ]
+      if                   ( Entry == "Acceptor"                           ) :
+        ######################################################################
+        print("Face Acceptor")
+        CB   = WhatJSON    [ "Callback"                                      ]
+        if                 ( CB not in self . FaceCallbacks                ) :
+          self . FaceCallbacks . append ( CB                                 )
       ########################################################################
     return                 { "Answer" : "Okay"                               }
   ############################################################################
