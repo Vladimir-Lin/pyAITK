@@ -30,8 +30,23 @@ from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
+from   PyQt5 . QtWidgets              import QFileDialog
+from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
 from   AITK  . VTK . VtkWidget        import VtkWidget as VtkWidget
+from   AITK  . VTK . Wrapper          import Wrapper     as VtkWrapper
+##############################################################################
+from   AITK  . Qt  . MenuManager      import MenuManager as MenuManager
+##############################################################################
+from   AITK  . Math . Geometry . ControlPoint import ControlPoint as ControlPoint
+from   AITK  . Math . Geometry . Contour      import Contour      as Contour
+from   AITK  . Math . Geometry . Circle       import Circle       as Circle
+from   AITK  . Math . Geometry . Cylinder     import Cylinder     as Cylinder
+from   AITK  . Math . Geometry . Plane        import Plane        as Plane
+from   AITK  . Math . Geometry . Parabola     import Parabola     as Parabola
+from   AITK  . Math . Geometry . Sphere       import Sphere       as Sphere
+from   AITK  . Math . Geometry . Polyhedron   import Polyhedron   as Polyhedron
 ##############################################################################
 class VtkFace            ( VtkWidget                                       ) :
   ############################################################################

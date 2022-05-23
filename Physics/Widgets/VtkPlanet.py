@@ -11,7 +11,6 @@ import threading
 import gettext
 import json
 import math
-##############################################################################
 import vtk
 ##############################################################################
 from   PyQt5                          import QtCore
@@ -36,6 +35,7 @@ from   PyQt5 . QtWidgets              import QSpinBox
 from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
 from   AITK  . VTK . VtkWidget        import VtkWidget   as VtkWidget
+from   AITK  . VTK . Wrapper          import Wrapper     as VtkWrapper
 ##############################################################################
 from   AITK  . Qt  . MenuManager      import MenuManager as MenuManager
 ##############################################################################
