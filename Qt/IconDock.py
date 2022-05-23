@@ -1747,11 +1747,11 @@ class IconDock                      ( ListDock                             ) :
       UUID   = self . Relation . get ( "first"                               )
       TYPE   = self . Relation . get ( "t1"                                  )
       self   . Tables = self . ObtainsOwnerVariantTables                   ( \
-                                          DB                               , \
-                                          str ( UUID )                     , \
-                                          int ( TYPE )                     , \
-                                          self . FetchTableKey             , \
-                                          self . Tables                      )
+                                       DB                                  , \
+                                       str ( UUID )                        , \
+                                       int ( TYPE )                        , \
+                                       self . FetchTableKey                , \
+                                       self . Tables                         )
       ########################################################################
       self . Total = self . FetchGroupMembersCount ( DB                      )
       ########################################################################
@@ -1759,7 +1759,42 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     if                               ( self . isReverse       ( )          ) :
       ########################################################################
+      UUID   = self . Relation . get ( "second"                              )
+      TYPE   = self . Relation . get ( "t2"                                  )
+      self   . Tables = self . ObtainsOwnerVariantTables                   ( \
+                                       DB                                  , \
+                                       str ( UUID )                        , \
+                                       int ( TYPE )                        , \
+                                       self . FetchTableKey                , \
+                                       self . Tables                         )
+      ########################################################################
       self . Total = self . FetchGroupOwnersCount  ( DB                      )
+      ########################################################################
+      return
+    ##########################################################################
+    if                               ( self . isTagging       ( )          ) :
+      ########################################################################
+      UUID   = self . Relation . get ( "first"                               )
+      TYPE   = self . Relation . get ( "t1"                                  )
+      self   . Tables = self . ObtainsOwnerVariantTables                   ( \
+                                       DB                                  , \
+                                       str ( UUID )                        , \
+                                       int ( TYPE )                        , \
+                                       self . FetchTableKey                , \
+                                       self . Tables                         )
+      ########################################################################
+      return
+    ##########################################################################
+    if                               ( self . isSubgroup      ( )          ) :
+      ########################################################################
+      UUID   = self . Relation . get ( "first"                               )
+      TYPE   = self . Relation . get ( "t1"                                  )
+      self   . Tables = self . ObtainsOwnerVariantTables                   ( \
+                                       DB                                  , \
+                                       str ( UUID )                        , \
+                                       int ( TYPE )                        , \
+                                       self . FetchTableKey                , \
+                                       self . Tables                         )
       ########################################################################
       return
     ##########################################################################
