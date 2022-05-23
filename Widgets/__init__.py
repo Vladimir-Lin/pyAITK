@@ -9,7 +9,6 @@ from . import Scheduler
 from . import Science
 from . import Society
 from . import TBL
-from . import Videos
 ##############################################################################
 __all__ = [ "Biology"                                                      , \
             "Commons"                                                      , \
@@ -19,6 +18,5 @@ __all__ = [ "Biology"                                                      , \
             "Scheduler"                                                    , \
             "Science"                                                      , \
             "Society"                                                      , \
-            "TBL"                                                          , \
-            "Videos"                                                         ]
+            "TBL"                                                            ]
 ##############################################################################
