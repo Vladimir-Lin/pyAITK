@@ -153,11 +153,13 @@ class PictureEditor               ( VcfWidget                              ) :
     PDW = PeopleDetails   ( None , self . PlanFunc                           )
     ##########################################################################
     FUNC               = self  . MainGui . DynamicVariantTables
+    FACE               = self  . MainGui . OpenFaceModel
     PDW . Settings     = self  . Settings
     PDW . Translations = self  . Translations
     PDW . Tables       = self  . MainTables [ "PeopleDetails"                ]
     PDW . DB           = self  . Settings   [ "Database"                     ]
     PDW . DynamicVariantTables . connect    ( FUNC                           )
+    PDW . OpenFaceModel        . connect    ( FACE                           )
     ##########################################################################
     self . addControl             ( Name , PDW , self                        )
     Item . PeopleDetailsUI = PDW

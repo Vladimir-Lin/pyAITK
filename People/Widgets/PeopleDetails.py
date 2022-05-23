@@ -80,6 +80,7 @@ class PeopleDetails                 ( Widget                               ) :
   GoRelax              = pyqtSignal (                                        )
   Leave                = pyqtSignal ( QWidget                                )
   DynamicVariantTables = pyqtSignal ( str , dict                             )
+  OpenFaceModel        = pyqtSignal ( dict                                   )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
@@ -255,7 +256,7 @@ class PeopleDetails                 ( Widget                               ) :
     self   . PeopleUuid = PUID
     ##########################################################################
     JSON   =               { "Action" : "People"                           , \
-                           "People" : self . PeopleUuid                      }
+                             "People" : self . PeopleUuid                    }
     self   . EmitCallbacks ( JSON                                            )
     ##########################################################################
     self   . Go            ( self . ReloadPeopleInformation                  )
@@ -271,9 +272,27 @@ class PeopleDetails                 ( Widget                               ) :
   def TablesEditing                     ( self                             ) :
     ##########################################################################
     TITLE = self . windowTitle          (                                    )
+    TITLE = str                         ( TITLE                              )
     JSON  =                             { "Callback" : self . TablesUpdated  ,
                                           "Tables"   : self . Tables         }
-    self  . DynamicVariantTables . emit ( str ( TITLE ) , JSON               )
+    self  . DynamicVariantTables . emit ( TITLE , JSON                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def FaceModel                 ( self                                     ) :
+    ##########################################################################
+    TITLE = self . windowTitle  (                                            )
+    UUID  = int                 ( self . PeopleUuid                          )
+    JSON  =                     { "Title"    : TITLE                         ,
+                                  "People"   : UUID                          ,
+                                  "Callback" : self . FaceCallback           ,
+                                  "Plugins"  : self . Callbacks              }
+    self . OpenFaceModel . emit ( JSON                                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def FaceCallback ( self , JSON                                           ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################

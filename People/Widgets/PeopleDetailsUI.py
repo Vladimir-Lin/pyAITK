@@ -34,10 +34,19 @@ class Ui_PeopleDetailsUI(object):
         self.Tables.setIcon(icon)
         self.Tables.setIconSize(QtCore.QSize(32, 32))
         self.Tables.setObjectName("Tables")
+        self.FaceButton = QtWidgets.QToolButton(PeopleDetailsUI)
+        self.FaceButton.setGeometry(QtCore.QRect(180, 52, 32, 32))
+        self.FaceButton.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(QtGui.QPixmap(":/images/android.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.FaceButton.setIcon(icon1)
+        self.FaceButton.setIconSize(QtCore.QSize(32, 32))
+        self.FaceButton.setObjectName("FaceButton")
 
         self.retranslateUi(PeopleDetailsUI)
         self.PeopleUuid.editingFinished.connect(PeopleDetailsUI.PeopleUuidChanged)
         self.Tables.clicked.connect(PeopleDetailsUI.TablesEditing)
+        self.FaceButton.clicked.connect(PeopleDetailsUI.FaceModel)
         QtCore.QMetaObject.connectSlotsByName(PeopleDetailsUI)
 
     def retranslateUi(self, PeopleDetailsUI):
