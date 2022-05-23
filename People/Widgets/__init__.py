@@ -4,7 +4,15 @@
 ##############################################################################
 from . PeopleDetails    import PeopleDetails    as PeopleDetails
 from . VcfPeoplePicture import VcfPeoplePicture as VcfPeoplePicture
+from . PeopleView       import PeopleView       as PeopleView
+from . PeopleListings   import PeopleListings   as PeopleListings
+from . PeopleMerger     import PeopleMerger     as PeopleMerger
+from . CrowdView        import CrowdView        as CrowdView
 ##############################################################################
 __all__ = [ "PeopleDetails"                                                , \
-            "VcfPeoplePicture"                                               ]
+            "VcfPeoplePicture"                                             , \
+            "PeopleView"                                                   , \
+            "PeopleListings"                                               , \
+            "PeopleMerger"                                                 , \
+            "CrowdView"                                                      ]
 ##############################################################################

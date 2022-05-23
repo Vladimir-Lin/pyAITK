@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## PlaceListings
+## PeopleListings
 ##############################################################################
 import os
 import sys
@@ -51,7 +51,7 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
 ##############################################################################
-class PlaceListings                ( TreeDock                              ) :
+class PeopleListings               ( TreeDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
