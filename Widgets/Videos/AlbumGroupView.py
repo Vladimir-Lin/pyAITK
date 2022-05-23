@@ -59,10 +59,11 @@ from   AITK  . Videos     . Album     import Album       as AlbumItem
 ##############################################################################
 class AlbumGroupView              ( IconDock                               ) :
   ############################################################################
-  HavingMenu    = 1371434312
+  HavingMenu        = 1371434312
   ############################################################################
-  AlbumSubgroup = pyqtSignal      ( str , int , str                          )
-  AlbumGroup    = pyqtSignal      ( str , int , str                          )
+  AlbumSubgroup     = pyqtSignal  ( str , int , str                          )
+  AlbumGroup        = pyqtSignal  ( str , int , str                          )
+  OpenVariantTables = pyqtSignal  ( str , str , int , str , dict             )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -80,6 +81,8 @@ class AlbumGroupView              ( IconDock                               ) :
     ## self . Grouping     = "Catalog"
     ## self . Grouping     = "Subgroup"
     ## self . Grouping     = "Reverse"
+    ##########################################################################
+    self . FetchTableKey = "AlbumGroupView"
     ##########################################################################
     self . dockingPlace = Qt . RightDockWidgetArea
     ##########################################################################
@@ -137,6 +140,14 @@ class AlbumGroupView              ( IconDock                               ) :
     super ( ) . closeEvent ( event                                           )
     ##########################################################################
     return
+  ############################################################################
+  def setGrouping ( self , group                                           ) :
+    ##########################################################################
+    self . Grouping      = group
+    self . OldGrouping   = group
+    self . FetchTableKey = f"AlbumGroupView-{group}"
+    ##########################################################################
+    return self . Grouping
   ############################################################################
   def GetUuidIcon                    ( self , DB , Uuid                    ) :
     TABLE = "RelationPictures"
@@ -573,6 +584,50 @@ class AlbumGroupView              ( IconDock                               ) :
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
   ############################################################################
+  def FunctionsMenu          ( self , mm , uuid , item                     ) :
+    ##########################################################################
+    msg = self . getMenuItem ( "Functions"                                   )
+    LOM = mm   . addMenu     ( msg                                           )
+    ##########################################################################
+    msg = self . getMenuItem ( "AssignTables"                                )
+    mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunFunctionsMenu                 ( self , at , uuid , item           ) :
+    ##########################################################################
+    if                                 ( at == 25351301                    ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      ########################################################################
+      if                               ( self . isTagging  (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "first"                             )
+        TYPE = self . Relation  . get  ( "t1"                                )
+        TYPE = int                     ( TYPE                                )
+        ######################################################################
+      elif                             ( self . isSubgroup (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "first"                             )
+        TYPE = self . Relation  . get  ( "t1"                                )
+        TYPE = int                     ( TYPE                                )
+        ######################################################################
+      elif                             ( self . isReverse  (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "second"                            )
+        TYPE = self . Relation  . get  ( "t2"                                )
+        TYPE = int                     ( TYPE                                )
+      ########################################################################
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         self . FetchTableKey              , \
+                                         self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
     doMenu = self . isFunction      ( self . HavingMenu                      )
@@ -611,8 +666,9 @@ class AlbumGroupView              ( IconDock                               ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
         mm . addSeparator           (                                        )
     ##########################################################################
-    mm     = self . SortingMenu     ( mm                                     )
-    mm     = self . LocalityMenu    ( mm                                     )
+    self   . FunctionsMenu          ( mm , uuid , atItem                     )
+    self   . SortingMenu            ( mm                                     )
+    self   . LocalityMenu           ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
     mm     . setFont                ( self    . menuFont ( )                 )
@@ -620,6 +676,9 @@ class AlbumGroupView              ( IconDock                               ) :
     at     = mm . at                ( aa                                     )
     ##########################################################################
     if                              ( self . RunDocking   ( mm , aa )      ) :
+      return True
+    ##########################################################################
+    if ( self . RunFunctionsMenu ( at , uuid , atItem ) )                    :
       return True
     ##########################################################################
     if                              ( self . HandleLocalityMenu ( at )     ) :

@@ -15,7 +15,6 @@ SOURCES += $${PWD}/*.ui
 include ($${PWD}/Biology/Biology.pri)
 include ($${PWD}/Commons/Commons.pri)
 include ($${PWD}/Networking/Networking.pri)
-include ($${PWD}/Pictures/Pictures.pri)
 include ($${PWD}/Finance/Finance.pri)
 include ($${PWD}/Scheduler/Scheduler.pri)
 include ($${PWD}/Science/Science.pri)
