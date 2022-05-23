@@ -1028,6 +1028,10 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
       self   . PeopleUuid      = WhatJSON [ "People"                         ]
       self   . PeopleUuidAssigned (                                          )
     ##########################################################################
+    elif                   ( Action == "Face"                              ) :
+      ########################################################################
+      print(json.dumps(WhatJSON))
+      ########################################################################
     return                 { "Answer" : "Okay"                               }
   ############################################################################
   def AttachPeopleDetails ( self                                           ) :

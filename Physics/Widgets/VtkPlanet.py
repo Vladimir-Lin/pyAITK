@@ -59,7 +59,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
   ############################################################################
   def setVtkPlanetDefaults ( self                                          ) :
     ##########################################################################
-    self . dockingPlace = Qt . BottomDockWidgetArea
+    ## self . dockingPlace = Qt . BottomDockWidgetArea
     ##########################################################################
     self . setFunction     ( self . HavingMenu , True                        )
     ##########################################################################
