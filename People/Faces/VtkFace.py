@@ -10,6 +10,7 @@ import requests
 import threading
 import gettext
 import json
+import math
 ##############################################################################
 import vtk
 ##############################################################################
@@ -68,6 +69,8 @@ class VtkFace                 ( VtkWidget                                  ) :
     ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
     ##########################################################################
     self . PeopleUuid = 0
+    self . NoseZ      = 500.0
+    self . BaseZ      = 500.0
     self . SpinBoxs   =    {                                                 }
     self . Callbacks  =    [                                                 ]
     ##########################################################################
@@ -120,9 +123,7 @@ class VtkFace                 ( VtkWidget                                  ) :
   ############################################################################
   def PreparePlate                      ( self                             ) :
     ##########################################################################
-    E        = self . FaceObjects       [ "Plate" ] [ "Enabled"              ]
-    if                                  ( not E                            ) :
-      return
+    self     . FaceObjects [ "Plate" ] [ "Enabled" ] = True
     ##########################################################################
     ACTOR    = self . FaceObjects       [ "Plate" ] [ "Actor"                ]
     MAPPER   = self . FaceObjects       [ "Plate" ] [ "Mapper"               ]
@@ -147,10 +148,10 @@ class VtkFace                 ( VtkWidget                                  ) :
     Colors   . SetNumberOfTuples        ( 4                                  )
     Colors   . SetName                  ( "Colors"                           )
     ##########################################################################
-    Points   . SetPoint                 ( 0 , [  25.0 ,  25.0 , 0.0 ]        )
-    Points   . SetPoint                 ( 1 , [  25.0 , -25.0 , 0.0 ]        )
-    Points   . SetPoint                 ( 2 , [ -25.0 , -25.0 , 0.0 ]        )
-    Points   . SetPoint                 ( 3 , [ -25.0 ,  25.0 , 0.0 ]        )
+    Points   . SetPoint                 ( 0 , [  2500.0 ,  2500.0 , 0.0 ]    )
+    Points   . SetPoint                 ( 1 , [  2500.0 , -2500.0 , 0.0 ]    )
+    Points   . SetPoint                 ( 2 , [ -2500.0 , -2500.0 , 0.0 ]    )
+    Points   . SetPoint                 ( 3 , [ -2500.0 ,  2500.0 , 0.0 ]    )
     ##########################################################################
     Colors   . SetTuple4                ( 0 , R , G , B , T                  )
     Colors   . SetTuple4                ( 1 , R , G , B , T                  )
@@ -167,16 +168,69 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     Polygons . InsertNextCell           ( P                                  )
     ##########################################################################
+    ACTOR    . GetProperty  ( ) . SetPointSize ( 1                           )
     MODEL    . SetPoints                ( Points                             )
     MODEL    . SetPolys                 ( Polygons                           )
-    MODEL    . GetPointData ( ) . SetScalars ( Colors                        )
+    MODEL    . GetPointData ( ) . SetScalars   ( Colors                      )
     MODEL    . Modified                 (                                    )
     ##########################################################################
     MAPPER   . SetInputData             ( MODEL                              )
     ##########################################################################
     return
   ############################################################################
+  def pjsonToVtkPoint ( self , JSON                                        ) :
+    return            [ JSON [ "X" ] , JSON [ "Y" ] , JSON [ "Z" ]           ]
   ############################################################################
+  def PreparePoints                     ( self , JSON                      ) :
+    ##########################################################################
+    self       . FaceObjects [ "Points" ] [ "Enabled" ] = True
+    ##########################################################################
+    ACTOR      = self . FaceObjects [ "Points" ] [ "Actor"                   ]
+    MAPPER     = self . FaceObjects [ "Points" ] [ "Mapper"                  ]
+    MODEL      = self . FaceObjects [ "Points" ] [ "Model"                   ]
+    ##########################################################################
+    PP         = ControlPoint           (                                    )
+    PP         . setXYZT                ( 0.0 , 0.0 , 1.0 , 1.0              )
+    ##########################################################################
+    self       . FaceObjects [ "Points" ] [ "Color" ] = PP
+    R          = int                    ( PP . x * 255                       )
+    G          = int                    ( PP . y * 255                       )
+    B          = int                    ( PP . z * 255                       )
+    T          = int                    ( PP . t * 255                       )
+    ##########################################################################
+    ITEM       = "3D"
+    PTS        = JSON                   [ ITEM                               ]
+    ##########################################################################
+    TOTALs     = len                    ( PTS                                )
+    Points     = vtk . vtkPoints        (                                    )
+    Vertices   = vtk . vtkCellArray     (                                    )
+    ##########################################################################
+    Points     . SetNumberOfPoints      ( TOTALs                             )
+    Vertices   . InsertNextCell         ( TOTALs                             )
+    ##########################################################################
+    Colors     = vtk . vtkUnsignedCharArray    (                             )
+    Colors     . SetNumberOfComponents         ( 4                           )
+    Colors     . SetNumberOfTuples             ( TOTALs                      )
+    Colors     . SetName                       ( "Colors"                    )
+    ##########################################################################
+    id         = 0
+    for P in PTS                                                             :
+      ########################################################################
+      Colors   . SetTuple4                     ( id , R , G , B , T          )
+      PS       = self . pjsonToVtkPoint        ( P                           )
+      Points   . SetPoint                      ( id , PS                     )
+      Vertices . InsertCellPoint               ( id                          )
+      ########################################################################
+      id       = id + 1
+    ##########################################################################
+    MODEL      . SetPoints                     ( Points                      )
+    MODEL      . SetVerts                      ( Vertices                    )
+    MODEL      . GetPointData ( ) . SetScalars ( Colors                      )
+    MODEL      . Modified                      (                             )
+    ##########################################################################
+    MAPPER     . SetInputData                  ( MODEL                       )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -191,6 +245,48 @@ class VtkFace                 ( VtkWidget                                  ) :
   ############################################################################
   def AcceptFaceGeometry            ( self , JSON                          ) :
     ##########################################################################
+    FZ  = self . NoseZ
+    BZ  = self . BaseZ
+    P1  = JSON [ "Measure" ] [ "P1"     ]
+    P2  = JSON [ "Measure" ] [ "P2"     ]
+    VV  = JSON [ "Measure" ] [ "Value"  ]
+    WW  = JSON [ "Points"  ] [ "Width"  ]
+    HH  = JSON [ "Points"  ] [ "Height" ]
+    XX  = JSON [ "Points"  ] [ "X"      ]
+    YY  = JSON [ "Points"  ] [ "Y"      ]
+    SW  = JSON [ "Points"  ] [ "SW"     ]
+    SH  = JSON [ "Points"  ] [ "SH"     ]
+    ##########################################################################
+    CX  = XX + ( SW / 2 )
+    CY  = YY + ( HH / 2 )
+    ##########################################################################
+    PTS = [ ]
+    dX  = P1 [ "X" ] - P2 [ "X" ]
+    dY  = P1 [ "Y" ] - P2 [ "Y" ]
+    LL  = math . sqrt ( ( dX * dX ) + ( dY * dY ) )
+    FX  = LL / SW
+    FY  = LL / SH
+    ##########################################################################
+    for P in JSON [ "Points" ] [ "Draws" ]                                   :
+      ########################################################################
+      X = P [ "X" ]
+      Y = P [ "Y" ]
+      Z = P [ "Z" ]
+      ########################################################################
+      X = X - CX
+      Y = Y - CY
+      ########################################################################
+      X = X * FX
+      Y = Y * FY
+      Z = Z * FZ
+      Z = Z + BZ
+      ########################################################################
+      J = { "X" : X , "Y" : Y , "Z" : Z }
+      PTS . append ( J )
+    ##########################################################################
+    JSON [ "Points" ] [ "3D" ] = PTS
+    ##########################################################################
+    self . PreparePoints            ( JSON [ "Points" ]                      )
     ##########################################################################
     return
   ############################################################################

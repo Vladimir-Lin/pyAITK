@@ -813,6 +813,10 @@ class Face        (                                                        ) :
     return               { "Ready"    : True                               , \
                            "Width"    : Width                              , \
                            "Height"   : Height                             , \
+                           "X"        : BaseX                              , \
+                           "Y"        : BaseY                              , \
+                           "SW"       : ScreenWidth                        , \
+                           "SH"       : ScreenHeight                       , \
                            "Original" : LL                                 , \
                            "Pixels"   : PL                                 , \
                            "Draws"    : SL                                   }
