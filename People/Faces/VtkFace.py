@@ -69,7 +69,7 @@ class VtkFace                 ( VtkWidget                                  ) :
     ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
     ##########################################################################
     self . PeopleUuid = 0
-    self . NoseZ      = 800.0
+    self . NoseZ      = 500.0
     self . BaseZ      = 500.0
     self . SpinBoxs   =    {                                                 }
     self . Callbacks  =    [                                                 ]
@@ -247,7 +247,7 @@ class VtkFace                 ( VtkWidget                                  ) :
   def AcceptFaceGeometry            ( self , JSON                          ) :
     ##########################################################################
     FZ  = - self . NoseZ
-    BZ  = self . BaseZ
+    BZ  =   self . BaseZ
     P1  = JSON [ "Measure" ] [ "P1"     ]
     P2  = JSON [ "Measure" ] [ "P2"     ]
     VV  = JSON [ "Measure" ] [ "Value"  ]
@@ -267,7 +267,14 @@ class VtkFace                 ( VtkWidget                                  ) :
     LL  = math . sqrt ( ( dX * dX ) + ( dY * dY ) )
     FX  = VV / LL
     FY  = VV / LL
-    FZ  = FZ * VV / LL
+    MZ  = 0
+    ##########################################################################
+    for P in JSON [ "Points" ] [ "Draws" ]                                   :
+      Z = P [ "Z" ]
+      if ( Z > MZ ) :
+        MZ = Z
+    ##########################################################################
+    FZ = FZ / MZ
     ##########################################################################
     for P in JSON [ "Points" ] [ "Draws" ]                                   :
       ########################################################################
