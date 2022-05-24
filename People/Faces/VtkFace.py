@@ -69,7 +69,7 @@ class VtkFace                 ( VtkWidget                                  ) :
     ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
     ##########################################################################
     self . PeopleUuid = 0
-    self . NoseZ      = 500.0
+    self . NoseZ      = 800.0
     self . BaseZ      = 500.0
     self . SpinBoxs   =    {                                                 }
     self . Callbacks  =    [                                                 ]
@@ -148,10 +148,10 @@ class VtkFace                 ( VtkWidget                                  ) :
     Colors   . SetNumberOfTuples        ( 4                                  )
     Colors   . SetName                  ( "Colors"                           )
     ##########################################################################
-    Points   . SetPoint                 ( 0 , [  2500.0 ,  2500.0 , 0.0 ]    )
-    Points   . SetPoint                 ( 1 , [  2500.0 , -2500.0 , 0.0 ]    )
-    Points   . SetPoint                 ( 2 , [ -2500.0 , -2500.0 , 0.0 ]    )
-    Points   . SetPoint                 ( 3 , [ -2500.0 ,  2500.0 , 0.0 ]    )
+    Points   . SetPoint                 ( 0 , [  1500.0 ,  2000.0 , 0.0 ]    )
+    Points   . SetPoint                 ( 1 , [  1500.0 , -2000.0 , 0.0 ]    )
+    Points   . SetPoint                 ( 2 , [ -1500.0 , -2000.0 , 0.0 ]    )
+    Points   . SetPoint                 ( 3 , [ -1500.0 ,  2000.0 , 0.0 ]    )
     ##########################################################################
     Colors   . SetTuple4                ( 0 , R , G , B , T                  )
     Colors   . SetTuple4                ( 1 , R , G , B , T                  )
@@ -223,6 +223,7 @@ class VtkFace                 ( VtkWidget                                  ) :
       ########################################################################
       id       = id + 1
     ##########################################################################
+    ACTOR      . GetProperty  ( ) . SetPointSize ( 2.5                       )
     MODEL      . SetPoints                     ( Points                      )
     MODEL      . SetVerts                      ( Vertices                    )
     MODEL      . GetPointData ( ) . SetScalars ( Colors                      )
@@ -245,7 +246,7 @@ class VtkFace                 ( VtkWidget                                  ) :
   ############################################################################
   def AcceptFaceGeometry            ( self , JSON                          ) :
     ##########################################################################
-    FZ  = self . NoseZ
+    FZ  = - self . NoseZ
     BZ  = self . BaseZ
     P1  = JSON [ "Measure" ] [ "P1"     ]
     P2  = JSON [ "Measure" ] [ "P2"     ]
@@ -258,14 +259,15 @@ class VtkFace                 ( VtkWidget                                  ) :
     SH  = JSON [ "Points"  ] [ "SH"     ]
     ##########################################################################
     CX  = XX + ( SW / 2 )
-    CY  = YY + ( HH / 2 )
+    CY  = YY + ( SH / 2 )
     ##########################################################################
     PTS = [ ]
     dX  = P1 [ "X" ] - P2 [ "X" ]
     dY  = P1 [ "Y" ] - P2 [ "Y" ]
     LL  = math . sqrt ( ( dX * dX ) + ( dY * dY ) )
-    FX  = LL / SW
-    FY  = LL / SH
+    FX  = VV / LL
+    FY  = VV / LL
+    FZ  = FZ * VV / LL
     ##########################################################################
     for P in JSON [ "Points" ] [ "Draws" ]                                   :
       ########################################################################
@@ -278,10 +280,12 @@ class VtkFace                 ( VtkWidget                                  ) :
       ########################################################################
       X = X * FX
       Y = Y * FY
+      Y = -Y
       Z = Z * FZ
       Z = Z + BZ
       ########################################################################
       J = { "X" : X , "Y" : Y , "Z" : Z }
+      print(json.dumps(J))
       PTS . append ( J )
     ##########################################################################
     JSON [ "Points" ] [ "3D" ] = PTS
