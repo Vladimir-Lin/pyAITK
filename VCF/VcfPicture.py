@@ -60,7 +60,7 @@ from   AITK  . Qt . MenuManager       import MenuManager  as MenuManager
 from   AITK  . Essentials . Object    import Object       as Object
 from   AITK  . Pictures   . Picture   import Picture      as PictureItem
 from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
-from   AITK  . Pictures   . Face      import Face         as FaceItem
+from   AITK  . People . Faces . Face  import Face         as FaceItem
 ##############################################################################
 from         . VcfRectangle           import VcfRectangle as VcfRectangle
 ##############################################################################
