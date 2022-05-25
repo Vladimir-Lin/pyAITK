@@ -261,9 +261,7 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     TOTALs     = len                    ( PTS                                )
     Points     = vtk . vtkPoints        (                                    )
-    ##########################################################################
     Points     . SetNumberOfPoints      ( TOTALs                             )
-    Vertices   . InsertNextCell         ( TOTALs                             )
     ##########################################################################
     Colors     = vtk . vtkUnsignedCharArray    (                             )
     Colors     . SetNumberOfComponents         ( 4                           )
@@ -276,14 +274,13 @@ class VtkFace                 ( VtkWidget                                  ) :
       Colors   . SetTuple4                     ( id , R , G , B , T          )
       PS       = self . pjsonToVtkPoint        ( P                           )
       Points   . SetPoint                      ( id , PS                     )
-      Vertices . InsertCellPoint               ( id                          )
       ########################################################################
       id       = id + 1
     ##########################################################################
     FM         = FI . Face468Mesh              (                             )
     LINEs      = WRAPPER . GenerateLines       ( FM                          )
     ##########################################################################
-    ACTOR      . GetProperty  ( ) . SetPointSize ( 2.5                       )
+    ACTOR      . GetProperty  ( ) . SetLineWidth ( 2.0                       )
     MODEL      . SetPoints                     ( Points                      )
     MODEL      . SetLines                      ( LINEs                       )
     MODEL      . GetPointData ( ) . SetScalars ( Colors                      )
