@@ -62,10 +62,10 @@ from   AITK  . Qt . MenuManager       import MenuManager  as MenuManager
 from   AITK  . Essentials . Object    import Object       as Object
 from   AITK  . Pictures   . Picture   import Picture      as PictureItem
 from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
-from   AITK  . Pictures   . Face      import Face         as FaceItem
 ##############################################################################
-from   AITK  . People . Body . Tit    import Tit          as TitItem
-from   AITK  . People . Body . Body   import Body         as BodyItem
+from   AITK  . People . Faces . Face  import Face         as FaceItem
+from   AITK  . People . Body  . Tit   import Tit          as TitItem
+from   AITK  . People . Body  . Body  import Body         as BodyItem
 ##############################################################################
 from   AITK  . VCF . VcfItem          import VcfItem      as VcfItem
 from   AITK  . VCF . VcfLines         import VcfLines     as VcfLines

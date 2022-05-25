@@ -35,7 +35,7 @@ from   PyQt5 . QtWidgets              import QFileDialog
 from   PyQt5 . QtWidgets              import QSpinBox
 from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
-from   AITK  . VTK . VtkWidget        import VtkWidget as VtkWidget
+from   AITK  . VTK . VtkWidget        import VtkWidget   as VtkWidget
 from   AITK  . VTK . Wrapper          import Wrapper     as VtkWrapper
 ##############################################################################
 from   AITK  . Qt  . MenuManager      import MenuManager as MenuManager
