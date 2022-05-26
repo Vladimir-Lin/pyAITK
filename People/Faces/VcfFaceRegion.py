@@ -1035,7 +1035,6 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
       Entry  = WhatJSON    [ "Entry"                                         ]
       if                   ( Entry == "Acceptor"                           ) :
         ######################################################################
-        print("Face Acceptor")
         CB   = WhatJSON    [ "Callback"                                      ]
         if                 ( CB not in self . FaceCallbacks                ) :
           self . FaceCallbacks . append ( CB                                 )
