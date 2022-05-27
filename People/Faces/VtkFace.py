@@ -417,30 +417,30 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def ElementsMenu             ( self , mm                                 ) :
+  def ElementsMenu           ( self , mm                                   ) :
     ##########################################################################
-    MSG = self . getMenuItem   ( "DisplayObjects"                            )
-    LOM = mm   . addMenu       ( MSG                                         )
+    MSG = self . getMenuItem ( "DisplayObjects"                              )
+    LOM = mm   . addMenu     ( MSG                                           )
     ##########################################################################
-    E   = self . PlanetObjects [ "Texture"    ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayTextured"                           )
-    mm  . addActionFromMenu    ( LOM , 54233101 , msg , True , E             )
+    E   = self . FaceObjects [ "Texture"    ] [ "Enabled"                    ]
+    msg = self . getMenuItem ( "DisplayTextured"                             )
+    mm  . addActionFromMenu  ( LOM , 54233101 , msg , True , E               )
     ##########################################################################
-    E   = self . PlanetObjects [ "Points"     ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayPoints"                             )
-    mm  . addActionFromMenu    ( LOM , 54233102 , msg , True , E             )
+    E   = self . FaceObjects [ "Points"     ] [ "Enabled"                    ]
+    msg = self . getMenuItem ( "DisplayPoints"                               )
+    mm  . addActionFromMenu  ( LOM , 54233102 , msg , True , E               )
     ##########################################################################
-    E   = self . PlanetObjects [ "Mesh"       ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayLines"                              )
-    mm  . addActionFromMenu    ( LOM , 54233103 , msg , True , E             )
+    E   = self . FaceObjects [ "Mesh"       ] [ "Enabled"                    ]
+    msg = self . getMenuItem ( "DisplayLines"                                )
+    mm  . addActionFromMenu  ( LOM , 54233103 , msg , True , E               )
     ##########################################################################
-    E   = self . PlanetObjects [ "Face"       ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayFace"                               )
-    mm  . addActionFromMenu    ( LOM , 54233104 , msg , True , E             )
+    E   = self . FaceObjects [ "Face"       ] [ "Enabled"                    ]
+    msg = self . getMenuItem ( "DisplayFace"                                 )
+    mm  . addActionFromMenu  ( LOM , 54233104 , msg , True , E               )
     ##########################################################################
-    E   = self . PlanetObjects [ "Plate"      ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayPlate"                              )
-    mm  . addActionFromMenu    ( LOM , 54233105 , msg , True , E             )
+    E   = self . FaceObjects [ "Plate"      ] [ "Enabled"                    ]
+    msg = self . getMenuItem ( "DisplayPlate"                                )
+    mm  . addActionFromMenu  ( LOM , 54233105 , msg , True , E               )
     ##########################################################################
     return mm
   ############################################################################
