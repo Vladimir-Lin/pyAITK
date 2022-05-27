@@ -964,7 +964,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     self   . GeometryMenu          ( mm                                      )
     self   . RenderMenu            ( mm                                      )
     ## self   . LocalityMenu          ( mm                                      )
-    ## self   . DockingMenu           ( mm                                      )
+    self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
@@ -979,6 +979,9 @@ class VtkPlanet                 ( VtkWidget                                ) :
       return True
     ##########################################################################
     if                             ( self . RunElementsMenu ( at )         ) :
+      return True
+    ##########################################################################
+    if                             ( self . RunDocking      ( mm , aa )    ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
