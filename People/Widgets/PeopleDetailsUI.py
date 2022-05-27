@@ -42,11 +42,20 @@ class Ui_PeopleDetailsUI(object):
         self.FaceButton.setIcon(icon1)
         self.FaceButton.setIconSize(QtCore.QSize(32, 32))
         self.FaceButton.setObjectName("FaceButton")
+        self.ExecButton = QtWidgets.QToolButton(PeopleDetailsUI)
+        self.ExecButton.setGeometry(QtCore.QRect(180, 208, 32, 28))
+        self.ExecButton.setText("")
+        icon2 = QtGui.QIcon()
+        icon2.addPixmap(QtGui.QPixmap(":/images/end.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.ExecButton.setIcon(icon2)
+        self.ExecButton.setIconSize(QtCore.QSize(28, 28))
+        self.ExecButton.setObjectName("ExecButton")
 
         self.retranslateUi(PeopleDetailsUI)
         self.PeopleUuid.editingFinished.connect(PeopleDetailsUI.PeopleUuidChanged)
         self.Tables.clicked.connect(PeopleDetailsUI.TablesEditing)
         self.FaceButton.clicked.connect(PeopleDetailsUI.FaceModel)
+        self.ExecButton.clicked.connect(PeopleDetailsUI.ExecuteSelected)
         QtCore.QMetaObject.connectSlotsByName(PeopleDetailsUI)
 
     def retranslateUi(self, PeopleDetailsUI):
