@@ -114,6 +114,10 @@ class VtkFace                 ( VtkWidget                                  ) :
       self . FaceObjects [ NAME ] [ "Texture"  ] = None
       self . FaceObjects [ NAME ] [ "Enabled"  ] = False
     ##########################################################################
+    self   . FacePoints   = None
+    self   . FaceVertices = None
+    self   . FacePolygons = None
+    ##########################################################################
     self   . PreparePlate                   (                                )
     ##########################################################################
     return
@@ -124,6 +128,38 @@ class VtkFace                 ( VtkWidget                                  ) :
       Callback      (        JSON                                            )
     ##########################################################################
     return
+  ############################################################################
+  def pjsonToVtkPoint ( self , JSON                                        ) :
+    return            [ JSON [ "X" ] , JSON [ "Y" ] , JSON [ "Z" ]           ]
+  ############################################################################
+  def GenerateFacePoints              ( self , StartId , POINTs            ) :
+    ##########################################################################
+    TOTALs   = len                    ( POINTs                               )
+    Points   = vtk . vtkPoints        (                                      )
+    ##########################################################################
+    Points   . SetNumberOfPoints      ( TOTALs                               )
+    ##########################################################################
+    id       = StartId
+    for P in POINTs                                                          :
+      ########################################################################
+      PS     = self . pjsonToVtkPoint ( P                                    )
+      Points . SetPoint               ( id , PS                              )
+      ########################################################################
+      id     = id + 1
+    ##########################################################################
+    return Points
+  ############################################################################
+  def GenerateFaceColors            ( self , KEY , Total , R , G , B , A   ) :
+    ##########################################################################
+    WRAP = VtkWrapper               (                                        )
+    PP   = ControlPoint             (                                        )
+    PP   . setXYZT                  ( R , G , B , A                          )
+    CC   = PP . toColorComponent4   (                                        )
+    CR   = WRAPPER . GenerateColors ( 0 , Total , CC                         )
+    ##########################################################################
+    self . FaceObjects [ KEY ] [ "Color" ] = PP
+    ##########################################################################
+    return CR
   ############################################################################
   def PreparePlate                      ( self                             ) :
     ##########################################################################
@@ -182,115 +218,101 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def pjsonToVtkPoint ( self , JSON                                        ) :
-    return            [ JSON [ "X" ] , JSON [ "Y" ] , JSON [ "Z" ]           ]
-  ############################################################################
-  def PreparePoints                     ( self , JSON                      ) :
+  def PreparePoints                           ( self , JSON                ) :
     ##########################################################################
-    self       . FaceObjects [ "Points" ] [ "Enabled" ] = True
+    self    .        FaceObjects [ "Points" ] [ "Enabled" ] = True
     ##########################################################################
-    ACTOR      = self . FaceObjects [ "Points" ] [ "Actor"                   ]
-    MAPPER     = self . FaceObjects [ "Points" ] [ "Mapper"                  ]
-    MODEL      = self . FaceObjects [ "Points" ] [ "Model"                   ]
+    ACTOR   = self . FaceObjects [ "Points" ] [ "Actor"                      ]
+    MAPPER  = self . FaceObjects [ "Points" ] [ "Mapper"                     ]
+    MODEL   = self . FaceObjects [ "Points" ] [ "Model"                      ]
     ##########################################################################
-    PP         = ControlPoint           (                                    )
-    PP         . setXYZT                ( 0.0 , 0.0 , 1.0 , 1.0              )
+    ITEM    = "3D"
+    PTS     = JSON                            [ ITEM                         ]
+    TOTALs  = len                             ( PTS                          )
     ##########################################################################
-    self       . FaceObjects [ "Points" ] [ "Color" ] = PP
-    R          = int                    ( PP . x * 255                       )
-    G          = int                    ( PP . y * 255                       )
-    B          = int                    ( PP . z * 255                       )
-    T          = int                    ( PP . t * 255                       )
+    Colors  = GenerateFaceColors              ( KEY                          ,
+                                                TOTALs                       ,
+                                                0.0                          ,
+                                                0.0                          ,
+                                                1.0                          ,
+                                                1.0                          )
+    Colors  . SetName                         ( "Colors"                     )
     ##########################################################################
-    ITEM       = "3D"
-    PTS        = JSON                   [ ITEM                               ]
+    ACTOR   . GetProperty  ( ) . SetPointSize ( 2.5                          )
+    MODEL   . SetPoints                       ( self . FacePoints            )
+    MODEL   . SetVerts                        ( self . FaceVertices          )
+    MODEL   . GetPointData ( ) . SetScalars   ( Colors                       )
+    MODEL   . Modified                        (                              )
     ##########################################################################
-    TOTALs     = len                    ( PTS                                )
-    Points     = vtk . vtkPoints        (                                    )
-    Vertices   = vtk . vtkCellArray     (                                    )
-    ##########################################################################
-    Points     . SetNumberOfPoints      ( TOTALs                             )
-    Vertices   . InsertNextCell         ( TOTALs                             )
-    ##########################################################################
-    Colors     = vtk . vtkUnsignedCharArray    (                             )
-    Colors     . SetNumberOfComponents         ( 4                           )
-    Colors     . SetNumberOfTuples             ( TOTALs                      )
-    Colors     . SetName                       ( "Colors"                    )
-    ##########################################################################
-    id         = 0
-    for P in PTS                                                             :
-      ########################################################################
-      Colors   . SetTuple4                     ( id , R , G , B , T          )
-      PS       = self . pjsonToVtkPoint        ( P                           )
-      Points   . SetPoint                      ( id , PS                     )
-      Vertices . InsertCellPoint               ( id                          )
-      ########################################################################
-      id       = id + 1
-    ##########################################################################
-    ACTOR      . GetProperty  ( ) . SetPointSize ( 2.5                       )
-    MODEL      . SetPoints                     ( Points                      )
-    MODEL      . SetVerts                      ( Vertices                    )
-    MODEL      . GetPointData ( ) . SetScalars ( Colors                      )
-    MODEL      . Modified                      (                             )
-    ##########################################################################
-    MAPPER     . SetInputData                  ( MODEL                       )
+    MAPPER  . SetInputData                    ( MODEL                        )
     ##########################################################################
     return
   ############################################################################
-  def PrepareMeshes                     ( self , JSON , KEY                ) :
+  def PrepareMeshes                            ( self , JSON , KEY         ) :
     ##########################################################################
-    FI         = FaceItem               (                                    )
-    WRAPPER    = VtkWrapper             (                                    )
+    FI      = FaceItem                        (                             )
+    WRAPPER = VtkWrapper                      (                             )
     ##########################################################################
-    self       . FaceObjects [ KEY ] [ "Enabled" ] = True
+    self    .        FaceObjects [ KEY ]      [ "Enabled" ] = True
     ##########################################################################
-    ACTOR      = self . FaceObjects [ KEY ] [ "Actor"                        ]
-    MAPPER     = self . FaceObjects [ KEY ] [ "Mapper"                       ]
-    MODEL      = self . FaceObjects [ KEY ] [ "Model"                        ]
+    ACTOR   = self . FaceObjects [ KEY ]      [ "Actor"                      ]
+    MAPPER  = self . FaceObjects [ KEY ]      [ "Mapper"                     ]
+    MODEL   = self . FaceObjects [ KEY ]      [ "Model"                      ]
     ##########################################################################
-    PP         = ControlPoint           (                                    )
-    PP         . setXYZT                ( 1.0 , 0.0 , 0.0 , 1.0              )
+    ITEM    = "3D"
+    PTS     = JSON                            [ ITEM                         ]
+    TOTALs  = len                             ( PTS                          )
     ##########################################################################
-    self       . FaceObjects [ KEY ] [ "Color" ] = PP
-    R          = int                    ( PP . x * 255                       )
-    G          = int                    ( PP . y * 255                       )
-    B          = int                    ( PP . z * 255                       )
-    T          = int                    ( PP . t * 255                       )
+    Colors  = GenerateFaceColors              ( KEY                          ,
+                                                TOTALs                       ,
+                                                1.0                          ,
+                                                0.0                          ,
+                                                0.0                          ,
+                                                1.0                          )
+    Colors  . SetName                         ( "Colors"                     )
     ##########################################################################
-    ITEM       = "3D"
-    PTS        = JSON                   [ ITEM                               ]
+    FM      = FI . Face468Mesh                (                              )
+    LINEs   = WRAPPER . GenerateLines         ( FM                           )
     ##########################################################################
-    TOTALs     = len                    ( PTS                                )
-    Points     = vtk . vtkPoints        (                                    )
-    Points     . SetNumberOfPoints      ( TOTALs                             )
+    ACTOR   . GetProperty  ( ) . SetLineWidth ( 2.0                          )
+    MODEL   . SetPoints                       ( self . FacePoints            )
+    MODEL   . SetLines                        ( LINEs                        )
+    MODEL   . GetPointData ( ) . SetScalars   ( Colors                       )
+    MODEL   . Modified                        (                              )
     ##########################################################################
-    Colors     = vtk . vtkUnsignedCharArray    (                             )
-    Colors     . SetNumberOfComponents         ( 4                           )
-    Colors     . SetNumberOfTuples             ( TOTALs                      )
-    Colors     . SetName                       ( "Colors"                    )
-    ##########################################################################
-    id         = 0
-    for P in PTS                                                             :
-      ########################################################################
-      Colors   . SetTuple4                     ( id , R , G , B , T          )
-      PS       = self . pjsonToVtkPoint        ( P                           )
-      Points   . SetPoint                      ( id , PS                     )
-      ########################################################################
-      id       = id + 1
-    ##########################################################################
-    FM         = FI . Face468Mesh              (                             )
-    LINEs      = WRAPPER . GenerateLines       ( FM                          )
-    ##########################################################################
-    ACTOR      . GetProperty  ( ) . SetLineWidth ( 2.0                       )
-    MODEL      . SetPoints                     ( Points                      )
-    MODEL      . SetLines                      ( LINEs                       )
-    MODEL      . GetPointData ( ) . SetScalars ( Colors                      )
-    MODEL      . Modified                      (                             )
-    ##########################################################################
-    MAPPER     . SetInputData                  ( MODEL                       )
+    MAPPER  . SetInputData                    ( MODEL                        )
     ##########################################################################
     return
   ############################################################################
+  def PrepareFace                           ( self , JSON                  ) :
+    ##########################################################################
+    KEY     = "Face"
+    self    .        FaceObjects [ KEY ]    [ "Enabled" ] = True
+    ##########################################################################
+    ACTOR   = self . FaceObjects [ KEY ]    [ "Actor"                        ]
+    MAPPER  = self . FaceObjects [ KEY ]    [ "Mapper"                       ]
+    MODEL   = self . FaceObjects [ KEY ]    [ "Model"                        ]
+    ##########################################################################
+    ITEM    = "3D"
+    PTS     = JSON                          [ ITEM                           ]
+    TOTALs  = len                           ( PTS                            )
+    ##########################################################################
+    Colors  = GenerateFaceColors            ( KEY                            ,
+                                              TOTALs                         ,
+                                              0.378                          ,
+                                              0.296                          ,
+                                              0.249                          ,
+                                              0.8                            )
+    Colors  . SetName                       ( "Colors"                       )
+    ##########################################################################
+    MODEL   . SetPoints                     ( self . FacePoints              )
+    MODEL   . SetPolys                      ( self . FacePolygons            )
+    MODEL   . GetPointData ( ) . SetScalars ( Colors                         )
+    MODEL   . Modified                      (                                )
+    ##########################################################################
+    MAPPER  . SetInputData                  ( MODEL                          )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -354,8 +376,18 @@ class VtkFace                 ( VtkWidget                                  ) :
     JSON [ "Points" ] [ "3D" ] = PTS
     self . ModelJSON  = JSON
     ##########################################################################
+    FI      = FaceItem              (                                        )
+    WRAPPER = VtkWrapper            (                                        )
+    ##########################################################################
+    FP      = FI . Face468Polygons  (                                        )
+    ##########################################################################
+    self . FacePoints   = WRAPPER . GenerateFacePoints ( 0 ,       PTS       )
+    self . FaceVertices = WRAPPER . GenerateVertices   ( 0 , len ( PTS )     )
+    self . FacePolygons = WRAPPER . GeneratePolygons   ( FP                  )
+    ##########################################################################
     self . PreparePoints            ( JSON [ "Points" ]                      )
     self . PrepareMeshes            ( JSON [ "Points" ] , "Mesh"             )
+    self . PrepareFace              ( JSON [ "Points" ]                      )
     ##########################################################################
     return
   ############################################################################
