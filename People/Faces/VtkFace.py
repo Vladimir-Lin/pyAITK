@@ -300,10 +300,10 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     Colors  = self . GenerateFaceColors     ( KEY                            ,
                                               TOTALs                         ,
-                                              0.378                          ,
-                                              0.296                          ,
-                                              0.249                          ,
-                                              0.8                            )
+                                              0.378 * 2                      ,
+                                              0.296 * 2                      ,
+                                              0.249 * 2                      ,
+                                              1.0                            )
     Colors  . SetName                       ( "Colors"                       )
     ##########################################################################
     MODEL   . SetPoints                     ( self . FacePoints              )
