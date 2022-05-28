@@ -220,17 +220,18 @@ class VtkFace                 ( VtkWidget                                  ) :
   ############################################################################
   def PreparePoints                           ( self , JSON                ) :
     ##########################################################################
-    self    .        FaceObjects [ "Points" ] [ "Enabled" ] = True
+    KEY     = "Points"
+    self    .        FaceObjects [ KEY ]      [ "Enabled" ] = True
     ##########################################################################
-    ACTOR   = self . FaceObjects [ "Points" ] [ "Actor"                      ]
-    MAPPER  = self . FaceObjects [ "Points" ] [ "Mapper"                     ]
-    MODEL   = self . FaceObjects [ "Points" ] [ "Model"                      ]
+    ACTOR   = self . FaceObjects [ KEY ]      [ "Actor"                      ]
+    MAPPER  = self . FaceObjects [ KEY ]      [ "Mapper"                     ]
+    MODEL   = self . FaceObjects [ KEY ]      [ "Model"                      ]
     ##########################################################################
     ITEM    = "3D"
     PTS     = JSON                            [ ITEM                         ]
     TOTALs  = len                             ( PTS                          )
     ##########################################################################
-    Colors  = GenerateFaceColors              ( KEY                          ,
+    Colors  = self . GenerateFaceColors       ( KEY                          ,
                                                 TOTALs                       ,
                                                 0.0                          ,
                                                 0.0                          ,
@@ -263,7 +264,7 @@ class VtkFace                 ( VtkWidget                                  ) :
     PTS     = JSON                            [ ITEM                         ]
     TOTALs  = len                             ( PTS                          )
     ##########################################################################
-    Colors  = GenerateFaceColors              ( KEY                          ,
+    Colors  = self . GenerateFaceColors       ( KEY                          ,
                                                 TOTALs                       ,
                                                 1.0                          ,
                                                 0.0                          ,
@@ -297,7 +298,7 @@ class VtkFace                 ( VtkWidget                                  ) :
     PTS     = JSON                          [ ITEM                           ]
     TOTALs  = len                           ( PTS                            )
     ##########################################################################
-    Colors  = GenerateFaceColors            ( KEY                            ,
+    Colors  = self . GenerateFaceColors     ( KEY                            ,
                                               TOTALs                         ,
                                               0.378                          ,
                                               0.296                          ,
