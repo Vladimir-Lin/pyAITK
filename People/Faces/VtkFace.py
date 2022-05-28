@@ -149,13 +149,13 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     return Points
   ############################################################################
-  def GenerateFaceColors            ( self , KEY , Total , R , G , B , A   ) :
+  def GenerateFaceColors          ( self , KEY , Total , R , G , B , A     ) :
     ##########################################################################
-    WRAP = VtkWrapper               (                                        )
-    PP   = ControlPoint             (                                        )
-    PP   . setXYZT                  ( R , G , B , A                          )
-    CC   = PP . toColorComponent4   (                                        )
-    CR   = WRAPPER . GenerateColors ( 0 , Total , CC                         )
+    WRAP = VtkWrapper             (                                          )
+    PP   = ControlPoint           (                                          )
+    PP   . setXYZT                ( R , G , B , A                            )
+    CC   = PP . toColorComponent4 (                                          )
+    CR   = WRAP . GenerateColors  ( 0 , Total , CC                           )
     ##########################################################################
     self . FaceObjects [ KEY ] [ "Color" ] = PP
     ##########################################################################
