@@ -1014,6 +1014,49 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return False
   ############################################################################
+  def RelatedGalleriesMenu       ( self , mm , Menu                        ) :
+    ##########################################################################
+    MSG = self . getMenuItem     ( "RelatedGalleries"                        )
+    LOM = mm   . addMenuFromMenu ( Menu , MSG                                )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "PersonalGallery"                         )
+    mm  . addActionFromMenu      ( LOM , 24231311 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Icons"                                   )
+    mm  . addActionFromMenu      ( LOM , 24231312 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Faces"                                   )
+    mm  . addActionFromMenu      ( LOM , 24231313 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Mouth"                                   )
+    mm  . addActionFromMenu      ( LOM , 24231314 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Eyes"                                    )
+    mm  . addActionFromMenu      ( LOM , 24231315 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Iris"                                    )
+    mm  . addActionFromMenu      ( LOM , 24231316 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Nose"                                    )
+    mm  . addActionFromMenu      ( LOM , 24231317 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Tits"                                    )
+    mm  . addActionFromMenu      ( LOM , 24231318 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Umbilicus"                               )
+    mm  . addActionFromMenu      ( LOM , 24231319 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Pussy"                                   )
+    mm  . addActionFromMenu      ( LOM , 24231320 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Tattoo"                                  )
+    mm  . addActionFromMenu      ( LOM , 24231321 , MSG                      )
+    ##########################################################################
+    MSG = self . getMenuItem     ( "Texture"                                 )
+    mm  . addActionFromMenu      ( LOM , 24231322 , MSG                      )
+    ##########################################################################
+    return mm
+  ############################################################################
   def GroupsMenu               ( self , mm , uuid , item                   ) :
     ##########################################################################
     if                         ( uuid <= 0                                 ) :
@@ -1036,39 +1079,7 @@ class PeopleView                     ( IconDock                            ) :
     mm  . addActionFromMenu    ( LOM , 24231211 , MSG                        )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "PersonalGallery"                           )
-    mm  . addActionFromMenu    ( LOM , 24231311 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Icons"                                     )
-    mm  . addActionFromMenu    ( LOM , 24231312 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Faces"                                     )
-    mm  . addActionFromMenu    ( LOM , 24231313 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Mouth"                                     )
-    mm  . addActionFromMenu    ( LOM , 24231314 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Eyes"                                      )
-    mm  . addActionFromMenu    ( LOM , 24231315 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Iris"                                      )
-    mm  . addActionFromMenu    ( LOM , 24231316 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Nose"                                      )
-    mm  . addActionFromMenu    ( LOM , 24231317 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Tits"                                      )
-    mm  . addActionFromMenu    ( LOM , 24231318 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Umbilicus"                                 )
-    mm  . addActionFromMenu    ( LOM , 24231319 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Pussy"                                     )
-    mm  . addActionFromMenu    ( LOM , 24231320 , MSG                        )
-    ##########################################################################
-    MSG = self . getMenuItem   ( "Tattoo"                                    )
-    mm  . addActionFromMenu    ( LOM , 24231321 , MSG                        )
+    mm  = self . RelatedGalleriesMenu ( mm , LOM                             )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
@@ -1234,6 +1245,17 @@ class PeopleView                     ( IconDock                            ) :
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
       relz = "Tattoo"
+      ########################################################################
+      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231322                   ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      relz = "Texture"
       ########################################################################
       self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
       ########################################################################
