@@ -558,32 +558,32 @@ class VcfItem                   ( QGraphicsItem                            , \
     ##########################################################################
     return
   ############################################################################
-  def LayerMenu                   ( self , mm                              ) :
+  def LayerMenu               ( self , mm                                  ) :
     ##########################################################################
-    msg  = self . getMenuItem     ( "LayerProperties"                        )
-    LOM  = mm   . addMenuFromMenu ( Menu , msg                               )
+    msg  = self . getMenuItem ( "LayerProperties"                            )
+    LOM  = mm   . addMenu     ( msg                                          )
     ##########################################################################
-    Z    = self . zValue          (                                          )
-    msg  = self . getMenuItem     ( "ZLevel:"                                )
-    DSB  = QDoubleSpinBox         (                                          )
-    DSB  . setPrefix              ( msg                                      )
-    DSB  . setSingleStep          ( 0.01                                     )
-    DSB  . setMinimum             ( -100000000.0                             )
-    DSB  . setMaximum             (  100000000.0                             )
-    DSB  . setValue               ( Z                                        )
-    mm   . addWidgetWithMenu      ( LOM , 56731001 , DSB                     )
+    Z    = self . zValue      (                                              )
+    msg  = self . getMenuItem ( "ZLevel:"                                    )
+    DSB  = QDoubleSpinBox     (                                              )
+    DSB  . setPrefix          ( msg                                          )
+    DSB  . setSingleStep      ( 0.01                                         )
+    DSB  . setMinimum         ( -100000000.0                                 )
+    DSB  . setMaximum         (  100000000.0                                 )
+    DSB  . setValue           ( Z                                            )
+    mm   . addWidgetWithMenu  ( LOM , 56731001 , DSB                         )
     self . ZLevelSpin       = DSB
     ##########################################################################
-    T    = self . opacity         (                                          )
-    T    = float                  ( T * 10000.0                              )
-    msg  = self . getMenuItem     ( "Transparency:"                          )
-    DSB  = QDoubleSpinBox         (                                          )
-    DSB  . setPrefix              ( msg                                      )
-    DSB  . setSingleStep          ( 0.01                                     )
-    DSB  . setMinimum             ( 0.0                                      )
-    DSB  . setMaximum             ( 10000.0                                  )
-    DSB  . setValue               ( T                                        )
-    mm   . addWidgetWithMenu      ( LOM , 56731002 , DSB                     )
+    T    = self . opacity     (                                              )
+    T    = float              ( T * 10000.0                                  )
+    msg  = self . getMenuItem ( "Transparency:"                              )
+    DSB  = QDoubleSpinBox     (                                              )
+    DSB  . setPrefix          ( msg                                          )
+    DSB  . setSingleStep      ( 0.01                                         )
+    DSB  . setMinimum         ( 0.0                                          )
+    DSB  . setMaximum         ( 10000.0                                      )
+    DSB  . setValue           ( T                                            )
+    mm   . addWidgetWithMenu  ( LOM , 56731002 , DSB                         )
     self . TransparencySpin = DSB
     ##########################################################################
     return mm
