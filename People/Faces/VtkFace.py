@@ -437,6 +437,7 @@ class VtkFace                 ( VtkWidget                                  ) :
       J = { "X" : X , "Y" : Y , "Z" : Z }
       PTS . append ( J )
     ##########################################################################
+    JSON [ "Points" ] [ "3D" ] = PTS
     self . ModelJSON  = JSON
     ##########################################################################
     FI      = FaceItem              (                                        )
@@ -444,7 +445,6 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     FP      = FI . Face468Polygons  (                                        )
     ##########################################################################
-    JSON [ "Points" ]
     self . FacePoints      = WRAPPER . GenerateFacePoints ( 0 ,       PTS    )
     self . FaceVertices    = WRAPPER . GenerateVertices   ( 0 , len ( PTS )  )
     self . FacePolygons    = WRAPPER . GeneratePolygons   ( FP               )
@@ -454,7 +454,7 @@ class VtkFace                 ( VtkWidget                                  ) :
     self . PreparePoints            ( JSON [ "Points" ]                      )
     self . PrepareMeshes            ( JSON [ "Points" ] , "Mesh"             )
     self . PrepareFace              ( JSON [ "Points" ]                      )
-    self . PrepareTexture           ( JSON [ "Points" ]                      )
+    self . PrepareTexture           (                                        )
     ##########################################################################
     return
   ############################################################################
