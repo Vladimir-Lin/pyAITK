@@ -347,8 +347,13 @@ class VtkFace                 ( VtkWidget                                  ) :
     TEXTURE = self . FaceObjects [ KEY ] [ "Texture"                         ]
     BLOB    = self . ModelJSON           [ "Texture"                         ]
     ##########################################################################
+    F       = "D:/Temp/HumanFaceTexture.png"
+    with open                    ( F , 'wb' ) as B                           :
+      B     . write              ( BLOB                                      )
+    ##########################################################################
     Reader  = vtk . vtkPNGReader (                                           )
-    Reader  . SetMemoryBuffer    ( BLOB                                      )
+    Reader  . SetFileName        ( F                                         )
+    ## Reader  . SetMemoryBuffer    ( BLOB                                      )
     ##########################################################################
     TEXTURE . SetInputConnection ( Reader . GetOutputPort ( )                )
     TEXTURE . InterpolateOn      (                                           )
