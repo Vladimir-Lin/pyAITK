@@ -331,23 +331,29 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ProduceCropImage           ( self , region                           ) :
+  def CropCurrentImage        ( self , region                              ) :
     ##########################################################################
-    X    = region . x            (                                           )
-    Y    = region . y            (                                           )
-    W    = region . width        (                                           )
-    H    = region . height       (                                           )
-    PIC  = self . PICOP . Crop   ( X , Y , W , H                             )
+    X   = region . x          (                                              )
+    Y   = region . y          (                                              )
+    W   = region . width      (                                              )
+    H   = region . height     (                                              )
+    PIC = self . PICOP . Crop ( X , Y , W , H                                )
     ##########################################################################
-    if                           ( self . LastestZ in [ False , None ]     ) :
+    return PIC
+  ############################################################################
+  def ProduceCropImage               ( self , region                       ) :
+    ##########################################################################
+    PIC    = self . CropCurrentImage (        region                         )
+    ##########################################################################
+    if                               ( self . LastestZ in [ False , None ] ) :
       self . LastestZ = self . zValue ( ) + 10.0
     else                                                                     :
       self . LastestZ = self . LastestZ   + 10.0
     ##########################################################################
-    JSON =                       { "Function"  : "AddPicture"              , \
-                                   "Picture"   : PIC                       , \
-                                   "Z"         : self . LastestZ             }
-    self . DoJsonCaller          ( JSON                                      )
+    JSON =                           { "Function" : "AddPicture"           , \
+                                       "Picture"  : PIC                    , \
+                                       "Z"        : self . LastestZ          }
+    self . DoJsonCaller              ( JSON                                  )
     ##########################################################################
     return
   ############################################################################

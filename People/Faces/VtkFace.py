@@ -114,9 +114,12 @@ class VtkFace                 ( VtkWidget                                  ) :
       self . FaceObjects [ NAME ] [ "Texture"  ] = None
       self . FaceObjects [ NAME ] [ "Enabled"  ] = False
     ##########################################################################
-    self   . FacePoints   = None
-    self   . FaceVertices = None
-    self   . FacePolygons = None
+    self   . FaceObjects [ "Texture" ] [ "Texture" ] = vtk . vtkTexture (    )
+    ##########################################################################
+    self   . FacePoints      = None
+    self   . FaceVertices    = None
+    self   . FacePolygons    = None
+    self   . FaceTextureMaps = None
     ##########################################################################
     self   . PreparePlate                   (                                )
     ##########################################################################
@@ -160,6 +163,29 @@ class VtkFace                 ( VtkWidget                                  ) :
     self . FaceObjects [ KEY ] [ "Color" ] = PP
     ##########################################################################
     return CR
+  ############################################################################
+  def GenerateTextureMappings      ( self , StartId , JSON                 ) :
+    ##########################################################################
+    WW     = JSON                  [ "Points" ] [ "Width"                    ]
+    HH     = JSON                  [ "Points" ] [ "Height"                   ]
+    PIXELs = JSON                  [ "Points" ] [ "Pixels"                   ]
+    TOTALs = len                   ( PIXELs                                  )
+    AT     = StartId
+    ##########################################################################
+    TC     = vtk . vtkFloatArray   (                                         )
+    TC     . SetNumberOfComponents ( 2                                       )
+    TC     . SetNumberOfTuples     ( TOTALs                                  )
+    TC     . SetName               ( "TextureCoordinates"                    )
+    ##########################################################################
+    for P in PIXELs                                                          :
+      ########################################################################
+      X    = float                 ( float ( P [ "X" ] ) / float ( WW )      )
+      Y    = float                 ( float ( P [ "X" ] ) / float ( HH )      )
+      TC   . SetTuple2             ( AT , X , 1.0 - Y                        )
+      ########################################################################
+      AT   = AT + 1
+    ##########################################################################
+    return TC
   ############################################################################
   def PreparePlate                      ( self                             ) :
     ##########################################################################
@@ -315,6 +341,38 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def LoadTextureFromBlob        ( self , KEY                              ) :
+    ##########################################################################
+    ACTOR   = self . FaceObjects [ KEY ] [ "Actor"                           ]
+    TEXTURE = self . FaceObjects [ KEY ] [ "Texture"                         ]
+    BLOB    = self . ModelJSON           [ "Texture"                         ]
+    ##########################################################################
+    Reader  = vtk . vtkPNGReader (                                           )
+    Reader  . SetMemoryBuffer    ( BLOB                                      )
+    ##########################################################################
+    TEXTURE . SetInputConnection ( Reader . GetOutputPort ( )                )
+    TEXTURE . InterpolateOn      (                                           )
+    ACTOR   . SetTexture         ( TEXTURE                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareTexture                       ( self                          ) :
+    ##########################################################################
+    KEY    = "Texture"
+    self   .        FaceObjects [ KEY ]    [ "Enabled" ] = True
+    ##########################################################################
+    ACTOR  = self . FaceObjects [ KEY ]    [ "Actor"                         ]
+    MAPPER = self . FaceObjects [ KEY ]    [ "Mapper"                        ]
+    MODEL  = self . FaceObjects [ KEY ]    [ "Model"                         ]
+    ##########################################################################
+    MODEL  . SetPoints                     ( self . FacePoints               )
+    MODEL  . SetPolys                      ( self . FacePolygons             )
+    MODEL  . GetPointData ( ) . SetTCoords ( self . FaceTextureMaps          )
+    MODEL  . Modified                      (                                 )
+    ##########################################################################
+    MAPPER . SetInputData                  ( MODEL                           )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -374,7 +432,6 @@ class VtkFace                 ( VtkWidget                                  ) :
       J = { "X" : X , "Y" : Y , "Z" : Z }
       PTS . append ( J )
     ##########################################################################
-    JSON [ "Points" ] [ "3D" ] = PTS
     self . ModelJSON  = JSON
     ##########################################################################
     FI      = FaceItem              (                                        )
@@ -382,13 +439,17 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     FP      = FI . Face468Polygons  (                                        )
     ##########################################################################
-    self . FacePoints   = WRAPPER . GenerateFacePoints ( 0 ,       PTS       )
-    self . FaceVertices = WRAPPER . GenerateVertices   ( 0 , len ( PTS )     )
-    self . FacePolygons = WRAPPER . GeneratePolygons   ( FP                  )
+    JSON [ "Points" ]
+    self . FacePoints      = WRAPPER . GenerateFacePoints ( 0 ,       PTS    )
+    self . FaceVertices    = WRAPPER . GenerateVertices   ( 0 , len ( PTS )  )
+    self . FacePolygons    = WRAPPER . GeneratePolygons   ( FP               )
+    self . FaceTextureMaps = self    . GenerateTextureMappings ( 0 , JSON    )
+    self . LoadTextureFromBlob      ( "Texture"                              )
     ##########################################################################
     self . PreparePoints            ( JSON [ "Points" ]                      )
     self . PrepareMeshes            ( JSON [ "Points" ] , "Mesh"             )
     self . PrepareFace              ( JSON [ "Points" ]                      )
+    self . PrepareTexture           ( JSON [ "Points" ]                      )
     ##########################################################################
     return
   ############################################################################

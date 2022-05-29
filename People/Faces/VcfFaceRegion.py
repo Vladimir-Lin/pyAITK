@@ -849,7 +849,15 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self      . MESHs = { "Mesh" : False                                     }
     if                                     ( PTS [ "Ready" ]               ) :
       ########################################################################
-      self    . MESHs = { "Mesh" : True , "Points" : PTS                     }
+      self    . CalculateGeometry          (                                 )
+      PIC     = self . PictureItem . CropCurrentImage ( self . Region        )
+      BLOB    = BytesIO                    (                                 )
+      PIC     . Image . format = "png"
+      PIC     . Image . save               ( file = BLOB                     )
+      ########################################################################
+      self    . MESHs =                    { "Mesh"    : True                ,
+                                             "Points"  : PTS                 ,
+                                             "Texture" : BLOB                }
       self    . SyncFaceMesh               (                                 )
     ##########################################################################
     self      . Notify                     ( 5                               )
