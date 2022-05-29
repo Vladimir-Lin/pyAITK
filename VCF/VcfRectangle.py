@@ -1084,7 +1084,9 @@ class VcfRectangle              ( VcfItem                                  ) :
     dX   = float                ( P1 [ "X" ] - P2 [ "X" ]                    )
     dY   = float                ( P1 [ "Y" ] - P2 [ "Y" ]                    )
     L    = math . sqrt          ( ( dX * dX ) + ( dY * dY )                  )
-    F    = float                ( float ( MM ) / L                           )
+    F    = 1.0
+    if                          ( L > 0.0000000001                         ) :
+      F  = float                ( float ( MM ) / L                           )
     ##########################################################################
     self . MeasureRule [ "Value"  ] = MM
     self . MeasureRule [ "Length" ] = L
