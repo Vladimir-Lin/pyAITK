@@ -2,7 +2,6 @@
 ##############################################################################
 from . import Biology
 from . import Commons
-from . import Finance
 from . import Languages
 from . import Networking
 from . import Scheduler
@@ -12,7 +11,6 @@ from . import TBL
 ##############################################################################
 __all__ = [ "Biology"                                                      , \
             "Commons"                                                      , \
-            "Finance"                                                      , \
             "Languages"                                                    , \
             "Networking"                                                   , \
             "Scheduler"                                                    , \
