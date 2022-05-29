@@ -347,7 +347,7 @@ class VtkFace                 ( VtkWidget                                  ) :
     TEXTURE = self . FaceObjects [ KEY ] [ "Texture"                         ]
     BLOB    = self . ModelJSON           [ "Texture"                         ]
     ##########################################################################
-    F       = "D:/Temp/HumanFaceTexture.png"
+    F       = "D:/Temp/Python/HumanFaceTexture.png"
     with open                    ( F , 'wb' ) as B                           :
       B     . write              ( BLOB                                      )
     ##########################################################################
