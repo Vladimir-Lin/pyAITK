@@ -180,7 +180,7 @@ class VtkFace                 ( VtkWidget                                  ) :
     for P in PIXELs                                                          :
       ########################################################################
       X    = float                 ( float ( P [ "X" ] ) / float ( WW )      )
-      Y    = float                 ( float ( P [ "X" ] ) / float ( HH )      )
+      Y    = float                 ( float ( P [ "Y" ] ) / float ( HH )      )
       TC   . SetTuple2             ( AT , X , 1.0 - Y                        )
       ########################################################################
       AT   = AT + 1
