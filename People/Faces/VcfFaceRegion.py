@@ -1288,9 +1288,9 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self   . RegionMenu             ( mm                                     )
     self   . RecognitionMenu        ( mm                                     )
     self   . MeasureMenu            ( mm                                     )
-    self   . PluginsMenu            ( mm                                     )
     self   . StatesMenu             ( mm                                     )
     self   . LayerMenu              ( mm                                     )
+    self   . PluginsMenu            ( mm                                     )
     ##########################################################################
     mm     . setFont                ( gview   . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )

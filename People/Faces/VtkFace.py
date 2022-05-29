@@ -349,11 +349,11 @@ class VtkFace                 ( VtkWidget                                  ) :
     ##########################################################################
     F       = "D:/Temp/Python/HumanFaceTexture.png"
     with open                    ( F , 'wb' ) as B                           :
-      B     . write              ( BLOB                                      )
+      B     . write              ( BLOB . getbuffer ( )                      )
     ##########################################################################
     Reader  = vtk . vtkPNGReader (                                           )
     Reader  . SetFileName        ( F                                         )
-    ## Reader  . SetMemoryBuffer    ( BLOB                                      )
+    ## Reader  . SetMemoryBuffer    ( BLOB . getbuffer ( )                      )
     ##########################################################################
     TEXTURE . SetInputConnection ( Reader . GetOutputPort ( )                )
     TEXTURE . InterpolateOn      (                                           )
