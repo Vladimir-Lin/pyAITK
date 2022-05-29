@@ -7,7 +7,6 @@ from . import Networking
 from . import Scheduler
 from . import Science
 from . import Society
-from . import TBL
 ##############################################################################
 __all__ = [ "Biology"                                                      , \
             "Commons"                                                      , \
@@ -15,6 +14,5 @@ __all__ = [ "Biology"                                                      , \
             "Networking"                                                   , \
             "Scheduler"                                                    , \
             "Science"                                                      , \
-            "Society"                                                      , \
-            "TBL"                                                            ]
+            "Society"                                                        ]
 ##############################################################################
