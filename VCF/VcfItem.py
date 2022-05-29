@@ -37,8 +37,11 @@ from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
+from   PyQt5 . QtWidgets              import QFileDialog
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
+from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
 from   AITK  . Qt . AbstractGui       import AbstractGui as AbstractGui
 ##############################################################################
