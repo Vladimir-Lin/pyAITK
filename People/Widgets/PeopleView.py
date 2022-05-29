@@ -1077,8 +1077,6 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     MSG = self . getMenuItem   ( "Galleries"                                 )
     mm  . addActionFromMenu    ( LOM , 24231211 , MSG                        )
-    ##########################################################################
-    mm  . addSeparatorFromMenu ( LOM                                         )
     mm  = self . RelatedGalleriesMenu ( mm , LOM                             )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
