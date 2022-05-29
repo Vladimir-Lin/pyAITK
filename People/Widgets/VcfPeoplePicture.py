@@ -514,10 +514,14 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self   . RecognitionMenu    ( mm                                         )
     self   . MeasureMenu        ( mm                                         )
     self   . StatesMenu         ( mm                                         )
+    self   . LayerMenu          ( mm                                         )
     ##########################################################################
     mm     . setFont            ( gview   . menuFont ( )                     )
     aa     = mm . exec_         ( QCursor . pos      ( )                     )
     at     = mm . at            ( aa                                         )
+    ##########################################################################
+    if                          ( self . RunLayerMenu       ( at         ) ) :
+      return True
     ##########################################################################
     if                          ( self . RunMeasureMenu     ( at         ) ) :
       return True

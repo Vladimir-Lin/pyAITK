@@ -1289,10 +1289,15 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self   . RecognitionMenu        ( mm                                     )
     self   . MeasureMenu            ( mm                                     )
     self   . PluginsMenu            ( mm                                     )
+    self   . StatesMenu             ( mm                                     )
+    self   . LayerMenu              ( mm                                     )
     ##########################################################################
     mm     . setFont                ( gview   . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
+    ##########################################################################
+    if                              ( self . RunLayerMenu       ( at )     ) :
+      return True
     ##########################################################################
     if                              ( self . RunMeasureMenu     ( at )     ) :
       return True
@@ -1307,6 +1312,9 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
       return True
     ##########################################################################
     if                              ( self . RunPluginsMenu     ( at )     ) :
+      return True
+    ##########################################################################
+    if                              ( self . RunStatesMenu      ( at )     ) :
       return True
     ##########################################################################
     if                              ( at == 1002                           ) :

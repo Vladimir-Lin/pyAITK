@@ -65,28 +65,30 @@ class VcfItem                   ( QGraphicsItem                            , \
     ##########################################################################
     return
   ############################################################################
-  def setVcfItemDefaults             ( self                                ) :
+  def setVcfItemDefaults                 ( self                            ) :
     ##########################################################################
-    self . Options      = VcfOptions (                                       )
-    self . Painter      = VcfPainter (                                       )
-    self . Printable    = True
-    self . Editable     = True
-    self . Modified     = False
-    self . Overlay      = False
-    self . Lockup       = False
-    self . Related      = [ ]
-    self . Relations    = { }
-    self . pens         = [ ]
-    self . brushes      = [ ]
-    self . fonts        = [ ]
-    self . transforms   = [ ]
-    self . WritingPaper = QRectF     (                                       )
-    self . PaperDPI     = 300
-    self . emitMenuCall = None
-    self . JsonCaller   = None
+    self . Options          = VcfOptions (                                   )
+    self . Painter          = VcfPainter (                                   )
+    self . Printable        = True
+    self . Editable         = True
+    self . Modified         = False
+    self . Overlay          = False
+    self . Lockup           = False
+    self . Related          =            [                                   ]
+    self . Relations        =            {                                   }
+    self . pens             =            [                                   ]
+    self . brushes          =            [                                   ]
+    self . fonts            =            [                                   ]
+    self . transforms       =            [                                   ]
+    self . WritingPaper     = QRectF     (                                   )
+    self . PaperDPI         = 300
+    self . emitMenuCall     = None
+    self . JsonCaller       = None
+    self . ZLevelSpin       = None
+    self . TransparencySpin = None
     ##########################################################################
-    self . setAcceptHoverEvents      ( True                                  )
-    self . setAcceptDrops            ( True                                  )
+    self . setAcceptHoverEvents          ( True                              )
+    self . setAcceptDrops                ( True                              )
     ##########################################################################
     self . setFlag ( QGraphicsItem . ItemAcceptsInputMethod , True           )
     ##########################################################################
@@ -555,6 +557,46 @@ class VcfItem                   ( QGraphicsItem                            , \
     self . emitMenuCall ( item , pos                                         )
     ##########################################################################
     return
+  ############################################################################
+  def LayerMenu                   ( self , mm                              ) :
+    ##########################################################################
+    msg  = self . getMenuItem     ( "LayerProperties"                        )
+    LOM  = mm   . addMenuFromMenu ( Menu , msg                               )
+    ##########################################################################
+    Z    = self . zValue          (                                          )
+    msg  = self . getMenuItem     ( "ZLevel:"                                )
+    DSB  = QDoubleSpinBox         (                                          )
+    DSB  . setPrefix              ( msg                                      )
+    DSB  . setSingleStep          ( 0.01                                     )
+    DSB  . setMinimum             ( -100000000.0                             )
+    DSB  . setMaximum             (  100000000.0                             )
+    DSB  . setValue               ( Z                                        )
+    mm   . addWidgetWithMenu      ( LOM , 56731001 , DSB                     )
+    self . ZLevelSpin       = DSB
+    ##########################################################################
+    T    = self . opacity         (                                          )
+    T    = float                  ( T * 10000.0                              )
+    msg  = self . getMenuItem     ( "Transparency:"                          )
+    DSB  = QDoubleSpinBox         (                                          )
+    DSB  . setPrefix              ( msg                                      )
+    DSB  . setSingleStep          ( 0.01                                     )
+    DSB  . setMinimum             ( 0.0                                      )
+    DSB  . setMaximum             ( 10000.0                                  )
+    DSB  . setValue               ( T                                        )
+    mm   . addWidgetWithMenu      ( LOM , 56731002 , DSB                     )
+    self . TransparencySpin = DSB
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunLayerMenu                         ( self , at                     ) :
+    ##########################################################################
+    Z    = self . ZLevelSpin       . value (                                 )
+    T    = self . TransparencySpin . value (                                 )
+    ##########################################################################
+    self . setZValue                       ( Z                               )
+    self . setOpacity                      ( T / 10000.0                     )
+    ##########################################################################
+    return False
   ############################################################################
   def StatesMenu               ( self , mm                                 ) :
     ##########################################################################
