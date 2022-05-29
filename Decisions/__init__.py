@@ -9,10 +9,11 @@ from . Table     import Table     as Table
 from . Tables    import Tables    as Tables
 from . Tree      import Tree      as Tree
 ##############################################################################
-__all__ = [ "Enabler"                                                        ,
-            "Condition"                                                      ,
-            "Action"                                                         ,
-            "Table"                                                          ,
-            "Tables"                                                         ,
-            "Tree"                                                           ]
+__all__ = [ "Enabler"                                                      , \
+            "Condition"                                                    , \
+            "Action"                                                       , \
+            "Table"                                                        , \
+            "Tables"                                                       , \
+            "Tree"                                                         , \
+            "Widgets"                                                        ]
 ##############################################################################
