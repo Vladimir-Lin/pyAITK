@@ -3,9 +3,10 @@
 ## AITK進入點
 ##############################################################################
 __all__ = [ "AI"                                                           , \
+            "Biology"                                                      , \
             "Calendars"                                                    , \
+            "Catalogue"                                                    , \
             "Conductions"                                                  , \
-            "Measure"                                                      , \
             "Database"                                                     , \
             "Decisions"                                                    , \
             "Documents"                                                    , \
@@ -14,11 +15,13 @@ __all__ = [ "AI"                                                           , \
             "Foundation"                                                   , \
             "Games"                                                        , \
             "Google"                                                       , \
+            "Graphics"                                                     , \
             "Math"                                                         , \
             "Measure"                                                      , \
             "Models"                                                       , \
             "Networking"                                                   , \
             "People"                                                       , \
+            "Physics"                                                      , \
             "Pictures"                                                     , \
             "Qt"                                                           , \
             "Scheduler"                                                    , \
@@ -28,6 +31,7 @@ __all__ = [ "AI"                                                           , \
             "Telecom"                                                      , \
             "UUIDs"                                                        , \
             "VCF"                                                          , \
+            "Videos"                                                       , \
             "Voice"                                                        , \
             "VTK"                                                          , \
             "Widgets"                                                        ]
