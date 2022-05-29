@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-from . Audio            import AudioPlayer      as AudioPlayer
-from . Recorder         import Recorder         as Recorder
+from . Audio    import AudioPlayer as AudioPlayer
+from . Recorder import Recorder    as Recorder
 ##############################################################################
-__all__ = [ "AudioPlayer" , "Recorder"                                       ]
+__all__ = [ "AudioPlayer"                                                  , \
+            "Recorder"                                                     , \
+            "Widgets"                                                        ]
 ##############################################################################
