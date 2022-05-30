@@ -109,6 +109,7 @@ class OrganizationGroupView       ( IconDock                               ) :
     self . LinkAction     ( "Paste"      , self . PasteItems                 )
     self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
     ##########################################################################
+    self . LinkAction     ( "Select"     , self . SelectOne                  )
     self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
     self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################
@@ -126,6 +127,7 @@ class OrganizationGroupView       ( IconDock                               ) :
     self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
     self . LinkAction      ( "Paste"      , self . PasteItems      , False   )
     self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
+    self . LinkAction      ( "Select"     , self . SelectOne       , False   )
     self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
     self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
     self . LinkVoice       ( None                                            )
