@@ -116,6 +116,7 @@ class CrowdView                   ( IconDock                               ) :
     self . LinkAction     ( "Paste"      , self . PasteItems                 )
     self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
     ##########################################################################
+    self . LinkAction     ( "Select"     , self . SelectOne                  )
     self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
     self . LinkAction     ( "SelectNone" , self . SelectNone                 )
     ##########################################################################

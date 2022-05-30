@@ -211,6 +211,7 @@ class PeopleView                     ( IconDock                            ) :
     self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
     self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
     self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################

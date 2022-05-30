@@ -56,6 +56,7 @@ class ListWidget                       ( QListWidget , VirtualGui          ) :
   pickSelectionMode       = pyqtSignal ( str                                 )
   SubmitStatusMessage     = pyqtSignal ( str , int                           )
   Leave                   = pyqtSignal ( QWidget                             )
+  emitSelectOne           = pyqtSignal (                                     )
   emitSelectAll           = pyqtSignal (                                     )
   emitSelectNone          = pyqtSignal (                                     )
   emitAssignToolTip       = pyqtSignal ( QListWidgetItem , str               )
@@ -81,6 +82,7 @@ class ListWidget                       ( QListWidget , VirtualGui          ) :
     ##########################################################################
     self . pickSelectionMode   . connect   ( self . assignSelectionMode      )
     self . SubmitStatusMessage . connect   ( self . AssignStatusMessage      )
+    self . emitSelectOne       . connect   ( self . SelectOne                )
     self . emitSelectAll       . connect   ( self . SelectAll                )
     self . emitSelectNone      . connect   ( self . SelectNone               )
     self . emitAssignToolTip   . connect   ( self . AcceptToolTip            )
@@ -484,6 +486,8 @@ class ListWidget                       ( QListWidget , VirtualGui          ) :
       it = self . item         ( i                                           )
       it . setSelected         ( False                                       )
     ##########################################################################
+    self . setCurrentItem      ( None                                        )
+    ##########################################################################
     return
   ############################################################################
   def DoSelectNone               ( self                                    ) :
@@ -509,6 +513,28 @@ class ListWidget                       ( QListWidget , VirtualGui          ) :
   def DoSelectAll                ( self                                    ) :
     ##########################################################################
     self . emitSelectAll  . emit (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def SelectOne                ( self                                      ) :
+    ##########################################################################
+    if                         ( self . count ( ) <= 0                     ) :
+      return
+    ##########################################################################
+    m    = self . Translations [ "UI::SelectOne"                             ]
+    self . Talk                ( m , self . getLocality ( )                  )
+    ##########################################################################
+    IT   = self . currentItem  (                                             )
+    if                         ( self . NotOkay ( IT )                     ) :
+      return
+    ##########################################################################
+    IT   . setSelected         ( True                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoSelectOne                ( self                                    ) :
+    ##########################################################################
+    self . emitSelectOne  . emit (                                           )
     ##########################################################################
     return
   ############################################################################
