@@ -1337,30 +1337,36 @@ class PeopleView                     ( IconDock                            ) :
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
-    if                             ( self . RunAmountIndexMenu ( )         ) :
+    OKAY   = self . RunAmountIndexMenu (                                     )
+    if                             ( OKAY                                  ) :
       ########################################################################
       self . clear                 (                                         )
       self . startup               (                                         )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
+    OKAY   = self . RunDocking     ( mm , aa                                 )
+    if                             ( OKAY                                  ) :
       return True
     ##########################################################################
-    if ( self . RunFunctionsMenu ( at , uuid , atItem ) )                    :
+    OKAY   = self . RunFunctionsMenu ( at , uuid , atItem                    )
+    if                             ( OKAY                                  ) :
       return True
     ##########################################################################
-    if ( self . RunGroupsMenu    ( at , uuid , atItem ) )                    :
+    OKAY   = self . RunGroupsMenu  ( at , uuid , atItem                      )
+    if                             ( OKAY                                  ) :
       return True
     ##########################################################################
-    if                             ( self . RunSortingMenu     ( at )      ) :
+    OKAY   = self . RunSortingMenu ( at                                      )
+    if                             ( OKAY                                  ) :
       ########################################################################
       self . clear                 (                                         )
       self . startup               (                                         )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
+    OKAY   = self . HandleLocalityMenu ( at                                  )
+    if                             ( OKAY                                  ) :
       ########################################################################
       self . clear                 (                                         )
       self . startup               (                                         )
