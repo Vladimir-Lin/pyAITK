@@ -61,6 +61,8 @@ class OrganizationListings         ( TreeDock                              ) :
   emitAllNames      = pyqtSignal   ( dict                                    )
   emitAssignAmounts = pyqtSignal   ( str , int                               )
   PeopleGroup       = pyqtSignal   ( str , int , str                         )
+  OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
+  OpenLogHistory    = pyqtSignal   ( str , str , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -80,6 +82,8 @@ class OrganizationListings         ( TreeDock                              ) :
     self . OldGrouping        = "Original"
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
+    ##########################################################################
+    self . FetchTableKey      = "OrganizationListings"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea

@@ -55,16 +55,17 @@ from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . People     . People    import People
 ##############################################################################
-class OrganizationGroupView       ( IconDock                               ) :
+class OrganizationGroupView         ( IconDock                             ) :
   ############################################################################
   HavingMenu           = 1371434312
   ############################################################################
   OrganizationSubgroup = pyqtSignal ( str , int , str                        )
   OrganizationGroup    = pyqtSignal ( str , int , str , str , QIcon          )
+  OpenVariantTables    = pyqtSignal ( str , str , int , str , dict           )
   ############################################################################
-  def __init__                    ( self , parent = None , plan = None     ) :
+  def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
-    super ( ) . __init__          (        parent        , plan              )
+    super ( ) . __init__            (        parent        , plan            )
     ##########################################################################
     self . GTYPE        = 38
     self . SortOrder    = "asc"
@@ -78,6 +79,14 @@ class OrganizationGroupView       ( IconDock                               ) :
     ## self . Grouping = "Catalog"
     ## self . Grouping = "Subgroup"
     ## self . Grouping = "Reverse"
+    ##########################################################################
+    self . FetchTableKey = "OrganizationGroupView"
+    ##########################################################################
+    self . Relation = Relation    (                                          )
+    self . Relation . set         ( "first" , 0                              )
+    self . Relation . set         ( "t1"    , 75                             )
+    self . Relation . set         ( "t2"    , 158                            )
+    self . Relation . setRelation ( "Subordination"                          )
     ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . setRelation ( "Subordination"                          )
@@ -96,44 +105,39 @@ class OrganizationGroupView       ( IconDock                               ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
   def FocusIn             ( self                                           ) :
     ##########################################################################
     if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
-    self . LinkAction     ( "Refresh"    , self . startup                    )
-    ##########################################################################
-    self . LinkAction     ( "Insert"     , self . InsertItem                 )
-    self . LinkAction     ( "Delete"     , self . DeleteItems                )
-    self . LinkAction     ( "Paste"      , self . PasteItems                 )
-    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
-    ##########################################################################
-    self . LinkAction     ( "Select"     , self . SelectOne                  )
-    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
-    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
-    ##########################################################################
-    self . LinkAction     ( "Rename"     , self . RenameItem                 )
-    ##########################################################################
+    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
+    self . AttachActions  ( True                                             )
     self . LinkVoice      ( self . CommandParser                             )
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
-    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
-    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
-    self . LinkAction      ( "Paste"      , self . PasteItems      , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    self . LinkAction      ( "Select"     , self . SelectOne       , False   )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    self . LinkVoice       ( None                                            )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
@@ -575,6 +579,50 @@ class OrganizationGroupView       ( IconDock                               ) :
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
   ############################################################################
+  def FunctionsMenu          ( self , mm , uuid , item                     ) :
+    ##########################################################################
+    msg = self . getMenuItem ( "Functions"                                   )
+    LOM = mm   . addMenu     ( msg                                           )
+    ##########################################################################
+    msg = self . getMenuItem ( "AssignTables"                                )
+    mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunFunctionsMenu                 ( self , at , uuid , item           ) :
+    ##########################################################################
+    if                                 ( at == 25351301                    ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      ########################################################################
+      if                               ( self . isTagging  (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "first"                             )
+        TYPE = self . Relation  . get  ( "t1"                                )
+        TYPE = int                     ( TYPE                                )
+        ######################################################################
+      elif                             ( self . isSubgroup (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "first"                             )
+        TYPE = self . Relation  . get  ( "t1"                                )
+        TYPE = int                     ( TYPE                                )
+        ######################################################################
+      elif                             ( self . isReverse  (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "second"                            )
+        TYPE = self . Relation  . get  ( "t2"                                )
+        TYPE = int                     ( TYPE                                )
+      ########################################################################
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         self . FetchTableKey              , \
+                                         self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
   def Menu                            ( self , pos                         ) :
     ##########################################################################
     if                                ( not self . isPrepared ( )          ) :
@@ -586,13 +634,7 @@ class OrganizationGroupView       ( IconDock                               ) :
     ##########################################################################
     self   . Notify                   ( 0                                    )
     ##########################################################################
-    items  = self . selectedItems     (                                      )
-    atItem = self . itemAt            ( pos                                  )
-    uuid   = 0
-    ##########################################################################
-    if                                ( atItem != None                     ) :
-      uuid = atItem . data            ( Qt . UserRole                        )
-      uuid = int                      ( uuid                                 )
+    items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
     mm     = MenuManager              ( self                                 )
     ##########################################################################
@@ -621,8 +663,9 @@ class OrganizationGroupView       ( IconDock                               ) :
         mm . addAction                ( 1601 ,  TRX [ "UI::EditNames" ]      )
         mm . addSeparator             (                                      )
     ##########################################################################
-    mm     = self . SortingMenu       ( mm                                   )
-    mm     = self . LocalityMenu      ( mm                                   )
+    self   . FunctionsMenu            ( mm , uuid , atItem                   )
+    self   . SortingMenu              ( mm                                   )
+    self   . LocalityMenu             ( mm                                   )
     self   . DockingMenu              ( mm                                   )
     ##########################################################################
     mm     . setFont                  ( self    . menuFont ( )               )

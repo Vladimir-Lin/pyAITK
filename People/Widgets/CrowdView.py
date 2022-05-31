@@ -103,43 +103,39 @@ class CrowdView                   ( IconDock                               ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
   def FocusIn             ( self                                           ) :
     ##########################################################################
     if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
-    self . LinkAction     ( "Refresh"    , self . startup                    )
-    ##########################################################################
-    self . LinkAction     ( "Insert"     , self . InsertItem                 )
-    self . LinkAction     ( "Delete"     , self . DeleteItems                )
-    self . LinkAction     ( "Paste"      , self . PasteItems                 )
-    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
-    ##########################################################################
-    self . LinkAction     ( "Select"     , self . SelectOne                  )
-    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
-    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
-    ##########################################################################
-    self . LinkAction     ( "Rename"     , self . RenameItem                 )
-    ##########################################################################
+    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
+    self . AttachActions  ( True                                             )
     self . LinkVoice      ( self . CommandParser                             )
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
-    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
-    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
-    self . LinkAction      ( "Paste"      , self . PasteItems      , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    self . LinkVoice       ( None                                            )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
@@ -640,13 +636,7 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     self   . Notify                   ( 0                                    )
     ##########################################################################
-    items  = self . selectedItems     (                                      )
-    atItem = self . itemAt            ( pos                                  )
-    uuid   = 0
-    ##########################################################################
-    if                                ( atItem != None                     ) :
-      uuid = atItem . data            ( Qt . UserRole                        )
-      uuid = int                      ( uuid                                 )
+    items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
     mm     = MenuManager              ( self                                 )
     ##########################################################################
