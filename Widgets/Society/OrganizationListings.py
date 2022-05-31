@@ -847,6 +847,50 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
+  def FunctionsMenu          ( self , mm , uuid , item                     ) :
+    ##########################################################################
+    msg = self . getMenuItem ( "Functions"                                   )
+    LOM = mm   . addMenu     ( msg                                           )
+    ##########################################################################
+    msg = self . getMenuItem ( "AssignTables"                                )
+    mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunFunctionsMenu                 ( self , at , uuid , item           ) :
+    ##########################################################################
+    if                                 ( at == 25351301                    ) :
+      ########################################################################
+      TITLE = self . windowTitle       (                                     )
+      ########################################################################
+      if                               ( self . isTagging  (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "first"                             )
+        TYPE = self . Relation  . get  ( "t1"                                )
+        TYPE = int                     ( TYPE                                )
+        ######################################################################
+      elif                             ( self . isSubgroup (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "first"                             )
+        TYPE = self . Relation  . get  ( "t1"                                )
+        TYPE = int                     ( TYPE                                )
+        ######################################################################
+      elif                             ( self . isReverse  (             ) ) :
+        ######################################################################
+        UUID = self . Relation  . get  ( "second"                            )
+        TYPE = self . Relation  . get  ( "t2"                                )
+        TYPE = int                     ( TYPE                                )
+      ########################################################################
+      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+                                         str ( UUID  )                     , \
+                                         TYPE                              , \
+                                         self . FetchTableKey              , \
+                                         self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
@@ -865,6 +909,9 @@ class OrganizationListings         ( TreeDock                              ) :
     return False
   ############################################################################
   def GroupsMenu                   ( self , mm , item                      ) :
+    ##########################################################################
+    if                             ( self . NotOkay ( item )               ) :
+      return mm
     ##########################################################################
     TRX    = self . Translations
     NAME   = item . text           ( 0                                       )
@@ -939,47 +986,55 @@ class OrganizationListings         ( TreeDock                              ) :
     mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     mm     . addSeparator          (                                         )
     ##########################################################################
-    if                             ( atItem not in [ False , None ]        ) :
-      ########################################################################
-      mm   = self . GroupsMenu     ( mm , atItem                             )
-    ##########################################################################
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . SortingMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
+    self   . FunctionsMenu         ( mm , uuid , atItem                      )
+    self   . GroupsMenu            ( mm ,        atItem                      )
+    self   . ColumnsMenu           ( mm                                      )
+    self   . SortingMenu           ( mm                                      )
+    self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
-    if                             ( self   . RunAmountIndexMenu ( )       ) :
+    OKAY   = self . RunAmountIndexMenu (                                     )
+    if                             ( OKAY                                  ) :
       ########################################################################
       self . clear                 (                                         )
       self . startup               (                                         )
       ########################################################################
       return
     ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
+    OKAY   = self . RunDocking     ( mm , aa                                 )
+    if                             ( OKAY                                  ) :
       return True
     ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
+    OKAY   = self . RunFunctionsMenu  ( at , uuid , atItem                   )
+    if                             ( OKAY                                  ) :
+      return True
+    ##########################################################################
+    OKAY   = self . HandleLocalityMenu ( at                                  )
+    if                             ( OKAY                                  ) :
       ########################################################################
       self . clear                 (                                         )
       self . startup               (                                         )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( self . RunColumnsMenu     ( at )      ) :
+    OKAY   = self . RunColumnsMenu ( at                                      )
+    if                             ( OKAY                                  ) :
       return True
     ##########################################################################
-    if                             ( self . RunSortingMenu     ( at )      ) :
+    OKAY   = self . RunSortingMenu ( at                                      )
+    if                             ( OKAY                                  ) :
       ########################################################################
       self . clear                 (                                         )
       self . startup               (                                         )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( self . RunGroupsMenu ( at , atItem )  ) :
+    OKAY   = self . RunGroupsMenu  ( at , atItem                             )
+    if                             ( OKAY                                  ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
