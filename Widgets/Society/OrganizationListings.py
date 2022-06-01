@@ -975,13 +975,7 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     self   . Notify                ( 0                                       )
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . currentItem    (                                         )
-    uuid   = 0
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
+    items , atItem , uuid = self . GetMenuDetails ( pos , 0                  )
     ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
