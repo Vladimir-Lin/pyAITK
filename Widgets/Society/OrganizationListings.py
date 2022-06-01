@@ -71,7 +71,7 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . GType              = 40
+    self . GType              = 38
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 28
@@ -940,7 +940,7 @@ class OrganizationListings         ( TreeDock                              ) :
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
       head = item . text           ( 0                                       )
-      self . PeopleGroup . emit  ( head , self . GType , str ( uuid )        )
+      self . PeopleGroup . emit    ( head , self . GType , str ( uuid )      )
       ########################################################################
       return True
     ##########################################################################
