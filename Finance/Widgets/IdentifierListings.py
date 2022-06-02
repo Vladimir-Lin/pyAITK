@@ -70,8 +70,11 @@ class IdentifierListings           ( TreeDock                              ) :
     self . StartId            = 0
     self . Amount             = 40
     self . SortOrder          = "desc"
+    self . Uuid               = 0
     self . UUIDs              =    [                                         ]
     self . TypeMaps           =    {                                         }
+    ##########################################################################
+    self . Method             = "All"
     ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"

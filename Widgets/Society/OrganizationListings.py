@@ -64,6 +64,7 @@ class OrganizationListings         ( TreeDock                              ) :
   AlbumGroup        = pyqtSignal   ( str , int , str                         )
   OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
   OpenLogHistory    = pyqtSignal   ( str , str , str                         )
+  OpenIdentifiers   = pyqtSignal   ( str , str , int                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -949,7 +950,7 @@ class OrganizationListings         ( TreeDock                              ) :
       if                               ( self . isOriginal ( )             ) :
         ######################################################################
         UUID = "0"
-        TYPE = 38
+        TYPE = self . GType
         ######################################################################
       elif                             ( self . isSubordination (        ) ) :
         ######################################################################
@@ -1069,6 +1070,10 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 38523001                        ) :
       ########################################################################
+      uuid = item . data           ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
+      head = item . text           ( 0                                       )
+      self . OpenIdentifiers . emit ( head , str ( uuid ) , self . GType     )
       ########################################################################
       return True
     ##########################################################################
