@@ -405,8 +405,10 @@ class OrganizationListings         ( TreeDock                              ) :
     self   . emitAllNames . emit      ( JSON                                 )
     ##########################################################################
     if                                ( not self . isColumnHidden ( 1 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
+      VAL  =                          ( UUIDs ,                              )
+      self . Go                       ( self . ReportBelongings , VAL        )
+    ##########################################################################
+    self   . Notify                   ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -562,7 +564,7 @@ class OrganizationListings         ( TreeDock                              ) :
                                        mimeData                            , \
                                        mousePos                            ) :
     ##########################################################################
-    if                               ( self == sourceWidget                ) :
+    if                               ( self == source                      ) :
       return False
     ##########################################################################
     RDN    = self . RegularDropNew   ( mimeData                              )
@@ -597,7 +599,7 @@ class OrganizationListings         ( TreeDock                              ) :
     atItem = self . itemAt     ( mousePos                                    )
     mtype  = self . DropInJSON [ "Mime"                                      ]
     ##########################################################################
-    if                         ( mtype in [ "people/uuids"               ] ) :
+    if                         ( mtype  in [ "people/uuids"              ] ) :
       ########################################################################
       if                       ( atItem in [ False , None ]                ) :
         return False
@@ -710,7 +712,7 @@ class OrganizationListings         ( TreeDock                              ) :
     self   . ShowStatus         ( MSG                                        )
     self   . TtsTalk            ( MSG , 1002                                 )
     ##########################################################################
-    RELTAB = self . Tables      [ "Relation"                                 ]
+    RELTAB = self . Tables      [ "RelationEditing"                          ]
     DB     . LockWrites         ( [ RELTAB                                 ] )
     ##########################################################################
     if                          ( self . isSubordination ( )               ) :
@@ -738,7 +740,7 @@ class OrganizationListings         ( TreeDock                              ) :
     if                                ( len ( UUIDs ) <= 0                 ) :
       return
     ##########################################################################
-    RELTAB = self . Tables            [ "Relation"                           ]
+    RELTAB = self . Tables            [ "RelationEditing"                    ]
     SQLs   =                          [                                      ]
     ##########################################################################
     for UUID in UUIDs                                                        :
@@ -773,9 +775,10 @@ class OrganizationListings         ( TreeDock                              ) :
       return
     ##########################################################################
     ORGTAB = self . Tables    [ "Organizations"                              ]
+    RELTAB = self . Tables    [ "RelationEditing"                            ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ ORGTAB , NAMTAB                          ] )
+    DB     . LockWrites       ( [ ORGTAB , RELTAB , NAMTAB                 ] )
     ##########################################################################
     uuid   = int              ( uuid                                         )
     if                        ( uuid <= 0                                  ) :
@@ -784,6 +787,16 @@ class OrganizationListings         ( TreeDock                              ) :
       DB   . AppendUuid       ( ORGTAB , uuid                                )
     ##########################################################################
     self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
+    ##########################################################################
+    if                        ( self . isSubordination ( )                 ) :
+      ########################################################################
+      self . Relation . set   ( "second" , uuid                              )
+      self . Relation . Join  ( DB       , RELTAB                            )
+      ########################################################################
+    elif                      ( self . isReverse       ( )                 ) :
+      ########################################################################
+      self . Relation . set   ( "first"  , uuid                              )
+      self . Relation . Join  ( DB       , RELTAB                            )
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################
@@ -831,39 +844,46 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage          ( self                                  ) :
+  def UpdateLocalityUsage           ( self                                 ) :
     ##########################################################################
-    if                             ( not self . isGrouping ( )             ) :
+    if                              ( not self . isGrouping ( )            ) :
       return False
     ##########################################################################
-    DB     = self . ConnectDB      (                                         )
-    if                             ( DB == None                            ) :
+    DB      = self . ConnectDB      (                                        )
+    if                              ( DB == None                           ) :
       return False
     ##########################################################################
-    PAMTAB = self . Tables         [ "Parameters"                            ]
-    DB     . LockWrites            ( [ PAMTAB ]                              )
+    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    DB      . LockWrites            ( [ PAMTAB ]                             )
     ##########################################################################
-    if                             ( self . isOriginal      ( )            ) :
-      ########################################################################
-      UUID = "0"
-      TYPE = self . GType
-      ########################################################################
-    elif                           ( self . isSubordination ( )            ) :
-      ########################################################################
-      TYPE = self . Relation . get ( "t1"                                    )
-      UUID = self . Relation . get ( "first"                                 )
-      ########################################################################
-    elif                           ( self . isReverse       ( )            ) :
-      ########################################################################
-      TYPE = self . Relation . get ( "t2"                                    )
-      UUID = self . Relation . get ( "second"                                )
+    CUD     = False
     ##########################################################################
-    SCOPE  = self . Grouping
-    SCOPE  = f"OrganizationListings-{SCOPE}"
-    self   . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
+    if                              ( self . isOriginal      ( )           ) :
+      ########################################################################
+      UUID  = "0"
+      TYPE  = self . GType
+      CUD   = True
+      ########################################################################
+    elif                            ( self . isSubordination ( )           ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t1"                                   )
+      UUID  = self . Relation . get ( "first"                                )
+      CUD   = True
+      ########################################################################
+    elif                            ( self . isReverse       ( )           ) :
+      ########################################################################
+      TYPE  = self . Relation . get ( "t2"                                   )
+      UUID  = self . Relation . get ( "second"                               )
+      CUD   = True
     ##########################################################################
-    DB     . UnlockTables          (                                         )
-    DB     . Close                 (                                         )
+    if                              ( CUD                                  ) :
+      ########################################################################
+      SCOPE = self . Grouping
+      SCOPE = f"OrganizationListings-{SCOPE}"
+      self  . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    ##########################################################################
+    DB      . UnlockTables          (                                        )
+    DB      . Close                 (                                        )
     ##########################################################################
     return True
   ############################################################################
@@ -885,6 +905,9 @@ class OrganizationListings         ( TreeDock                              ) :
       ########################################################################
       TYPE = self . Relation . get ( "t2"                                    )
       UUID = self . Relation . get ( "second"                                )
+      ########################################################################
+    else                                                                     :
+      return
     ##########################################################################
     SCOPE  = self . Grouping
     SCOPE  = f"OrganizationListings-{SCOPE}"
@@ -938,6 +961,9 @@ class OrganizationListings         ( TreeDock                              ) :
         UUID = self . Relation  . get  ( "second"                            )
         TYPE = self . Relation  . get  ( "t2"                                )
         TYPE = int                     ( TYPE                                )
+        ######################################################################
+      else                                                                   :
+        return False
       ########################################################################
       self  . OpenVariantTables . emit ( str ( TITLE )                     , \
                                          str ( UUID  )                     , \
