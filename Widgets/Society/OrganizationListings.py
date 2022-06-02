@@ -669,7 +669,7 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     TYPE    = "Organization"
     PER     = People                (                                        )
-    RELTAB  = self . Tables         [ "RelationPeople"                       ]
+    RELTAB  = self . Tables         [ "RelationEditing"                      ]
     DB      . LockWrites            ( [ RELTAB                             ] )
     PER     . ConnectToPeople       ( DB , RELTAB , UUID , TYPE , UUIDs      )
     DB      . UnlockTables          (                                        )
@@ -831,14 +831,52 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ReloadLocality               ( self , DB                             ) :
+  def UpdateLocalityUsage          ( self                                  ) :
     ##########################################################################
     if                             ( not self . isGrouping ( )             ) :
-      return
+      return False
+    ##########################################################################
+    DB     = self . ConnectDB      (                                         )
+    if                             ( DB == None                            ) :
+      return False
+    ##########################################################################
+    PAMTAB = self . Tables         [ "Parameters"                            ]
+    DB     . LockWrites            ( [ PAMTAB ]                              )
+    ##########################################################################
+    if                             ( self . isOriginal      ( )            ) :
+      ########################################################################
+      UUID = "0"
+      TYPE = self . GType
+      ########################################################################
+    elif                           ( self . isSubordination ( )            ) :
+      ########################################################################
+      TYPE = self . Relation . get ( "t1"                                    )
+      UUID = self . Relation . get ( "first"                                 )
+      ########################################################################
+    elif                           ( self . isReverse       ( )            ) :
+      ########################################################################
+      TYPE = self . Relation . get ( "t2"                                    )
+      UUID = self . Relation . get ( "second"                                )
+    ##########################################################################
+    SCOPE  = self . Grouping
+    SCOPE  = f"OrganizationListings-{SCOPE}"
+    self   . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
+    ##########################################################################
+    DB     . UnlockTables          (                                         )
+    DB     . Close                 (                                         )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ReloadLocality               ( self , DB                             ) :
     ##########################################################################
     PAMTAB = self . Tables         [ "Parameters"                            ]
     ##########################################################################
-    if                             ( self . isSubordination ( )            ) :
+    if                             ( self . isOriginal      ( )            ) :
+      ########################################################################
+      UUID = "0"
+      TYPE = self . GType
+      ########################################################################
+    elif                           ( self . isSubordination ( )            ) :
       ########################################################################
       TYPE = self . Relation . get ( "t1"                                    )
       UUID = self . Relation . get ( "first"                                 )
