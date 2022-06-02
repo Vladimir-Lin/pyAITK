@@ -228,7 +228,6 @@ class OrganizationGroupView         ( IconDock                             ) :
     atItem  = self . itemAt         ( mousePos                               )
     CNT     = len                   ( UUIDs                                  )
     title   = sourceWidget . windowTitle (                                   )
-    print(mtype)
     ##########################################################################
     if                              ( mtype in [ "picture/uuids"         ] ) :
       ########################################################################
@@ -238,11 +237,6 @@ class OrganizationGroupView         ( IconDock                             ) :
       ########################################################################
       if                            ( self . isTagging ( )                 ) :
         return False
-      ########################################################################
-      if                            ( atItem in [ False , None ]           ) :
-        return False
-      ########################################################################
-      self  . ShowMenuItemTitleStatus ( "JoinOrganization"  , title , CNT    )
     ##########################################################################
     elif                            ( mtype in ["organizationgroup/uuids"] ) :
       ########################################################################
@@ -253,9 +247,39 @@ class OrganizationGroupView         ( IconDock                             ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
-    print("dropMoving")
-    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+    ##########################################################################
+    if                                ( self . droppingAction              ) :
+      return False
+    ##########################################################################
+    mtype   = self . DropInJSON       [ "Mime"                               ]
+    UUIDs   = self . DropInJSON       [ "UUIDs"                              ]
+    atItem  = self . itemAt           ( mousePos                             )
+    CNT     = len                     ( UUIDs                                )
+    title   = sourceWidget . windowTitle (                                   )
+    ##########################################################################
+    if                                ( mtype in [ "organization/uuids" ]  ) :
+      ########################################################################
+      if                              ( self . isTagging ( )               ) :
+        return False
+      ########################################################################
+      if                              ( self . NotOkay ( atItem )          ) :
+        return False
+      ########################################################################
+      self  . ShowMenuItemTitleStatus ( "JoinOrganization"  , title , CNT    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( sourceWidget != self               ) :
+      return True
+    ##########################################################################
+    if                                ( self . NotOkay      ( atItem     ) ) :
+      return True
+    ##########################################################################
+    if                                ( atItem . isSelected (            ) ) :
+      return False
+    ##########################################################################
+    return True
   ############################################################################
   def acceptOrganizationGroupsDrop ( self                                  ) :
     return True

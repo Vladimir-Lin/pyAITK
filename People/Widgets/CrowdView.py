@@ -243,11 +243,6 @@ class CrowdView                   ( IconDock                               ) :
       ########################################################################
       if                            ( self . isTagging ( )                 ) :
         return False
-      ########################################################################
-      if                            ( atItem in [ False , None ]           ) :
-        return False
-      ########################################################################
-      self  . ShowMenuItemTitleStatus ( "JoinPeople"  , title , CNT          )
     ##########################################################################
     elif                            ( mtype in [ "crowd/uuids" ]           ) :
       ########################################################################
@@ -258,8 +253,39 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
-    return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
+  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+    ##########################################################################
+    if                                ( self . droppingAction              ) :
+      return False
+    ##########################################################################
+    mtype   = self . DropInJSON       [ "Mime"                               ]
+    UUIDs   = self . DropInJSON       [ "UUIDs"                              ]
+    atItem  = self . itemAt           ( mousePos                             )
+    CNT     = len                     ( UUIDs                                )
+    title   = sourceWidget . windowTitle (                                   )
+    ##########################################################################
+    if                                ( mtype in [ "people/uuids" ]        ) :
+      ########################################################################
+      if                              ( self . isTagging ( )               ) :
+        return False
+      ########################################################################
+      if                              ( self . NotOkay ( atItem )          ) :
+        return False
+      ########################################################################
+      self  . ShowMenuItemTitleStatus ( "JoinPeople"  , title , CNT          )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( sourceWidget != self               ) :
+      return True
+    ##########################################################################
+    if                                ( self . NotOkay      ( atItem     ) ) :
+      return True
+    ##########################################################################
+    if                                ( atItem . isSelected (            ) ) :
+      return False
+    ##########################################################################
+    return True
   ############################################################################
   def acceptCrowdsDrop  ( self                                             ) :
     return True
