@@ -874,6 +874,9 @@ class OrganizationListings         ( TreeDock                              ) :
     msg = self . getMenuItem ( "AssignTables"                                )
     mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
     ##########################################################################
+    msg = self . getMenuItem ( "Search"                                      )
+    mm  . addActionFromMenu  ( LOM , 25351401 , msg                          )
+    ##########################################################################
     return mm
   ############################################################################
   def RunFunctionsMenu                 ( self , at , uuid , item           ) :
@@ -904,6 +907,10 @@ class OrganizationListings         ( TreeDock                              ) :
                                          self . FetchTableKey              , \
                                          self . Tables                       )
       ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 25351401                    ) :
+      self . Search                    (                                     )
       return True
     ##########################################################################
     return False
@@ -1033,9 +1040,6 @@ class OrganizationListings         ( TreeDock                              ) :
     self   . AppendRenameAction    ( mm , 1102                               )
     self   . AppendDeleteAction    ( mm , 1103                               )
     ##########################################################################
-    msg    = self . getMenuItem    ( "Search"                                )
-    mm     . addAction             ( 1104 , msg                              )
-    ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
       ########################################################################
       if                           ( self . EditAllNames != None           ) :
@@ -1120,10 +1124,6 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1103                            ) :
       self . DeleteItems           (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1104                            ) :
-      self . Search                (                                         )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
