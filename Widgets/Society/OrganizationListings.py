@@ -220,7 +220,7 @@ class OrganizationListings         ( TreeDock                              ) :
     if                        ( not self . isGrouping ( )                  ) :
       return
     ##########################################################################
-    self . defaultDeleteItems ( self . RemoveItems                           )
+    self . defaultDeleteItems ( 0 , self . RemoveItems                       )
     ##########################################################################
     return
   ############################################################################
