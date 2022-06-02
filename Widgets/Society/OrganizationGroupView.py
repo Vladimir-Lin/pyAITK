@@ -472,7 +472,7 @@ class OrganizationGroupView         ( IconDock                             ) :
     TAGTAB   = self . Tables             [ "Tags"                            ]
     SUBTAB   = self . Tables             [ "Subgroups"                       ]
     NAMTAB   = self . Tables             [ "NamesEditing"                    ]
-    RELTAB   = self . Tables             [ "RelationPeople"                  ]
+    RELTAB   = self . Tables             [ "RelationEditing"                 ]
     TABLES   =                           [ NAMTAB , RELTAB                   ]
     ##########################################################################
     if                                   ( self . isTagging ( )            ) :
