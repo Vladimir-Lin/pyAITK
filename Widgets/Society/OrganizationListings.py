@@ -925,28 +925,35 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def GroupsMenu              ( self , mm , item                           ) :
+  def GroupsMenu                ( self , mm , item                         ) :
     ##########################################################################
-    if                        ( self . NotOkay ( item )                    ) :
+    if                          ( self . NotOkay ( item )                  ) :
       return mm
     ##########################################################################
     TRX  = self . Translations
-    NAME = item . text        ( 0                                            )
-    FMT  = TRX                [ "UI::Belongs"                                ]
-    MSG  = FMT . format       ( NAME                                         )
-    COL  = mm . addMenu       ( MSG                                          )
+    NAME = item . text          ( 0                                          )
+    FMT  = TRX                  [ "UI::Belongs"                              ]
+    MSG  = FMT . format         ( NAME                                       )
+    COL  = mm . addMenu         ( MSG                                        )
     ##########################################################################
-    msg  = self . getMenuItem ( "Crowds"                                     )
-    mm   . addActionFromMenu  ( COL , 38521001 , msg                         )
+    msg  = self . getMenuItem   ( "Crowds"                                   )
+    mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
     ##########################################################################
-    msg  = self . getMenuItem ( "Films"                                      )
-    mm   . addActionFromMenu  ( COL , 38521002 , msg                         )
+    msg  = self . getMenuItem   ( "Films"                                    )
+    mm   . addActionFromMenu    ( COL , 38521002 , msg                       )
     ##########################################################################
-    msg  = self . getMenuItem ( "Description"                                )
-    mm   . addActionFromMenu  ( COL , 38521003 , msg                         )
+    mm   . addSeparatorFromMenu ( COL                                        )
     ##########################################################################
-    msg  = self . getMenuItem ( "Address"                                    )
-    mm   . addActionFromMenu  ( COL , 38521004 , msg                         )
+    msg  = self . getMenuItem   ( "Description"                              )
+    mm   . addActionFromMenu    ( COL , 38522001 , msg                       )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Address"                                  )
+    mm   . addActionFromMenu    ( COL , 38522002 , msg                       )
+    ##########################################################################
+    mm   . addSeparatorFromMenu ( COL                                        )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Identifiers"                              )
+    mm   . addActionFromMenu    ( COL , 38523001 , msg                       )
     ##########################################################################
     return mm
   ############################################################################
@@ -970,7 +977,7 @@ class OrganizationListings         ( TreeDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38521003                        ) :
+    if                             ( at == 38522001                        ) :
       ########################################################################
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
@@ -979,12 +986,17 @@ class OrganizationListings         ( TreeDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38521004                        ) :
+    if                             ( at == 38522002                        ) :
       ########################################################################
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
       head = item . text           ( 0                                       )
       self . OpenLogHistory . emit ( head , str ( uuid ) , "Address"         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 38523001                        ) :
+      ########################################################################
       ########################################################################
       return True
     ##########################################################################
