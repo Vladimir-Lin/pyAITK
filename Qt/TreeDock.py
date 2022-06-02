@@ -72,6 +72,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     self . LoopRunning        = True
     self . SpinStartId        = None
     self . SpinAmount         = None
+    self . FetchTableKey      = "Tables"
     ##########################################################################
     self . Grouping           = "Original"
     self . OldGrouping        = "Original"
