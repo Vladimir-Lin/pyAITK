@@ -365,7 +365,7 @@ class OrganizationGroupView         ( IconDock                             ) :
   def OrganizationAppending ( self , atUuid , NAME , JSON                  ) :
     ##########################################################################
     T1   = "Subgroup"
-    TAB  = "RelationPeople"
+    TAB  = "RelationEditing"
     ##########################################################################
     OK   = self . AppendingOrganizationIntoT1 ( atUuid                     , \
                                                 NAME                       , \

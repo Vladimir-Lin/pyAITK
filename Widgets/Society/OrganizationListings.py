@@ -1091,16 +1091,15 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    mm     . addSeparator          (                                         )
-    ##########################################################################
-    self   . AppendRefreshAction   ( mm , 1001                               )
-    ##########################################################################
     if                             ( self . isSearching ( )                ) :
       ########################################################################
       msg  = self . getMenuItem    ( "NotSearch"                             )
       mm   . addAction             ( 1002 , msg                              )
     ##########################################################################
+    mm     = self . AmountIndexMenu ( mm                                     )
+    mm     . addSeparator          (                                         )
+    ##########################################################################
+    self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
     self   . AppendRenameAction    ( mm , 1102                               )
     self   . AppendDeleteAction    ( mm , 1103                               )
