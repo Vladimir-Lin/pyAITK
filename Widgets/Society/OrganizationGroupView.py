@@ -228,6 +228,7 @@ class OrganizationGroupView         ( IconDock                             ) :
     atItem  = self . itemAt         ( mousePos                               )
     CNT     = len                   ( UUIDs                                  )
     title   = sourceWidget . windowTitle (                                   )
+    print(mtype)
     ##########################################################################
     if                              ( mtype in [ "picture/uuids"         ] ) :
       ########################################################################
@@ -253,6 +254,7 @@ class OrganizationGroupView         ( IconDock                             ) :
     return RDN
   ############################################################################
   def dropMoving             ( self , sourceWidget , mimeData , mousePos   ) :
+    print("dropMoving")
     return self . defaultDropMoving ( sourceWidget , mimeData , mousePos     )
   ############################################################################
   def acceptOrganizationGroupsDrop ( self                                  ) :
