@@ -471,16 +471,19 @@ class OrganizationGroupView         ( IconDock                             ) :
     ##########################################################################
     TAGTAB   = self . Tables             [ "Tags"                            ]
     SUBTAB   = self . Tables             [ "Subgroups"                       ]
-    NAMTAB   = self . Tables             [ "Names"                           ]
+    NAMTAB   = self . Tables             [ "NamesEditing"                    ]
     RELTAB   = self . Tables             [ "RelationPeople"                  ]
     TABLES   =                           [ NAMTAB , RELTAB                   ]
     ##########################################################################
     if                                   ( self . isTagging ( )            ) :
+      ########################################################################
       TABLES . append                    ( TAGTAB                            )
       T1     =  75
       T2     = 158
       RR     =   1
+      ########################################################################
     else                                                                     :
+      ########################################################################
       TABLES . append                    ( SUBTAB                            )
       T1     = self . Relation . get     ( "t1"                              )
       T2     = self . Relation . get     ( "t2"                              )
@@ -739,7 +742,7 @@ class OrganizationGroupView         ( IconDock                             ) :
     ##########################################################################
     if                                ( at == 1601                         ) :
       ########################################################################
-      NAM  = self . Tables            [ "Names"                              ]
+      NAM  = self . Tables            [ "NamesEditing"                       ]
       self . EditAllNames             ( self , "Organizations" , uuid , NAM  )
       ########################################################################
       return True
