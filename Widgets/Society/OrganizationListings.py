@@ -59,7 +59,7 @@ class OrganizationListings         ( TreeDock                              ) :
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
+  emitAssignAmounts = pyqtSignal   ( str , int , int                         )
   PeopleGroup       = pyqtSignal   ( str , int , str                         )
   AlbumGroup        = pyqtSignal   ( str , int , str                         )
   ShowWebPages      = pyqtSignal   ( str , int , str , str , QIcon           )
@@ -329,13 +329,13 @@ class OrganizationListings         ( TreeDock                              ) :
     return NAMEs
   ############################################################################
   @pyqtSlot                (        str  , int                               )
-  def AssignAmounts        ( self , UUID , Amounts                         ) :
+  def AssignAmounts        ( self , UUID , Amounts , Column                ) :
     ##########################################################################
     IT = self . uuidAtItem ( UUID , 0                                        )
     if                     ( IT in [ False , None ]                        ) :
       return
     ##########################################################################
-    IT . setText           ( 1 , str ( Amounts )                             )
+    IT . setText           ( Column , str ( Amounts )                        )
     ##########################################################################
     return
   ############################################################################
@@ -356,7 +356,30 @@ class OrganizationListings         ( TreeDock                              ) :
       REL  . set                      ( "first" , UUID                       )
       CNT  = REL . CountSecond        ( DB , RELTAB                          )
       ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT                   )
+      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
+    ##########################################################################
+    DB     . Close                    (                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def ReportVideos                    ( self , UUIDs                       ) :
+    ##########################################################################
+    time   . sleep                    ( 1.0                                  )
+    ##########################################################################
+    RELTAB = self . Tables            [ "RelationVideos"                     ]
+    REL    = Relation                 (                                      )
+    REL    . setT1                    ( "Organization"                       )
+    REL    . setT2                    ( "Album"                              )
+    REL    . setRelation              ( "Subordination"                      )
+    ##########################################################################
+    DB     = self . ConnectDB         (                                      )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      REL  . set                      ( "first" , UUID                       )
+      CNT  = REL . CountSecond        ( DB , RELTAB                          )
+      ########################################################################
+      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 2               )
     ##########################################################################
     DB     . Close                    (                                      )
     ##########################################################################
@@ -485,6 +508,10 @@ class OrganizationListings         ( TreeDock                              ) :
     if                                ( not self . isColumnHidden ( 1 )    ) :
       VAL  =                          ( UUIDs ,                              )
       self . Go                       ( self . ReportBelongings , VAL        )
+    ##########################################################################
+    if                                ( not self . isColumnHidden ( 2 )    ) :
+      VAL  =                          ( UUIDs ,                              )
+      self . Go                       ( self . ReportVideos , VAL            )
     ##########################################################################
     self   . Notify                   ( 5                                    )
     ##########################################################################
