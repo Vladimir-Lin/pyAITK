@@ -127,6 +127,7 @@ class WebPageListings              ( TreeDock                              ) :
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
     self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
     self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
     self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
@@ -221,6 +222,21 @@ class WebPageListings              ( TreeDock                              ) :
     self . defaultDeleteItems ( 0 , self . RemoveItems                       )
     ##########################################################################
     return
+  ############################################################################
+  def PasteItems ( self                                                    ) :
+    ##########################################################################
+    mime = qApp . clipboard ( ) . mimeData (                                 )
+    if           ( self . NotOkay ( mime )                                 ) :
+      return
+    ##########################################################################
+    if           ( not mime . hasUrls ( )                                  ) :
+      return
+    ##########################################################################
+    self . Go    ( self . JoinURLs ,  ( mime . urls ( ) , )                  )
+    ##########################################################################
+    return
+  ############################################################################
+  
   ############################################################################
   @pyqtSlot                     (                                            )
   def nameChanged               ( self                                     ) :

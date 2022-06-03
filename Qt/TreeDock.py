@@ -460,21 +460,21 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return
   ############################################################################
-  def DoCopyToClipboard             ( self                                 ) :
+  def DoCopyToClipboard              ( self                                ) :
     ##########################################################################
-    item   = self . currentItem     (                                        )
-    if                              ( item in [ False , None ]             ) :
+    item   = self . currentItem      (                                       )
+    if                               ( item in [ False , None ]            ) :
       return
     ##########################################################################
-    column = self . currentColumn   (                                        )
-    if                              ( column < 0                           ) :
+    column = self . currentColumn    (                                       )
+    if                               ( column < 0                          ) :
       return
     ##########################################################################
-    MSG    = item . text            ( column                                 )
-    LID    = self . getLocality     (                                        )
-    qApp   . clipboard ( ). setText ( MSG                                    )
+    MSG    = item . text             ( column                                )
+    LID    = self . getLocality      (                                       )
+    qApp   . clipboard ( ) . setText ( MSG                                   )
     ##########################################################################
-    self   . TtsTalk                ( MSG , LID                              )
+    self   . TtsTalk                 ( MSG , LID                             )
     ##########################################################################
     return
   ############################################################################
