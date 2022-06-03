@@ -1096,11 +1096,14 @@ class OrganizationListings         ( TreeDock                              ) :
     MSG  = FMT . format         ( NAME                                       )
     COL  = mm . addMenu         ( MSG                                        )
     ##########################################################################
-    msg  = self . getMenuItem   ( "Crowds"                                   )
+    msg  = self . getMenuItem   ( "CopyOrganizationUuid"                     )
     mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
     ##########################################################################
-    msg  = self . getMenuItem   ( "Films"                                    )
+    msg  = self . getMenuItem   ( "Crowds"                                   )
     mm   . addActionFromMenu    ( COL , 38521002 , msg                       )
+    ##########################################################################
+    msg  = self . getMenuItem   ( "Films"                                    )
+    mm   . addActionFromMenu    ( COL , 38521003 , msg                       )
     ##########################################################################
     mm   . addSeparatorFromMenu ( COL                                        )
     ##########################################################################
@@ -1131,12 +1134,20 @@ class OrganizationListings         ( TreeDock                              ) :
       ########################################################################
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
+      qApp . clipboard ( ). setText ( f"{uuid}"                              )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 38521002                        ) :
+      ########################################################################
+      uuid = item . data           ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
       head = item . text           ( 0                                       )
       self . PeopleGroup . emit    ( head , self . GType , str ( uuid )      )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38521002                        ) :
+    if                             ( at == 38521003                        ) :
       ########################################################################
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
