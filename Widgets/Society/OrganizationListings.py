@@ -1003,13 +1003,14 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def OpenWebPageListings      ( self , uuid , item , Related              ) :
+  def OpenWebPageListings      ( self , item , Related                     ) :
     ##########################################################################
     text = item . text         ( 0                                           )
-    icon = self . windowIcon   (                                             )
-    Typi = int                 ( self . GType                                )
+    uuid = item . data         ( 0    , Qt . UserRole                        )
     uuid = int                 ( uuid                                        )
     xsid = str                 ( uuid                                        )
+    Typi = int                 ( self . GType                                )
+    icon = self . windowIcon   (                                             )
     ##########################################################################
     self . ShowWebPages . emit ( text , Typi , xsid , Related , icon         )
     ##########################################################################
@@ -1173,13 +1174,13 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 38524001                        ) :
       ########################################################################
-      self . OpenWebPageListings   ( uuid , item , "Subordination"           )
+      self . OpenWebPageListings   ( item , "Subordination"                  )
       ########################################################################
       return True
     ##########################################################################
     if                             ( at == 38524002                        ) :
       ########################################################################
-      self . OpenWebPageListings   ( uuid , item , "Equivalent"              )
+      self . OpenWebPageListings   ( item , "Equivalent"                     )
       ########################################################################
       return True
     ##########################################################################
