@@ -1062,7 +1062,7 @@ class OrganizationListings         ( TreeDock                              ) :
       REL  . Position = ID
       REL  . set                ( "second" , FILM                            )
       ########################################################################
-      QQ   = self . Insert      ( VIDREL                                     )
+      QQ   = REL . Insert       ( VIDREL                                     )
       SQLs . append             ( QQ                                         )
       ########################################################################
       ID   = ID + 1
