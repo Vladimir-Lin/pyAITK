@@ -1003,10 +1003,15 @@ class OrganizationListings         ( TreeDock                              ) :
                       and ( `t1` = 76 )
                       and ( `t2` = {GTYPE} )
                       and ( `relation` = 1 )"""
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      return FILMs
     ##########################################################################
     QLIKE     = " or " . join ( LIKEs                                        )
     QQ        = f"""select `uuid` from {IDFTAB}
                     where ( `uuid` not in ( {UQ} ) )
+                      and ( `type` = 76 )
                       and ( {QLIKE} )
                     group by `uuid` asc ;"""
     QQ        = " " . join    ( QQ . split ( )                               )
