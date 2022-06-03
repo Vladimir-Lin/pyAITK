@@ -24,6 +24,9 @@ from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
 from   PyQt5 . QtCore                 import QSizeF
 from   PyQt5 . QtCore                 import QUrl
+from   PyQt5 . QtCore                 import QMimeData
+from   PyQt5 . QtCore                 import QByteArray
+from   PyQt5 . QtCore                 import QDateTime
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -35,6 +38,7 @@ from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
+from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAbstractItemView
 from   PyQt5 . QtWidgets              import QTreeWidget
@@ -127,6 +131,7 @@ class WebPageListings              ( TreeDock                              ) :
     self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
     self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
     self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
@@ -156,11 +161,9 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def singleClicked         ( self , item , column                         ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                      ( self . isItemPicked ( )                      ) :
-      if                    ( column != self . CurrentItem [ "Column" ]    ) :
-        self . removeParked (                                                )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -206,6 +209,16 @@ class WebPageListings              ( TreeDock                              ) :
   def RenameItem             ( self                                        ) :
     ##########################################################################
     self . defaultRenameItem ( [ 0                                         ] )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DeleteItems             ( self                                       ) :
+    ##########################################################################
+    if                        ( not self . isGrouping ( )                  ) :
+      return
+    ##########################################################################
+    self . defaultDeleteItems ( 0 , self . RemoveItems                       )
     ##########################################################################
     return
   ############################################################################
@@ -350,18 +363,23 @@ class WebPageListings              ( TreeDock                              ) :
   ############################################################################
   def ObtainsInformation              ( self , DB                          ) :
     ##########################################################################
-    self    . Total = 0
-    ##########################################################################
-    TABLE   = self . Tables           [ "Webpages"                           ]
-    ##########################################################################
-    QQ      = f"select count(*) from {TABLE} where ( `used` > 0 ) ;"
-    DB      . Query                   ( QQ                                   )
-    RR      = DB . FetchOne           (                                      )
-    ##########################################################################
-    if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
+    if                                ( self . isOriginal      ( )         ) :
+      ########################################################################
+      self . Total = self . FetchRegularDepotCount ( DB                      )
+      ########################################################################
       return
     ##########################################################################
-    self    . Total = RR              [ 0                                    ]
+    if                                ( self . isSubordination ( )         ) :
+      ########################################################################
+      self . Total = self . FetchGroupMembersCount ( DB                      )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                ( self . isReverse       ( )         ) :
+      ########################################################################
+      self . Total = self . FetchGroupOwnersCount  ( DB                      )
+      ########################################################################
+      return
     ##########################################################################
     return
   ############################################################################
@@ -428,25 +446,25 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def dragMime                       ( self                                ) :
+  def dragMime                      ( self                                 ) :
     ##########################################################################
-    items     = self . selectedItems (                                       )
-    total     = len                  ( items                                 )
-    if                               ( len ( items ) <= 0                  ) :
+    items    = self . selectedItems (                                        )
+    total    = len                  ( items                                  )
+    if                              ( len ( items ) <= 0                   ) :
       return None
     ##########################################################################
-    URLs      =                      [                                       ]
+    URLs     =                      [                                        ]
     for it in items                                                          :
       ########################################################################
-      URL     = QUrl                 ( it . text ( 0 )                       )
-      URLs    . append               ( URL                                   )
+      URL    = QUrl                 ( it . text ( 0 )                        )
+      URLs   . append               ( URL                                    )
     ##########################################################################
-    mime      = QMimeData            (                                       )
-    self      . setUrls              ( URLs                                  )
+    mime     = QMimeData            (                                        )
+    mime     . setUrls              ( URLs                                   )
     ##########################################################################
-    message   = self . getMenuItem   ( "TotalPicked"                         )
-    tooltip   = message . format     ( total                                 )
-    QToolTip  . showText             ( QCursor . pos ( ) , tooltip           )
+    message  = self . getMenuItem   ( "TotalPicked"                          )
+    tooltip  = message . format     ( total                                  )
+    QToolTip . showText             ( QCursor . pos ( ) , tooltip            )
     ##########################################################################
     return mime
   ############################################################################
@@ -460,6 +478,7 @@ class WebPageListings              ( TreeDock                              ) :
   def allowedMimeTypes        ( self , mime                                ) :
     formats = "people/uuids"
     return self . MimeType    ( mime , formats                               )
+  """
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
@@ -468,127 +487,103 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def dropNew                 ( self , sourceWidget , mimeData , mousePos  ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
+    if                        ( self == sourceWidget                       ) :
       return False
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
-      return False
-    ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
-    ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
-      ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
-    ##########################################################################
-    return RDN
+    return mimeData . hasUrls (                                              )
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+  def dropMoving              ( self , sourceWidget , mimeData , mousePos  ) :
     ##########################################################################
-    if                         ( self . droppingAction                     ) :
+    if                        ( self . droppingAction                      ) :
       return False
     ##########################################################################
-    if                         ( sourceWidget != self                      ) :
+    if                        ( sourceWidget == self                       ) :
+      return False
+    ##########################################################################
+    return mimeData . hasUrls (                                              )
+  ############################################################################
+  def acceptUrlsDrop          ( self                                       ) :
+    return True
+  ############################################################################
+  def dropUrls ( self , source , pos , URLs                                ) :
+    ##########################################################################
+    if         ( len ( URLs ) <= 0                                         ) :
       return True
     ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
+    self . Go  ( self . JoinURLs ,  ( URLs , )                               )
     ##########################################################################
     return True
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
+  def JoinURL                       ( self , DB , URL                      ) :
     ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem is None                            ) :
-      return True
-    ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
-    ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
-    ##########################################################################
-    self . Go                  ( self . PeopleJoinOrganization             , \
-                                 ( UUID , UUIDs , )                          )
-    ##########################################################################
-    return True
-  ############################################################################
-  def PeopleJoinOrganization        ( self , UUID , UUIDs                  ) :
-    ##########################################################################
-    if                              ( UUID <= 0                            ) :
-      return
-    ##########################################################################
-    COUNT   = len                   ( UUIDs                                  )
-    if                              ( COUNT <= 0                           ) :
-      return
-    ##########################################################################
-    Hide    = self . isColumnHidden ( 1                                      )
-    ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return
-    ##########################################################################
-    MSG     = "加入{0}個人物" . format ( COUNT )
-    self    . ShowStatus            ( MSG                                    )
-    self    . TtsTalk               ( MSG , 1002                             )
-    ##########################################################################
-    RELTAB  = self . Tables         [ "Relation"                             ]
-    REL     = Relation              (                                        )
-    REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Organization"                         )
-    REL     . setT2                 ( "People"                               )
-    REL     . setRelation           ( "Subordination"                        )
-    DB      . LockWrites            ( [ RELTAB ]                             )
-    REL     . Joins                 ( DB , RELTAB , UUIDs                    )
-    DB      . UnlockTables          (                                        )
-    ##########################################################################
-    if                              ( not Hide                             ) :
-      TOTAL = REL . CountSecond     ( DB , RELTAB                            )
-    ##########################################################################
-    DB      . Close                 (                                        )
-    ##########################################################################
-    self    . ShowStatus            ( ""                                     )
-    ##########################################################################
-    if                              ( Hide                                 ) :
-      return
-    ##########################################################################
-    IT      = self . uuidAtItem     ( UUID , 0                               )
-    if                              ( IT is None                           ) :
-      return
-    ##########################################################################
-    IT      . setText               ( 1 , str ( TOTAL )                      )
-    self    . DoUpdate              (                                        )
+    print ( URL . toString ( ) )
     ##########################################################################
     return
-  """
+  ############################################################################
+  def JoinURLs                  ( self , URLs                              ) :
+    ##########################################################################
+    COUNT  = len                ( URLs                                       )
+    if                          ( COUNT <= 0                               ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB   (                                            )
+    if                          ( self . NotOkay ( DB )                    ) :
+      return
+    ##########################################################################
+    FMT    = self . getMenuItem ( "JoinURLs"                                 )
+    MSG    = FMT  . format      ( COUNT                                      )
+    self   . ShowStatus         ( MSG                                        )
+    ##########################################################################
+    for URL in URLs                                                          :
+      ########################################################################
+      self . JoinURL            ( DB , URL                                   )
+    ##########################################################################
+    DB     . Close              (                                            )
+    ##########################################################################
+    self   . ShowStatus         ( ""                                         )
+    self   . loading            (                                            )
+    ##########################################################################
+    return
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( "WebPageListings" , 1                            )
     self . setPrepared    ( True                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def RemoveItems                     ( self , UUIDs                       ) :
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      return
+    ##########################################################################
+    RELTAB = self . Tables            [ "Relation"                           ]
+    SQLs   =                          [                                      ]
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      self . Relation . set           ( "second" , UUID                      )
+      QQ   = self . Relation . Delete ( RELTAB                               )
+      SQLs . append                   ( QQ                                   )
+    ##########################################################################
+    DB     = self . ConnectDB         (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit           (                                      )
+    self   . setBustle                (                                      )
+    DB     . LockWrites               ( [ RELTAB                           ] )
+    ##########################################################################
+    TITLE  = "RemoveURLs"
+    self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
+    ##########################################################################
+    DB     . UnlockTables             (                                      )
+    self   . setVacancy               (                                      )
+    self   . GoRelax . emit           (                                      )
+    DB     . Close                    (                                      )
+    self   . loading                  (                                      )
     ##########################################################################
     return
   ############################################################################
@@ -666,17 +661,25 @@ class WebPageListings              ( TreeDock                              ) :
       self . AppendDeleteAction    ( mm , 1103                               )
     ##########################################################################
     mm     . addSeparator          (                                         )
+    ##########################################################################
+    LINE   = QLineEdit             (                                         )
+    LINE   . setText               ( self . Tables [ "Relation" ]            )
+    mm     . addWidget             ( 91241356 , LINE                         )
+    ##########################################################################
+    mm     . addSeparator          (                                         )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
+    self . Tables [ "Relation" ] = LINE . text (                             )
+    ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+      self . restart               (                                         )
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
