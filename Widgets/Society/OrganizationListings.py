@@ -1015,7 +1015,6 @@ class OrganizationListings         ( TreeDock                              ) :
                       and ( {QLIKE} )
                     group by `uuid` asc ;"""
     QQ        = " " . join    ( QQ . split ( )                               )
-    print(QQ)
     DB        . QueryValues   ( QQ , VAL                                     )
     ##########################################################################
     ALL       = DB . FetchAll (                                              )
@@ -1054,17 +1053,14 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     FILTERS = self . ObtainFilmFilters     ( DB , UUID                       )
     FILMs   = self . CollectRemainingFilms ( DB , UUID , FILTERS             )
-    print(FILMs)
-    print(len(FILMs))
     ##########################################################################
-    """
     if                              ( len ( FILMs ) > 0                    ) :
       ########################################################################
       DB    . LockWrites            ( [ VIDREL                             ] )
       ########################################################################
       if                            ( self . isSubordination ( )           ) :
         ######################################################################
-        self . Relation . Joins     ( DB , VIDREL , FILMs                    )
+        self   . Relation . Joins   ( DB , VIDREL , FILMs                    )
         ######################################################################
       elif                          ( self . isReverse       ( )           ) :
         ######################################################################
@@ -1074,7 +1070,6 @@ class OrganizationListings         ( TreeDock                              ) :
           self . Relation . Join    ( DB      , RELTAB                       )
       ########################################################################
       DB    . UnlockTables          (                                        )
-    """
     ##########################################################################
     self    . setVacancy            (                                        )
     self    . GoRelax . emit        (                                        )
