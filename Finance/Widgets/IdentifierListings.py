@@ -98,7 +98,8 @@ class IdentifierListings           ( TreeDock                              ) :
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
     ##########################################################################
-    self . assignSelectionMode     ( "ContiguousSelection"                   )
+    self . assignSelectionMode     ( "ExtendedSelection"                     )
+    ## self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitAllNames  . connect ( self . refresh                          )
@@ -112,54 +113,73 @@ class IdentifierListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 1024 , 640                              )
-  ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def setUuidMethod                ( self , UUID , TYPE                    ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
-      return False
-    ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
-    ##########################################################################
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
-    ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
-    ##########################################################################
-    return True
-  ############################################################################
-  def FocusOut                     ( self                                  ) :
-    ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
-      return True
-    ##########################################################################
-    return False
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . Method      = "UUID"
+    self . ProductType = TYPE
+    self . Uuid        = UUID
     ##########################################################################
     return
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def isUuidMethod ( self                                                  ) :
+    return         ( self . Method in [ "UUID" ]                             )
+  ############################################################################
+  def sizeHint                     ( self                                  ) :
+    return QSize                   ( 1024 , 640                              )
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    if                        ( self . isItemPicked ( )                    ) :
-      if                      ( column != self . CurrentItem [ "Column" ]  ) :
-        self . removeParked   (                                              )
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ##########################################################################
+    ## self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    ## self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn             ( self                                           ) :
+    ##########################################################################
+    if                    ( not self . isPrepared ( )                      ) :
+      return False
+    ##########################################################################
+    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
+    self . AttachActions  ( True                                             )
+    ## self . LinkVoice      ( self . CommandParser                             )
+    ##########################################################################
+    return True
+  ############################################################################
+  def closeEvent           ( self , event                                  ) :
+    ##########################################################################
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked             ( self , item , column                     ) :
+    ##########################################################################
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
   def doubleClicked           ( self , item , column                       ) :
     ##########################################################################
-    if                        ( column not in [ 0 ]                        ) :
+    if                        ( column not in [ 2 ]                        ) :
       return
     ##########################################################################
     line = self . setLineEdit ( item                                       , \
-                                0                                          , \
+                                2                                          , \
                                 "editingFinished"                          , \
                                 self . nameChanged                           )
     line . setFocus           ( Qt . TabFocusReason                          )
@@ -306,6 +326,43 @@ class IdentifierListings           ( TreeDock                              ) :
     ##########################################################################
     return                      [                                            ]
   ############################################################################
+  def ObtainSpecified           ( self , DB                                ) :
+    ##########################################################################
+    IDFTAB       = self . Tables          [ "Identifiers"                    ]
+    ##########################################################################
+    self . Total = 0
+    UUID         = self . Uuid
+    GTYPE        = self . ProductType
+    ##########################################################################
+    QQ           = f"""select count(*) from {IDFTAB}
+                       where ( `uuid` = {UUID} )
+                         and ( `type` = {GTYPE} ) ;"""
+    QQ           = " " . join             ( QQ . split ( )                   )
+    DB           . Query                  ( QQ                               )
+    RR           = DB . FetchOne          (                                  )
+    ##########################################################################
+    if                                    ( RR not in [ False , None ]     ) :
+      if                                  ( len ( RR ) > 0                 ) :
+        self . Total = int                ( RR [ 0 ]                         )
+    ##########################################################################
+    if                                    ( self . Total <= 0              ) :
+      return                              [                                  ]
+    ##########################################################################
+    IDs          =                        [                                  ]
+    STARTID      = self . StartId
+    AMOUNT       = self . Amount
+    ORDER        = self . getSortingOrder (                                  )
+    ##########################################################################
+    QQ           = f"""select `id` from {IDFTAB}
+                       where ( `uuid` = {UUID} )
+                         and ( `type` = {GTYPE} )
+                       order by `id` {ORDER}
+                       limit {STARTID} , {AMOUNT} ;"""
+    QQ           = " " . join             ( QQ . split ( )                   )
+    IDs          = DB . ObtainUuids       ( QQ                               )
+    ##########################################################################
+    return IDs
+  ############################################################################
   def GetIdentifierDetail             ( self , DB , ID                     ) :
     ##########################################################################
     IDFTAB       = self . Tables      [ "Identifiers"                        ]
@@ -363,7 +420,11 @@ class IdentifierListings           ( TreeDock                              ) :
     ##########################################################################
     IDs   =                               [                                  ]
     ##########################################################################
-    if                                    ( self . isOriginal      ( )     ) :
+    if                                    ( self . isUuidMethod    ( )     ) :
+      ########################################################################
+      IDs = self . ObtainSpecified        ( DB                               )
+      ########################################################################
+    elif                                  ( self . isOriginal      ( )     ) :
       IDs = self . ObtainOriginal         ( DB                               )
     elif                                  ( self . isSearching     ( )     ) :
       IDs = self . ObtainSearching        ( DB                               )
