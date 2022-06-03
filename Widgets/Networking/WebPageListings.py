@@ -425,14 +425,28 @@ class WebPageListings              ( TreeDock                              ) :
       return
     ##########################################################################
     return
-  """
   ############################################################################
-  def dragMime                   ( self                                    ) :
+  def dragMime                       ( self                                ) :
     ##########################################################################
-    mtype   = "url/uuids"
-    message = "kk"
+    items     = self . selectedItems (                                       )
+    total     = len                  ( items                                 )
+    if                               ( len ( items ) <= 0                  ) :
+      return None
     ##########################################################################
-    return self . CreateDragMime ( self , 0 , mtype , message                )
+    URLs      =                      [                                       ]
+    for it in items                                                          :
+      ########################################################################
+      URL     = QUrl                 ( it . text ( 0 )                       )
+      URLs    . append               ( URL                                   )
+    ##########################################################################
+    mime      = QMimeData            (                                       )
+    self      . setUrls              ( URLs                                  )
+    ##########################################################################
+    message   = self . getMenuItem   ( "TotalPicked"                         )
+    tooltip   = message . format     ( total                                 )
+    QToolTip  . showText             ( QCursor . pos ( ) , tooltip           )
+    ##########################################################################
+    return mime
   ############################################################################
   def startDrag         ( self , dropActions                               ) :
     ##########################################################################
@@ -440,6 +454,7 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  """
   def allowedMimeTypes        ( self , mime                                ) :
     formats = "people/uuids"
     return self . MimeType    ( mime , formats                               )
@@ -571,13 +586,7 @@ class WebPageListings              ( TreeDock                              ) :
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( "WebPageListings" , 1                            )
-    """
-    TRX    = self . Translations
-    LABELs = [ "網頁" ]
-    self   . setCentralLabels ( LABELs                                       )
-    """
-    ##########################################################################
-    self   . setPrepared      ( True                                         )
+    self . setPrepared    ( True                                             )
     ##########################################################################
     return
   ############################################################################
