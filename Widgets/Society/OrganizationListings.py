@@ -1035,46 +1035,74 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return FILMs
   ############################################################################
-  def CollectFilms                  ( self , UUID                          ) :
+  def ImportOrganizationFilms   ( self , DB , UUID , FILMs                 ) :
     ##########################################################################
-    if                              ( not self . isGrouping ( )            ) :
+    VIDREL = self . Tables      [ "RelationVideos"                           ]
+    SQLs   =                    [                                            ]
+    ID     = -1
+    ##########################################################################
+    REL    = Relation           (                                            )
+    REL    . set                ( "first" , UUID                             )
+    REL    . setT1              ( "Organization"                             )
+    REL    . setT2              ( "Album"                                    )
+    REL    . setRelation        ( "Subordination"                            )
+    ##########################################################################
+    QQ     = REL . Last         ( VIDREL                                     )
+    DB     . Query              ( QQ                                         )
+    RR     = DB . FetchOne      (                                            )
+    if                          ( self . NotOkay ( RR )                    ) :
+      pass
+    else                                                                     :
+      ID   = int                ( RR [ 0 ]                                   )
+    ##########################################################################
+    ID     = ID + 1
+    ##########################################################################
+    for FILM in FILMs                                                        :
+      ########################################################################
+      REL  . Position = ID
+      REL  . set                ( "second" , FILM                            )
+      ########################################################################
+      QQ   = self . Insert      ( VIDREL                                     )
+      SQLs . append             ( QQ                                         )
+      ########################################################################
+      ID   = ID + 1
+    ##########################################################################
+    TITLE  = "ImportOrganizationFilms"
+    self   . ExecuteSqlCommands ( TITLE , DB , SQLs , 100                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def CollectFilms                    ( self , UUID                        ) :
+    ##########################################################################
+    if                                ( not self . isGrouping ( )          ) :
       return
     ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
       return False
     ##########################################################################
-    self    . OnBusy  . emit        (                                        )
-    self    . setBustle             (                                        )
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
     ##########################################################################
-    IDFTAB  = self . Tables         [ "Identifiers"                          ]
-    VIDREL  = self . Tables         [ "RelationVideos"                       ]
+    IDFTAB  = self . Tables           [ "Identifiers"                        ]
+    VIDREL  = self . Tables           [ "RelationVideos"                     ]
     GTYPE   = self . GType
     ##########################################################################
     FILTERS = self . ObtainFilmFilters     ( DB , UUID                       )
     FILMs   = self . CollectRemainingFilms ( DB , UUID , FILTERS             )
     ##########################################################################
-    if                              ( len ( FILMs ) > 0                    ) :
+    if                                ( len ( FILMs ) > 0                  ) :
       ########################################################################
-      DB    . LockWrites            ( [ VIDREL                             ] )
+      DB    . LockWrites              ( [ VIDREL                           ] )
       ########################################################################
-      if                            ( self . isSubordination ( )           ) :
-        ######################################################################
-        self   . Relation . Joins   ( DB , VIDREL , FILMs                    )
-        ######################################################################
-      elif                          ( self . isReverse       ( )           ) :
-        ######################################################################
-        for UUID in FILMs                                                    :
-          ####################################################################
-          self . Relation . set     ( "first" , UUID                         )
-          self . Relation . Join    ( DB      , RELTAB                       )
+      self  . ImportOrganizationFilms ( DB , UUID , FILMs                    )
       ########################################################################
-      DB    . UnlockTables          (                                        )
+      DB    . UnlockTables            (                                      )
     ##########################################################################
-    self    . setVacancy            (                                        )
-    self    . GoRelax . emit        (                                        )
-    DB      . Close                 (                                        )
-    self    . Notify                ( 5                                      )
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    DB      . Close                   (                                      )
+    self    . Notify                  ( 5                                    )
     ##########################################################################
     return
   ############################################################################
