@@ -538,48 +538,49 @@ class IdentifierListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def AssureUuidItem              ( self , item , uuid , name              ) :
     ##########################################################################
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    DB         = self . ConnectDB (                                          )
+    if                            ( DB == None                             ) :
       return
     ##########################################################################
-    IDFTAB  = self . Tables        [ "Identifiers"                           ]
-    Reload  = False
+    IDFTAB     = self . Tables    [ "Identifiers"                            ]
+    Reload     = False
     ##########################################################################
-    DB      . LockWrites           ( [ IDFTAB                              ] )
+    DB         . LockWrites       ( [ IDFTAB                               ] )
     ##########################################################################
-    uuid    = int                  ( uuid                                    )
-    VAL     =                      ( name ,                                  )
+    uuid       = int              ( uuid                                     )
+    VAL        =                  ( name ,                                   )
     ##########################################################################
-    if                             ( uuid > 0                              ) :
+    if                            ( uuid > 0                               ) :
       ########################################################################
-      QQ    = f"""update {IDFTAB}
-                  set `name` = %s
-                  where ( `id` = {uuid} ) ;"""
-      QQ    = " " . join           ( QQ . split ( )                          )
-      DB    . QueryValues          ( QQ , VAL                                )
+      QQ       = f"""update {IDFTAB}
+                     set `name` = %s
+                     where ( `id` = {uuid} ) ;"""
+      QQ       = " " . join       ( QQ . split ( )                           )
+      DB       . QueryValues      ( QQ , VAL                                 )
       ########################################################################
-      self  . Notify               ( 5                                       )
+      self     . Notify           ( 5                                        )
       ########################################################################
     else                                                                     :
       ########################################################################
-      if                           ( self . isUuidMethod ( )               ) :
+      if                          ( self . isUuidMethod ( )                ) :
         ######################################################################
-        UUID  = self . Uuid
-        GTYPE = self . ProductType
+        Reload = True
+        UUID   = self . Uuid
+        GTYPE  = self . ProductType
         ######################################################################
-        QQ    = f"""insert into {IDFTAB}
-                    ( `uuid` , `type` , `name` )
-                    values
-                    ( {UUID} , {GTYPE} , %s ) ;"""
-        QQ    = " " . join         ( QQ . split ( )                          )
-        DB    . QueryValues        ( QQ , VAL                                )
+        QQ     = f"""insert into {IDFTAB}
+                     ( `uuid` , `type` , `name` )
+                     values
+                     ( {UUID} , {GTYPE} , %s ) ;"""
+        QQ     = " " . join       ( QQ . split ( )                           )
+        DB     . QueryValues      ( QQ , VAL                                 )
     ##########################################################################
-    DB      . Close                (                                         )
+    DB         . Close            (                                          )
     ##########################################################################
-    if                             ( Reload                                ) :
-      self  . loading              (                                         )
+    if                            ( Reload                                 ) :
+      self     . loading          (                                          )
     ##########################################################################
     return
   ############################################################################
