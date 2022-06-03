@@ -97,7 +97,8 @@ class WebPageListings              ( TreeDock                              ) :
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
     ##########################################################################
-    self . assignSelectionMode     ( "ContiguousSelection"                   )
+    self . assignSelectionMode     ( "ExtendedSelection"                     )
+    ## self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitAllNames  . connect ( self . refresh                          )
