@@ -193,7 +193,7 @@ class OrganizationListings         ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( "OrganizationListings" , 2                       )
+    self . defaultPrepare ( "OrganizationListings" , 3                       )
     ##########################################################################
     return
   ############################################################################
@@ -328,7 +328,7 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  @pyqtSlot                (        str  , int                               )
+  @pyqtSlot                (        str  , int     , int                     )
   def AssignAmounts        ( self , UUID , Amounts , Column                ) :
     ##########################################################################
     IT = self . uuidAtItem ( UUID , 0                                        )
