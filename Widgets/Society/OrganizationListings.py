@@ -1003,38 +1003,15 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def OpenWebPageListings          ( self , Related                        ) :
+  def OpenWebPageListings      ( self , uuid , item , Related              ) :
     ##########################################################################
-    if                             ( not self . isGrouping ( )             ) :
-      return
-    ##########################################################################
-    text   = self . windowTitle    (                                         )
-    icon   = self . windowIcon     (                                         )
-    ##########################################################################
-    if                             ( self . isSubordination ( )            ) :
-      Typi = self . Relation . get ( "t1"                                    )
-      uuid = self . Relation . get ( "first"                                 )
-    elif                           ( self . isReverse       ( )            ) :
-      Typi = self . Relation . get ( "t2"                                    )
-      uuid = self . Relation . get ( "second"                                )
-    ##########################################################################
-    Typi   = int                   ( Typi                                    )
-    uuid   = int                   ( uuid                                    )
-    xsid   = str                   ( uuid                                    )
-    ##########################################################################
-    self   . ShowWebPages . emit   ( text , Typi , xsid , Related , icon     )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenWebPageBelongings    ( self , uuid , item , Related              ) :
-    ##########################################################################
-    text = item . text         (                                             )
-    icon = item . icon         (                                             )
-    ##########################################################################
+    text = item . text         ( 0                                           )
+    icon = self . windowIcon   (                                             )
+    Typi = int                 ( self . GType                                )
     uuid = int                 ( uuid                                        )
     xsid = str                 ( uuid                                        )
     ##########################################################################
-    self . ShowWebPages . emit ( text , self. GType , xsid , Related , icon  )
+    self . ShowWebPages . emit ( text , Typi , xsid , Related , icon         )
     ##########################################################################
     return
   ############################################################################
@@ -1196,13 +1173,13 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 38524001                        ) :
       ########################################################################
-      self . OpenWebPageListings   ( "Subordination"                         )
+      self . OpenWebPageListings   ( uuid , item , "Subordination"           )
       ########################################################################
       return True
     ##########################################################################
     if                             ( at == 38524002                        ) :
       ########################################################################
-      self . OpenWebPageListings   ( "Equivalent"                            )
+      self . OpenWebPageListings   ( uuid , item , "Equivalent"              )
       ########################################################################
       return True
     ##########################################################################
