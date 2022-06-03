@@ -62,6 +62,7 @@ class OrganizationListings         ( TreeDock                              ) :
   emitAssignAmounts = pyqtSignal   ( str , int                               )
   PeopleGroup       = pyqtSignal   ( str , int , str                         )
   AlbumGroup        = pyqtSignal   ( str , int , str                         )
+  ShowWebPages      = pyqtSignal   ( str , int , str , str , QIcon           )
   OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
   OpenLogHistory    = pyqtSignal   ( str , str , str                         )
   OpenIdentifiers   = pyqtSignal   ( str , str , int                         )
@@ -1002,6 +1003,41 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
+  def OpenWebPageListings          ( self , Related                        ) :
+    ##########################################################################
+    if                             ( not self . isGrouping ( )             ) :
+      return
+    ##########################################################################
+    text   = self . windowTitle    (                                         )
+    icon   = self . windowIcon     (                                         )
+    ##########################################################################
+    if                             ( self . isSubordination ( )            ) :
+      Typi = self . Relation . get ( "t1"                                    )
+      uuid = self . Relation . get ( "first"                                 )
+    elif                           ( self . isReverse       ( )            ) :
+      Typi = self . Relation . get ( "t2"                                    )
+      uuid = self . Relation . get ( "second"                                )
+    ##########################################################################
+    Typi   = int                   ( Typi                                    )
+    uuid   = int                   ( uuid                                    )
+    xsid   = str                   ( uuid                                    )
+    ##########################################################################
+    self   . ShowWebPages . emit   ( text , Typi , xsid , Related , icon     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenWebPageBelongings    ( self , uuid , item , Related              ) :
+    ##########################################################################
+    text = item . text         (                                             )
+    icon = item . icon         (                                             )
+    ##########################################################################
+    uuid = int                 ( uuid                                        )
+    xsid = str                 ( uuid                                        )
+    ##########################################################################
+    self . ShowWebPages . emit ( text , self. GType , xsid , Related , icon  )
+    ##########################################################################
+    return
+  ############################################################################
   def FunctionsMenu          ( self , mm , uuid , item                     ) :
     ##########################################################################
     msg = self . getMenuItem ( "Functions"                                   )
@@ -1101,6 +1137,14 @@ class OrganizationListings         ( TreeDock                              ) :
     msg  = self . getMenuItem   ( "Identifiers"                              )
     mm   . addActionFromMenu    ( COL , 38523001 , msg                       )
     ##########################################################################
+    mm   . addSeparatorFromMenu ( COL                                        )
+    ##########################################################################
+    MSG  = self . getMenuItem   ( "WebPages"                                 )
+    mm   . addActionFromMenu    ( COL , 38524001 , MSG                       )
+    ##########################################################################
+    MSG  = self . getMenuItem   ( "IdentWebPage"                             )
+    mm   . addActionFromMenu    ( COL , 38524002 , MSG                       )
+    ##########################################################################
     return mm
   ############################################################################
   def RunGroupsMenu                ( self , at , item                      ) :
@@ -1147,6 +1191,18 @@ class OrganizationListings         ( TreeDock                              ) :
       uuid = int                   ( uuid                                    )
       head = item . text           ( 0                                       )
       self . OpenIdentifiers . emit ( head , str ( uuid ) , self . GType     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 38524001                        ) :
+      ########################################################################
+      self . OpenWebPageListings   ( "Subordination"                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 38524002                        ) :
+      ########################################################################
+      self . OpenWebPageListings   ( "Equivalent"                            )
       ########################################################################
       return True
     ##########################################################################
