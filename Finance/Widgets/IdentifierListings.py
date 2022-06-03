@@ -651,20 +651,28 @@ class IdentifierListings           ( TreeDock                              ) :
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                              ( self   . RunAmountIndexMenu ( )      ) :
+    OKAY   = self   . RunAmountIndexMenu (                                   )
+    if                              ( OKAY                                 ) :
       ########################################################################
       self . restart                (                                        )
       ########################################################################
       return
     ##########################################################################
-    if                              ( self . RunDocking   ( mm , aa )      ) :
+    OKAY   = self . RunDocking      ( mm , aa                                )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . HandleLocalityMenu ( at )     ) :
+    OKAY   = self . HandleLocalityMenu ( at                                  )
+    if                              ( OKAY                                 ) :
       self . restart                (                                        )
       return True
     ##########################################################################
-    if                              ( self . RunSortingMenu     ( at )     ) :
+    OKAY   = self . RunColumnsMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunSortingMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
       self . restart                (                                        )
       return True
     ##########################################################################
