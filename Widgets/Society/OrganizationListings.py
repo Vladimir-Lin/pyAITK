@@ -399,7 +399,7 @@ class OrganizationListings         ( TreeDock                              ) :
       ########################################################################
       UUID  = self . Relation . get   ( "second"                             )
       ########################################################################
-      RQ    = f"""select `second` from {RELTAB}
+      RQ    = f"""select `first` from {RELTAB}
                   where ( `second` = {UUID} )
                         and ( `t1` = {T1} )
                         and ( `t2` = {T2} )"""
