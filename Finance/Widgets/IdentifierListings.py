@@ -131,8 +131,8 @@ class IdentifierListings           ( TreeDock                              ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
     ##########################################################################
-    ## self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
-    ## self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     ##########################################################################
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
@@ -212,6 +212,30 @@ class IdentifierListings           ( TreeDock                              ) :
     ##########################################################################
     return IT
   ############################################################################
+  @pyqtSlot                   (                                              )
+  def InsertItem              ( self                                       ) :
+    ##########################################################################
+    if                        ( not self . isUuidMethod ( )                ) :
+      return
+    ##########################################################################
+    item = QTreeWidgetItem    (                                              )
+    item . setData            ( 0 , Qt . UserRole , 0                        )
+    self . addTopLevelItem    ( item                                         )
+    line = self . setLineEdit ( item                                       , \
+                                2                                          , \
+                                "editingFinished"                          , \
+                                self . nameChanged                           )
+    line . setFocus           ( Qt . TabFocusReason                          )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DeleteItems             ( self                                       ) :
+    ##########################################################################
+    self . defaultDeleteItems ( 0 , self . RemoveItems                       )
+    ##########################################################################
+    return
+  ############################################################################
   @pyqtSlot                      (                                           )
   def RenameItem                 ( self                                    ) :
     ##########################################################################
@@ -219,7 +243,7 @@ class IdentifierListings           ( TreeDock                              ) :
     if                           ( IT is None                              ) :
       return
     ##########################################################################
-    self . doubleClicked         ( IT , 0                                    )
+    self . doubleClicked         ( IT , 2                                    )
     ##########################################################################
     return
   ############################################################################
@@ -482,21 +506,80 @@ class IdentifierListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def RemoveItems                     ( self , UUIDs                       ) :
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      return
+    ##########################################################################
+    IDFTAB = self . Tables            [ "Identifiers"                        ]
+    SQLs   =                          [                                      ]
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ   = f"delete from {IDFTAB} where ( `id` = {UUID} ) ;"
+      SQLs . append                   ( QQ                                   )
+    ##########################################################################
+    DB     = self . ConnectDB         (                                      )
+    if                                ( DB == None                         ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit           (                                      )
+    self   . setBustle                (                                      )
+    DB     . LockWrites               ( [ RELTAB                           ] )
+    ##########################################################################
+    TITLE  = "RemoveIdentifiers"
+    self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
+    ##########################################################################
+    DB     . UnlockTables             (                                      )
+    self   . setVacancy               (                                      )
+    self   . GoRelax . emit           (                                      )
+    DB     . Close                    (                                      )
+    self   . loading                  (                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def AssureUuidItem               ( self , item , uuid , name             ) :
     ##########################################################################
     DB      = self . ConnectDB     (                                         )
     if                             ( DB == None                            ) :
       return
     ##########################################################################
-    NAMTAB  = self . Tables        [ "Names"                                 ]
+    IDFTAB  = self . Tables        [ "Identifiers"                           ]
+    Reload  = False
     ##########################################################################
-    DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
+    DB      . LockWrites           ( [ IDFTAB                              ] )
     ##########################################################################
     uuid    = int                  ( uuid                                    )
+    VAL     =                      ( name ,                                  )
+    ##########################################################################
     if                             ( uuid > 0                              ) :
-      self  . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+      ########################################################################
+      QQ    = f"""update {IDFTAB}
+                  set `name` = %s
+                  where ( `id` = {uuid} ) ;"""
+      QQ    = " " . join           ( QQ . split ( )                          )
+      DB    . QueryValues          ( QQ , VAL                                )
+      ########################################################################
+      self  . Notify               ( 5                                       )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      if                           ( self . isUuidMethod ( )               ) :
+        ######################################################################
+        UUID  = self . Uuid
+        GTYPE = self . ProductType
+        ######################################################################
+        QQ    = f"""insert into {IDFTAB}
+                    ( `uuid` , `type` , `name` )
+                    values
+                    ( {UUID} , {GTYPE} , %s ) ;"""
+        QQ    = " " . join         ( QQ . split ( )                          )
+        DB    . QueryValues        ( QQ , VAL                                )
     ##########################################################################
     DB      . Close                (                                         )
+    ##########################################################################
+    if                             ( Reload                                ) :
+      self  . loading              (                                         )
     ##########################################################################
     return
   ############################################################################
@@ -514,68 +597,85 @@ class IdentifierListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
-    ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
-    ##########################################################################
-    msg    = TRX                   [ "UI::Amount"                            ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
-    ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
-    ##########################################################################
-    return mm
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 3                         )
   ############################################################################
-  def Menu                           ( self , pos                          ) :
+  def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    doMenu = self . isFunction       ( self . HavingMenu                     )
-    if                               ( not doMenu                          ) :
+    if                             ( at >= 9003 ) and ( at <= 9003 )         :
+      ########################################################################
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def Menu                          ( self , pos                          ) :
+    ##########################################################################
+    doMenu = self . isFunction      ( self . HavingMenu                     )
+    if                              ( not doMenu                          ) :
       return False
     ##########################################################################
-    self   . Notify                  ( 0                                     )
+    self   . Notify                 ( 0                                     )
     ##########################################################################
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
-    mm     = MenuManager             ( self                                  )
+    mm     = MenuManager            ( self                                  )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu  ( mm                                    )
+    mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
-    self   . AppendRefreshAction     ( mm , 1001                             )
+    self   . AppendRefreshAction    ( mm , 1001                              )
+    if                              ( self . isUuidMethod ( )              ) :
+      self . AppendInsertAction     ( mm , 1101                              )
+    self   . AppendRenameAction     ( mm , 1102                              )
+    self   . AppendDeleteAction     ( mm , 1103                              )
     ##########################################################################
-    mm     . addSeparator            (                                       )
+    mm     . addSeparator           (                                        )
     ##########################################################################
-    self   . SortingMenu             ( mm                                    )
-    self   . LocalityMenu            ( mm                                    )
-    self   . DockingMenu             ( mm                                    )
+    self   . ColumnsMenu            ( mm                                     )
+    self   . SortingMenu            ( mm                                     )
+    self   . LocalityMenu           ( mm                                     )
+    self   . DockingMenu            ( mm                                     )
     ##########################################################################
-    mm     . setFont                 ( self    . menuFont ( )                )
-    aa     = mm . exec_              ( QCursor . pos      ( )                )
-    at     = mm . at                 ( aa                                    )
+    mm     . setFont                ( self    . menuFont ( )                 )
+    aa     = mm . exec_             ( QCursor . pos      ( )                 )
+    at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                               ( self   . RunAmountIndexMenu ( )     ) :
+    if                              ( self   . RunAmountIndexMenu ( )      ) :
       ########################################################################
-      self . restart                 (                                       )
+      self . restart                (                                        )
       ########################################################################
       return
     ##########################################################################
-    if                               ( self . RunDocking   ( mm , aa )     ) :
+    if                              ( self . RunDocking   ( mm , aa )      ) :
       return True
     ##########################################################################
-    if                               ( self . HandleLocalityMenu ( at )    ) :
-      self . restart                 (                                       )
+    if                              ( self . HandleLocalityMenu ( at )     ) :
+      self . restart                (                                        )
       return True
     ##########################################################################
-    if                               ( self . RunSortingMenu     ( at )    ) :
-      self . restart                 (                                       )
+    if                              ( self . RunSortingMenu     ( at )     ) :
+      self . restart                (                                        )
       return True
     ##########################################################################
-    if                               ( at == 1001                          ) :
-      self . restart                 (                                       )
+    if                              ( at == 1001                           ) :
+      self . restart                (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1101                           ) :
+      self . InsertItem             (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1102                           ) :
+      self . RenameItem             (                                        )
+      return True
+    ##########################################################################
+    if                              ( at == 1103                           ) :
+      self . DeleteItems            (                                        )
       return True
     ##########################################################################
     return True
