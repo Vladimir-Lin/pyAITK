@@ -582,6 +582,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
                   and ( `uuid` in ( {RQ} ) )
                   and ( `name` like %s )
                   group by `uuid` asc ;"""
+    QQ      = " " . join              ( QQ . split ( )                       )
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
     ALL     = DB . FetchAll           (                                      )
     ##########################################################################
@@ -631,6 +632,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
                   and ( `uuid` in ( {RQ} ) )
                   and ( `name` like %s )
                   group by `uuid` asc ;"""
+    QQ      = " " . join              ( QQ . split ( )                       )
     DB      . QueryValues             ( QQ , ( LIKE , )                      )
     ALL     = DB . FetchAll           (                                      )
     ##########################################################################
