@@ -100,9 +100,10 @@ class OrganizationListings         ( TreeDock                              ) :
     self . Relation . setT2        ( "Organization"                          )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
+    self . setColumnCount          ( 4                                       )
     self . setColumnHidden         ( 1 , True                                )
     self . setColumnHidden         ( 2 , True                                )
+    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -200,6 +201,7 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     IT = self . PrepareUuidItem ( 0    , UUID , NAME                         )
     IT . setTextAlignment       ( 1    , Qt . AlignRight                     )
+    IT . setTextAlignment       ( 2    , Qt . AlignRight                     )
     ##########################################################################
     return IT
   ############################################################################
@@ -1073,13 +1075,13 @@ class OrganizationListings         ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9001 ) and ( at <= 9003 )         :
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
+      if                           ( ( at in [ 9001 , 9002 ] ) and ( hid ) ) :
         ######################################################################
-        self . startup             (                                         )
+        self . restart             (                                         )
         ######################################################################
       return True
     ##########################################################################
