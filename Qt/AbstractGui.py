@@ -962,10 +962,10 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     widget = self . Gui
     ##########################################################################
-    AT     = self . CallMimeHandler ( mime . hasImage ( )                  , \
+    AT     = self . CallMimeHandler ( mimeData . hasImage ( )              , \
                                       widget                               , \
                                       "acceptImageDrop"                      )
-    if                              ( AT                                   ) :
+    if                              ( not AT                               ) :
       return True , False
     ##########################################################################
     Caller = getattr                ( widget , "dropImage" , None            )
@@ -982,10 +982,10 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     widget = self . Gui
     ##########################################################################
-    AT     = self . CallMimeHandler ( mime . hasText  ( )                  , \
+    AT     = self . CallMimeHandler ( mimeData . hasText  ( )              , \
                                       widget                               , \
                                       "acceptTextDrop"                       )
-    if                              ( AT                                   ) :
+    if                              ( not AT                               ) :
       return True , False
     ##########################################################################
     Caller = getattr                ( widget , "dropText" , None             )
@@ -1002,10 +1002,10 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     widget = self . Gui
     ##########################################################################
-    AT     = self . CallMimeHandler ( mime . hasHtml  ( )                  , \
+    AT     = self . CallMimeHandler ( mimeData . hasHtml  ( )              , \
                                       widget                               , \
                                       "acceptHtmlDrop"                       )
-    if                              ( AT                                   ) :
+    if                              ( not AT                               ) :
       return True , False
     ##########################################################################
     Caller = getattr                ( widget , "dropHtml" , None             )
@@ -1022,10 +1022,10 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     widget = self . Gui
     ##########################################################################
-    AT     = self . CallMimeHandler ( mime . hasUrls  ( )                  , \
+    AT     = self . CallMimeHandler ( mimeData . hasUrls  ( )              , \
                                       widget                               , \
                                       "acceptUrlsDrop"                       )
-    if                              ( AT                                   ) :
+    if                              ( not AT                               ) :
       return True , False
     ##########################################################################
     Caller = getattr                ( widget , "dropUrls" , None             )
@@ -1042,10 +1042,10 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     widget = self . Gui
     ##########################################################################
-    AT     = self . CallMimeHandler ( mime . hasColor ( )                  , \
+    AT     = self . CallMimeHandler ( mimeData . hasColor ( )              , \
                                       widget                               , \
                                       "acceptColorDrop"                      )
-    if                              ( AT                                   ) :
+    if                              ( not AT                               ) :
       return True , False
     ##########################################################################
     Caller = getattr                ( widget , "dropColor" , None            )
@@ -1058,42 +1058,7 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     return True , False
   ############################################################################
-  def dropItems              ( self , sourceWidget , mimeData , mousePos   ) :
-    ##########################################################################
-    widget = self . Gui
-    mtype  = self . allowedMimeTypes ( mimeData                              )
-    if                               ( len ( mtype ) <= 0                  ) :
-      return False
-    ##########################################################################
-    JSOX   = self . JsonFromMime     ( mimeData , mtype                      )
-    if                               ( "Widget" not in JSOX                ) :
-      return False
-    if                               ( "UUIDs"  not in JSOX                ) :
-      return False
-    ##########################################################################
-    for dropItem in self . DropDispatchers                                   :
-      ########################################################################
-      MT   = dropItem                [ "Mime"                                ]
-      ########################################################################
-      if                             ( MT != mtype                         ) :
-        continue
-      ########################################################################
-      MF   = dropItem                [ "Function"                            ]
-      DF   = dropItem                [ "Drop"                                ]
-      AT   = self . CallDropHandler  ( mimeData , MT , widget , MF           )
-      ########################################################################
-      if                             ( not AT                              ) :
-        continue
-      ########################################################################
-      CDI  = self . CallDropItems    ( widget                              , \
-                                       DF                                  , \
-                                       sourceWidget                        , \
-                                       mousePos                            , \
-                                       JSOX                                  )
-      if                             ( not CDI                             ) :
-        return False
-      ########################################################################
-      return True
+  def dropNormalItems        ( self , sourceWidget , mimeData , mousePos   ) :
     ##########################################################################
     Bypass , Result = self . HandleDropInImage ( sourceWidget              , \
                                                  mimeData                  , \
@@ -1126,6 +1091,45 @@ class AbstractGui        (                                                 ) :
       return Result
     ##########################################################################
     return False
+  ############################################################################
+  def dropItems              ( self , sourceWidget , mimeData , mousePos   ) :
+    ##########################################################################
+    widget = self . Gui
+    mtype  = self . allowedMimeTypes ( mimeData                              )
+    if                               ( len ( mtype ) <= 0                  ) :
+      return self . dropNormalItems  ( sourceWidget , mimeData , mousePos    )
+    ##########################################################################
+    JSOX   = self . JsonFromMime     ( mimeData , mtype                      )
+    if                               ( "Widget" not in JSOX                ) :
+      return False
+    if                               ( "UUIDs"  not in JSOX                ) :
+      return False
+    ##########################################################################
+    for dropItem in self . DropDispatchers                                   :
+      ########################################################################
+      MT   = dropItem                [ "Mime"                                ]
+      ########################################################################
+      if                             ( MT != mtype                         ) :
+        continue
+      ########################################################################
+      MF   = dropItem                [ "Function"                            ]
+      DF   = dropItem                [ "Drop"                                ]
+      AT   = self . CallDropHandler  ( mimeData , MT , widget , MF           )
+      ########################################################################
+      if                             ( not AT                              ) :
+        continue
+      ########################################################################
+      CDI  = self . CallDropItems    ( widget                              , \
+                                       DF                                  , \
+                                       sourceWidget                        , \
+                                       mousePos                            , \
+                                       JSOX                                  )
+      if                             ( not CDI                             ) :
+        return False
+      ########################################################################
+      return True
+    ##########################################################################
+    return self   . dropNormalItems  ( sourceWidget , mimeData , mousePos    )
   ############################################################################
   def ObtainAllUuids             ( self , DB                               ) :
     return                       [                                           ]

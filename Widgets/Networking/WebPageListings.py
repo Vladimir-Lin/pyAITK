@@ -474,12 +474,6 @@ class WebPageListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  """
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
-  """
-  ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
     if                        ( self == sourceWidget                       ) :
@@ -503,20 +497,6 @@ class WebPageListings              ( TreeDock                              ) :
       return False
     ##########################################################################
     return mimeData . hasUrls (                                              )
-  ############################################################################
-  def dropAppend ( self , sourceWidget , mimeData , mousePos               ) :
-    ##########################################################################
-    if           ( self . droppingAction                                   ) :
-      return False
-    ##########################################################################
-    Bypass , Result = self . HandleDropInURLs                                (
-                   sourceWidget                                            , \
-                   mimeData                                                , \
-                   mousePos                                                  )
-    if           ( not Bypass                                              ) :
-      return Result
-    ##########################################################################
-    return   False
   ############################################################################
   def acceptUrlsDrop          ( self                                       ) :
     return True
