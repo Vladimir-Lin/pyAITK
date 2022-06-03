@@ -516,9 +516,7 @@ class WebPageListings              ( TreeDock                              ) :
       return
     ##########################################################################
     URI           = URL . toString  (                                        )
-    print ( URI )
     ##########################################################################
-    """
     RELTAB        = self . Tables   [ "Relation"                             ]
     WP            = WebPage         ( URI                                    )
     WP   . Tables = self . Tables
@@ -544,7 +542,6 @@ class WebPageListings              ( TreeDock                              ) :
       DB        . LockWrites        ( [ RELTAB                             ] )
       self      . Relation . Join   ( DB , RELTAB                            )
       DB        . UnlockTables      (                                        )
-    """
     ##########################################################################
     return
   ############################################################################
