@@ -105,9 +105,9 @@ class WebPageListings              ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( False                                   )
-    self . setDragEnabled          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
+    self . setAcceptDrops          ( True                                    )
+    self . setDragEnabled          ( True                                    )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
   ############################################################################
@@ -333,6 +333,7 @@ class WebPageListings              ( TreeDock                              ) :
     JSON [ "URLs"  ] = URLs
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
+    self   . Notify                   ( 5                                    )
     ##########################################################################
     return
   ############################################################################
