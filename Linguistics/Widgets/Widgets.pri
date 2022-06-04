@@ -11,3 +11,5 @@ SOURCES += $${PWD}/*.rb
 SOURCES += $${PWD}/*.rs
 SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
+
+include ($${PWD}/Geometry/Geometry.pri)

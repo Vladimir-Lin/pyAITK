@@ -13,8 +13,4 @@ SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
 
 include ($${PWD}/Commons/Commons.pri)
-include ($${PWD}/Networking/Networking.pri)
-include ($${PWD}/Scheduler/Scheduler.pri)
-include ($${PWD}/Science/Science.pri)
-include ($${PWD}/Society/Society.pri)
 include ($${PWD}/Languages/Languages.pri)

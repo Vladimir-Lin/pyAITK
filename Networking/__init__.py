@@ -36,5 +36,6 @@ __all__ = [ "RequestsDownload"                                             , \
             "Hosts"                                                        , \
             "WSS"                                                          , \
             "wssAccepter"                                                  , \
-            "WssHttpRequest"                                                 ]
+            "WssHttpRequest"                                               , \
+            "Widgets"                                                        ]
 ##############################################################################

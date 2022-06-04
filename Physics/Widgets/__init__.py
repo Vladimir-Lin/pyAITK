@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-from . VtkPlanet import VtkPlanet as VtkPlanet
-from . VtkSolar  import VtkSolar  as VtkSolar
-from . VtkAtlas  import VtkAtlas  as VtkAtlas
+from . SpectrumColors        import SpectrumColors        as SpectrumColors
+from . StellarSpectrumWidget import StellarSpectrumWidget as StellarSpectrumWidget
+from . StellarObjectListings import StellarObjectListings as StellarObjectListings
+from . CelestialListings     import CelestialListings     as CelestialListings
 ##############################################################################
-__all__ = [ "VtkPlanet"                                                    , \
+from . VtkPlanet             import VtkPlanet             as VtkPlanet
+from . VtkSolar              import VtkSolar              as VtkSolar
+from . VtkAtlas              import VtkAtlas              as VtkAtlas
+##############################################################################
+__all__ = [ "CelestialListings"                                            , \
+            "StellarObjectListings"                                        , \
+            "SpectrumColors"                                               , \
+            "StellarSpectrumWidget"                                        , \
+            "VtkPlanet"                                                    , \
             "VtkSolar"                                                     , \
             "VtkAtlas"                                                       ]
 ##############################################################################

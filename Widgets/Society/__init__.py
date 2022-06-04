@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## from . PeopleView            import PeopleView            as PeopleView
-## from . PeopleMerger          import PeopleMerger          as PeopleMerger
-## from . CrowdView             import CrowdView             as CrowdView
 from . NationTypeListings    import NationTypeListings    as NationTypeListings
 from . CountryListings       import CountryListings       as CountryListings
 from . ContinentListings     import ContinentListings     as ContinentListings
