@@ -13,4 +13,3 @@ SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
 
 include ($${PWD}/Commons/Commons.pri)
-include ($${PWD}/Languages/Languages.pri)
