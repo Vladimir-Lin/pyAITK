@@ -15,33 +15,34 @@ class PurePlan           ( VirtualProgress                                 ) :
     ##########################################################################
     super ( ) . __init__ (                                                   )
     ##########################################################################
-    self . Application  = ""
-    self . Machine      = ""
-    self . Hostname     = ""
-    self . Root         = ""
-    self . Home         = ""
-    self . User         = ""
-    self . Bin          = ""
-    self . Arguments    = [ ]
-    self . PluginPaths  = [ ]
-    self . Locality     = 1002
-    self . UserUuid     =    0
-    self . uid          =  500
-    self . gid          =  500
-    self . Verbose      =   20
-    self . MaxLogs      =    0
-    self . Visible      = True
-    self . scene        = False
-    self . canContinue  = True
-    self . Tables       = { }
-    self . Values       = { }
-    self . Booleans     = { }
-    self . Uuids        = [ ]
-    self . SQLs         = { }
-    self . Dirs         = { }
-    self . Variables    = { }
-    self . Notification = None
-    self . IMS          = None
+    self . Application   = ""
+    self . Machine       = ""
+    self . Hostname      = ""
+    self . Root          = ""
+    self . Home          = ""
+    self . User          = ""
+    self . Bin           = ""
+    self . Arguments     = [ ]
+    self . PluginPaths   = [ ]
+    self . Locality      = 1002
+    self . UserUuid      =    0
+    self . uid           =  500
+    self . gid           =  500
+    self . Verbose       =   20
+    self . MaxLogs       =    0
+    self . Visible       = True
+    self . scene         = False
+    self . canContinue   = True
+    self . Tables        = { }
+    self . Values        = { }
+    self . Booleans      = { }
+    self . Uuids         = [ ]
+    self . SQLs          = { }
+    self . Dirs          = { }
+    self . Variables     = { }
+    self . SaveVariables = None
+    self . Notification  = None
+    self . IMS           = None
     ##########################################################################
     return
   ############################################################################
@@ -108,6 +109,13 @@ class PurePlan           ( VirtualProgress                                 ) :
       time . sleep                  ( 0.001                                  )
     ##########################################################################
     return
+  ############################################################################
+  def StoreVariables            ( self                                     ) :
+    ##########################################################################
+    if                          ( self . SaveVariables in [ False , None ] ) :
+      return False
+    ##########################################################################
+    return self . SaveVariables ( self . Variables                           )
 ##############################################################################
 
 """
