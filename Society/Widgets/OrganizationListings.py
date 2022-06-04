@@ -76,7 +76,7 @@ class OrganizationListings         ( TreeDock                              ) :
     self . GType              = 38
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 28
+    self . Amount             = 40
     self . SortOrder          = "asc"
     self . SearchLine         = None
     self . SearchKey          = ""
