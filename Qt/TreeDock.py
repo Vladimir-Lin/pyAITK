@@ -460,7 +460,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return
   ############################################################################
-  def DoCopyToClipboard              ( self                                ) :
+  def DoCopyToClipboard              ( self , SPEAK = True                 ) :
     ##########################################################################
     item   = self . currentItem      (                                       )
     if                               ( item in [ False , None ]            ) :
@@ -474,7 +474,8 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     LID    = self . getLocality      (                                       )
     qApp   . clipboard ( ) . setText ( MSG                                   )
     ##########################################################################
-    self   . TtsTalk                 ( MSG , LID                             )
+    if                               ( SPEAK                               ) :
+      self . TtsTalk                 ( MSG , LID                             )
     ##########################################################################
     return
   ############################################################################

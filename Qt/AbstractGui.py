@@ -71,14 +71,14 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     self . Locality        = 1002
     self . Prepared        = False
-    self . DB              = { }
-    self . Settings        = { }
-    self . Translations    = { }
-    self . Tables          = { }
-    self . Hosts           = { }
-    self . DBs             = { }
-    self . Languages       = { }
-    self . Menus           = { }
+    self . DB              = {                                               }
+    self . Settings        = {                                               }
+    self . Translations    = {                                               }
+    self . Tables          = {                                               }
+    self . Hosts           = {                                               }
+    self . DBs             = {                                               }
+    self . Languages       = {                                               }
+    self . Menus           = {                                               }
     self . Gui             = None
     self . Drag            = None
     self . PassDragDrop    = True
@@ -89,13 +89,14 @@ class AbstractGui        (                                                 ) :
     self . Speaker         = None
     self . PlanFunc        = None
     self . SaveSettings    = None
-    self . LocalIcons      = { }
-    self . LocalMsgs       = { }
-    self . LimitValues     = { }
-    self . AllowDrops      = { }
-    self . Functionalities = { }
+    self . LocalIcons      = {                                               }
+    self . LocalMsgs       = {                                               }
+    self . LimitValues     = {                                               }
+    self . AllowDrops      = {                                               }
+    self . Functionalities = {                                               }
     self . GuiMutex        = threading . Lock ( )
-    self . DropInJSON      = { }
+    self . RunningThreads  = [                                               ]
+    self . DropInJSON      = {                                               }
     self . DropDispatchers = [ { "Mime"     : "division/uuids"               ,
                                  "Function" : "acceptDivisionDrop"           ,
                                  "Drop"     : "dropDivision"               } ,
@@ -187,6 +188,11 @@ class AbstractGui        (                                                 ) :
     return
   ############################################################################
   def __del__            ( self                                            ) :
+    ##########################################################################
+    for th in self . RunningThreads                                          :
+      ########################################################################
+      th . join          (                                                   )
+    ##########################################################################
     return
   ############################################################################
   def DoProcessEvents    ( self                                            ) :
@@ -194,6 +200,15 @@ class AbstractGui        (                                                 ) :
     qApp . processEvents (                                                   )
     ##########################################################################
     return
+  ############################################################################
+  def isThreadRunning ( self                                               ) :
+    ##########################################################################
+    for th in self . RunningThreads                                          :
+      ########################################################################
+      if              ( th . is_alive ( )                                  ) :
+        return True
+    ##########################################################################
+    return False
   ############################################################################
   def isBitMask          ( self , a , b                                    ) :
     return               ( ( a & b ) == b                                    )
@@ -433,13 +448,14 @@ class AbstractGui        (                                                 ) :
     ##########################################################################
     return True
   ############################################################################
-  def Go                    ( self , func , arguments = ( )                ) :
+  def Go                           ( self , func , arguments = ( )         ) :
     ##########################################################################
-    if                      ( func == None                                 ) :
+    if                             ( self . NotOkay ( func )               ) :
       return None
     ##########################################################################
-    th = threading . Thread ( target = func , args = arguments               )
-    th . start              (                                                )
+    th   = threading . Thread      ( target = func , args = arguments        )
+    th   . start                   (                                         )
+    self . RunningThreads . append ( th                                      )
     ##########################################################################
     return th
   ############################################################################
