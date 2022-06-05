@@ -72,7 +72,9 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     self . emitRenderWindow . connect ( self . DoRenderWindow                )
     ##########################################################################
-    self . DoRotation = False
+    self . DoRotation     = False
+    self . RotateAngle    = 0.5
+    self . RotateInterval = 0.1
     self . PrepareObjects  (                                                 )
     self . SpinBoxs =      {                                                 }
     ##########################################################################
@@ -715,13 +717,12 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     PA     = self . PlanetObjects [ "Planet" ] [ "Actor"                     ]
     AX     = self . PlanetObjects [ "Axis"   ] [ "Actor"                     ]
-    ANGLE  = 1
     ##########################################################################
     while                            ( self . DoRotation                   ) :
       ########################################################################
-      PA   . RotateZ                 ( ANGLE                                 )
+      PA   . RotateZ                 ( self . RotateAngle                    )
       self . emitRenderWindow . emit (                                       )
-      time . sleep                   ( 0.1                                   )
+      time . sleep                   ( self . RotateInterval                 )
       ########################################################################
     return
   ############################################################################
@@ -772,7 +773,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     PLANETs  = [ "Points" , "Lines" , "Polygons" , "Texture"                 ]
     PA       = self . PlanetObjects [ "Planet" ] [ "Actor"                   ]
     ##########################################################################
-    if                           ( NAME in PLANETs                         ) :
+    if                           ( Item in PLANETs                         ) :
       PA   . AddPart             ( A                                         )
     else                                                                     :
       self . renderer . AddActor ( A                                         )
@@ -787,8 +788,8 @@ class VtkPlanet                 ( VtkWidget                                ) :
     E        = self . PlanetObjects   [ Item ] [ "Enabled"                   ]
     A        = self . PlanetObjects   [ Item ] [ "Actor"                     ]
     ##########################################################################
-    ## PLANETs  = [ "Axis" , "Points" , "Lines" , "Polygons"                    ]
-    PLANETs  = [ "Points" , "Lines" , "Polygons" , "Texture"                 ]
+    PLANETs  = [ "Axis" , "Points" , "Lines" , "Polygons" , "Texture"        ]
+    ## PLANETs  = [ "Points" , "Lines" , "Polygons" , "Texture"                 ]
     ##########################################################################
     if                                ( E                                  ) :
       ########################################################################
@@ -844,6 +845,12 @@ class VtkPlanet                 ( VtkWidget                                ) :
     V    = float           ( 1.0 - ( V / 10000.0 )                           )
     A    = self . PlanetObjects [ "Shadow"     ] [ "Actor" ]
     A    . GetProperty ( ) . SetOpacity ( V                                  )
+    ##########################################################################
+    V    = self . SpinBoxs [ "RotateAngle"            ] . value (            )
+    self . RotateAngle = float ( V / 1000.0 )
+    ##########################################################################
+    V    = self . SpinBoxs [ "RotateInterval"         ] . value (            )
+    self . RotateInterval = V
     ##########################################################################
     return
   ############################################################################
@@ -943,6 +950,28 @@ class VtkPlanet                 ( VtkWidget                                ) :
     E     = self . DoRotation
     msg   = self . getMenuItem   ( "DoRotation"                              )
     mm    . addActionFromMenu    ( LOM , 54232801 , msg , True , E           )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "RotateAngle:"                            )
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( msg                                       )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 360000.0                                  )
+    DSB   . setValue             ( self . RotateAngle * 1000.0               )
+    mm    . addWidgetWithMenu    ( LOM , 54232802 , DSB                      )
+    self  . SpinBoxs [ "RotateAngle" ] = DSB
+    ##########################################################################
+    msg   = self . getMenuItem   ( "RotateInterval:"                         )
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( msg                                       )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 86400.0                                   )
+    DSB   . setValue             ( self . RotateInterval                     )
+    mm    . addWidgetWithMenu    ( LOM , 54232803 , DSB                      )
+    self  . SpinBoxs [ "RotateInterval" ] = DSB
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     msg   = self . getMenuItem   ( "ChangeBackgroundColor"                   )
     mm    . addActionFromMenu    ( LOM , 54231101 , msg                      )
