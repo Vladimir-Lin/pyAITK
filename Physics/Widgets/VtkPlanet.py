@@ -88,6 +88,29 @@ class VtkPlanet                 ( VtkWidget                                ) :
     self . Radius = ControlPoint (                                           )
     self . Radius . setXYZ       ( 1000.0 , 1000.0 , 1000.0                  )
     ##########################################################################
+    for NAME in [ "Planet" , "Surface" , "Label" , "Attachment" ]            :
+      ########################################################################
+      ZF   = vtk . vtkTransformFilter   (                                    )
+      F    = vtk . vtkTransform         (                                    )
+      F    . Identity                   (                                    )
+      A    = vtk . vtkAssembly          (                                    )
+      ########################################################################
+      self . PlanetObjects [ NAME ] =   {                                    }
+      self . PlanetObjects [ NAME ] [ "Actor"     ] = A
+      self . PlanetObjects [ NAME ] [ "Transform" ] = F
+      self . PlanetObjects [ NAME ] [ "TFilter"   ] = ZF
+      self . PlanetObjects [ NAME ] [ "Mapper"    ] = None
+      self . PlanetObjects [ NAME ] [ "Model"     ] = None
+      self . PlanetObjects [ NAME ] [ "Sphere"    ] = None
+      self . PlanetObjects [ NAME ] [ "Color"     ] = ControlPoint (         )
+      self . PlanetObjects [ NAME ] [ "Texture"   ] = None
+      self . PlanetObjects [ NAME ] [ "Loaded"    ] = False
+      self . PlanetObjects [ NAME ] [ "Distance"  ] = 0.0
+      self . PlanetObjects [ NAME ] [ "Enabled"   ] = True
+      self . PlanetObjects [ NAME ] [ "JSON"      ] = {                      }
+      ########################################################################
+      self . renderer . AddActor        ( A                                  )
+    ##########################################################################
     for NAME in NAMEs                                                        :
       ########################################################################
       E      = True
@@ -101,6 +124,11 @@ class VtkPlanet                 ( VtkWidget                                ) :
       A      = vtk . vtkActor           (                                    )
       D      = vtk . vtkPolyDataMapper  (                                    )
       M      = vtk . vtkPolyData        (                                    )
+      F      = vtk . vtkTransform       (                                    )
+      ZF     = vtk . vtkTransformFilter (                                    )
+      ########################################################################
+      F      . Identity                 (                                    )
+      ZF     . SetTransform             ( F                                  )
       ########################################################################
       A      . SetMapper                ( D                                  )
       A      . GetProperty ( ) . SetPointSize ( 1                            )
@@ -119,16 +147,18 @@ class VtkPlanet                 ( VtkWidget                                ) :
       S      . Z . Unit = 108  ## Physics::Kilometer
       ########################################################################
       self   . PlanetObjects [ NAME ] = {                                    }
-      self   . PlanetObjects [ NAME ] [ "Actor"    ] = A
-      self   . PlanetObjects [ NAME ] [ "Mapper"   ] = D
-      self   . PlanetObjects [ NAME ] [ "Model"    ] = M
-      self   . PlanetObjects [ NAME ] [ "Sphere"   ] = S
-      self   . PlanetObjects [ NAME ] [ "Color"    ] = C
-      self   . PlanetObjects [ NAME ] [ "Texture"  ] = T
-      self   . PlanetObjects [ NAME ] [ "Loaded"   ] = False
-      self   . PlanetObjects [ NAME ] [ "Distance" ] = 0.0
-      self   . PlanetObjects [ NAME ] [ "Enabled"  ] = E
-      self   . PlanetObjects [ NAME ] [ "JSON"     ] = {                     }
+      self   . PlanetObjects [ NAME ] [ "Actor"     ] = A
+      self   . PlanetObjects [ NAME ] [ "Transform" ] = F
+      self   . PlanetObjects [ NAME ] [ "TFilter"   ] = ZF
+      self   . PlanetObjects [ NAME ] [ "Mapper"    ] = D
+      self   . PlanetObjects [ NAME ] [ "Model"     ] = M
+      self   . PlanetObjects [ NAME ] [ "Sphere"    ] = S
+      self   . PlanetObjects [ NAME ] [ "Color"     ] = C
+      self   . PlanetObjects [ NAME ] [ "Texture"   ] = T
+      self   . PlanetObjects [ NAME ] [ "Loaded"    ] = False
+      self   . PlanetObjects [ NAME ] [ "Distance"  ] = 0.0
+      self   . PlanetObjects [ NAME ] [ "Enabled"   ] = E
+      self   . PlanetObjects [ NAME ] [ "JSON"      ] = {                    }
     ##########################################################################
     PP       = ControlPoint             (                                    )
     PL       = ControlPoint             (                                    )
@@ -165,6 +195,24 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     self . setRadius                    ( self . Radius                      )
     self . Shadow = None
+    ##########################################################################
+    ZF   = vtk . vtkTransformFilter     (                                    )
+    F    = vtk . vtkTransform           (                                    )
+    F    . Identity                     (                                    )
+    ##########################################################################
+    self . PlanetObjects [ "Axis" ] =   {                                    }
+    self . PlanetObjects [ "Axis" ] [ "Actor"     ] = None
+    self . PlanetObjects [ "Axis" ] [ "Transform" ] = F
+    self . PlanetObjects [ "Axis" ] [ "TFilter"   ] = ZF
+    self . PlanetObjects [ "Axis" ] [ "Mapper"    ] = None
+    self . PlanetObjects [ "Axis" ] [ "Model"     ] = None
+    self . PlanetObjects [ "Axis" ] [ "Sphere"    ] = None
+    self . PlanetObjects [ "Axis" ] [ "Color"     ] = PW
+    self . PlanetObjects [ "Axis" ] [ "Texture"   ] = None
+    self . PlanetObjects [ "Axis" ] [ "Loaded"    ] = False
+    self . PlanetObjects [ "Axis" ] [ "Distance"  ] = 0.0
+    self . PlanetObjects [ "Axis" ] [ "Enabled"   ] = False
+    self . PlanetObjects [ "Axis" ] [ "JSON"      ] = {                      }
     ##########################################################################
     return
   ############################################################################
@@ -275,6 +323,10 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     MAPPER     . SetInputData                  ( MODEL                       )
     ##########################################################################
+    ########################################################################
+    ## ZF     . SetInputData             ( mesh                               )
+    ## D      . SetInputConnection       ( ZF . GetOutputPort ( )             )
+    ## A      . SetMapper                ( D                                  )
     return
   ############################################################################
   def PrepareLines                    ( self , Item                        ) :
@@ -546,6 +598,46 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
+  def PrepareAxis                ( self                                    ) :
+    ##########################################################################
+    X    = float                 ( self . Radius . x * 1.25                  )
+    Y    = float                 ( self . Radius . y * 1.25                  )
+    Z    = float                 ( self . Radius . z * 1.25                  )
+    R    = 500.0
+    ##########################################################################
+    F    = self . PlanetObjects  [ "Axis" ] [ "Transform"                    ]
+    AXES = vtk  . vtkAxesActor   (                                           )
+    AXES . SetUserTransform      ( F                                         )
+    AXES . SetXAxisLabelText     ( "0°"                                      )
+    AXES . SetYAxisLabelText     ( "90°"                                     )
+    AXES . SetZAxisLabelText     ( "N"                                       )
+    AXES . SetTotalLength        ( X , Y , Z                                 )
+    AXES . SetConeResolution     ( 360                                       )
+    AXES . SetConeRadius         ( R * 2                                     )
+    AXES . SetCylinderResolution ( 360                                       )
+    AXES . SetCylinderRadius     ( R                                         )
+    ##########################################################################
+    PROP = vtk . vtkTextProperty (                                           )
+    PROP . SetFontSize           ( 32                                        )
+    PROP . SetFrameColor         (   0 ,   0 ,   0                           )
+    PROP . SetColor              ( 240 , 240 , 240                           )
+    ##########################################################################
+    TA   = AXES . GetXAxisCaptionActor2D (                                   )
+    TA   . GetTextActor ( ) . SetTextScaleModeToNone (                       )
+    TA   . SetCaptionTextProperty ( PROP                                     )
+    ##########################################################################
+    TA   = AXES . GetYAxisCaptionActor2D (                                   )
+    TA   . GetTextActor ( ) . SetTextScaleModeToNone (                       )
+    TA   . SetCaptionTextProperty ( PROP                                     )
+    ##########################################################################
+    TA   = AXES . GetZAxisCaptionActor2D (                                   )
+    TA   . GetTextActor ( ) . SetTextScaleModeToNone (                       )
+    TA   . SetCaptionTextProperty ( PROP                                     )
+    ##########################################################################
+    self . PlanetObjects [ "Axis" ] [ "Actor"   ] = AXES
+    ##########################################################################
+    return
+  ############################################################################
   def CreatePlanet                    ( self                               ) :
     ##########################################################################
     NAMEs    = self . ObjectNAMEs
@@ -578,15 +670,17 @@ class VtkPlanet                 ( VtkWidget                                ) :
       if                              ( E                                  ) :
         self . PrepareTexture         ( NAME                                 )
     ##########################################################################
+    self     . PrepareAxis            (                                      )
+    ##########################################################################
     self     . renderer . ResetCamera (                                      )
     ##########################################################################
     camera   = self . renderer . GetActiveCamera (                           )
-    CX       = float                  ( self . Radius . x * 4                )
-    CY       = float                  ( self . Radius . y * 4                )
-    CZ       = float                  ( self . Radius . z / 4                )
-    camera   . SetFocalPoint          ( 0 ,  0 , 0                           )
-    camera   . SetPosition            ( 0 , CY , 0                           )
-    camera   . SetViewUp              ( 0 ,  0 , 1                           )
+    ## CX       = float                  ( self . Radius . x * 4                )
+    ## CY       = float                  ( self . Radius . y * 4                )
+    ## CZ       = float                  ( self . Radius . z / 4                )
+    ## camera   . SetFocalPoint          ( 0 ,  0 , 0                           )
+    ## camera   . SetPosition            ( 0 , CY , 0                           )
+    ## camera   . SetViewUp              ( 0 ,  0 , 1                           )
     ## camera   . SetRoll                ( 110.0                                )
     ## camera   . SetViewAngle           ( 30.0                                 )
     self     . rWindow . Render       (                                      )
@@ -718,6 +812,10 @@ class VtkPlanet                 ( VtkWidget                                ) :
     msg  = self . getMenuItem   ( "DisplayShadow"                            )
     mm   . addActionFromMenu    ( LOM , 54233106 , msg , True , E            )
     ##########################################################################
+    E    = self . PlanetObjects [ "Axis"       ] [ "Enabled"                 ]
+    msg  = self . getMenuItem   ( "DisplayAxis"                              )
+    mm   . addActionFromMenu    ( LOM , 54233107 , msg , True , E            )
+    ##########################################################################
     return mm
   ############################################################################
   def RunElementsMenu             ( self , at                              ) :
@@ -755,6 +853,12 @@ class VtkPlanet                 ( VtkWidget                                ) :
     if                            ( at == 54233106                         ) :
       ########################################################################
       self . SwitchDisplayElement ( "Shadow"                                 )
+      ########################################################################
+      return
+    ##########################################################################
+    if                            ( at == 54233107                         ) :
+      ########################################################################
+      self . SwitchDisplayElement ( "Axis"                                   )
       ########################################################################
       return
     ##########################################################################
