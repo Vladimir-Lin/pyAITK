@@ -852,6 +852,10 @@ class VtkPlanet                 ( VtkWidget                                ) :
     V    = self . SpinBoxs [ "RotateInterval"         ] . value (            )
     self . RotateInterval = V
     ##########################################################################
+    V    = self . SpinBoxs [ "CameraDistance"         ] . value (            )
+    camera = self . renderer . GetActiveCamera (                             )
+    camera . SetDistance   ( V                                               )
+    ##########################################################################
     return
   ############################################################################
   def ElementsMenu              ( self , mm                                ) :
@@ -1048,6 +1052,19 @@ class VtkPlanet                 ( VtkWidget                                ) :
     DSB   . setValue             ( V                                         )
     mm    . addWidgetWithMenu    ( LOM , 54232724 , DSB                      )
     self  . SpinBoxs [ "ShadowTransparency" ] = DSB
+    ##########################################################################
+    camera = self . renderer . GetActiveCamera (                             )
+    dist  = camera . GetDistance (                                           )
+    ##########################################################################
+    msg   = self . getMenuItem   ( "CameraDistance:"                         )
+    DSB   = QDoubleSpinBox       (                                           )
+    DSB   . setPrefix            ( msg                                       )
+    DSB   . setSingleStep        ( 0.01                                      )
+    DSB   . setMinimum           ( 0.01                                      )
+    DSB   . setMaximum           ( 1000000000000.0                           )
+    DSB   . setValue             ( dist                                      )
+    mm    . addWidgetWithMenu    ( LOM , 54232724 , DSB                      )
+    self  . SpinBoxs [ "CameraDistance" ] = DSB
     ##########################################################################
     return mm
   ############################################################################
