@@ -721,7 +721,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
       ########################################################################
       PA   . RotateZ                 ( ANGLE                                 )
       self . emitRenderWindow . emit (                                       )
-      time . sleep                   ( 1.0                                   )
+      time . sleep                   ( 0.1                                   )
       ########################################################################
     return
   ############################################################################
@@ -769,7 +769,14 @@ class VtkPlanet                 ( VtkWidget                                ) :
     if                                       ( E                           ) :
       return
     ##########################################################################
-    self     . renderer . AddActor           ( A                             )
+    PLANETs  = [ "Points" , "Lines" , "Polygons" , "Texture"                 ]
+    PA       = self . PlanetObjects [ "Planet" ] [ "Actor"                   ]
+    ##########################################################################
+    if                           ( NAME in PLANETs                         ) :
+      PA   . AddPart             ( A                                         )
+    else                                                                     :
+      self . renderer . AddActor ( A                                         )
+    ##########################################################################
     self     . PlanetObjects [ Item  ] [ "Enabled" ] = True
     self     . PlanetObjects [ Item  ] [ "Loaded"  ] = True
     ##########################################################################
