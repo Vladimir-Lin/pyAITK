@@ -113,6 +113,7 @@ class StellarObjectListings        ( TreeDock                              ) :
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
     ##########################################################################
     self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
     self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
@@ -397,6 +398,16 @@ class StellarObjectListings        ( TreeDock                              ) :
   def InsertItem             ( self                                        ) :
     ##########################################################################
     self . defaultInsertItem ( 0 , "editingFinished" , self . nameChanged    )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                  (                                               )
+  def PasteItems             ( self                                        ) :
+    ##########################################################################
+    NAMEs = qApp  . clipboard ( ) . text (                                   )
+    LISTs = NAMEs . split                (                                   )
+    ##########################################################################
+    print(LISTs)
     ##########################################################################
     return
   ############################################################################

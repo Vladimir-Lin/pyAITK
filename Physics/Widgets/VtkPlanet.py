@@ -31,6 +31,7 @@ from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QFileDialog
+from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QSpinBox
 from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
