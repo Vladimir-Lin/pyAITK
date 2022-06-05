@@ -51,6 +51,8 @@ from   AITK  . Math . Geometry . Polyhedron   import Polyhedron   as Polyhedron
 ##############################################################################
 class VtkPlanet                 ( VtkWidget                                ) :
   ############################################################################
+  emitRenderWindow = pyqtSignal (                                            )
+  ############################################################################
   def __init__                  ( self , parent = None , plan = None       ) :
     ##########################################################################
     super ( ) . __init__        (        parent        , plan                )
@@ -68,6 +70,9 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ## self . setDragEnabled  ( True                                            )
     ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
     ##########################################################################
+    self . emitRenderWindow . connect ( self . DoRenderWindow                )
+    ##########################################################################
+    self . DoRotation = False
     self . PrepareObjects  (                                                 )
     self . SpinBoxs =      {                                                 }
     ##########################################################################
@@ -88,7 +93,8 @@ class VtkPlanet                 ( VtkWidget                                ) :
     self . Radius = ControlPoint (                                           )
     self . Radius . setXYZ       ( 1000.0 , 1000.0 , 1000.0                  )
     ##########################################################################
-    for NAME in [ "Planet" , "Surface" , "Label" , "Attachment" ]            :
+    CACT = [ "Planet" , "Surface" , "Lighting" , "Label" , "Attachment"      ]
+    for NAME in CACT                                                         :
       ########################################################################
       ZF   = vtk . vtkTransformFilter   (                                    )
       F    = vtk . vtkTransform         (                                    )
@@ -110,6 +116,9 @@ class VtkPlanet                 ( VtkWidget                                ) :
       self . PlanetObjects [ NAME ] [ "JSON"      ] = {                      }
       ########################################################################
       self . renderer . AddActor        ( A                                  )
+    ##########################################################################
+    PLANETs = [ "Points" , "Lines" , "Polygons" , "Texture" ]
+    PA      = self . PlanetObjects [ "Planet" ] [ "Actor" ]
     ##########################################################################
     for NAME in NAMEs                                                        :
       ########################################################################
@@ -134,7 +143,11 @@ class VtkPlanet                 ( VtkWidget                                ) :
       A      . GetProperty ( ) . SetPointSize ( 1                            )
       ########################################################################
       if                                ( E                                ) :
-        self . renderer . AddActor      ( A                                  )
+        ######################################################################
+        if                              ( NAME in PLANETs                  ) :
+          PA   . AddPart                ( A                                  )
+        else                                                                 :
+          self . renderer . AddActor    ( A                                  )
       ########################################################################
       C      = ControlPoint             (                                    )
       ########################################################################
@@ -598,32 +611,30 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareAxis                ( self                                    ) :
+  def PrepareAxis                 ( self                                   ) :
     ##########################################################################
-    SM   = 0.1
-    X    = float                 ( self . Radius . x * 1.5                   )
-    Y    = float                 ( self . Radius . y * 1.5                   )
-    Z    = float                 ( self . Radius . z * 1.5                   )
-    R    = 500.0
+    X    = float                  ( self . Radius . x * 1.25                 )
+    Y    = float                  ( self . Radius . y * 1.25                 )
+    Z    = float                  ( self . Radius . z * 1.25                 )
     ##########################################################################
-    F    = self . PlanetObjects  [ "Axis" ] [ "Transform"                    ]
-    AXES = vtk  . vtkAxesActor   (                                           )
-    AXES . SetUserTransform      ( F                                         )
-    ## AXES . SetShaftTypeToLine    (                                           )
-    AXES . SetXAxisLabelText     ( "0°"                                      )
-    AXES . SetYAxisLabelText     ( "90°"                                     )
-    AXES . SetZAxisLabelText     ( "N"                                       )
-    AXES . SetTotalLength        ( X , Y , Z                                 )
-    ## AXES . SetScale              ( SM , SM , SM                              )
-    ## AXES . SetConeResolution     ( 360                                       )
-    ## AXES . SetConeRadius         ( R * 2                                     )
-    ## AXES . SetCylinderResolution ( 360                                       )
-    ## AXES . SetCylinderRadius     ( R                                         )
+    F    = self . PlanetObjects   [ "Axis" ] [ "Transform"                   ]
+    AXES = vtk  . vtkAxesActor    (                                          )
+    AXES . SetUserTransform       ( F                                        )
+    AXES . SetShaftTypeToCylinder (                                          )
+    AXES . SetXAxisLabelText      ( "0°"                                     )
+    AXES . SetYAxisLabelText      ( "90°"                                    )
+    AXES . SetZAxisLabelText      ( "N"                                      )
+    AXES . SetTotalLength         ( X , Y , Z                                )
+    AXES . SetNormalizedTipLength   ( 0.05  , 0.05  , 0.05                   )
+    AXES . SetNormalizedShaftLength ( 0.953 , 0.953 , 0.953                  )
+    AXES . SetConeResolution      ( 360                                      )
+    AXES . SetConeRadius          ( 0.4                                      )
+    AXES . SetCylinderResolution  ( 360                                      )
+    AXES . SetCylinderRadius      ( 0.005                                    )
     ##########################################################################
-    PROP = vtk . vtkTextProperty (                                           )
-    PROP . SetFontSize           ( 32                                        )
-    PROP . SetFrameColor         (   0 ,   0 ,   0                           )
-    PROP . SetColor              ( 240 , 240 , 240                           )
+    PROP = vtk . vtkTextProperty  (                                          )
+    PROP . SetFontSize            ( 32                                       )
+    PROP . SetColor               ( 216.0/255.0 , 216.0/255.0 , 216.0/255.0  )
     ##########################################################################
     TA   = AXES . GetXAxisCaptionActor2D (                                   )
     TA   . GetTextActor ( ) . SetTextScaleModeToNone (                       )
@@ -686,12 +697,45 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ## camera   . SetViewUp              ( 0 ,  0 , 1                           )
     ## camera   . SetRoll                ( 110.0                                )
     ## camera   . SetViewAngle           ( 30.0                                 )
-    self     . rWindow . Render       (                                      )
     ##########################################################################
-    self     . Notify                 ( 5                                    )
+    self     . emitRenderWindow . emit (                                     )
+    self     . Notify                  ( 5                                   )
     ##########################################################################
     return
   ############################################################################
+  def DoRenderWindow        ( self                                         ) :
+    ##########################################################################
+    self . rWindow . Render (                                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunRotation                    ( self                                ) :
+    ##########################################################################
+    self   . DoRotation = True
+    ##########################################################################
+    PA     = self . PlanetObjects [ "Planet" ] [ "Actor"                     ]
+    AX     = self . PlanetObjects [ "Axis"   ] [ "Actor"                     ]
+    ANGLE  = 1
+    ##########################################################################
+    while                            ( self . DoRotation                   ) :
+      ########################################################################
+      PA   . RotateZ                 ( ANGLE                                 )
+      self . emitRenderWindow . emit (                                       )
+      time . sleep                   ( 1.0                                   )
+      ########################################################################
+    return
+  ############################################################################
+  def TriggerRotation ( self                                               ) :
+    ##########################################################################
+    if                ( self . DoRotation                                  ) :
+      ########################################################################
+      self . DoRotation = False
+      ########################################################################
+      return
+    ##########################################################################
+    self . Go         ( self . RunRotation                                   )
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   def LoadTextureForItem                     ( self , Item                 ) :
@@ -731,22 +775,39 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def SwitchDisplayElement          ( self , Item                          ) :
+  def SwitchDisplayElement            ( self , Item                        ) :
     ##########################################################################
-    E      = self . PlanetObjects   [ Item ] [ "Enabled"                     ]
-    A      = self . PlanetObjects   [ Item ] [ "Actor"                       ]
+    E        = self . PlanetObjects   [ Item ] [ "Enabled"                   ]
+    A        = self . PlanetObjects   [ Item ] [ "Actor"                     ]
     ##########################################################################
-    if                              ( E                                    ) :
+    ## PLANETs  = [ "Axis" , "Points" , "Lines" , "Polygons"                    ]
+    PLANETs  = [ "Points" , "Lines" , "Polygons" , "Texture"                 ]
+    ##########################################################################
+    if                                ( E                                  ) :
       ########################################################################
-      E    = False
-      self . renderer . RemoveActor ( A                                      )
+      E      = False
+      ########################################################################
+      if                              ( Item in PLANETs                    ) :
+        ######################################################################
+        S    = self . PlanetObjects   [ "Planet" ] [ "Actor"                 ]
+        S    . RemovePart             ( A                                    )
+        ######################################################################
+      else                                                                   :
+        self . renderer . RemoveActor ( A                                    )
       ########################################################################
     else                                                                     :
       ########################################################################
-      E    = True
-      self . renderer . AddActor    ( A                                      )
+      E      = True
+      ########################################################################
+      if                              ( Item in PLANETs                    ) :
+        ######################################################################
+        S    = self . PlanetObjects   [ "Planet" ] [ "Actor"                 ]
+        S    . AddPart                ( A                                    )
+        ######################################################################
+      else                                                                   :
+        self . renderer . AddActor    ( A                                    )
     ##########################################################################
-    self   . PlanetObjects [ Item ] [ "Enabled" ] = E
+    self     . PlanetObjects [ Item ] [ "Enabled" ] = E
     ##########################################################################
     return
   ############################################################################
@@ -872,6 +933,10 @@ class VtkPlanet                 ( VtkWidget                                ) :
     MSG   = self . getMenuItem   ( "RenderParameters"                        )
     LOM   = mm   . addMenu       ( MSG                                       )
     ##########################################################################
+    E     = self . DoRotation
+    msg   = self . getMenuItem   ( "DoRotation"                              )
+    mm    . addActionFromMenu    ( LOM , 54232801 , msg , True , E           )
+    ##########################################################################
     msg   = self . getMenuItem   ( "ChangeBackgroundColor"                   )
     mm    . addActionFromMenu    ( LOM , 54231101 , msg                      )
     ##########################################################################
@@ -951,6 +1016,12 @@ class VtkPlanet                 ( VtkWidget                                ) :
     return mm
   ############################################################################
   def RunRenderMenu                ( self , at                             ) :
+    ##########################################################################
+    if                             ( at == 54232801                        ) :
+      ########################################################################
+      self . TriggerRotation       (                                         )
+      ########################################################################
+      return
     ##########################################################################
     if                             ( at == 54231101                        ) :
       ########################################################################
