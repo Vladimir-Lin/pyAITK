@@ -690,6 +690,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     QLE  = QLineEdit            (                                            )
     QLE  . setText              ( self . windowTitle ( )                     )
     mm   . addWidgetWithMenu    ( LOM , 54238964 , QLE                       )
+    QLE  . setAttribute         ( Qt . WA_InputMethodEnabled                 )
     self . SpinBoxs [ "WindowTitle" ] = QLE
     ##########################################################################
     mm   . addSeparatorFromMenu ( LOM                                        )
