@@ -72,6 +72,7 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     self . emitRenderWindow . connect ( self . DoRenderWindow                )
     ##########################################################################
+    self . Rendering      = False
     self . DoRotation     = False
     self . RotateAngle    = 0.5
     self . RotateInterval = 0.1
@@ -613,26 +614,12 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareAxis                 ( self                                   ) :
+  def ConfigureAxisText           ( self                                   ) :
     ##########################################################################
-    X    = float                  ( self . Radius . x * 1.25                 )
-    Y    = float                  ( self . Radius . y * 1.25                 )
-    Z    = float                  ( self . Radius . z * 1.25                 )
-    ##########################################################################
-    F    = self . PlanetObjects   [ "Axis" ] [ "Transform"                   ]
-    AXES = vtk  . vtkAxesActor    (                                          )
-    AXES . SetUserTransform       ( F                                        )
-    AXES . SetShaftTypeToCylinder (                                          )
+    AXES = self . PlanetObjects   [ "Axis" ] [ "Actor"                       ]
     AXES . SetXAxisLabelText      ( "0°"                                     )
     AXES . SetYAxisLabelText      ( "90°"                                    )
     AXES . SetZAxisLabelText      ( "N"                                      )
-    AXES . SetTotalLength         ( X , Y , Z                                )
-    AXES . SetNormalizedTipLength   ( 0.05  , 0.05  , 0.05                   )
-    AXES . SetNormalizedShaftLength ( 0.953 , 0.953 , 0.953                  )
-    AXES . SetConeResolution      ( 360                                      )
-    AXES . SetConeRadius          ( 0.4                                      )
-    AXES . SetCylinderResolution  ( 360                                      )
-    AXES . SetCylinderRadius      ( 0.005                                    )
     ##########################################################################
     PROP = vtk . vtkTextProperty  (                                          )
     PROP . SetFontSize            ( 32                                       )
@@ -650,7 +637,28 @@ class VtkPlanet                 ( VtkWidget                                ) :
     TA   . GetTextActor ( ) . SetTextScaleModeToNone (                       )
     TA   . SetCaptionTextProperty ( PROP                                     )
     ##########################################################################
+    return
+  ############################################################################
+  def PrepareAxis                 ( self                                   ) :
+    ##########################################################################
+    X    = float                  ( self . Radius . x * 1.25                 )
+    Y    = float                  ( self . Radius . y * 1.25                 )
+    Z    = float                  ( self . Radius . z * 1.25                 )
+    ##########################################################################
+    F    = self . PlanetObjects   [ "Axis" ] [ "Transform"                   ]
+    AXES = vtk  . vtkAxesActor    (                                          )
+    AXES . SetUserTransform       ( F                                        )
+    AXES . SetShaftTypeToCylinder (                                          )
+    AXES . SetTotalLength         ( X , Y , Z                                )
+    AXES . SetNormalizedTipLength   ( 0.05  , 0.05  , 0.05                   )
+    AXES . SetNormalizedShaftLength ( 0.953 , 0.953 , 0.953                  )
+    AXES . SetConeResolution      ( 360                                      )
+    AXES . SetConeRadius          ( 0.4                                      )
+    AXES . SetCylinderResolution  ( 360                                      )
+    AXES . SetCylinderRadius      ( 0.005                                    )
+    ##########################################################################
     self . PlanetObjects [ "Axis" ] [ "Actor"   ] = AXES
+    self . ConfigureAxisText      (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -705,9 +713,14 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def DoRenderWindow        ( self                                         ) :
+  def DoRenderWindow          ( self                                       ) :
     ##########################################################################
-    self . rWindow . Render (                                                )
+    if                        ( self . Rendering                           ) :
+      return
+    ##########################################################################
+    self . Rendering = True
+    self . rWindow   . Render (                                              )
+    self . Rendering = False
     ##########################################################################
     return
   ############################################################################
@@ -812,7 +825,11 @@ class VtkPlanet                 ( VtkWidget                                ) :
         S    = self . PlanetObjects   [ "Planet" ] [ "Actor"                 ]
         S    . AddPart                ( A                                    )
         ######################################################################
+        if                            ( Item == "Axis"                     ) :
+          self . ConfigureAxisText    (                                      )
+        ######################################################################
       else                                                                   :
+        ######################################################################
         self . renderer . AddActor    ( A                                    )
     ##########################################################################
     self     . PlanetObjects [ Item ] [ "Enabled" ] = E
