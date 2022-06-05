@@ -106,42 +106,39 @@ class StellarObjectListings        ( TreeDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
   def FocusIn             ( self                                           ) :
     ##########################################################################
     if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
     self . setActionLabel ( "Label"      , self . windowTitle ( )            )
-    self . LinkAction     ( "Refresh"    , self . startup                    )
-    ##########################################################################
-    self . LinkAction     ( "Insert"     , self . InsertItem                 )
-    self . LinkAction     ( "Rename"     , self . RenameItem                 )
-    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
-    self . LinkAction     ( "Home"       , self . PageHome                   )
-    self . LinkAction     ( "End"        , self . PageEnd                    )
-    self . LinkAction     ( "PageUp"     , self . PageUp                     )
-    self . LinkAction     ( "PageDown"   , self . PageDown                   )
-    ##########################################################################
-    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
-    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
+    self . AttachActions  ( True                                             )
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
-    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    self . LinkAction      ( "Home"       , self . PageHome        , False   )
-    self . LinkAction      ( "End"        , self . PageEnd         , False   )
-    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
-    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . AttachActions     ( False                                         )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
@@ -532,8 +529,8 @@ class StellarObjectListings        ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 1601                           ) :
       uuid = self . itemUuid        ( items [ 0 ] , 0                        )
-      NAM  = self . Tables          [ "Names"                                ]
-      self . EditAllNames           ( self , "Tasks" , uuid , NAM            )
+      NAM  = self . Tables          [ "NamesEditing"                         ]
+      self . EditAllNames           ( self , "Stellars" , uuid , NAM         )
       return True
     ##########################################################################
     if                              ( at == 3001                           ) :

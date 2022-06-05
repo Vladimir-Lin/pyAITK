@@ -113,40 +113,38 @@ class CelestialListings            ( TreeDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 800 , 640 )                       )
   ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
   def FocusIn             ( self                                           ) :
     ##########################################################################
     if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
     self . setActionLabel ( "Label"      , self . windowTitle ( )            )
-    self . LinkAction     ( "Refresh"    , self . startup                    )
-    ##########################################################################
-    self . LinkAction     ( "Rename"     , self . RenameItem                 )
-    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
-    self . LinkAction     ( "Home"       , self . PageHome                   )
-    self . LinkAction     ( "End"        , self . PageEnd                    )
-    self . LinkAction     ( "PageUp"     , self . PageUp                     )
-    self . LinkAction     ( "PageDown"   , self . PageDown                   )
-    ##########################################################################
-    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
-    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
+    self . AttachActions  ( True                                             )
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    self . LinkAction      ( "Home"       , self . PageHome        , False   )
-    self . LinkAction      ( "End"        , self . PageEnd         , False   )
-    self . LinkAction      ( "PageUp"     , self . PageUp          , False   )
-    self . LinkAction      ( "PageDown"   , self . PageDown        , False   )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . AttachActions     ( False                                         )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
@@ -941,54 +939,55 @@ class CelestialListings            ( TreeDock                              ) :
     mm     . addAction              ( 3001 ,  TRX [ "UI::TranslateAll"     ] )
     mm     . addSeparator           (                                        )
     ##########################################################################
-    mm     = self . FiltersMenu     ( mm                                     )
-    mm     = self . ColumnsMenu     ( mm                                     )
-    mm     = self . SortingMenu     ( mm                                     )
-    mm     = self . LocalityMenu    ( mm                                     )
+    self   . FiltersMenu            ( mm                                     )
+    self   . ColumnsMenu            ( mm                                     )
+    self   . SortingMenu            ( mm                                     )
+    self   . LocalityMenu           ( mm                                     )
     self   . DockingMenu            ( mm                                     )
     ##########################################################################
     mm     . setFont                ( self    . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                              ( self   . RunAmountIndexMenu ( )      ) :
+    OKAY   = self . RunAmountIndexMenu (                                     )
+    if                              ( OKAY                                 ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return
     ##########################################################################
-    if                              ( self . RunDocking   ( mm , aa )      ) :
+    OKAY   = self . RunDocking      ( mm , aa                                )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . HandleLocalityMenu ( at )     ) :
+    OKAY   = self . HandleLocalityMenu ( at                                  )
+    if                              ( OKAY                                 ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( self . RunSortingMenu     ( at )     ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( self . RunFiltersMenu     ( at )     ) :
+    OKAY   = self . RunSortingMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( self . RunColumnsMenu     ( at )     ) :
+    OKAY   = self . RunFiltersMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
+      ########################################################################
+      self . restart                (                                        )
+      ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunColumnsMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return True
     ##########################################################################
