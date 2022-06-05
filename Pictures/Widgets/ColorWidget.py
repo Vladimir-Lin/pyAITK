@@ -153,6 +153,7 @@ class ColorWidget                 ( Widget                                 ) :
     self . PrepareImage            (                                         )
     self . setColorToolTip         (                                         )
     self . emitColorChanged . emit ( self . Color                            )
+    self . update                  (                                         )
     ##########################################################################
     return
   ############################################################################
