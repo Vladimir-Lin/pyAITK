@@ -600,22 +600,25 @@ class VtkPlanet                 ( VtkWidget                                ) :
   ############################################################################
   def PrepareAxis                ( self                                    ) :
     ##########################################################################
-    X    = float                 ( self . Radius . x * 1.25                  )
-    Y    = float                 ( self . Radius . y * 1.25                  )
-    Z    = float                 ( self . Radius . z * 1.25                  )
+    SM   = 0.1
+    X    = float                 ( self . Radius . x * 1.5                   )
+    Y    = float                 ( self . Radius . y * 1.5                   )
+    Z    = float                 ( self . Radius . z * 1.5                   )
     R    = 500.0
     ##########################################################################
     F    = self . PlanetObjects  [ "Axis" ] [ "Transform"                    ]
     AXES = vtk  . vtkAxesActor   (                                           )
     AXES . SetUserTransform      ( F                                         )
+    ## AXES . SetShaftTypeToLine    (                                           )
     AXES . SetXAxisLabelText     ( "0°"                                      )
     AXES . SetYAxisLabelText     ( "90°"                                     )
     AXES . SetZAxisLabelText     ( "N"                                       )
     AXES . SetTotalLength        ( X , Y , Z                                 )
-    AXES . SetConeResolution     ( 360                                       )
-    AXES . SetConeRadius         ( R * 2                                     )
-    AXES . SetCylinderResolution ( 360                                       )
-    AXES . SetCylinderRadius     ( R                                         )
+    ## AXES . SetScale              ( SM , SM , SM                              )
+    ## AXES . SetConeResolution     ( 360                                       )
+    ## AXES . SetConeRadius         ( R * 2                                     )
+    ## AXES . SetCylinderResolution ( 360                                       )
+    ## AXES . SetCylinderRadius     ( R                                         )
     ##########################################################################
     PROP = vtk . vtkTextProperty (                                           )
     PROP . SetFontSize           ( 32                                        )
