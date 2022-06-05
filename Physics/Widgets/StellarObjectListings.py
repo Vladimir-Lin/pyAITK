@@ -408,6 +408,9 @@ class StellarObjectListings        ( TreeDock                              ) :
     STOTAB = self . Tables    [ "StellarObjects"                             ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
+    self   . OnBusy  . emit   (                                              )
+    self   . setBustle        (                                              )
+    ##########################################################################
     DB     . LockWrites       ( [ STOTAB , NAMTAB                          ] )
     ##########################################################################
     for N in NAMEs                                                           :
@@ -417,6 +420,9 @@ class StellarObjectListings        ( TreeDock                              ) :
       self . AssureUuidName   ( DB     , NAMTAB , uuid , N                   )
     ##########################################################################
     DB     . UnlockTables     (                                              )
+    self   . setVacancy       (                                              )
+    self   . GoRelax . emit   (                                              )
+    self   . ShowStatus       ( ""                                           )
     DB     . Close            (                                              )
     ##########################################################################
     self   . loading          (                                              )
