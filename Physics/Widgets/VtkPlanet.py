@@ -654,6 +654,9 @@ class VtkPlanet                 ( VtkWidget                                ) :
   ############################################################################
   def GetMenuParameters           ( self , at                              ) :
     ##########################################################################
+    WT   = self . SpinBoxs [ "WindowTitle" ] . text (                        )
+    self . setWindowTitle         ( WT                                       )
+    ##########################################################################
     self . Radius . x = self . SpinBoxs [ "RadiusX" ] . value ( ) / 1000.0
     self . Radius . y = self . SpinBoxs [ "RadiusY" ] . value ( ) / 1000.0
     self . Radius . z = self . SpinBoxs [ "RadiusZ" ] . value ( ) / 1000.0
@@ -678,34 +681,41 @@ class VtkPlanet                 ( VtkWidget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def ElementsMenu             ( self , mm                                 ) :
+  def ElementsMenu              ( self , mm                                ) :
     ##########################################################################
-    MSG = self . getMenuItem   ( "DisplayObjects"                            )
-    LOM = mm   . addMenu       ( MSG                                         )
+    MSG  = self . getMenuItem   ( "DisplayObjects"                           )
+    LOM  = mm   . addMenu       ( MSG                                        )
     ##########################################################################
-    E   = self . PlanetObjects [ "Texture"    ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayTextured"                           )
-    mm  . addActionFromMenu    ( LOM , 54233101 , msg , True , E             )
+    QLE  = QLineEdit            (                                            )
+    QLE  . setText              ( self . windowTitle ( )                     )
+    mm   . addWidgetWithMenu    ( LOM , 54238964 , QLE                       )
+    self . SpinBoxs [ "WindowTitle" ] = QLE
     ##########################################################################
-    E   = self . PlanetObjects [ "Points"     ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayPoints"                             )
-    mm  . addActionFromMenu    ( LOM , 54233102 , msg , True , E             )
+    mm   . addSeparatorFromMenu ( LOM                                        )
     ##########################################################################
-    E   = self . PlanetObjects [ "Lines"      ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayLines"                              )
-    mm  . addActionFromMenu    ( LOM , 54233103 , msg , True , E             )
+    E    = self . PlanetObjects [ "Texture"    ] [ "Enabled"                 ]
+    msg  = self . getMenuItem   ( "DisplayTextured"                          )
+    mm   . addActionFromMenu    ( LOM , 54233101 , msg , True , E            )
     ##########################################################################
-    E   = self . PlanetObjects [ "Polygons"   ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayPolygons"                           )
-    mm  . addActionFromMenu    ( LOM , 54233104 , msg , True , E             )
+    E    = self . PlanetObjects [ "Points"     ] [ "Enabled"                 ]
+    msg  = self . getMenuItem   ( "DisplayPoints"                            )
+    mm   . addActionFromMenu    ( LOM , 54233102 , msg , True , E            )
     ##########################################################################
-    E   = self . PlanetObjects [ "Atmosphere" ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayAtmosphere"                         )
-    mm  . addActionFromMenu    ( LOM , 54233105 , msg , True , E             )
+    E    = self . PlanetObjects [ "Lines"      ] [ "Enabled"                 ]
+    msg  = self . getMenuItem   ( "DisplayLines"                             )
+    mm   . addActionFromMenu    ( LOM , 54233103 , msg , True , E            )
     ##########################################################################
-    E   = self . PlanetObjects [ "Shadow"     ] [ "Enabled"                  ]
-    msg = self . getMenuItem   ( "DisplayShadow"                             )
-    mm  . addActionFromMenu    ( LOM , 54233106 , msg , True , E             )
+    E    = self . PlanetObjects [ "Polygons"   ] [ "Enabled"                 ]
+    msg  = self . getMenuItem   ( "DisplayPolygons"                          )
+    mm   . addActionFromMenu    ( LOM , 54233104 , msg , True , E            )
+    ##########################################################################
+    E    = self . PlanetObjects [ "Atmosphere" ] [ "Enabled"                 ]
+    msg  = self . getMenuItem   ( "DisplayAtmosphere"                        )
+    mm   . addActionFromMenu    ( LOM , 54233105 , msg , True , E            )
+    ##########################################################################
+    E    = self . PlanetObjects [ "Shadow"     ] [ "Enabled"                 ]
+    msg  = self . getMenuItem   ( "DisplayShadow"                            )
+    mm   . addActionFromMenu    ( LOM , 54233106 , msg , True , E            )
     ##########################################################################
     return mm
   ############################################################################
