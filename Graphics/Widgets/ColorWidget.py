@@ -61,17 +61,18 @@ class ColorWidget                 ( Widget                                 ) :
   emitColorChanged = pyqtSignal   ( QColor                                   )
   Leave            = pyqtSignal   ( QWidget                                  )
   ############################################################################
-  def __init__                    ( self , parent = None , plan = None     ) :
+  def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
-    super ( ) . __init__          (        parent        , plan              )
+    super ( ) . __init__            (        parent        , plan            )
     ##########################################################################
-    self . setFunction            ( self . HavingMenu    , True              )
+    self . setFunction              ( self . HavingMenu    , True            )
     ##########################################################################
-    self . Color = QColor         ( 255 , 255 , 255 , 255                    )
-    self . Image = None
-    self . setColorToolTip        (                                          )
+    self . Color           = QColor ( 255 , 255 , 255 , 255                  )
+    self . Image           = None
+    self . TransparentSpin = None
+    self . setColorToolTip          (                                        )
     ##########################################################################
-    self . emitSetColor . connect ( self . setColor                          )
+    self . emitSetColor . connect   ( self . setColor                        )
     ##########################################################################
     return
   ############################################################################
@@ -175,26 +176,68 @@ class ColorWidget                 ( Widget                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def Menu                          ( self , pos                           ) :
+  def alphaChanged          ( self , ALPHA                                 ) :
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                      )
-    if                              ( not doMenu                           ) :
+    self . Color . setAlpha ( 255 - ALPHA                                    )
+    self . setColor         ( self . Color                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchTransparentSpin  ( self                                        ) :
+    ##########################################################################
+    if                       ( self . TransparentSpin != None              ) :
+      ########################################################################
+      self  . TransparentSpin . deleteLater (                                )
+      self  . TransparentSpin = None
+      ########################################################################
+      return
+    ##########################################################################
+    ALPHA   = QSpinBox       (                                               )
+    ALPHA   . setPrefix      ( "Alpha :"                                     )
+    ALPHA   . setMinimum     ( 0                                             )
+    ALPHA   . setMaximum     ( 255                                           )
+    ALPHA   . setValue       ( 255 - self . Color . alpha ( )                )
+    ##########################################################################
+    if                       ( self . hasPlan ( )                          ) :
+      ########################################################################
+      p     = self . GetPlan (                                               )
+      p     . statusBar . addPermanentWidget ( ALPHA                         )
+      ALPHA . show           (                                               )
+    ##########################################################################
+    self    . TransparentSpin = ALPHA
+    ##########################################################################
+    return
+  ############################################################################
+  def Menu                         ( self , pos                            ) :
+    ##########################################################################
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
       return False
     ##########################################################################
-    mm     = MenuManager            ( self                                   )
+    mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    MSG    = self . getMenuItem     ( "DefaultSelectColor"                   )
-    mm     . addAction              ( 1001 , MSG                             )
+    MSG    = self . getMenuItem    ( "DefaultSelectColor"                    )
+    mm     . addAction             ( 1001 , MSG                              )
     ##########################################################################
-    mm     . setFont                ( self    . menuFont ( )                 )
-    aa     = mm . exec_             ( QCursor . pos      ( )                 )
-    at     = mm . at                ( aa                                     )
+    MSG    = self . getMenuItem    ( "Transparency"                          )
+    E      =                       ( self . TransparentSpin != None          )
+    mm     . addAction             ( 2001 , MSG , True , E                   )
     ##########################################################################
-    if                              ( at == 1001                           ) :
+    mm     . setFont               ( self    . menuFont ( )                  )
+    aa     = mm . exec_            ( QCursor . pos      ( )                  )
+    at     = mm . at               ( aa                                      )
+    ##########################################################################
+    if                             ( at == 1001                            ) :
       ########################################################################
-      self . SystemPickColor        (                                        )
+      self . SystemPickColor       (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 2001                            ) :
+      ########################################################################
+      self . SwitchTransparentSpin (                                         )
       ########################################################################
       return True
     ##########################################################################
