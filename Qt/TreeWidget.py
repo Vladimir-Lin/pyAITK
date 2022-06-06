@@ -516,8 +516,25 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   def FocusIn                 ( self                                       ) :
     return True
   ############################################################################
-  def FocusOut                ( self                                       ) :
+  def defaultFocusIn      ( self                                           ) :
+    ##########################################################################
+    if                    ( not self . isPrepared ( )                      ) :
+      return False
+    ##########################################################################
+    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
+    self . AttachActions  ( True                                             )
+    ##########################################################################
     return True
+  ############################################################################
+  def FocusOut        ( self                                               ) :
+    return True
+  ############################################################################
+  def defaultFocusOut ( self                                               ) :
+    ##########################################################################
+    if                ( not self . isPrepared ( )                          ) :
+      return True
+    ##########################################################################
+    return False
   ############################################################################
   def itemUuid                  ( self , item , column = 0                 ) :
     uuid = item . data          ( column , Qt . UserRole                     )

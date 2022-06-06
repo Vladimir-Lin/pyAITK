@@ -57,7 +57,7 @@ class NationTypeListings           ( TreeDock                              ) :
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
+  emitAssignAmounts = pyqtSignal   ( str , int , int                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -99,28 +99,30 @@ class NationTypeListings           ( TreeDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
-  def FocusIn             ( self                                           ) :
+  def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
-      return False
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
-    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
-    self . LinkAction     ( "Refresh"    , self . startup                    )
-    ##########################################################################
-    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
-    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
-    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
-    ##########################################################################
-    self . LinkAction     ( "Rename"     , self . RenameItem                 )
-    ##########################################################################
-    return True
+    return
   ############################################################################
-  def FocusOut ( self                                                      ) :
+  def FocusIn                     ( self                                   ) :
     ##########################################################################
-    if         ( not self . isPrepared ( )                                 ) :
-      return True
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    return False
+    self . AttachActions     ( False                                         )
+    self . defaultCloseEvent (        event                                  )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked             ( self , item , column                     ) :
     ##########################################################################
@@ -202,6 +204,7 @@ class NationTypeListings           ( TreeDock                              ) :
     self   . setToolTip           ( MSG                                      )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
+    self   . Notify               ( 5                                        )
     ##########################################################################
     return
   ############################################################################
@@ -224,14 +227,14 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  @pyqtSlot                           (        str  , int                    )
-  def AssignAmounts                   ( self , UUID , Amounts              ) :
+  @pyqtSlot                           (        str  , int     , int          )
+  def AssignAmounts                   ( self , UUID , Amounts , Column     ) :
     ##########################################################################
     IT    = self . uuidAtItem         ( UUID , 0                             )
     if                                ( IT is None                         ) :
       return
     ##########################################################################
-    IT . setText                      ( 1 , str ( Amounts )                  )
+    IT . setText                      ( Column , str ( Amounts )             )
     ##########################################################################
     return
   ############################################################################
@@ -242,6 +245,8 @@ class NationTypeListings           ( TreeDock                              ) :
     TABLE = self . Tables              [ "Countries"                         ]
     ##########################################################################
     DB      = self . ConnectDB         (                                     )
+    if                                 ( self . NotOkay ( DB )             ) :
+      return
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
@@ -257,7 +262,7 @@ class NationTypeListings           ( TreeDock                              ) :
       if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )          :
         CNT = RR                       [ 0                                   ]
       ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
+      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1              )
     ##########################################################################
     DB      . Close                    (                                     )
     ##########################################################################
@@ -266,29 +271,36 @@ class NationTypeListings           ( TreeDock                              ) :
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      self . emitNamesShow . emit     (                                      )
+    if                                ( self . NotOkay ( DB )              ) :
+      self  . emitNamesShow . emit    (                                      )
       return
+    ##########################################################################
+    self    . OnBusy        . emit    (                                      )
+    self    . setBustle               (                                      )
     ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax       . emit    (                                      )
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
-      self . emitNamesShow . emit     (                                      )
+      self . emitNamesShow  . emit    (                                      )
       return
     ##########################################################################
     JSON             =                {                                      }
     JSON [ "UUIDs" ] = UUIDs
     JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
+    self   . emitAllNames   . emit    ( JSON                                 )
     ##########################################################################
     if                                ( not self . isColumnHidden ( 1 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
+      ########################################################################
+      VAL  =                          ( UUIDs ,                              )
+      self . Go                       ( self . ReportBelongings , VAL        )
     ##########################################################################
     return
   ############################################################################
@@ -324,19 +336,6 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
-    ##########################################################################
-    return
-  ############################################################################
   def ObtainUuidsQuery    ( self                                           ) :
     ##########################################################################
     TABLE = self . Tables [ "NationTypes"                                    ]
@@ -355,7 +354,7 @@ class NationTypeListings           ( TreeDock                              ) :
     if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    NAMTAB = self . Tables    [ "Names"                                      ]
+    NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
     DB     . LockWrites       ( [ NAMTAB                                   ] )
     ##########################################################################
@@ -364,6 +363,7 @@ class NationTypeListings           ( TreeDock                              ) :
       self . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
     DB     . Close            (                                              )
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
@@ -401,13 +401,7 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     self   . Notify                ( 0                                       )
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . currentItem    (                                         )
-    uuid   = 0
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
+    items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
@@ -420,11 +414,11 @@ class NationTypeListings           ( TreeDock                              ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
     ##########################################################################
     mm     . addSeparator          (                                         )
-    ##########################################################################
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    ## mm     . addSeparator          (                                         )
     ## mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
+    ## mm     . addSeparator          (                                         )
+    ##########################################################################
+    self   . ColumnsMenu           ( mm                                      )
+    self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
@@ -446,13 +440,13 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "Names"                                 ]
+      NAM  = self . Tables         [ "NamesEditing"                          ]
       self . EditAllNames          ( self , "NationTypes" , uuid , NAM       )
       return True
     ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
-      return True
+    ## if                             ( at == 3001                            ) :
+    ##   self . Go                    ( self . TranslateAll                     )
+    ##   return True
     ##########################################################################
     return True
 ##############################################################################
