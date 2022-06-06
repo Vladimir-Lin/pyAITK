@@ -506,13 +506,14 @@ class ContinentListings            ( TreeDock                              ) :
     self    . TtsTalk               ( MSG , 1002                             )
     ##########################################################################
     RELTAB  = self . Tables         [ "RelationPlaces"                       ]
-    DB      . LockWrites            ( [ RELTAB                             ] )
-    ##########################################################################
     REL     = Relation              (                                        )
     REL     . set                   ( "first" , UUID                         )
     REL     . setT1                 ( "Continent"                            )
     REL     . setT2                 ( "Place"                                )
     REL     . setRelation           ( "Contains"                             )
+    ##########################################################################
+    DB      . LockWrites            ( [ RELTAB                             ] )
+    ##########################################################################
     REL     . Joins                 ( DB , RELTAB , UUIDs                    )
     ##########################################################################
     DB      . UnlockTables          (                                        )
