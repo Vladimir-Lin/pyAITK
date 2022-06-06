@@ -148,30 +148,30 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME , JSON               ) :
+  def PrepareItem              ( self , UUID , NAME , JSON                 ) :
     ##########################################################################
-    TRX  = self . Translations   [ self . ClassTag                           ]
+    TRX  = self . Translations [ self . ClassTag                             ]
     ##########################################################################
-    UXID = str                   ( UUID                                      )
-    IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , NAME                                  )
-    IT   . setToolTip            ( 0 , UXID                                  )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
+    UXID = str                 ( UUID                                        )
+    IT   = QTreeWidgetItem     (                                             )
+    IT   . setText             ( 0 , NAME                                    )
+    IT   . setToolTip          ( 0 , UXID                                    )
+    IT   . setData             ( 0 , Qt . UserRole , UUID                    )
     ##########################################################################
-    USED = JSON                  [ "Usage"                                   ]
-    UNAM = TRX                   [ "Usage" ] [ USED                          ]
-    IT   . setText               ( 1 , UNAM                                  )
-    IT   . setData               ( 1 , Qt . UserRole , USED                  )
+    USED = JSON                [ "Usage"                                     ]
+    UNAM = TRX                 [ "Usage" ] [ str ( USED )                    ]
+    IT   . setText             ( 1 , UNAM                                    )
+    IT   . setData             ( 1 , Qt . UserRole , USED                    )
     ##########################################################################
-    ENAM = JSON                  [ "Name"                                    ]
-    IT   . setText               ( 2 , ENAM                                  )
+    ENAM = JSON                [ "Name"                                      ]
+    IT   . setText             ( 2 , ENAM                                    )
     ##########################################################################
-    TYPE = JSON                  [ "Type"                                    ]
-    TNAM = TRX                   [ "Types" ] [ TYPE                          ]
-    IT   . setText               ( 3 , TNAM                                  )
-    IT   . setData               ( 3 , Qt . UserRole , TYPE                  )
+    TYPE = JSON                [ "Type"                                      ]
+    TNAM = TRX                 [ "Types" ] [ str ( TYPE )                    ]
+    IT   . setText             ( 3 , TNAM                                    )
+    IT   . setData             ( 3 , Qt . UserRole , TYPE                    )
     ##########################################################################
-    IT   . setTextAlignment      ( 4 , Qt.AlignRight                         )
+    IT   . setTextAlignment    ( 4 , Qt.AlignRight                           )
     ##########################################################################
     return IT
   ############################################################################
