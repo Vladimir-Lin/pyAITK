@@ -180,9 +180,9 @@ class ColorWidget                 ( Widget                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def SwitchTransparentSpin  ( self                                        ) :
+  def SwitchTransparentSpin      ( self                                    ) :
     ##########################################################################
-    if                       ( self . TransparentSpin != None              ) :
+    if                           ( self . TransparentSpin != None          ) :
       ########################################################################
       self  . TransparentSpin . hide        (                                )
       self  . TransparentSpin . deleteLater (                                )
@@ -190,17 +190,18 @@ class ColorWidget                 ( Widget                                 ) :
       ########################################################################
       return
     ##########################################################################
-    ALPHA   = QSpinBox       (                                               )
-    ALPHA   . setPrefix      ( "Alpha :"                                     )
-    ALPHA   . setMinimum     ( 0                                             )
-    ALPHA   . setMaximum     ( 255                                           )
-    ALPHA   . setValue       ( 255 - self . Color . alpha ( )                )
+    MSG     = self . getMenuItem ( "Transparency:"                           )
+    ALPHA   = QSpinBox           (                                           )
+    ALPHA   . setPrefix          ( MSG                                       )
+    ALPHA   . setMinimum         ( 0                                         )
+    ALPHA   . setMaximum         ( 255                                       )
+    ALPHA   . setValue           ( 255 - self . Color . alpha ( )            )
     ##########################################################################
-    if                       ( self . hasPlan ( )                          ) :
+    if                           ( self . hasPlan ( )                      ) :
       ########################################################################
-      p     = self . GetPlan (                                               )
+      p     = self . GetPlan     (                                           )
       p     . statusBar . addPermanentWidget ( ALPHA                         )
-      ALPHA . show           (                                               )
+      ALPHA . show               (                                           )
       ALPHA . valueChanged . connect         ( self . alphaChanged           )
     ##########################################################################
     self    . TransparentSpin = ALPHA
