@@ -73,9 +73,12 @@ class ContinentListings            ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
+    self . setColumnCount          ( 6                                       )
     self . setColumnHidden         ( 1 , True                                )
     self . setColumnHidden         ( 2 , True                                )
+    self . setColumnHidden         ( 3 , True                                )
+    self . setColumnHidden         ( 4 , True                                )
+    self . setColumnHidden         ( 5 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -83,7 +86,6 @@ class ContinentListings            ( TreeDock                              ) :
     self . MountClicked            ( 2                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ExtendedSelection"                     )
-    self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
@@ -93,8 +95,8 @@ class ContinentListings            ( TreeDock                              ) :
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
     self . setDragEnabled          ( False                                   )
-    self . setAcceptDrops          ( False                                   )
-    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
+    self . setAcceptDrops          ( True                                    )
+    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
     return
   ############################################################################
@@ -146,14 +148,30 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
+  def PrepareItem                ( self , UUID , NAME , JSON               ) :
+    ##########################################################################
+    TRX  = self . Translations   [ self . ClassTag                           ]
     ##########################################################################
     UXID = str                   ( UUID                                      )
     IT   = QTreeWidgetItem       (                                           )
     IT   . setText               ( 0 , NAME                                  )
     IT   . setToolTip            ( 0 , UXID                                  )
     IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    ##########################################################################
+    USED = JSON                  [ "Usage"                                   ]
+    UNAM = TRX                   [ "Usage" ] [ USED                          ]
+    IT   . setText               ( 1 , UNAM                                  )
+    IT   . setData               ( 1 , Qt . UserRole , USED                  )
+    ##########################################################################
+    ENAM = JSON                  [ "Name"                                    ]
+    IT   . setText               ( 2 , ENAM                                  )
+    ##########################################################################
+    TYPE = JSON                  [ "Type"                                    ]
+    TNAM = TRX                   [ "Types" ] [ TYPE                          ]
+    IT   . setText               ( 3 , TNAM                                  )
+    IT   . setData               ( 3 , Qt . UserRole , TYPE                  )
+    ##########################################################################
+    IT   . setTextAlignment      ( 4 , Qt.AlignRight                         )
     ##########################################################################
     return IT
   ############################################################################
@@ -200,10 +218,11 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     UUIDs   = JSON                    [ "UUIDs"                              ]
     NAMEs   = JSON                    [ "NAMEs"                              ]
+    JSONs   = JSON                    [ "JSONs"                              ]
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
+      IT    = self . PrepareItem      ( U , NAMEs [ U ] , JSONs [ U ]        )
       self  . addTopLevelItem         ( IT                                   )
     ##########################################################################
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
@@ -224,15 +243,44 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     return UUIDs
   ############################################################################
-  def ObtainsUuidNames                ( self , DB , UUIDs                  ) :
+  def ObtainsUuidNames      ( self , DB , UUIDs                            ) :
     ##########################################################################
-    NAMEs   =                         {                                      }
+    NAMEs =                 {                                                }
+    if                      ( len ( UUIDs ) <= 0                           ) :
+      return NAMEs
     ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      TABLE = self . Tables           [ "Names"                              ]
-      NAMEs = self . GetNames         ( DB , TABLE , UUIDs                   )
+    TABLE = self . Tables   [ "Names"                                        ]
+    NAMEs = self . GetNames ( DB , TABLE , UUIDs                             )
     ##########################################################################
     return NAMEs
+  ############################################################################
+  def ObtainsUuidJsons             ( self , DB , UUIDs                     ) :
+    ##########################################################################
+    JSONs    =                     {                                         }
+    if                             ( len ( UUIDs ) <= 0                    ) :
+      return JSONs
+    ##########################################################################
+    TABLE    = self . Tables       [ "Continents"                            ]
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ     = f"""select `type`,`usage`,`name` from {TABLE}
+                  where ( `uuid` = {UUID} ) ;"""
+      QQ     = " " . join          ( QQ . split ( )                          )
+      DB     . Query               ( QQ                                      )
+      RR     = DB  . FetchOne      (                                         )
+      ########################################################################
+      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 3 ) )          :
+        ######################################################################
+        TYPE = int                 ( RR [ 0                                ] )
+        USED = int                 ( RR [ 1                                ] )
+        NAME = self . assureString ( RR [ 2                                ] )
+        ######################################################################
+        JSONs [ UUID ] =           { "Type"  : TYPE                        , \
+                                     "Usage" : USED                        , \
+                                     "Name"  : NAME                          }
+    ##########################################################################
+    return   JSONs
   ############################################################################
   @pyqtSlot                           (        str  , int     , int          )
   def AssignAmounts                   ( self , UUID , Amounts , Column     ) :
@@ -288,6 +336,7 @@ class ContinentListings            ( TreeDock                              ) :
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+      JSONs = self . ObtainsUuidJsons ( DB , UUIDs                           )
     ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax       . emit    (                                      )
@@ -301,6 +350,7 @@ class ContinentListings            ( TreeDock                              ) :
     JSON             =                {                                      }
     JSON [ "UUIDs" ] = UUIDs
     JSON [ "NAMEs" ] = NAMEs
+    JSON [ "JSONs" ] = JSONs
     ##########################################################################
     self    . emitAllNames . emit     ( JSON                                 )
     ##########################################################################
@@ -351,7 +401,7 @@ class ContinentListings            ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 2                              )
+    self . defaultPrepare ( self . ClassTag , 5                              )
     ##########################################################################
     return
   ############################################################################
@@ -385,11 +435,11 @@ class ContinentListings            ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9001 ) and ( at <= 9005 )         :
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
+      if                           ( ( at == 9004 ) and ( hid )            ) :
         ######################################################################
         self . restart             (                                         )
         ######################################################################
