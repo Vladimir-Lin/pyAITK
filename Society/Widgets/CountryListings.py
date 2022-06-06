@@ -889,9 +889,10 @@ class CountryListings              ( TreeDock                              ) :
     ##########################################################################
     mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     mm     . addSeparator          (                                         )
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    mm     = self . SortingMenu    ( mm                                      )
+    ##########################################################################
+    self   . ColumnsMenu           ( mm                                      )
+    self   . LocalityMenu          ( mm                                      )
+    self   . SortingMenu           ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )

@@ -181,6 +181,9 @@ class AbstractGui        (                                                 ) :
                                { "Mime"     : "place/uuids"                  ,
                                  "Function" : "acceptPlacesDrop"             ,
                                  "Drop"     : "dropPlaces"                 } ,
+                               { "Mime"     : "position/uuids"               ,
+                                 "Function" : "acceptPositionDrop"           ,
+                                 "Drop"     : "dropPositions"              } ,
                                { "Mime"     : "nation/uuids"                 ,
                                  "Function" : "acceptNationsDrop"            ,
                                  "Drop"     : "dropNations"                } ]
