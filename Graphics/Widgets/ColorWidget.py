@@ -184,6 +184,7 @@ class ColorWidget                 ( Widget                                 ) :
     ##########################################################################
     if                       ( self . TransparentSpin != None              ) :
       ########################################################################
+      self  . TransparentSpin . hide        (                                )
       self  . TransparentSpin . deleteLater (                                )
       self  . TransparentSpin = None
       ########################################################################
@@ -200,6 +201,7 @@ class ColorWidget                 ( Widget                                 ) :
       p     = self . GetPlan (                                               )
       p     . statusBar . addPermanentWidget ( ALPHA                         )
       ALPHA . show           (                                               )
+      ALPHA . valueChanged . connect         ( self . alphaChanged           )
     ##########################################################################
     self    . TransparentSpin = ALPHA
     ##########################################################################
