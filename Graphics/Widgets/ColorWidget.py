@@ -11,47 +11,44 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                    import QtCore
+from   PyQt5                    import QtGui
+from   PyQt5                    import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QRect
-from   PyQt5 . QtCore                 import QSize
-from   PyQt5 . QtCore                 import QByteArray
+from   PyQt5 . QtCore           import QObject
+from   PyQt5 . QtCore           import pyqtSignal
+from   PyQt5 . QtCore           import pyqtSlot
+from   PyQt5 . QtCore           import Qt
+from   PyQt5 . QtCore           import QPoint
+from   PyQt5 . QtCore           import QPointF
+from   PyQt5 . QtCore           import QRect
+from   PyQt5 . QtCore           import QSize
+from   PyQt5 . QtCore           import QByteArray
 ##############################################################################
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
-from   PyQt5 . QtGui                  import QPainter
-from   PyQt5 . QtGui                  import QColor
-from   PyQt5 . QtGui                  import QBrush
-from   PyQt5 . QtGui                  import QPen
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QPixmap
-from   PyQt5 . QtGui                  import QImage
-from   PyQt5 . QtGui                  import QPainter
+from   PyQt5 . QtGui            import QCursor
+from   PyQt5 . QtGui            import QKeySequence
+from   PyQt5 . QtGui            import QPainter
+from   PyQt5 . QtGui            import QColor
+from   PyQt5 . QtGui            import QBrush
+from   PyQt5 . QtGui            import QPen
+from   PyQt5 . QtGui            import QIcon
+from   PyQt5 . QtGui            import QPixmap
+from   PyQt5 . QtGui            import QImage
+from   PyQt5 . QtGui            import QPainter
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAction
-from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QToolTip
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QColorDialog
+from   PyQt5 . QtWidgets        import QApplication
+from   PyQt5 . QtWidgets        import QWidget
+from   PyQt5 . QtWidgets        import qApp
+from   PyQt5 . QtWidgets        import QMenu
+from   PyQt5 . QtWidgets        import QAction
+from   PyQt5 . QtWidgets        import QShortcut
+from   PyQt5 . QtWidgets        import QToolTip
+from   PyQt5 . QtWidgets        import QMenu
+from   PyQt5 . QtWidgets        import QColorDialog
+from   PyQt5 . QtWidgets        import QSpinBox
 ##############################################################################
-from   AITK . Qt       . AttachDock   import AttachDock        as AttachDock
-from   AITK . Qt       . MenuManager  import MenuManager       as MenuManager
-from   AITK . Qt       . Widget       import Widget            as Widget
-from   AITK . Qt       . SpinBox      import SpinBox           as SpinBox
-from   AITK . Pictures . Colors       import WaveLengthToRGB   as waveToRGB
-from   AITK . Pictures . Colors       import RatioToWaveLength as RatioToWave
+from   AITK  . Qt . MenuManager import MenuManager as MenuManager
+from   AITK  . Qt . Widget      import Widget      as Widget
 ##############################################################################
 class ColorWidget                 ( Widget                                 ) :
   ############################################################################
