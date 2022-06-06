@@ -238,33 +238,31 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ReportBelongings                 ( self , UUIDs                      ) :
+  def ReportBelongings                ( self , UUIDs                       ) :
     ##########################################################################
-    time    . sleep                    ( 1.0                                 )
+    time   . sleep                    ( 1.0                                  )
     ##########################################################################
-    TABLE = self . Tables              [ "Countries"                         ]
+    TABLE  = self . Tables            [ "Countries"                          ]
     ##########################################################################
-    DB      = self . ConnectDB         (                                     )
-    if                                 ( self . NotOkay ( DB )             ) :
+    DB     = self . ConnectDB         (                                      )
+    if                                ( self . NotOkay ( DB )              ) :
       return
+    ##########################################################################
+    self   . OnBusy  . emit           (                                      )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      CNT   = 0
-      TYPE  = int                      ( UUID % 10000                        )
-      QQ    = f"""select count(*) from {TABLE}
+      CNT  = 0
+      TYPE = int                      ( UUID % 10000                         )
+      QQ   = f"""select count(*) from {TABLE}
                   where ( `used` = 1 )
                   and ( `type` = {TYPE} ) ;"""
-      QQ    = " " . join               ( QQ . split ( )                      )
-      DB    . Query                    ( QQ                                  )
-      RR    = DB . FetchOne            (                                     )
+      CNT  = DB . GetOne              ( QQ , CNT                             )
       ########################################################################
-      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )          :
-        CNT = RR                       [ 0                                   ]
-      ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1              )
+      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
     ##########################################################################
-    DB      . Close                    (                                     )
+    self   . GoRelax . emit           (                                      )
+    DB     . Close                    (                                      )
     ##########################################################################
     return
   ############################################################################
