@@ -57,12 +57,13 @@ class ContinentListings            ( TreeDock                              ) :
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
+  emitAssignAmounts = pyqtSignal   ( str , int , int                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
+    self . ClassTag           = "ContinentListings"
     self . EditAllNames       = None
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
@@ -81,6 +82,7 @@ class ContinentListings            ( TreeDock                              ) :
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
     ##########################################################################
+    self . assignSelectionMode     ( "ExtendedSelection"                     )
     self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
@@ -99,28 +101,29 @@ class ContinentListings            ( TreeDock                              ) :
   def sizeHint                     ( self                                  ) :
     return QSize                   ( 320 , 640                               )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
-      return False
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
-    ##########################################################################
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
-    ##########################################################################
-    self . LinkAction              ( "Rename"     , self . RenameItem        )
-    ##########################################################################
-    return True
+    return
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusIn                     ( self                                   ) :
+    return self . defaultFocusIn  (                                          )
+  ############################################################################
+  def FocusOut                    ( self                                   ) :
+    return self . defaultFocusOut (                                          )
+  ############################################################################
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
-      return True
+    self . AttachActions     ( False                                         )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
-    return False
+    return
   ############################################################################
   def singleClicked           ( self , item , column                       ) :
     ##########################################################################
@@ -203,7 +206,12 @@ class ContinentListings            ( TreeDock                              ) :
       IT    = self . PrepareItem      ( U , NAMEs [ U ]                      )
       self  . addTopLevelItem         ( IT                                   )
     ##########################################################################
+    FMT    = self . getMenuItem   ( "DisplayTotal"                           )
+    MSG    = FMT  . format        ( len ( UUIDs )                            )
+    self   . setToolTip           ( MSG                                      )
+    ##########################################################################
     self    . emitNamesShow . emit    (                                      )
+    self   . Notify               ( 5                                        )
     ##########################################################################
     return
   ############################################################################
@@ -226,25 +234,26 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  @pyqtSlot                           (        str  , int                    )
-  def AssignAmounts                   ( self , UUID , Amounts              ) :
+  @pyqtSlot                           (        str  , int     , int          )
+  def AssignAmounts                   ( self , UUID , Amounts , Column     ) :
     ##########################################################################
     IT    = self . uuidAtItem         ( UUID , 0                             )
     if                                ( IT is None                         ) :
       return
     ##########################################################################
-    IT . setText                      ( 1 , str ( Amounts )                  )
+    IT . setText                      ( Column , str ( Amounts )             )
     ##########################################################################
     return
   ############################################################################
   def ReportBelongings                 ( self , UUIDs                      ) :
     ##########################################################################
-    ## time    . sleep                    ( 1.0                                 )
+    time    . sleep                    ( 1.0                                 )
     ##########################################################################
     ## TABLE = self . Tables              [ "Continents"                        ]
     ##########################################################################
     ## DB      = self . ConnectDB         (                                     )
     ##########################################################################
+    ## self   . OnBusy  . emit           (                                      )
     ## for UUID in UUIDs                                                        :
     ##   ########################################################################
     ##   CNT   = 0
@@ -259,8 +268,9 @@ class ContinentListings            ( TreeDock                              ) :
     ##   if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 1 ) )          :
     ##     CNT = RR                       [ 0                                   ]
     ##   ########################################################################
-    ##   self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
+    ##   self  . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1              )
     ##########################################################################
+    ## self   . GoRelax . emit           (                                      )
     ## DB      . Close                    (                                     )
     ##########################################################################
     return
@@ -268,29 +278,36 @@ class ContinentListings            ( TreeDock                              ) :
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      self . emitNamesShow . emit     (                                      )
+    if                                ( self . NotOkay ( DB )              ) :
+      self  . emitNamesShow . emit    (                                      )
       return
+    ##########################################################################
+    self    . OnBusy        . emit    (                                      )
+    self    . setBustle               (                                      )
     ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax       . emit    (                                      )
+    self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
-      self . emitNamesShow . emit     (                                      )
+      self  . emitNamesShow . emit    (                                      )
       return
     ##########################################################################
     JSON             =                {                                      }
     JSON [ "UUIDs" ] = UUIDs
     JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
+    self    . emitAllNames . emit     ( JSON                                 )
     ##########################################################################
     if                                ( not self . isColumnHidden ( 1 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
+      ########################################################################
+      VAL   =                         ( UUIDs ,                              )
+      self  . Go                      ( self . ReportBelongings , VAL        )
     ##########################################################################
     return
   ############################################################################
@@ -315,7 +332,7 @@ class ContinentListings            ( TreeDock                              ) :
   def TranslateAll              ( self                                     ) :
     ##########################################################################
     DB    = self . ConnectDB    (                                            )
-    if                          ( DB == None                               ) :
+    if                          ( self . NotOkay ( DB )                    ) :
       return
     ##########################################################################
     TABLE = self . Tables       [ "Names"                                    ]
@@ -326,91 +343,59 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
-    ##########################################################################
-    return
-  ############################################################################
   def ObtainUuidsQuery    ( self                                           ) :
     ##########################################################################
     TABLE = self . Tables [ "Continents"                                     ]
     ##########################################################################
     return f"select `uuid` from {TABLE} order by `id` asc ;"
   ############################################################################
-  def Prepare                 ( self                                       ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    self   . setColumnWidth   ( 2 , 3                                        )
-    ##########################################################################
-    TRX    = self . Translations
-    LABELs =                  [ TRX [ "UI::Continents" ]                   , \
-                                TRX [ "UI::Amount"     ]                   , \
-                                ""                                           ]
-    self   . setCentralLabels ( LABELs                                       )
-    ##########################################################################
-    self   . setPrepared      ( True                                         )
+    self . defaultPrepare ( self . ClassTag , 2                              )
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def AssureUuidItem          ( self , item , uuid , name                  ) :
     ##########################################################################
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
-    NAMTAB  = self . Tables        [ "Names"                                 ]
+    NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB      . LockWrites           ( [ OCPTAB , NAMTAB                     ] )
+    DB     . LockWrites       ( [ NAMTAB                                   ] )
     ##########################################################################
-    uuid    = int                  ( uuid                                    )
-    if                             ( uuid > 0                              ) :
-      self  . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    uuid   = int              ( uuid                                         )
+    if                        ( uuid > 0                                   ) :
+      self . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
-    DB      . Close                (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def CopyToClipboard             ( self                                   ) :
-    ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
-    ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
-    ##########################################################################
-    self . Go                     ( self . Talk , ( MSG , LID , )            )
+    DB     . Close            (                                              )
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
-  def ColumnsMenu                  ( self , mm                             ) :
+  def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    TRX    = self . Translations
-    COL    = mm . addMenu          ( TRX [ "UI::Columns" ]                   )
+    self . DoCopyToClipboard ( False                                         )
     ##########################################################################
-    msg    = TRX                   [ "UI::Amount"                            ]
-    hid    = self . isColumnHidden ( 1                                       )
-    mm     . addActionFromMenu     ( COL , 9001 , msg , True , not hid       )
+    return
+  ############################################################################
+  def ColumnsMenu                    ( self , mm                           ) :
+    return self . DefaultColumnsMenu (        mm , 1                         )
+  ############################################################################
+  def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    msg    = TRX                   [ "UI::Whitespace"                        ]
-    hid    = self . isColumnHidden ( 2                                       )
-    mm     . addActionFromMenu     ( COL , 9002 , msg , True , not hid       )
+    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+      col  = at - 9000
+      hid  = self . isColumnHidden ( col                                     )
+      self . setColumnHidden       ( col , not hid                           )
+      if                           ( ( at == 9001 ) and ( hid )            ) :
+        ######################################################################
+        self . restart             (                                         )
+        ######################################################################
+      return True
     ##########################################################################
-    return mm
+    return False
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
@@ -418,30 +403,24 @@ class ContinentListings            ( TreeDock                              ) :
     if                             ( not doMenu                            ) :
       return False
     ##########################################################################
-    items  = self . selectedItems  (                                         )
-    atItem = self . currentItem    (                                         )
-    uuid   = 0
-    ##########################################################################
-    if                             ( atItem != None                        ) :
-      uuid = atItem . data         ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-    ##########################################################################
+    self   . Notify                ( 0                                       )
+    items , atItem , uuid = self . GetMenuDetails ( 0                        )
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh"           ] )
+    self   . AppendRefreshAction   ( mm , 1001                               )
     ##########################################################################
     if                             ( len ( items ) == 1                    ) :
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
     ##########################################################################
     mm     . addSeparator          (                                         )
+    ## mm     . addSeparator          (                                         )
+    ## mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     ##########################################################################
-    mm     = self . ColumnsMenu    ( mm                                      )
-    mm     = self . LocalityMenu   ( mm                                      )
-    mm     . addSeparator          (                                         )
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
+    self   . ColumnsMenu           ( mm                                      )
+    self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
@@ -454,27 +433,22 @@ class ContinentListings            ( TreeDock                              ) :
     if                             ( self . HandleLocalityMenu ( at )      ) :
       return True
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at == 9001 ) and ( hid )            ) :
-        self . startup             (                                         )
+    if                             ( self . RunColumnsMenu     ( at )      ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+      self . restart               (                                         )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
       uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "Names"                                 ]
+      NAM  = self . Tables         [ "NamesEditing"                          ]
       self . EditAllNames          ( self , "Continents" , uuid , NAM        )
       return True
     ##########################################################################
-    if                             ( at == 3001                            ) :
-      self . Go                    ( self . TranslateAll                     )
-      return True
+    ## if                             ( at == 3001                            ) :
+    ##   self . Go                    ( self . TranslateAll                     )
+    ##   return True
     ##########################################################################
     return True
 ##############################################################################

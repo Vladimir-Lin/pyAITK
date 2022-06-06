@@ -63,6 +63,7 @@ class NationTypeListings           ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
+    self . ClassTag           = "NationTypeListings"
     self . EditAllNames       = None
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
@@ -81,7 +82,8 @@ class NationTypeListings           ( TreeDock                              ) :
     self . MountClicked            ( 1                                       )
     self . MountClicked            ( 2                                       )
     ##########################################################################
-    self . assignSelectionMode     ( "ContiguousSelection"                   )
+    self . assignSelectionMode     ( "ExtendedSelection"                     )
+    ## self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
@@ -111,7 +113,6 @@ class NationTypeListings           ( TreeDock                              ) :
     return
   ############################################################################
   def FocusIn                     ( self                                   ) :
-    ##########################################################################
     return self . defaultFocusIn  (                                          )
   ############################################################################
   def FocusOut                    ( self                                   ) :
@@ -286,19 +287,19 @@ class NationTypeListings           ( TreeDock                              ) :
     DB      . Close                   (                                      )
     ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
-      self . emitNamesShow  . emit    (                                      )
+      self  . emitNamesShow . emit    (                                      )
       return
     ##########################################################################
     JSON             =                {                                      }
     JSON [ "UUIDs" ] = UUIDs
     JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
-    self   . emitAllNames   . emit    ( JSON                                 )
+    self    . emitAllNames  . emit    ( JSON                                 )
     ##########################################################################
     if                                ( not self . isColumnHidden ( 1 )    ) :
       ########################################################################
-      VAL  =                          ( UUIDs ,                              )
-      self . Go                       ( self . ReportBelongings , VAL        )
+      VAL   =                         ( UUIDs ,                              )
+      self  . Go                      ( self . ReportBelongings , VAL        )
     ##########################################################################
     return
   ############################################################################
@@ -342,14 +343,14 @@ class NationTypeListings           ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( "NationTypeListings" , 2                         )
+    self . defaultPrepare ( self . ClassTag , 2                              )
     ##########################################################################
     return
   ############################################################################
   def AssureUuidItem          ( self , item , uuid , name                  ) :
     ##########################################################################
     DB     = self . ConnectDB (                                              )
-    if                        ( DB == None                                 ) :
+    if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
@@ -367,7 +368,7 @@ class NationTypeListings           ( TreeDock                              ) :
   ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
-    self . DoCopyToClipboard (                                               )
+    self . DoCopyToClipboard ( False                                         )
     ##########################################################################
     return
   ############################################################################
@@ -382,7 +383,7 @@ class NationTypeListings           ( TreeDock                              ) :
       self . setColumnHidden       ( col , not hid                           )
       if                           ( ( at == 9001 ) and ( hid )            ) :
         ######################################################################
-        self . startup             (                                         )
+        self . restart             (                                         )
         ######################################################################
       return True
     ##########################################################################
@@ -398,9 +399,7 @@ class NationTypeListings           ( TreeDock                              ) :
       return False
     ##########################################################################
     self   . Notify                ( 0                                       )
-    ##########################################################################
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
-    ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
     TRX    = self . Translations
@@ -433,7 +432,7 @@ class NationTypeListings           ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+      self . restart               (                                         )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
