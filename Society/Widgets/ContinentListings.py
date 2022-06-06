@@ -333,6 +333,10 @@ class ContinentListings            ( TreeDock                              ) :
     self    . OnBusy        . emit    (                                      )
     self    . setBustle               (                                      )
     ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
+    ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
