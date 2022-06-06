@@ -316,7 +316,7 @@ class ContinentListings            ( TreeDock                              ) :
       REL  . setRelation              ( "Contains"                           )
       CNT  = REL . CountSecond        ( DB , RELTAB                          )
       ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
+      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 4               )
     ##########################################################################
     self   . GoRelax . emit           (                                      )
     DB     . Close                    (                                      )
