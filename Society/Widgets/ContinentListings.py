@@ -599,10 +599,12 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )
     ##########################################################################
-    if                             ( len ( items ) == 1                    ) :
+    if                             ( self . IsOkay ( atItem )              ) :
       ########################################################################
       msg  = self . getMenuItem    ( "ContainPlaces"                         )
-      mm . addAction               ( 2001 , msg                              )
+      mm   . addAction             ( 2001 , msg                              )
+    ##########################################################################
+    if                             ( len ( items ) == 1                    ) :
       ########################################################################
       if                           ( self . EditAllNames != None           ) :
         mm . addAction             ( 1601 , TRX [ "UI::EditNames" ]          )
@@ -634,7 +636,9 @@ class ContinentListings            ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 2001                            ) :
       ########################################################################
-      head = item . text           ( 0                                       )
+      uuid = atItem . data         ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
+      head = atItem . text         ( 0                                       )
       icon = QIcon                 ( ":/images/vectorizer.png"               )
       self . PlaceSubgroups . emit ( head                                    ,
                                      self . GType                            ,
