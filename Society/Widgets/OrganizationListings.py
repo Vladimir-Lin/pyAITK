@@ -131,9 +131,10 @@ class OrganizationListings         ( TreeDock                              ) :
   ############################################################################
   def PrepareForActions ( self                                             ) :
     ##########################################################################
+    msg  = "新增人物"
     A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/addpeople.png"         )
-    A    . setToolTip             ( "新增人物" )
+    A    . setIcon                ( QIcon ( ":/images/addpeople.png"       ) )
+    A    . setToolTip             ( msg                                      )
     ## A    . trigger . connect      ( self . Somewhere )
     self . WindowActions . append ( A                                        )
     ##########################################################################
