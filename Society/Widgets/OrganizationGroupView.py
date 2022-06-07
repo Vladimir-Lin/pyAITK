@@ -107,11 +107,11 @@ class OrganizationGroupView         ( IconDock                             ) :
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
-    msg  = self . getMenuItem     ( "Crowds"                                 )
+    msg  = self . getMenuItem     ( "SIG"                                    )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/lists.png" )           )
     A    . setToolTip             ( msg                                      )
-    A    . trigger . connect      ( self . Somewhere )
+    A    . trigger . connect      ( self . OpenOrganizationGroup             )
     self . WindowActions . append ( A                                        )
     ##########################################################################
     return
@@ -688,7 +688,7 @@ class OrganizationGroupView         ( IconDock                             ) :
       mm   . addAction                ( 2001 , mg                            )
       ########################################################################
       if                              ( self . isSubgroup ( )              ) :
-        mg = self . getMenuItem       ( "Crowds"                             )
+        mg = self . getMenuItem       ( "SIG"                                )
         mm . addAction                ( 2002 , mg                            )
       mm   . addSeparator             (                                      )
     ##########################################################################
@@ -796,6 +796,16 @@ class OrganizationGroupView         ( IconDock                             ) :
       return False
     ##########################################################################
     return self . OpenItemSubgroup ( atItem                                  )
+  ############################################################################
+  def OpenOrganizationGroup          ( self                                ) :
+    ##########################################################################
+    atItem = self . currentItem      (                                       )
+    if                               ( self . NotOkay ( atItem )           ) :
+      return
+    ##########################################################################
+    self . OpenItemOrganizationGroup ( atItem                                )
+    ##########################################################################
+    return
   ############################################################################
   def OpenItemOrganizationGroup   ( self , item                            ) :
     ##########################################################################
