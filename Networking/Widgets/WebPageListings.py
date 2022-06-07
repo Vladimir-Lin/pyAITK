@@ -128,6 +128,7 @@ class WebPageListings              ( TreeDock                              ) :
     self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    self . LinkAction ( "Import"     , self . ImportURLs      , Enabled      )
     self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
     self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
     self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
