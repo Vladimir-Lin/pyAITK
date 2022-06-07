@@ -129,14 +129,35 @@ class OrganizationListings         ( TreeDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
-  def PrepareForActions ( self                                             ) :
+  def PrepareForActions           ( self                                   ) :
     ##########################################################################
-    ## msg  = "新增人物"
-    ## A    = QAction                (                                          )
-    ## A    . setIcon                ( QIcon ( ":/images/addpeople.png"       ) )
-    ## A    . setToolTip             ( msg                                      )
-    ## A    . trigger . connect      ( self . Somewhere )
-    ## self . WindowActions . append ( A                                        )
+    msg  = self . Translations    [ "UI::EditNames"                          ]
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationNames             )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Films"                                  )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationCrowds            )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Films"                                  )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/video.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationVideos            )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "IdentWebPage"                           )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/webfind.png" )         )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenIdentifierWebPages            )
+    self . WindowActions . append ( A                                        )
     ##########################################################################
     return
   ############################################################################
@@ -1212,6 +1233,56 @@ class OrganizationListings         ( TreeDock                              ) :
       return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
     ##########################################################################
     return          { "Match" : False                                        }
+  ############################################################################
+  def OpenOrganizationNames     ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data      ( 0 , Qt . UserRole                          )
+    uuid   = int                ( uuid                                       )
+    head   = atItem . text      ( 0                                          )
+    NAM    = self . Tables      [ "NamesEditing"                             ]
+    self   . EditAllNames       ( self , "Organization" , uuid , NAM         )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenOrganizationCrowds    ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data      ( 0 , Qt . UserRole                          )
+    uuid   = int                ( uuid                                       )
+    head   = atItem . text      ( 0                                          )
+    self   . PeopleGroup . emit ( head , self . GType , str ( uuid )         )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenOrganizationVideos    ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data      ( 0 , Qt . UserRole                          )
+    uuid   = int                ( uuid                                       )
+    head   = atItem . text      ( 0                                          )
+    self   . AlbumGroup  . emit ( head , self . GType , str ( uuid )         )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenIdentifierWebPages    ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self . OpenWebPageListings  ( atItem , "Equivalent"                      )
+    ##########################################################################
+    return
   ############################################################################
   def OpenWebPageListings      ( self , item , Related                     ) :
     ##########################################################################

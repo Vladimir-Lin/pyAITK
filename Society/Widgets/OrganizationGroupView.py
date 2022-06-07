@@ -105,14 +105,16 @@ class OrganizationGroupView         ( IconDock                             ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def PrepareForActions           ( self                                   ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    msg  = self . getMenuItem     ( "SIG"                                    )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/lists.png" )           )
-    A    . setToolTip             ( msg                                      )
-    A    . trigger . connect      ( self . OpenOrganizationGroup             )
-    self . WindowActions . append ( A                                        )
+    if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
+      ########################################################################
+      msg  = self . getMenuItem     ( "SIG"                                  )
+      A    = QAction                (                                        )
+      A    . setIcon                ( QIcon ( ":/images/lists.png" )         )
+      A    . setToolTip             ( msg                                    )
+      A    . triggered . connect    ( self . OpenOrganizationGroup           )
+      self . WindowActions . append ( A                                      )
     ##########################################################################
     return
   ############################################################################
