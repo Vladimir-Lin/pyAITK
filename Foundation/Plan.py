@@ -52,6 +52,7 @@ class Plan                    ( PurePlan                                   ) :
     self . statusMessage      = None
     self . statusBar          = None
     self . SearchLine         = None
+    self . ActionsTool        = None
     self . Ratio              = None
     self . VoiceWidget        = None
     self . progressManager    = None

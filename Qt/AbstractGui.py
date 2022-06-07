@@ -96,6 +96,7 @@ class AbstractGui        (                                                 ) :
     self . Functionalities = {                                               }
     self . GuiMutex        = threading . Lock ( )
     self . RunningThreads  = [                                               ]
+    self . WindowActions   = [                                               ]
     self . DropInJSON      = {                                               }
     self . DropDispatchers = [ { "Mime"     : "division/uuids"               ,
                                  "Function" : "acceptDivisionDrop"           ,
