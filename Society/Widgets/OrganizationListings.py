@@ -129,6 +129,16 @@ class OrganizationListings         ( TreeDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
   ############################################################################
+  def PrepareForActions ( self                                             ) :
+    ##########################################################################
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/addpeople.png"         )
+    A    . setToolTip             ( "新增人物" )
+    ## A    . trigger . connect      ( self . Somewhere )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
@@ -153,14 +163,15 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn             ( self                                           ) :
+  def FocusIn                ( self                                        ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
-    self . AttachActions  ( True                                             )
-    self . LinkVoice      ( self . CommandParser                             )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
@@ -1499,8 +1510,7 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     if                             ( at == 1001                            ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . restart               (                                         )
       ########################################################################
       return True
     ##########################################################################
