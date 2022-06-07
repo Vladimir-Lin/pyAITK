@@ -97,8 +97,6 @@ class ListWidget                       ( QListWidget , VirtualGui          ) :
     self . EditItem       = None
     self . EditWidget     = None
     ##########################################################################
-    self . PrepareForActions               (                                 )
-    ##########################################################################
     return
   ############################################################################
   def Configure               ( self                                       ) :

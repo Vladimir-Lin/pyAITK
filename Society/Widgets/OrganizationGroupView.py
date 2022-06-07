@@ -105,6 +105,17 @@ class OrganizationGroupView         ( IconDock                             ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
+  def PrepareForActions           ( self                                   ) :
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Crowds"                                 )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/lists.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . trigger . connect      ( self . Somewhere )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    return
+  ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
@@ -122,14 +133,15 @@ class OrganizationGroupView         ( IconDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn             ( self                                           ) :
+  def FocusIn                ( self                                        ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
-    self . AttachActions  ( True                                             )
-    self . LinkVoice      ( self . CommandParser                             )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
