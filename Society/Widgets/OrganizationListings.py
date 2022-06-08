@@ -317,6 +317,7 @@ class OrganizationListings         ( TreeDock                              ) :
   def refresh                     ( self , JSON                            ) :
     ##########################################################################
     self   . clear                (                                          )
+    self   . setEnabled           ( False                                    )
     ##########################################################################
     UUIDs  = JSON                 [ "UUIDs"                                  ]
     NAMEs  = JSON                 [ "NAMEs"                                  ]
@@ -330,6 +331,7 @@ class OrganizationListings         ( TreeDock                              ) :
     MSG    = FMT  . format        ( len ( UUIDs )                            )
     self   . setToolTip           ( MSG                                      )
     ##########################################################################
+    self   . setEnabled           ( True                                     )
     self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
