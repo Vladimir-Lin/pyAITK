@@ -152,6 +152,13 @@ class OrganizationListings         ( TreeDock                              ) :
     A    . triggered . connect    ( self . OpenOrganizationVideos            )
     self . WindowActions . append ( A                                        )
     ##########################################################################
+    msg  = self . getMenuItem     ( "Identifiers"                            )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/tag.png" )             )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationIdentifiers       )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
     msg  = self . getMenuItem     ( "IdentWebPage"                           )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/webfind.png" )         )
@@ -1245,6 +1252,19 @@ class OrganizationListings         ( TreeDock                              ) :
     head   = atItem . text      ( 0                                          )
     NAM    = self . Tables      [ "NamesEditing"                             ]
     self   . EditAllNames       ( self , "Organization" , uuid , NAM         )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenOrganizationIdentifiers   ( self                                 ) :
+    ##########################################################################
+    atItem = self . currentItem     (                                        )
+    if                              ( self . NotOkay ( atItem )            ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data          ( 0 , Qt . UserRole                      )
+    uuid   = int                    ( uuid                                   )
+    head   = atItem . text          ( 0                                      )
+    self   . OpenIdentifiers . emit ( head , self . GType , str ( uuid )     )
     ##########################################################################
     return
   ############################################################################
