@@ -1264,7 +1264,7 @@ class OrganizationListings         ( TreeDock                              ) :
     uuid   = atItem . data          ( 0 , Qt . UserRole                      )
     uuid   = int                    ( uuid                                   )
     head   = atItem . text          ( 0                                      )
-    self   . OpenIdentifiers . emit ( head , self . GType , str ( uuid )     )
+    self   . OpenIdentifiers . emit ( head , str ( uuid ) , self . GType     )
     ##########################################################################
     return
   ############################################################################
