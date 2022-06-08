@@ -212,20 +212,25 @@ class IdentifierListings           ( TreeDock                              ) :
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                   (                                              )
-  def InsertItem              ( self                                       ) :
+  @pyqtSlot                     (                                            )
+  def InsertItem                ( self                                     ) :
     ##########################################################################
-    if                        ( not self . isUuidMethod ( )                ) :
+    if                          ( not self . isUuidMethod ( )              ) :
       return
     ##########################################################################
-    item = QTreeWidgetItem    (                                              )
-    item . setData            ( 0 , Qt . UserRole , 0                        )
-    self . addTopLevelItem    ( item                                         )
-    line = self . setLineEdit ( item                                       , \
-                                2                                          , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
+    item   = QTreeWidgetItem    (                                            )
+    item   . setData            ( 0 , Qt . UserRole , 0                      )
+    ##########################################################################
+    if                          ( self . SortOrder in [ "desc" ]           ) :
+      self . insertTopLevelItem ( 0 , item                                   )
+    else :
+      self . addTopLevelItem    ( item                                       )
+    ##########################################################################
+    line   = self . setLineEdit ( item                                     , \
+                                  2                                        , \
+                                  "editingFinished"                        , \
+                                  self . nameChanged                         )
+    line   . setFocus           ( Qt . TabFocusReason                        )
     ##########################################################################
     return
   ############################################################################
