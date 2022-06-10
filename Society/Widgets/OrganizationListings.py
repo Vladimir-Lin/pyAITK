@@ -138,7 +138,7 @@ class OrganizationListings         ( TreeDock                              ) :
     A    . triggered . connect    ( self . OpenOrganizationNames             )
     self . WindowActions . append ( A                                        )
     ##########################################################################
-    msg  = self . getMenuItem     ( "Films"                                  )
+    msg  = self . getMenuItem     ( "Crowds"                                 )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
     A    . setToolTip             ( msg                                      )
@@ -1403,10 +1403,12 @@ class OrganizationListings         ( TreeDock                              ) :
     mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
     ##########################################################################
     msg  = self . getMenuItem   ( "Crowds"                                   )
-    mm   . addActionFromMenu    ( COL , 38521002 , msg                       )
+    ICON = QIcon                ( ":/images/viewpeople.png"                  )
+    mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem   ( "Films"                                    )
-    mm   . addActionFromMenu    ( COL , 38521003 , msg                       )
+    ICON = QIcon                ( ":/images/video.png"                       )
+    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem   ( "CollectFilms"                             )
     mm   . addActionFromMenu    ( COL , 38521004 , msg                       )
@@ -1422,15 +1424,17 @@ class OrganizationListings         ( TreeDock                              ) :
     mm   . addSeparatorFromMenu ( COL                                        )
     ##########################################################################
     msg  = self . getMenuItem   ( "Identifiers"                              )
-    mm   . addActionFromMenu    ( COL , 38523001 , msg                       )
+    ICON = QIcon                ( ":/images/tag.png"                         )
+    mm   . addActionFromMenuWithIcon ( COL , 38523001 , ICON , msg           )
     ##########################################################################
     mm   . addSeparatorFromMenu ( COL                                        )
     ##########################################################################
-    MSG  = self . getMenuItem   ( "WebPages"                                 )
-    mm   . addActionFromMenu    ( COL , 38524001 , MSG                       )
+    msg  = self . getMenuItem   ( "WebPages"                                 )
+    mm   . addActionFromMenu    ( COL , 38524001 , msg                       )
     ##########################################################################
-    MSG  = self . getMenuItem   ( "IdentWebPage"                             )
-    mm   . addActionFromMenu    ( COL , 38524002 , MSG                       )
+    msg  = self . getMenuItem   ( "IdentWebPage"                             )
+    ICON = QIcon                ( ":/images/webfind.png"                     )
+    mm   . addActionFromMenuWithIcon ( COL , 38524002 , ICON , msg           )
     ##########################################################################
     return mm
   ############################################################################
@@ -1546,7 +1550,9 @@ class OrganizationListings         ( TreeDock                              ) :
       ########################################################################
       if                           ( self . EditAllNames != None           ) :
         ######################################################################
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
+        msg  = TRX                 [ "UI::EditNames"                         ]
+        ICON = QIcon               ( ":/images/names.png"                    )
+        mm   . addActionWithIcon   ( 1601 , ICON , msg                       )
     ##########################################################################
     mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     mm     . addSeparator          (                                         )
