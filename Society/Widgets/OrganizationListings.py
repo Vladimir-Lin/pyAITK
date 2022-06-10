@@ -138,6 +138,13 @@ class OrganizationListings         ( TreeDock                              ) :
     A    . triggered . connect    ( self . OpenOrganizationNames             )
     self . WindowActions . append ( A                                        )
     ##########################################################################
+    msg  = self . getMenuItem     ( "Search"                                 )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/search.png" )          )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . Search                            )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
     msg  = self . getMenuItem     ( "Crowds"                                 )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
@@ -1319,16 +1326,17 @@ class OrganizationListings         ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FunctionsMenu          ( self , mm , uuid , item                     ) :
+  def FunctionsMenu                  ( self , mm , uuid , item             ) :
     ##########################################################################
-    msg = self . getMenuItem ( "Functions"                                   )
-    LOM = mm   . addMenu     ( msg                                           )
+    msg  = self . getMenuItem        ( "Functions"                           )
+    LOM  = mm   . addMenu            ( msg                                   )
     ##########################################################################
-    msg = self . getMenuItem ( "AssignTables"                                )
-    mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
+    msg  = self . getMenuItem        ( "AssignTables"                        )
+    mm   . addActionFromMenu         ( LOM , 25351301 , msg                  )
     ##########################################################################
-    msg = self . getMenuItem ( "Search"                                      )
-    mm  . addActionFromMenu  ( LOM , 25351401 , msg                          )
+    msg  = self . getMenuItem        ( "Search"                              )
+    ICON = QIcon                     ( ":/images/search.png"                 )
+    mm   . addActionFromMenuWithIcon ( LOM , 25351401 , ICON , msg           )
     ##########################################################################
     return mm
   ############################################################################
@@ -1545,16 +1553,9 @@ class OrganizationListings         ( TreeDock                              ) :
     self   . AppendInsertAction    ( mm , 1101                               )
     self   . AppendRenameAction    ( mm , 1102                               )
     self   . AppendDeleteAction    ( mm , 1103                               )
+    self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
+    self   . AppendTranslateAllAction (          mm , 3001                   )
     ##########################################################################
-    if                             ( atItem not in [ False , None ]        ) :
-      ########################################################################
-      if                           ( self . EditAllNames != None           ) :
-        ######################################################################
-        msg  = TRX                 [ "UI::EditNames"                         ]
-        ICON = QIcon               ( ":/images/names.png"                    )
-        mm   . addActionWithIcon   ( 1601 , ICON , msg                       )
-    ##########################################################################
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     mm     . addSeparator          (                                         )
     ##########################################################################
     self   . FunctionsMenu         ( mm , uuid , atItem                      )
@@ -1571,8 +1572,7 @@ class OrganizationListings         ( TreeDock                              ) :
     OKAY   = self . RunAmountIndexMenu (                                     )
     if                             ( OKAY                                  ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . restart               (                                         )
       ########################################################################
       return
     ##########################################################################
@@ -1587,8 +1587,7 @@ class OrganizationListings         ( TreeDock                              ) :
     OKAY   = self . HandleLocalityMenu ( at                                  )
     if                             ( OKAY                                  ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . restart               (                                         )
       ########################################################################
       return True
     ##########################################################################
@@ -1599,8 +1598,7 @@ class OrganizationListings         ( TreeDock                              ) :
     OKAY   = self . RunSortingMenu ( at                                      )
     if                             ( OKAY                                  ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . restart               (                                         )
       ########################################################################
       return True
     ##########################################################################
@@ -1634,9 +1632,11 @@ class OrganizationListings         ( TreeDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
+      ########################################################################
+      uuid = self . itemUuid       ( atItem , 0                              )
       NAM  = self . Tables         [ "NamesEditing"                          ]
       self . EditAllNames          ( self , "Organization" , uuid , NAM      )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 3001                            ) :

@@ -422,16 +422,35 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return mm
   ############################################################################
-  def AppendEditNamesAction           ( self , mm , Id                     ) :
+  def TryAppendEditNamesAction ( self , atItem , mm , Id                   ) :
+    ##########################################################################
+    if                         ( self . NotOkay ( atItem )                 ) :
+      return mm
+    ##########################################################################
+    if                         ( self . NotOkay ( self . EditAllNames )    ) :
+      return mm
+    ##########################################################################
+    return self AppendEditNamesAction (                 mm , Id              )
+  ############################################################################
+  def AppendEditNamesAction  ( self , mm , Id                              ) :
     ##########################################################################
     TRX  = self . Translations
-    msg  = TRX                        [ "UI::EditNames"                      ]
-    mm   . addAction                  ( Id , msg                             )
+    msg  = TRX               [ "UI::EditNames"                               ]
+    ICON = QIcon             ( ":/images/names.png"                          )
+    mm   . addActionWithIcon ( Id , ICON , msg                               )
     ##########################################################################
     return mm
   ############################################################################
   def doEditAllNames ( self                                                ) :
     return           ( self . EditAllNames not in [ False , None ]           )
+  ############################################################################
+  def AppendTranslateAllAction ( self , mm , Id                            ) :
+    ##########################################################################
+    TRX = self . Translations
+    msg = TRX                  [ "UI::TranslateAll"                          ]
+    mm  . addAction            ( Id , msg                                    )
+    ##########################################################################
+    return mm
   ############################################################################
   ## 選單當中抓取項目資訊
   ############################################################################
