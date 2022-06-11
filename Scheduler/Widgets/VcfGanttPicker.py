@@ -95,6 +95,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     self . ZAbove          = 0
     self . Picking         = False
     self . Ranges          =    { "First" : 0.0 , "Second" : 0.0             }
+    self . Picked          =    { "Start" : 0   , "Finish" : 0               }
     self . setAcceptHoverEvents ( False                                      )
     ##########################################################################
     self . setZValue            ( self . ZDefault                            )
@@ -136,7 +137,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     ##########################################################################
     LLBL  = VcfLabel           ( gview , None , self . PlanFunc              )
     LLBL  . setOptions         ( gview . Options , False                     )
-    LLBL  . setRange           ( QRectF ( 3.0 , 1.5 , 2.0 , 0.3 )            )
+    LLBL  . setRange           ( QRectF (  3.0 , 1.5 , 6.0 , 0.6 )           )
     LLBL  . setZValue          ( 200.0                                       )
     LLBL  . setOpacity         ( 1.0                                         )
     LLBL  . setVisible         ( False                                       )
@@ -146,7 +147,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     LLBL  . setFlag            ( QGraphicsItem . ItemIsFocusable  , False    )
     ##########################################################################
     FNT   = QFont              (                                             )
-    FNT   . setPixelSize       ( 40.0                                        )
+    FNT   . setPixelSize       ( 48.0                                        )
     LLBL  . Painter . fonts [ 0 ] = FNT
     ##########################################################################
     gview . addItem            ( LLBL , self                                 )
@@ -154,7 +155,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     ##########################################################################
     RLBL  = VcfLabel           ( gview , None , self . PlanFunc              )
     RLBL  . setOptions         ( gview . Options , False                     )
-    RLBL  . setRange           ( QRectF ( 6.0 , 2.3 , 2.0 , 0.3 )            )
+    RLBL  . setRange           ( QRectF ( 12.0 , 1.9 , 6.0 , 0.6 )           )
     RLBL  . setZValue          ( 200.0                                       )
     RLBL  . setOpacity         ( 1.0                                         )
     RLBL  . setVisible         ( False                                       )
@@ -164,7 +165,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     RLBL  . setFlag            ( QGraphicsItem . ItemIsFocusable  , False    )
     ##########################################################################
     FNT   = QFont              (                                             )
-    FNT   . setPixelSize       ( 40.0                                        )
+    FNT   . setPixelSize       ( 48.0                                        )
     RLBL  . Painter . fonts [ 0 ] = FNT
     ##########################################################################
     gview . addItem            ( RLBL , self                                 )
@@ -176,6 +177,9 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     TLBL  . setZValue          ( 300.0                                       )
     TLBL  . setOpacity         ( 1.0                                         )
     TLBL  . setVisible         ( False                                       )
+    ##########################################################################
+    TLBL  . Painter . addPen   ( 0 , QColor ( 0 , 0 , 255 , 255 )            )
+    TLBL  . Painter . addBrush ( 0 , QColor ( 0 , 0 , 255 , 255 )            )
     ##########################################################################
     TLBL  . setFlag            ( QGraphicsItem . ItemIsMovable    , False    )
     TLBL  . setFlag            ( QGraphicsItem . ItemIsSelectable , False    )
@@ -325,7 +329,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     W2   = float             ( D2 * PW                                       )
     WW   = float             ( W2 - XX                                       )
     ##########################################################################
-    TBLK = QRectF            ( XX , YY , WW , HH                             )
+    TBLK = QRectF            ( KK . x ( ) + XX , YY , WW , HH                )
     self . Ranger . setRange ( TBLK                                          )
     self . Ranger . prepareGeometryChange (                                  )
     self . Ranger . update   (                                               )
@@ -338,21 +342,57 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     ##########################################################################
     T1   = int               ( T1 + ST                                       )
     T2   = int               ( T2 + ST                                       )
+    T1   = self . CalibrateTimeAlign ( T1                                    )
+    T2   = self . CalibrateTimeAlign ( T2                                    )
     DT   = int               ( T2 - T1                                       )
+    ##########################################################################
+    self . Picked [ "Start"  ] = T1
+    self . Picked [ "Finish" ] = T2
     ##########################################################################
     NOW  = StarDate          (                                               )
     TZ   = self . TZ
     ##########################################################################
     self . Labels [ "Time"  ] . setRange ( TBLK                              )
-    self . Labels [ "Time"  ] . setText  ( f"{DT}" )
+    self . Labels [ "Time"  ] . setText  ( self . TickToString ( DT )        )
     ##########################################################################
     NOW  . Stardate = T1
     DTX  = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"       )
-    self . Labels [ "Left"  ] . setText ( DTX                                )
+    LLBL = self . Labels     [ "Left"                                        ]
+    ##########################################################################
+    LLBL . setText           ( DTX                                           )
+    RR   = LLBL . Painter . boundingRect ( 0 , DTX                           )
+    RR   = self . rectToPaper            ( RR                                )
+    TW   = RR   . width      (                                               )
+    TH   = RR   . height     (                                               )
+    TW   = float             ( ( TW * 2 ) + 0.2                              )
+    TH   = float             ( TH + 0.1                                      )
+    XP   = float             ( XX - TW                                       )
+    if                       ( XP < 0.1                                    ) :
+      XP = 0.1
+    LBLK = QRectF            ( KK . x ( ) + XP , YY , TW , TH                )
+    LLBL . setRange          ( LBLK                                          )
+    LLBL . prepareGeometryChange (                                           )
+    LLBL . update            (                                               )
     ##########################################################################
     NOW  . Stardate = T2
     DTX  = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"       )
-    self . Labels [ "Right" ] . setText ( DTX                                )
+    RLBL = self . Labels     [ "Right"                                       ]
+    ##########################################################################
+    RLBL . setText           ( DTX                                           )
+    RR   = RLBL . Painter . boundingRect ( 0 , DTX                           )
+    RR   = self . rectToPaper            ( RR                                )
+    TW   = RR   . width      (                                               )
+    TH   = RR   . height     (                                               )
+    TW   = float             ( ( TW * 2 ) + 0.2                              )
+    TH   = float             ( TH + 0.1                                      )
+    XP   = float             ( XX + WW + 0.2                                 )
+    YP   = float             ( YY + 1.2 - TH                                 )
+    if                       ( ( XP + TW + 0.1 ) > PW                      ) :
+      XP = float             ( PW - TW - 0.1                                 )
+    RBLK = QRectF            ( KK . x ( ) + XP , YP , TW , TH                )
+    RLBL . setRange          ( RBLK                                          )
+    RLBL . prepareGeometryChange (                                           )
+    RLBL . update            (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -366,6 +406,15 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     ##########################################################################
     return
   ############################################################################
+  def CalibrateTimeAlign ( self , T                                        ) :
+    ##########################################################################
+    ##########################################################################
+    return T
+  ############################################################################
+  def TickToString       ( self , DT                                       ) :
+    ##########################################################################
+    ##########################################################################
+    return f"{DT} s"
   ############################################################################
   ############################################################################
   ############################################################################
