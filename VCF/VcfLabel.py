@@ -110,6 +110,7 @@ class VcfLabel                  ( VcfCanvas                                ) :
     R    = self . ContentRect             (                                  )
     ## self . Painter . fonts [ 0 ] . setDPI ( self . Options . PaperDPI        )
     p    . setFont                        ( self . Painter . fonts [ 0 ]     )
+    self . Painter . assignPainterId      ( p , 0                            )
     ##########################################################################
     if                  ( clip                                             ) :
       p  . drawText     ( R , self . TextAlignment , self . Content , region )

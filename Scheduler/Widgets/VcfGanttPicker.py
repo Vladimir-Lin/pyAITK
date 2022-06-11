@@ -142,6 +142,9 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     LLBL  . setOpacity         ( 1.0                                         )
     LLBL  . setVisible         ( False                                       )
     ##########################################################################
+    LLBL  . Painter . addPen   ( 0 , QColor (  16 ,  16 ,  16 , 255 )        )
+    LLBL  . Painter . addBrush ( 0 , QColor (  16 ,  16 ,  16 , 255 )        )
+    ##########################################################################
     LLBL  . setFlag            ( QGraphicsItem . ItemIsMovable    , False    )
     LLBL  . setFlag            ( QGraphicsItem . ItemIsSelectable , False    )
     LLBL  . setFlag            ( QGraphicsItem . ItemIsFocusable  , False    )
@@ -159,6 +162,9 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     RLBL  . setZValue          ( 200.0                                       )
     RLBL  . setOpacity         ( 1.0                                         )
     RLBL  . setVisible         ( False                                       )
+    ##########################################################################
+    RLBL  . Painter . addPen   ( 0 , QColor (  16 ,  16 ,  16 , 255 )        )
+    RLBL  . Painter . addBrush ( 0 , QColor (  16 ,  16 ,  16 , 255 )        )
     ##########################################################################
     RLBL  . setFlag            ( QGraphicsItem . ItemIsMovable    , False    )
     RLBL  . setFlag            ( QGraphicsItem . ItemIsSelectable , False    )
@@ -178,8 +184,8 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     TLBL  . setOpacity         ( 1.0                                         )
     TLBL  . setVisible         ( False                                       )
     ##########################################################################
-    TLBL  . Painter . addPen   ( 0 , QColor ( 0 , 0 , 255 , 255 )            )
-    TLBL  . Painter . addBrush ( 0 , QColor ( 0 , 0 , 255 , 255 )            )
+    TLBL  . Painter . addPen   ( 0 , QColor (   0 ,   0 , 255 , 255 )        )
+    TLBL  . Painter . addBrush ( 0 , QColor (   0 ,   0 , 255 , 255 )        )
     ##########################################################################
     TLBL  . setFlag            ( QGraphicsItem . ItemIsMovable    , False    )
     TLBL  . setFlag            ( QGraphicsItem . ItemIsSelectable , False    )
