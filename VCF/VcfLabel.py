@@ -20,14 +20,22 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
+from   PyQt5 . QtCore                 import QRect
+from   PyQt5 . QtCore                 import QRectF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QFont
 from   PyQt5 . QtGui                  import QFontMetricsF
+from   PyQt5 . QtGui                  import QColor
 from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QPainterPath
+from   PyQt5 . QtGui                  import QGradient
+from   PyQt5 . QtGui                  import QLinearGradient
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
@@ -100,8 +108,8 @@ class VcfLabel                  ( VcfCanvas                                ) :
     self . pushPainters ( p                                                  )
     ##########################################################################
     R    = self . ContentRect             (                                  )
-    self . Painter . fonts [ 0 ] . setDPI ( self . Options . PaperDPI        )
-    p    . setFont                        ( self . Painter . fonts [ 0 ]     )
+    ## self . Painter . fonts [ 0 ] . setDPI ( self . Options . PaperDPI        )
+    ## p    . setFont                        ( self . Painter . fonts [ 0 ]     )
     ##########################################################################
     if                  ( clip                                             ) :
       p  . drawText     ( R , self . TextAlignment , self . Content , region )

@@ -87,6 +87,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     FNT  . setPixelSize         ( 48.0                                       )
     self . Painter . fonts [ 3 ] = FNT
     ##########################################################################
+    self . setTimeTracking = None
     self . Duration = None
     self . Current  = 0
     self . ZDefault = 10000.0
@@ -96,7 +97,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     self . setAcceptHoverEvents ( False                                      )
     ##########################################################################
     self . setZValue            ( self . ZDefault                            )
-    self . setOpacity           ( 0.95                                       )
+    self . setOpacity           ( 0.75                                       )
     self . setPos               ( QPointF ( 0.0 , 0.0 )                      )
     ##########################################################################
     self . setFlag              ( QGraphicsItem . ItemIsMovable    , False   )
@@ -112,15 +113,20 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     ##########################################################################
     DTVR  = VcfCanvas          ( gview , None , self . PlanFunc              )
     DTVR  . setOptions         ( gview . Options , False                     )
-    DTVR  . setRange           ( QRectF ( 0.0 , 0.0 , 2.0 , 2.0 )            )
+    DTVR  . setRange           ( QRectF ( 5.0 , 1.25 , 3.0 , 1.2 )           )
     DTVR  . setZValue          ( 100.0                                       )
+    DTVR  . setOpacity         ( 1.0                                         )
+    DTVR  . setVisible         ( False                                       )
     ##########################################################################
     DTVR  . Mode    = 2
     DTVR  . Scaling = False
     ##########################################################################
-    DTVR  . Painter . addMap   ( "Default"  , 0                              )
-    DTVR  . Painter . addPen   ( 0 , QColor (   0 , 255 ,   0 ,   0 )        )
-    DTVR  . Painter . addBrush ( 0 , QColor ( 224 , 192 , 224 ,   0 )        )
+    DTVR  . Painter . addPen   ( 0 , QColor ( 128 , 128 , 255 , 255 )        )
+    DTVR  . Painter . addBrush ( 0 , QColor ( 224 , 224 , 255 , 255 )        )
+    ##########################################################################
+    DTVR  . setFlag            ( QGraphicsItem . ItemIsMovable    , False    )
+    DTVR  . setFlag            ( QGraphicsItem . ItemIsSelectable , False    )
+    DTVR  . setFlag            ( QGraphicsItem . ItemIsFocusable  , False    )
     ##########################################################################
     gview . addItem            ( DTVR , self                                 )
     gview . Scene   . addItem  ( DTVR                                        )
@@ -129,22 +135,49 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     ##########################################################################
     LLBL  = VcfLabel           ( gview , None , self . PlanFunc              )
     LLBL  . setOptions         ( gview . Options , False                     )
-    LLBL  . setRange           ( QRectF ( 4.0 , 0.0 , 3.0 , 1.0 )            )
+    LLBL  . setRange           ( QRectF ( 3.0 , 1.5 , 2.0 , 0.3 )            )
     LLBL  . setZValue          ( 200.0                                       )
+    LLBL  . setOpacity         ( 1.0                                         )
+    LLBL  . setVisible         ( False                                       )
+    ##########################################################################
+    LLBL  . setFlag            ( QGraphicsItem . ItemIsMovable    , False    )
+    LLBL  . setFlag            ( QGraphicsItem . ItemIsSelectable , False    )
+    LLBL  . setFlag            ( QGraphicsItem . ItemIsFocusable  , False    )
     ##########################################################################
     gview . addItem            ( LLBL , self                                 )
     gview . Scene   . addItem  ( LLBL                                        )
     ##########################################################################
     RLBL  = VcfLabel           ( gview , None , self . PlanFunc              )
     RLBL  . setOptions         ( gview . Options , False                     )
-    RLBL  . setRange           ( QRectF ( 8.0 , 0.0 , 3.0 , 1.0 )            )
+    RLBL  . setRange           ( QRectF ( 6.0 , 2.3 , 2.0 , 0.3 )            )
     RLBL  . setZValue          ( 200.0                                       )
+    RLBL  . setOpacity         ( 1.0                                         )
+    RLBL  . setVisible         ( False                                       )
+    ##########################################################################
+    RLBL  . setFlag            ( QGraphicsItem . ItemIsMovable    , False    )
+    RLBL  . setFlag            ( QGraphicsItem . ItemIsSelectable , False    )
+    RLBL  . setFlag            ( QGraphicsItem . ItemIsFocusable  , False    )
     ##########################################################################
     gview . addItem            ( RLBL , self                                 )
     gview . Scene   . addItem  ( RLBL                                        )
     ##########################################################################
+    TLBL  = VcfLabel           ( gview , None , self . PlanFunc              )
+    TLBL  . setOptions         ( gview . Options , False                     )
+    TLBL  . setRange           ( QRectF ( 6.0 , 2.3 , 2.0 , 0.3 )            )
+    TLBL  . setZValue          ( 300.0                                       )
+    TLBL  . setOpacity         ( 1.0                                         )
+    TLBL  . setVisible         ( False                                       )
+    ##########################################################################
+    TLBL  . setFlag            ( QGraphicsItem . ItemIsMovable    , False    )
+    TLBL  . setFlag            ( QGraphicsItem . ItemIsSelectable , False    )
+    TLBL  . setFlag            ( QGraphicsItem . ItemIsFocusable  , False    )
+    ##########################################################################
+    gview . addItem            ( TLBL , self                                 )
+    gview . Scene   . addItem  ( TLBL                                        )
+    ##########################################################################
     self . Labels [ "Left"  ] = LLBL
     self . Labels [ "Right" ] = RLBL
+    self . Labels [ "Time"  ] = TLBL
     ##########################################################################
     return
   ############################################################################
@@ -208,6 +241,7 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     self . setZValue            ( self . ZAbove                              )
     self . setAcceptHoverEvents ( True                                       )
     self . setCursor            ( Qt . SplitHCursor                          )
+    self . setTimeTracking      ( False                                      )
     self . PrepareDuration      (                                            )
     ##########################################################################
     return True
@@ -232,25 +266,65 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     self . setZValue            ( self . ZDefault                            )
     self . setAcceptHoverEvents ( False                                      )
     self . setCursor            ( Qt . ArrowCursor                           )
+    self . setTimeTracking      ( True                                       )
     self . FinalDuration        (                                            )
     ##########################################################################
     return True
   ############################################################################
-  def PrepareDuration           ( self                                     ) :
+  def PrepareDuration                      ( self                          ) :
     ##########################################################################
+    self . MoveDuration                    (                                 )
     ##########################################################################
-    return
-  ############################################################################
-  def MoveDuration              ( self                                     ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  def FinalDuration             ( self                                     ) :
-    ##########################################################################
+    self . Ranger             . setVisible ( True                            )
+    self . Labels [ "Left"  ] . setVisible ( True                            )
+    self . Labels [ "Right" ] . setVisible ( True                            )
+    self . Labels [ "Time"  ] . setVisible ( True                            )
     ##########################################################################
     return
   ############################################################################
+  def MoveDuration           ( self                                        ) :
+    ##########################################################################
+    PP   = self . PaperPos
+    PR   = self . PaperRect
+    SR   = self . ScreenRect
+    TL   = PR   . topLeft    (                                               )
+    SR   = SR   . left       (                                               )
+    SW   = SR   . width      (                                               )
+    PW   = PR   . width      (                                               )
+    PH   = PR   . height     (                                               )
+    ##########################################################################
+    KK   = PP + TL
+    HH   = float             ( PH - 0.3                                      )
+    ##########################################################################
+    P1   = self . Ranges     [ "First"                                       ]
+    P2   = self . Ranges     [ "Second"                                      ]
+    ##########################################################################
+    if                       ( P1 > P2                                     ) :
+      ########################################################################
+      T  = P1
+      P1 = P2
+      P2 = T
+    ##########################################################################
+    YY   = KK . y            (                                               )
+    XX   = float             ( float ( float ( P1 - SR ) / SW ) * PW         )
+    W2   = float             ( float ( float ( P2 - SR ) / SW ) * PW         )
+    WW   = float             ( W2 - XX                                       )
+    ##########################################################################
+    self . Ranger . setRange ( QRectF ( XX , YY , WW , HH )                  )
+    self . Ranger . prepareGeometryChange (                                  )
+    self . Ranger . update   (                                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def FinalDuration                        ( self                          ) :
+    ##########################################################################
+    self . Ranger             . setVisible ( False                           )
+    self . Labels [ "Left"  ] . setVisible ( False                           )
+    self . Labels [ "Right" ] . setVisible ( False                           )
+    self . Labels [ "Time"  ] . setVisible ( False                           )
+    ##########################################################################
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################

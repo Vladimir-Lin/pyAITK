@@ -338,6 +338,7 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     VTSI  . setRange        ( QRectF ( 0.0 , 1.1 , 0.1 , 1.5 )               )
     VTSI  . Duration = self . Duration
     VTSI  . ZAbove   = self . zValue ( ) + 10000.0
+    VTSI  . setTimeTracking = self . setTimeTracking
     ##########################################################################
     gview . addItem         ( VTSI , self                                    )
     gview . Scene . addItem ( VTSI                                           )
@@ -388,6 +389,12 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     ##########################################################################
     self . Duration . Start = START
     self . Duration . End   = FINAL
+    ##########################################################################
+    return
+  ############################################################################
+  def setTimeTracking ( self , tracking                                    ) :
+    ##########################################################################
+    self . MouseTracking = tracking
     ##########################################################################
     return
 ##############################################################################
