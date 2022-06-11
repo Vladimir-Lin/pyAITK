@@ -342,6 +342,8 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     gview . addItem         ( VTSI , self                                    )
     gview . Scene . addItem ( VTSI                                           )
     ##########################################################################
+    VTSI  . PrepareItems    ( gview                                          )
+    ##########################################################################
     self  . Picker = VTSI
     ##########################################################################
     return
