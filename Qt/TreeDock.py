@@ -430,7 +430,7 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     if                         ( self . NotOkay ( self . EditAllNames )    ) :
       return mm
     ##########################################################################
-    return self AppendEditNamesAction (                 mm , Id              )
+    return self . AppendEditNamesAction (                 mm , Id            )
   ############################################################################
   def AppendEditNamesAction  ( self , mm , Id                              ) :
     ##########################################################################

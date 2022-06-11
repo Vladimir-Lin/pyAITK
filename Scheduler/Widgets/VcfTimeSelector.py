@@ -336,6 +336,8 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     VTSI  = VcfGanttPicker  ( gview , None , self . PlanFunc                 )
     VTSI  . setOptions      ( gview . Options , False                        )
     VTSI  . setRange        ( QRectF ( 0.0 , 1.1 , 0.1 , 1.5 )               )
+    VTSI  . Duration = self . Duration
+    VTSI  . ZAbove   = self . zValue ( ) + 10000.0
     ##########################################################################
     gview . addItem         ( VTSI , self                                    )
     gview . Scene . addItem ( VTSI                                           )
@@ -371,9 +373,12 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     NOW  . Now      (                                                        )
     self . Current = NOW . Stardate
     ##########################################################################
-    if ( self . TimeScale not in [ False , None ] )                          :
+    if              ( self . IsOkay ( self . TimeScale )                   ) :
       ########################################################################
       self . TimeScale . Current = self . Current
+    ##########################################################################
+    if              ( self . IsOkay ( self . Picker    )                   ) :
+      self . Picker . Current    = self . Current
     ##########################################################################
     return
   ############################################################################

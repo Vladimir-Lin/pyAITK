@@ -68,31 +68,39 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     ##########################################################################
     return
   ############################################################################
-  def setGanttPickerDefaults  ( self                                       ) :
+  def setGanttPickerDefaults    ( self                                     ) :
     ##########################################################################
-    self . Painter . addMap   ( "Default"  , 0                               )
-    self . Painter . addMap   ( "Outdated" , 1                               )
-    self . Painter . addMap   ( "Tracking" , 2                               )
-    self . Painter . addPen   ( 0 , QColor (   0 , 255 ,   0 ,   0 )         )
-    self . Painter . addBrush ( 0 , QColor ( 255 , 255 , 255 ,   0 )         )
-    self . Painter . addPen   ( 1 , QColor (  32 , 128 , 255 , 192 )         )
-    self . Painter . addBrush ( 1 , QColor ( 255 , 192 , 192 ,  32 )         )
-    self . Painter . addPen   ( 2 , QColor ( 153 , 50  , 204 , 224 )         )
-    self . Painter . addPen   ( 3 , QColor (   0 ,   0 ,   0 , 255 )         )
-    self . Painter . addBrush ( 3 , QColor (   0 ,   0 ,   0 , 255 )         )
+    self . Painter . addMap     ( "Default"  , 0                             )
+    self . Painter . addMap     ( "Outdated" , 1                             )
+    self . Painter . addMap     ( "Tracking" , 2                             )
+    self . Painter . addPen     ( 0 , QColor (   0 , 255 ,   0 ,   0 )       )
+    self . Painter . addBrush   ( 0 , QColor ( 255 , 255 , 255 ,   0 )       )
+    self . Painter . addPen     ( 1 , QColor (  32 , 128 , 255 , 192 )       )
+    self . Painter . addBrush   ( 1 , QColor ( 255 , 192 , 192 ,  32 )       )
+    self . Painter . addPen     ( 2 , QColor ( 153 , 50  , 204 , 224 )       )
+    self . Painter . addPen     ( 3 , QColor (   0 ,   0 ,   0 , 255 )       )
+    self . Painter . addBrush   ( 3 , QColor (   0 ,   0 ,   0 , 255 )       )
     ##########################################################################
-    ## FNT  = self . Gui . font  (                                              )
-    FNT  = QFont              (                                              )
-    FNT  . setPixelSize       ( 48.0                                         )
+    ## FNT  = self . Gui . font    (                                            )
+    FNT  = QFont                (                                            )
+    FNT  . setPixelSize         ( 48.0                                       )
     self . Painter . fonts [ 3 ] = FNT
     ##########################################################################
-    self . setZValue          ( 10000.0                                      )
-    self . setOpacity         ( 0.95                                         )
-    self . setPos             ( QPointF ( 0.0 , 0.0 )                        )
+    self . Duration = None
+    self . Current  = 0
+    self . ZDefault = 10000.0
+    self . ZAbove   = 0
+    self . Picking  = False
+    self . Ranges   =           { "First" : 0.0 , "Second" : 0.0             }
+    self . setAcceptHoverEvents ( False                                      )
     ##########################################################################
-    self . setFlag            ( QGraphicsItem . ItemIsMovable    , False     )
-    self . setFlag            ( QGraphicsItem . ItemIsSelectable , False     )
-    self . setFlag            ( QGraphicsItem . ItemIsFocusable  , False     )
+    self . setZValue            ( self . ZDefault                            )
+    self . setOpacity           ( 0.95                                       )
+    self . setPos               ( QPointF ( 0.0 , 0.0 )                      )
+    ##########################################################################
+    self . setFlag              ( QGraphicsItem . ItemIsMovable    , False   )
+    self . setFlag              ( QGraphicsItem . ItemIsSelectable , False   )
+    self . setFlag              ( QGraphicsItem . ItemIsFocusable  , False   )
     ##########################################################################
     return
   ############################################################################
@@ -105,4 +113,105 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     self . popPainters                ( p                                    )
     ##########################################################################
     return
+  ############################################################################
+  def mousePressEvent                 ( self , event                       ) :
+    ##########################################################################
+    OKAY      = self . IsMask         ( event.buttons ( ) , Qt.LeftButton    )
+    if                                ( OKAY                               ) :
+      ########################################################################
+      if                              ( self . StartRange ( event )        ) :
+        event     . accept            (                                      )
+      else                                                                   :
+        super ( ) . mousePressEvent   (        event                         )
+      ########################################################################
+      return
+    ##########################################################################
+    super     ( ) . mousePressEvent   (        event                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseMoveEvent                  ( self , event                       ) :
+    ##########################################################################
+    OKAY      = self . IsMask         ( event.buttons ( ) , Qt.LeftButton    )
+    if                                ( OKAY                               ) :
+      ########################################################################
+      if                              ( self . MoveRange ( event )         ) :
+        event     . accept            (                                      )
+      else                                                                   :
+        super ( ) . mouseMoveEvent    (        event                         )
+      ########################################################################
+      return
+    ##########################################################################
+    super     ( ) . mouseMoveEvent    (        event                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseReleaseEvent           ( self , event                           ) :
+    ##########################################################################
+    if                            ( self . FinalRange ( event )            ) :
+      event   . accept            (                                          )
+      return
+    ##########################################################################
+    super ( ) . mouseReleaseEvent (        event                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def StartRange                ( self , event                             ) :
+    ##########################################################################
+    self . Picking  = True
+    self . Ranges [ "First"  ] = event . pos ( ) . x (                       )
+    self . Ranges [ "Second" ] = event . pos ( ) . x (                       )
+    self . setZValue            ( self . ZAbove                              )
+    self . setAcceptHoverEvents ( True                                       )
+    self . setCursor            ( Qt . SplitHCursor                          )
+    self . PrepareDuration      (                                            )
+    ##########################################################################
+    return True
+  ############################################################################
+  def MoveRange                 ( self , event                             ) :
+    ##########################################################################
+    if                          ( not self . Picking                       ) :
+      return False
+    ##########################################################################
+    self . Ranges [ "Second" ] = event . pos ( ) . x (                       )
+    self . MoveDuration         (                                            )
+    ##########################################################################
+    return True
+  ############################################################################
+  def FinalRange                ( self , event                             ) :
+    ##########################################################################
+    if                          ( not self . Picking                       ) :
+      return False
+    ##########################################################################
+    self . Picking  = False
+    self . Ranges [ "Second" ] = event . pos ( ) . x (                       )
+    self . setZValue            ( self . ZDefault                            )
+    self . setAcceptHoverEvents ( False                                      )
+    self . setCursor            ( Qt . ArrowCursor                           )
+    self . FinalDuration        (                                            )
+    ##########################################################################
+    return True
+  ############################################################################
+  def PrepareDuration           ( self                                     ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def MoveDuration              ( self                                     ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def FinalDuration             ( self                                     ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
 ##############################################################################
