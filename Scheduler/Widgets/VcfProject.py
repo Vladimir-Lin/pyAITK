@@ -164,6 +164,9 @@ class VcfProject                  ( VcfWidget                              ) :
     VTS  . setRange         ( QRectF     ( 0.0 , 0.0 , 0.1 , 0.1 )           )
     ## VTS  . setMenuCaller    ( self . MenuCallerEmitter                       )
     ##########################################################################
+    VTS  . Languages = self . Languages
+    VTS  . Menus     = self . Menus
+    ##########################################################################
     self . addItem          ( VTS                                            )
     self . Scene . addItem  ( VTS                                            )
     ##########################################################################

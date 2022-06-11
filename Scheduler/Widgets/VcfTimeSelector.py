@@ -324,6 +324,9 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     VTSI  . setPeriod       ( SDT , EDT                                      )
     VTSI  . setCurrent      (                                                )
     ##########################################################################
+    VTSI  . Languages = self . Languages
+    VTSI  . Menus     = self . Menus
+    ##########################################################################
     gview . addItem         ( VTSI , self                                    )
     gview . Scene . addItem ( VTSI                                           )
     ##########################################################################
@@ -340,6 +343,9 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     VTSI  . ZAbove   = self . zValue ( ) + 10000.0
     VTSI  . setTimeTracking = self . setTimeTracking
     ##########################################################################
+    VTSI  . Languages = self . Languages
+    VTSI  . Menus     = self . Menus
+    ##########################################################################
     gview . addItem         ( VTSI , self                                    )
     gview . Scene . addItem ( VTSI                                           )
     ##########################################################################
@@ -354,6 +360,9 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     VTSI  = VcfGantt        ( gview , None , self . PlanFunc                 )
     VTSI  . setOptions      ( gview . Options , False                        )
     VTSI  . setRange        ( QRectF ( 0.0 , 2.7 , 0.1 , 1.0 )               )
+    ##########################################################################
+    VTSI  . Languages = self . Languages
+    VTSI  . Menus     = self . Menus
     ##########################################################################
     gview . addItem         ( VTSI , self                                    )
     gview . Scene . addItem ( VTSI                                           )
