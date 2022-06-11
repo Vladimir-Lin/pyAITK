@@ -48,6 +48,7 @@ from   AITK  . Calendars  . Periode      import Periode      as Periode
 ##############################################################################
 from   AITK  . VCF        . VcfRectangle import VcfRectangle as VcfRectangle
 from   AITK  . VCF        . VcfCanvas    import VcfCanvas    as VcfCanvas
+from   AITK  . VCF        . VcfLabel     import VcfLabel     as VcfLabel
 ##############################################################################
 from                      . VcfTimeScale import VcfTimeScale as VcfTimeScale
 ##############################################################################
@@ -104,8 +105,46 @@ class VcfGanttPicker              ( VcfCanvas                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItems ( self , gview ) :
+  def PrepareItems             ( self , gview                              ) :
     ##########################################################################
+    self . Ranger = None
+    self . Labels =            {                                             }
+    ##########################################################################
+    DTVR  = VcfCanvas          ( gview , None , self . PlanFunc              )
+    DTVR  . setOptions         ( gview . Options , False                     )
+    DTVR  . setRange           ( QRectF ( 0.0 , 0.0 , 2.0 , 2.0 )            )
+    DTVR  . setZValue          ( 100.0                                       )
+    ##########################################################################
+    DTVR  . Mode    = 2
+    DTVR  . Scaling = False
+    ##########################################################################
+    DTVR  . Painter . addMap   ( "Default"  , 0                              )
+    DTVR  . Painter . addPen   ( 0 , QColor (   0 , 255 ,   0 ,   0 )        )
+    DTVR  . Painter . addBrush ( 0 , QColor ( 224 , 192 , 224 ,   0 )        )
+    ##########################################################################
+    gview . addItem            ( DTVR , self                                 )
+    gview . Scene   . addItem  ( DTVR                                        )
+    ##########################################################################
+    self . Ranger   = DTVR
+    ##########################################################################
+    LLBL  = VcfLabel           ( gview , None , self . PlanFunc              )
+    LLBL  . setOptions         ( gview . Options , False                     )
+    LLBL  . setRange           ( QRectF ( 4.0 , 0.0 , 3.0 , 1.0 )            )
+    LLBL  . setZValue          ( 200.0                                       )
+    ##########################################################################
+    gview . addItem            ( LLBL , self                                 )
+    gview . Scene   . addItem  ( LLBL                                        )
+    ##########################################################################
+    RLBL  = VcfLabel           ( gview , None , self . PlanFunc              )
+    RLBL  . setOptions         ( gview . Options , False                     )
+    RLBL  . setRange           ( QRectF ( 8.0 , 0.0 , 3.0 , 1.0 )            )
+    RLBL  . setZValue          ( 200.0                                       )
+    ##########################################################################
+    gview . addItem            ( RLBL , self                                 )
+    gview . Scene   . addItem  ( RLBL                                        )
+    ##########################################################################
+    self . Labels [ "Left"  ] = LLBL
+    self . Labels [ "Right" ] = RLBL
     ##########################################################################
     return
   ############################################################################
