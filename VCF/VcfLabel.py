@@ -109,7 +109,7 @@ class VcfLabel                  ( VcfCanvas                                ) :
     ##########################################################################
     R    = self . ContentRect             (                                  )
     ## self . Painter . fonts [ 0 ] . setDPI ( self . Options . PaperDPI        )
-    ## p    . setFont                        ( self . Painter . fonts [ 0 ]     )
+    p    . setFont                        ( self . Painter . fonts [ 0 ]     )
     ##########################################################################
     if                  ( clip                                             ) :
       p  . drawText     ( R , self . TextAlignment , self . Content , region )
@@ -153,7 +153,7 @@ class VcfLabel                  ( VcfCanvas                                ) :
   ############################################################################
   def FitSize                             ( self                           ) :
     ##########################################################################
-    self . Painter . fonts [ 0 ] . setDPI ( self . Options . PaperDPI        )
+    ## self . Painter . fonts [ 0 ] . setDPI ( self . Options . PaperDPI        )
     R    = self . Painter . boundingRect  ( 0 , self . Content               )
     S    = QPointF                        ( R . width ( ) , R . height ( )   )
     """
