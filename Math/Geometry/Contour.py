@@ -339,60 +339,59 @@ class Contour    (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def AssignQPoint            ( self , pos                                 ) :
+  def DoPathUpdater      ( self , action , Updating = True                 ) :
     ##########################################################################
-    self   . AppendPlanePoint ( pos . x ( ) , pos . y ( )                    )
-    if                        ( self . PathUpdater not in [ False , None ] ) :
-      self . PathUpdater      ( self . convex , 0                            )
+    if                   ( self . PathUpdater not in [ False , None ]      ) :
+      self . PathUpdater ( self , action , Updating                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def AssignQPoint          ( self , pos                                   ) :
+    ##########################################################################
+    self . AppendPlanePoint ( pos . x ( ) , pos . y ( )                      )
+    self . DoPathUpdater    ( 0                                              )
     ##########################################################################
     return True
   ############################################################################
-  def SpotQPoint                ( self , pos                               ) :
+  def SpotQPoint              ( self , pos                                 ) :
     ##########################################################################
-    RX     = self . getProperty ( "RX"                                       )
-    Id     = self . find        ( pos      , RX                              )
-    self   . setProperty        ( "Picked" , Id                              )
+    RX   = self . getProperty ( "RX"                                         )
+    Id   = self . find        ( pos      , RX                                )
+    self . setProperty        ( "Picked" , Id                                )
     ##########################################################################
-    if                          ( len ( Id ) <= 0                          ) :
+    if                        ( len ( Id ) <= 0                            ) :
       return False
     ##########################################################################
-    self   . setProperty        ( "State" , 1                                )
+    self . setProperty        ( "State" , 1                                  )
     ##########################################################################
-    if                          ( self . PathUpdater not in [ False,None ] ) :
-      self . PathUpdater        ( self , 2                                   )
+    self . DoPathUpdater      ( 2                                            )
     ##########################################################################
     return True
   ############################################################################
-  def MoveQPoint                ( self , pos                               ) :
+  def MoveQPoint              ( self , pos                                 ) :
     ##########################################################################
-    Id     = self . getProperty ( "Picked"                                   )
+    Id   = self . getProperty ( "Picked"                                     )
     ##########################################################################
-    if                          ( len ( Id ) <= 0                          ) :
+    if                        ( len ( Id ) <= 0                            ) :
       return False
     ##########################################################################
-    self   . setProperty        ( "State" , 2                                )
-    ##########################################################################
-    self   . ModifyPlanePoint   ( Id , pos . x ( ) , pos . y ( )             )
-    ##########################################################################
-    if                          ( self . PathUpdater not in [ False,None ] ) :
-      self . PathUpdater        ( self , 0                                   )
+    self . setProperty        ( "State" , 2                                  )
+    self . ModifyPlanePoint   ( Id , pos . x ( ) , pos . y ( )               )
+    self . DoPathUpdater      ( 0                                            )
     ##########################################################################
     return True
   ############################################################################
-  def FinishQPoint              ( self , pos                               ) :
+  def FinishQPoint            ( self , pos                                 ) :
     ##########################################################################
-    Id     = self . getProperty ( "Picked"                                   )
+    Id   = self . getProperty ( "Picked"                                     )
     ##########################################################################
-    if                          ( len ( Id ) <= 0                          ) :
+    if                        ( len ( Id ) <= 0                            ) :
       return
     ##########################################################################
-    self   . setProperty        ( "Picked" , ""                              )
-    self   . setProperty        ( "State" , 0                                )
-    ##########################################################################
-    self   . ModifyPlanePoint   ( Id , pos . x ( ) , pos . y ( )             )
-    ##########################################################################
-    if                          ( self . PathUpdater not in [ False,None ] ) :
-      self . PathUpdater        ( self , 1                                   )
+    self . setProperty        ( "Picked" , ""                                )
+    self . setProperty        ( "State" , 0                                  )
+    self . ModifyPlanePoint   ( Id , pos . x ( ) , pos . y ( )               )
+    self . DoPathUpdater      ( 1                                            )
     ##########################################################################
     return
   ############################################################################
@@ -407,10 +406,10 @@ class Contour    (                                                         ) :
     Id     = self . find        ( pos      , RX                              )
     ##########################################################################
     if                          ( len ( Id ) <= 0                          ) :
+      self . DoPathUpdater      ( 0 , False                                  )
       return False
     ##########################################################################
-    if                          ( self . PathUpdater not in [ False,None ] ) :
-      self . PathUpdater        ( self , 3 , False                           )
+    self   . DoPathUpdater      ( 3 , False                                  )
     ##########################################################################
     return True
   ############################################################################

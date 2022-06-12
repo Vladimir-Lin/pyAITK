@@ -117,13 +117,14 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . convex  . PathUpdater = self . UpdateContourPoints
     ##########################################################################
     self . Painter . addMap       ( "Contour" , 10002                        )
-    self . Painter . addMap       ( "Points"  , 10009                        )
     self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
-    self . Painter . addPen       ( 10009 , QColor ( 128 ,  64 , 255 , 255 ) )
     self . Painter . addBrush     ( 10002 , QColor (   0 ,   0 ,   0 ,   0 ) )
-    self . Painter . addBrush     ( 10009 , QColor (   0 ,   0 ,   0 ,   0 ) )
-    self . Painter . pens [ 10001 ] . setWidthF ( 4.5                        )
     self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
+    ##########################################################################
+    self . Painter . addMap       ( "Points"  , 10009                        )
+    self . Painter . addPen       ( 10009 , QColor ( 128 ,  64 , 255 , 255 ) )
+    self . Painter . addBrush     ( 10009 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . pens [ 10009 ] . setWidthF ( 4.5                        )
     ##########################################################################
     return
   ############################################################################
@@ -141,12 +142,15 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def mousePressEvent        ( self , event                                ) :
+  def mousePressEvent          ( self , event                              ) :
     ##########################################################################
-    OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 0             )
-    if                       ( OKAY                                        ) :
-      event . accept         (                                               )
-      return
+    OKAY      = self . IsMask  ( event . buttons ( ) , Qt . LeftButton       )
+    if                         ( OKAY                                      ) :
+      ########################################################################
+      OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 0           )
+      if                       ( OKAY                                      ) :
+        event . accept         (                                             )
+        return
     ##########################################################################
     OKAY = self . lineEditingPressEvent   ( event                            )
     if                                    ( OKAY                           ) :
@@ -157,12 +161,14 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def mouseMoveEvent         ( self , event                                ) :
+  def mouseMoveEvent           ( self , event                              ) :
     ##########################################################################
-    OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 1             )
-    if                       ( OKAY                                        ) :
-      event . accept         (                                               )
-      return
+    OKAY      = self . IsMask  ( event . buttons ( ) , Qt . LeftButton       )
+    if                         ( OKAY                                      ) :
+      OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 1           )
+      if                       ( OKAY                                      ) :
+        event . accept         (                                             )
+        return
     ##########################################################################
     OKAY = self . lineEditingMoveEvent    ( event                            )
     if                                    ( OKAY                           ) :
@@ -483,54 +489,6 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . Painter . switches [ CID ] = True
     ##########################################################################
     self . update                         (                                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def AssignContourPoint             ( self , pos                          ) :
-    ##########################################################################
-    self . convex . AppendPlanePoint ( pos . x ( ) , pos . y ( )             )
-    self . UpdateContourPoints       ( self . convex , 0                     )
-    ##########################################################################
-    return
-  ############################################################################
-  def SpotContourPoint                 ( self , pos                        ) :
-    ##########################################################################
-    RX   = self . convex . getProperty ( "RX"                                )
-    Id   = self . convex . find        ( pos      , RX                       )
-    self . convex . setProperty        ( "Picked" , Id                       )
-    ##########################################################################
-    if                                 ( len ( Id ) <= 0                   ) :
-      return False
-    ##########################################################################
-    self . UpdateContourPoints         ( self . convex , 2                   )
-    ##########################################################################
-    return True
-  ############################################################################
-  def MoveContourPoint                 ( self , pos                        ) :
-    ##########################################################################
-    Id   = self . convex . getProperty ( "Picked"                            )
-    ##########################################################################
-    if                                 ( len ( Id ) <= 0                   ) :
-      return
-    ##########################################################################
-    self . convex . ModifyPlanePoint   ( Id , pos . x ( ) , pos . y ( )      )
-    ##########################################################################
-    self . UpdateContourPoints         ( self . convex , 0                   )
-    ##########################################################################
-    return
-  ############################################################################
-  def FinishContourPoint               ( self , pos                        ) :
-    ##########################################################################
-    Id   = self . convex . getProperty ( "Picked"                            )
-    ##########################################################################
-    if                                 ( len ( Id ) <= 0                   ) :
-      return
-    ##########################################################################
-    self . convex . setProperty        ( "Picked" , ""                       )
-    ##########################################################################
-    self . convex . ModifyPlanePoint   ( Id , pos . x ( ) , pos . y ( )      )
-    ##########################################################################
-    self . UpdateContourPoints         ( self . convex , 1                   )
     ##########################################################################
     return
   ############################################################################
