@@ -4,18 +4,110 @@
 ##############################################################################
 import math
 ##############################################################################
+from   PyQt5 . QtCore import QPoint
 from   PyQt5 . QtCore import QPointF
 ##############################################################################
 from   PyQt5 . QtGui  import QColor
 from   PyQt5 . QtGui  import QVector3D
 ##############################################################################
+"""
+typedef enum       {
+  Pixel       =   0, /* Not actual unit, used on computer rendition */
+  /* Astronomy System */
+  Parsec      =   1, /* 206265AU
+                        30,856,804,798,079,115 Meters
+                        about 3.261567 ly
+                      */
+  LightYear   =   2, /* 9,460,730,472,580,800 Meters */
+  LightDay    =   3, /* 25,902,068,371,200 Meters */
+  LightHour   =   4, /* 1,079,252,848,800 Meters */
+  AU          =   5, /* 149,597,870,691 Meters */
+  LightMinute =   6, /* 17,987,547,480 Meters */
+  LightSpeed  =   7, /* 299,792,458 Meters */
+  /* SI System */
+  Yottametre  = 101, /* 10 ^  24 Meters */
+  Zettametre  = 102, /* 10 ^  21 Meters */
+  Exametre    = 103, /* 10 ^  18 Meters */
+  Petametre   = 104, /* 10 ^  15 Meters */
+  Terametre   = 105, /* 10 ^  12 Meters */
+  Gigametre   = 106, /* 10 ^   9 Meters */
+  Megametre   = 107, /* 10 ^   6 Meters */
+  Kilometer   = 108, /* 10 ^   3 Meters */
+  Hectometre  = 109, /* 10 ^   2 Meters */
+  Decametre   = 110, /* 10 ^   1 Meters */
+  Meter       = 111, /* Light Speed : 299792458 Meters */
+  Decimeter   = 112, /* 10 ^ - 1 Meter */
+  Centimeter  = 113, /* 10 ^ - 2 Meter */
+  Millimeter  = 114, /* 10 ^ - 3 Meter */
+  Micrometre  = 115, /* 10 ^ - 6 Meter */
+  Nanometer   = 116, /* 10 ^ - 9 Meter */
+  Angstrom    = 117, /* 10 ^ -10 Meter */
+  Picometre   = 118, /* 10 ^ -12 Meter */
+  Fermi       = 119, /* 10 ^ -15 Meter */
+  Attometer   = 120, /* 10 ^ -18 Meter */
+  Zeptometre  = 121, /* 10 ^ -21 Meter */
+  Yoctometre  = 122, /* 10 ^ -24 Meter */
+  SuperString = 123, /* 10 ^ -33 Meter */
+  Planck      = 124, /* 10 ^ -36 Meter */
+  MilliPlanck = 125, /* 10 ^ -39 Meter */
+  NanoPlanck  = 126, /* 10 ^ -45 Meter */
+  /* Imperial Units */
+  Mile        = 201, /* 1609.344 Meters */
+  Furlong     = 202, /* 220 Yards */
+  Chain       = 203, /* 22 Yards */
+  Rod         = 204, /* 5.5 Yards , 5.0292 Meters */
+  Perch       = 205, /* 5.5 Yards , same name */
+  Pole        = 206, /* 5.5 Yards , same name */
+  Lug         = 207, /* 5.5 Yards , same name */
+  Fathom      = 208, /* 2 Yards , 182.88 Centimeters */
+  Yard        = 209, /* 91.44 Centimeters */
+  Foot        = 210, /* 30.48 Centimeters */
+  Hand        = 211, /* 10.16 Centimeters */
+  Inch        = 212, /* 2.54 Centimeters */
+  /* Chinese Modern Unit */
+  ChineseLi   = 301, /* 500 Meters */
+  ChineseYin  = 302, /* 15 Yin = 1 Li */
+  ChineseZhang= 303, /* 150 Zhang = 1 Li */
+  ChineseBu   = 304, /* 5 Chi */
+  ChineseChi  = 305, /* 1500 Chi = 1 Li */
+  ChineseCun  = 306, /* 0.1 Chi */
+  ChineseFen  = 307, /* 0.01 Chi */
+  TangBigFoot = 308, /* 29.6 Centimeters */
+  /* Korea , Japan */
+  KoreanChi   = 401, /* 35.6 Centimeters */
+  /* India Unit */
+  YojanaMin   = 501, /* 13 Kilometers */
+  Yojana      = 502, /* Yojana average */
+  YojanaMax   = 503, /* 16 Kilometers */
+  /* Nautical mile */
+  Nautical    = 601, /* 1852 Meters */
+  Rig         = 602, /* 5556 Meters */
+  /* Printing */
+  Pica        = 701, /* 12 points */
+  Point       = 702, /* 1 point = 127/360 mm about 352.7 um */
+  /* Russian  */
+  Verst       = 801  /* 1.0668 Kilometer */
+} Unit             ;
+"""
 class ControlPoint        (                                                ) :
   ############################################################################
   DofNone      = 0
   DofTranslate = 1
   DofRotate    = 2
   DofScale     = 3
-  VerySmall    = 0.000000000000000000000000000000000000001
+  ############################################################################
+  ContourNone      = 0
+  ContourStart     = 1
+  ContourFlat      = 2
+  ContourCubic     = 3
+  ContourQuadratic = 4
+  ContourEnd       = 5
+  ############################################################################
+  ContourLinear    = 0x00010000
+  ContourPlane     = 0x00020000
+  ContourSolid     = 0x00040000
+  ############################################################################
+  VerySmall        = 0.000000000000000000000000000000000000001
   ############################################################################
   def __init__   ( self                                                    ) :
     ##########################################################################
@@ -31,8 +123,7 @@ class ControlPoint        (                                                ) :
   def clear    ( self                                                      ) :
     ##########################################################################
     self . Uuid = 0
-    self . Type = 0x00010000
-    ## self . Type = Graphics::Linear | Graphics::None
+    self . Type = self . ContourLinear | self . ContourNone
     self . DOF  = self . DofNone
     self . Unit = 113
     ## self . Unit = Physics::Centimeter
@@ -120,6 +211,18 @@ class ControlPoint        (                                                ) :
     ##########################################################################
     return
   ############################################################################
+  def setUnit ( self , unit                                                ) :
+    ##########################################################################
+    self . Unit = unit
+    ##########################################################################
+    return
+  ############################################################################
+  def setDOF ( self , dof                                                  ) :
+    ##########################################################################
+    self . DOF = dof
+    ##########################################################################
+    return
+  ############################################################################
   def setQPointF     ( self , p                                            ) :
     ##########################################################################
     self . x = p . x (                                                       )
@@ -143,6 +246,9 @@ class ControlPoint        (                                                ) :
     self . t = c . alphaF (                                                  )
     ##########################################################################
     return self
+  ############################################################################
+  def toQPoint    ( self                                                   ) :
+    return QPoint ( int ( self . x ) , int ( self . y )                      )
   ############################################################################
   def toQPointF    ( self                                                  ) :
     return QPointF ( self . x , self . y                                     )
@@ -174,6 +280,9 @@ class ControlPoint        (                                                ) :
     C . setAlphaF ( self . t                                                 )
     ##########################################################################
     return C
+  ############################################################################
+  def toList2 ( self                                                       ) :
+    return    [ self . x , self . y                                          ]
   ############################################################################
   def toList3 ( self                                                       ) :
     return    [ self . x , self . y , self . z                               ]

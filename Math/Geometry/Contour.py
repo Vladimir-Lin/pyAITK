@@ -27,35 +27,49 @@ class Contour    (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def clear                          ( self                                ) :
+  def clear                           ( self                               ) :
     ##########################################################################
-    self . Uuid       = 0
-    self . Name       = ""
-    self . Type       = 0x00010000
-    self . Closed     = False
-    self . Substract  = False
-    self . Index      =              [                                       ]
-    self . Thickness  = ControlPoint (                                       )
-    self . Points     =              {                                       }
-    self . Properties =              {                                       }
+    self . Uuid        = 0
+    self . Name        = ""
+    self . Type        = ControlPoint . ContourLinear
+    self . Closed      = False
+    self . Substract   = False
+    self . Index       =              [                                      ]
+    self . Thickness   = ControlPoint (                                      )
+    self . Points      =              {                                      }
+    self . Properties  =              {                                      }
+    self . PathUpdater = None
     ##########################################################################
-    self . Thickness  . setXYZ       ( 0.05 , 0.05 , 0.05                    )
+    self . Thickness   . setXYZ       ( 0.05 , 0.05 , 0.05                   )
     ##########################################################################
     return
   ############################################################################
   def assign ( self , contour                                              ) :
     ##########################################################################
-    self . Uuid       = contour . Uuid
-    self . Name       = contour . Name
-    self . Type       = contour . Type
-    self . Closed     = contour . Closed
-    self . Substract  = contour . Substract
-    self . Index      = contour . Index
-    self . Thickness  . assign ( contour . Thickness                         )
-    self . Points     = contour . Points
-    self . Properties = contour . Properties
+    self . Uuid        = contour . Uuid
+    self . Name        = contour . Name
+    self . Type        = contour . Type
+    self . Closed      = contour . Closed
+    self . Substract   = contour . Substract
+    self . Index       = contour . Index
+    self . Thickness   . assign ( contour . Thickness                        )
+    self . Points      = contour . Points
+    self . Properties  = contour . Properties
+    self . PathUpdater = contour . PathUpdater
     ##########################################################################
     return
+  ############################################################################
+  def setClosed ( self , closed                                            ) :
+    ##########################################################################
+    self . Closed = closed
+    ##########################################################################
+    return closed
+  ############################################################################
+  def setInvert ( self , inverted                                          ) :
+    ##########################################################################
+    self . Substract = inverted
+    ##########################################################################
+    return inverted
   ############################################################################
   def setProperty ( self , item , value                                    ) :
     ##########################################################################
@@ -68,12 +82,50 @@ class Contour    (                                                         ) :
   ############################################################################
   def toJson ( self                                                        ) :
     ##########################################################################
-    JSON =   {                                                               }
+    JSON =   { "Uuid"       : self . Uuid                                  , \
+               "Name"       : self . Name                                  , \
+               "Type"       : self . Type                                  , \
+               "Closed"     : self . Closed                                , \
+               "Substract"  : self . Substract                             , \
+               "Index"      : self . Index                                 , \
+               "Thickness"  : self . Thickness                             , \
+               "Points"     : {                                          } , \
+               "Properties" : self . Properties                              }
+    ##########################################################################
+    KEYs = self . Points . keys (                                            )
+    for Id in KEYs                                                           :
+      ########################################################################
+      JSON [ "Points" ] [ Id ] = self . Points [ Id ] . toJson (             )
     ##########################################################################
     return JSON
   ############################################################################
+  def fromJson                               ( self , JSON                 ) :
+    ##########################################################################
+    self   . Uuid       = JSON               [ "Uuid"                        ]
+    self   . Name       = JSON               [ "Name"                        ]
+    self   . Type       = JSON               [ "Type"                        ]
+    self   . Closed     = JSON               [ "Closed"                      ]
+    self   . Substract  = JSON               [ "Substract"                   ]
+    self   . Index      = JSON               [ "Index"                       ]
+    self   . Thickness  . fromJson           ( JSON [ "Thickness" ]          )
+    self   . Points     =                    {                               }
+    self   . Properties = JSON               [ "Properties"                  ]
+    ##########################################################################
+    KEYs   = self . JSON [ "Points" ] . keys (                               )
+    for Id in KEYs                                                           :
+      ########################################################################
+      P    = ControlPoint                    (                               )
+      P    . fromJson                        ( JSON [ "Points" ] [ Id ]      )
+      ########################################################################
+      self . Points [ Id ] = P
+    ##########################################################################
+    return
+  ############################################################################
   def count    ( self                                                      ) :
     return len ( self . Index                                                )
+  ############################################################################
+  def getPoint           ( self , Id                                       ) :
+    return self . Points [        Id                                         ]
   ############################################################################
   def begin         ( self                                                 ) :
     ##########################################################################
@@ -107,26 +159,29 @@ class Contour    (                                                         ) :
     ##########################################################################
     a    = self . Index     [ 0                                              ]
     ##########################################################################
-    self . Points [ a ] . Type = self . Type | 1
-    ## self . Points [ a ] . Type = self . type | Graphics::Start
+    self . Points [ a ] . Type = self . Type | ControlPoint . Start
     ##########################################################################
     if                      ( self . count ( ) < 2                         ) :
       return
     ##########################################################################
     b    = self . Index     [ self . count ( ) - 1                           ]
-    self . Points [ b ] . Type = Type | 5
-    ## self . Points [ b ] . Type = Type | Graphics::End
+    self . Points [ b ] . Type = Type | ControlPoint . ContourEnd
     ##########################################################################
     return
   ############################################################################
   def close              ( self , t                                        ) :
     ##########################################################################
+    TOTAL = self . count (                                                   )
     self  . Closed = False
+    ##########################################################################
+    if                   ( TOTAL < 1                                       ) :
+      return
+    ##########################################################################
     Flags = self . Type | t
     a     = self . Index [ 0                                                 ]
     self  . Points [ a ] . Type = Flags
     ##########################################################################
-    if                   ( self . count ( ) < 2                            ) :
+    if                   ( TOTAL < 2                                       ) :
       return
     ##########################################################################
     b    = self . Index  [ self . count ( ) - 1                              ]
@@ -142,9 +197,9 @@ class Contour    (                                                         ) :
     for Id in self . Index                                                   :
       ########################################################################
       if   ( self . Points [ Id ] . Within ( point , R2 )                  ) :
-        return i
+        return Id
     ##########################################################################
-    return -1
+    return ""
   ############################################################################
   def boundingRect     ( self                                              ) :
     ##########################################################################
@@ -198,21 +253,6 @@ class Contour    (                                                         ) :
     ##########################################################################
     return self
   ############################################################################
-  """
-  N::Contour & N::Contour::operator += (FeaturePoints & features)
-  {
-    int L = 0                                           ;
-    if (index.count()>0) L = index.last()               ;
-    for (int i=0;i<features.count();i++)                {
-      ControlPoint point(features[i]->x,features[i]->y) ;
-      L++                                               ;
-      index << L                                        ;
-      points [ L ] = point                              ;
-    }                                                   ;
-    return ME                                           ;
-  }
-  """
-  ############################################################################
   def minus        ( self , center                                         ) :
     ##########################################################################
     x = center . x (                                                         )
@@ -253,22 +293,50 @@ class Contour    (                                                         ) :
     ##########################################################################
     return self
   ############################################################################
-  def AppendPlanePoint      ( self , x , y                                 ) :
+  def AppendPlanePoint         ( self , x , y                              ) :
     ##########################################################################
-    B   = self . Properties [ "Base"                                         ]
-    z   = self . Properties [ "Z"                                            ]
+    B      = self . Properties [ "Base"                                      ]
+    z      = self . Properties [ "Z"                                         ]
     ##########################################################################
-    P   = ControlPoint      (                                                )
-    P   . x = x
-    P   . y = y
-    P   . z = z
+    P      = ControlPoint      (                                             )
+    P      . setXYZ            ( x , y , z                                   )
     ##########################################################################
-    while                   ( f"{B}" in self . Index                       ) :
-      B = B + 1
+    while                      ( f"{B}" in self . Index                    ) :
+      B    = B + 1
     ##########################################################################
-    self . add              ( f"{B}" , P                                     )
+    CNT    = self . count      (                                             )
     ##########################################################################
-    return self . count     (                                                )
+    AF     = self . Type | ControlPoint . ContourStart
+    BF     = self . Type | ControlPoint . ContourFlat
+    CF     = self . Type | ControlPoint . ContourEnd
+    ##########################################################################
+    if                         ( CNT <= 0                                  ) :
+      ########################################################################
+      P    . Type = AF
+      ########################################################################
+    if                         ( CNT >  1                                  ) :
+      ########################################################################
+      P    . Type = CF
+      K    = self . Index      [ -1                                          ]
+      self . Points [ K ] . Type = BF
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      P    . Type = CF
+    ##########################################################################
+    self   . add               ( f"{B}" , P                                  )
+    ##########################################################################
+    return self . count        (                                             )
+  ############################################################################
+  def ModifyPlanePoint ( self , Id , x , y                                 ) :
+    ##########################################################################
+    if                 ( Id not in self . Points                           ) :
+      return
+    ##########################################################################
+    self . Points [ Id ] . x = x
+    self . Points [ Id ] . y = y
+    ##########################################################################
+    return
   ############################################################################
   def PointsToQPainterPath                    ( self , path                ) :
     ##########################################################################
@@ -282,19 +350,20 @@ class Contour    (                                                         ) :
     ##########################################################################
     return path
   ############################################################################
-  def ContourToQPainterPath                 ( self , path                  ) :
+  def ContourToQPainterPath                   ( self , path                ) :
     ##########################################################################
-    PL   = QPolygonF                        (                                )
+    PL     = QPolygonF                        (                              )
     for id in self . Index                                                   :
       ########################################################################
-      P  = self . Points [ id ] . toQPointF (                                )
-      PL . append                           ( P                              )
+      P    = self . Points [ id ] . toQPointF (                              )
+      PL   . append                           ( P                            )
     ##########################################################################
-    if                                      ( len ( PL ) <= 2              ) :
+    if                                        ( len ( PL ) <= 2            ) :
       return path
     ##########################################################################
-    path . addPolygon                       ( PL                             )
-    path . closeSubpath                     (                                )
+    path   . addPolygon                       ( PL                           )
+    if                                        ( self . Closed              ) :
+      path . closeSubpath                     (                              )
     ##########################################################################
     return   path
   ############################################################################
@@ -307,133 +376,3 @@ class Contour    (                                                         ) :
   ############################################################################
   ############################################################################
 ##############################################################################
-"""
-class Q_GEOMETRY_EXPORT Contour
-{
-  public:
-
-    SUID          uuid      ;
-    QString       name      ;
-    int           type      ;
-    bool          closed    ;
-    bool          substract ;
-    CUIDs         index     ;
-    ControlPoint  thickness ;
-    ControlPoints points    ;
-
-    explicit   Contour    (void) ;
-               Contour    (const Contour & contour) ;
-    virtual   ~Contour    (void) ;
-
-    int        count      (void) ;
-
-    void       begin      (void) ;
-    int        add        (int Id,ControlPoint & point) ;
-    int        remove     (int Id) ;
-    void       end        (void);
-    void       close      (int Type = Graphics::Quadratic) ;
-
-    int        find       (QPointF & point,double R) ;
-
-    QByteArray Data       (void);
-    void       setData    (QByteArray & contour) ;
-
-    QRectF boundingRect   (void) ;
-
-    Contour & operator  = (const Contour & contour  ) ;
-    Contour & operator += (QPointF         center   ) ;
-    Contour & operator += (FeaturePoints & features ) ;
-    Contour & operator -= (QPointF         center   ) ;
-    Contour & operator *= (double          factor   ) ;
-    Contour & operator *= (QSizeF          size     ) ;
-    Contour & operator /= (double          divisor  ) ;
-
-  protected:
-
-  private:
-
-};
-
-typedef struct {
-  int    Index ;
-  SUID   Uuid  ;
-  int    Type  ;
-  int    Unit  ;
-  double x     ;
-  double y     ;
-  double z     ;
-  double r     ;
-  double t     ;
-} ncpData      ;
-
-typedef struct      {
-  int     Size      ;
-  ncpData Thickness ;
-  ncpData Points[1] ;
-} ncrData           ;
-
-QByteArray N::Contour::Data(void)
-{
-  QByteArray C                            ;
-  ncrData *  R                            ;
-  int Total                               ;
-  int s = points . count ( )              ;
-  Total  = sizeof(int)                    ;
-  Total += sizeof(ncpData)                ;
-  Total += sizeof(ncpData) * s            ;
-  C . resize ( Total )                    ;
-  R = (ncrData *)C.constData()            ;
-  memset ( R , 0 , Total )                ;
-  R->Size              = s                ;
-  R->Thickness.Index   = 0                ;
-  R->Thickness.Uuid    = thickness.uuid   ;
-  R->Thickness.Type    = thickness.Type   ;
-  R->Thickness.Unit    = thickness.Unit   ;
-  R->Thickness.x       = thickness.x      ;
-  R->Thickness.y       = thickness.y      ;
-  R->Thickness.z       = thickness.z      ;
-  R->Thickness.r       = thickness.r      ;
-  R->Thickness.t       = thickness.t      ;
-  for (int i=0;i<index.count();i++)       {
-    int idx            = index [ i ]      ;
-    R->Points[i].Index = idx              ;
-    R->Points[i].Uuid  = points[idx].uuid ;
-    R->Points[i].Type  = points[idx].Type ;
-    R->Points[i].Unit  = points[idx].Unit ;
-    R->Points[i].x     = points[idx].x    ;
-    R->Points[i].y     = points[idx].y    ;
-    R->Points[i].z     = points[idx].z    ;
-    R->Points[i].r     = points[idx].r    ;
-    R->Points[i].t     = points[idx].t    ;
-  }                                       ;
-  return     C                            ;
-}
-
-void N::Contour::setData(QByteArray & contours)
-{
-  ncrData * R = (ncrData *)contours.constData() ;
-  int       s = R->Size                         ;
-  index   . clear ( )                           ;
-  points  . clear ( )                           ;
-  thickness.uuid = R->Thickness.Uuid            ;
-  thickness.Type = R->Thickness.Type            ;
-  thickness.Unit = R->Thickness.Unit            ;
-  thickness.x    = R->Thickness.x               ;
-  thickness.y    = R->Thickness.y               ;
-  thickness.z    = R->Thickness.z               ;
-  thickness.r    = R->Thickness.r               ;
-  thickness.t    = R->Thickness.t               ;
-  for (int i=0;i<s;i++)                         {
-    ControlPoint ncp                            ;
-    ncp.uuid = R->Points[i].Uuid                ;
-    ncp.Type = R->Points[i].Type                ;
-    ncp.Unit = R->Points[i].Unit                ;
-    ncp.x    = R->Points[i].x                   ;
-    ncp.y    = R->Points[i].y                   ;
-    ncp.z    = R->Points[i].z                   ;
-    ncp.r    = R->Points[i].r                   ;
-    ncp.t    = R->Points[i].t                   ;
-    add ( R->Points[i].Index , ncp )            ;
-  }                                             ;
-}
-"""
