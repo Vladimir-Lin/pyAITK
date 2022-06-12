@@ -107,8 +107,13 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . convex  . setProperty  ( "RY"      , 10.0                         )
     ##########################################################################
     self . Painter . addMap       ( "Points"  , 10001                        )
-    self . Painter . addPen       ( 10001 , QColor ( 255 ,  64 , 128 , 255 ) )
+    self . Painter . addMap       ( "Contour" , 10002                        )
+    self . Painter . addPen       ( 10001 , QColor ( 128 ,  64 , 255 , 255 ) )
+    self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
     self . Painter . addBrush     ( 10001 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . addBrush     ( 10002 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . pens [ 10001 ] . setWidthF ( 2.5                        )
+    self . Painter . pens [ 10002 ] . setWidthF ( 3.5                        )
     ##########################################################################
     return
   ############################################################################
@@ -427,9 +432,12 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     p1   = QPainterPath              (                                       )
     p2   = QPainterPath              (                                       )
     self . convex . AppendPlanePoint ( pos . x ( ) , pos . y ( )             )
-    p1   = self . convex . PointsToQPainterPath ( p1                         )
+    p1   = self . convex . PointsToQPainterPath  ( p1                        )
+    p2   = self . convex . ContourToQPainterPath ( p2                        )
     self . Painter . pathes   [ 10001 ] = p1
+    self . Painter . pathes   [ 10002 ] = p2
     self . Painter . switches [ 10001 ] = True
+    self . Painter . switches [ 10002 ] = True
     self . update                    (                                       )
     ##########################################################################
     return
