@@ -70,6 +70,8 @@ from   AITK  . People . Body  . Body  import Body         as BodyItem
 from   AITK  . VCF . VcfPicture       import VcfPicture   as VcfPicture
 from   AITK  . People . Faces . VcfFaceRegion import VcfFaceRegion as VcfFaceRegion
 ##############################################################################
+from   AITK  . Math . Geometry . Contour import Contour as Contour
+##############################################################################
 class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def __init__                   ( self                                    , \
@@ -95,6 +97,10 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     self . defaultMeasurePoints   (                                          )
     ##########################################################################
+    self . convex  = Contour      (                                          )
+    self . convex  . setProperty  ( "Mode" , 0                               )
+    self . convex  . setProperty  ( "Base" , 0                               )
+    ##########################################################################
     return
   ############################################################################
   def Painting                  ( self , p , region , clip , color         ) :
@@ -111,6 +117,14 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     return
   ############################################################################
   def mousePressEvent        ( self , event                                ) :
+    ##########################################################################
+    vexm = self . convex  . getProperty  ( "Mode"                            )
+    ##########################################################################
+    if                       ( vexm == 1                                   ) :
+      ########################################################################
+      self . AssignContourPoint ( event . pos ( )                            )
+      ########################################################################
+      return
     ##########################################################################
     OKAY = self . lineEditingPressEvent   ( event                            )
     if                                    ( OKAY                           ) :
@@ -398,6 +412,12 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
+  def AssignContourPoint ( self , pos ) :
+    ##########################################################################
+    print(pos)
+    ##########################################################################
+    return
+  ############################################################################
   def PeopleFaceMenu               ( self , mm , Menu                      ) :
     ##########################################################################
     MSG   = self . getMenuItem     ( "FacialRecognition"                     )
@@ -510,6 +530,11 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     msg    = self . getMenuItem ( "OriginalPosition"                         )
     mm     . addAction          ( 1003 , msg                                 )
     ##########################################################################
+    vexMode = self . convex  . getProperty  ( "Mode"                         )
+    VM     =                    ( vexMode == 1                               )
+    msg    = "新增點"
+    mm     . addAction          ( 7001 , msg , True , VM                     )
+    ##########################################################################
     mm     . addSeparator       (                                            )
     self   . RecognitionMenu    ( mm                                         )
     self   . MeasureMenu        ( mm                                         )
@@ -547,6 +572,18 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                          ( at == 1003                               ) :
       ########################################################################
       self . OriginalRect       (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 7001                               ) :
+      ########################################################################
+      vexMode = self . convex  . getProperty  ( "Mode"                       )
+      VM     =                  ( vexMode == 1                               )
+      if                        ( VM                                       ) :
+        vexMode = 0
+      else :
+        vexMode = 1
+      self . convex . setProperty ( "Mode" , vexMode                         )
       ########################################################################
       return True
     ##########################################################################
