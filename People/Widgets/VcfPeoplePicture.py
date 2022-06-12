@@ -46,6 +46,8 @@ from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
 from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtGui                  import QTransform
+from   PyQt5 . QtGui                  import QPolygonF
+from   PyQt5 . QtGui                  import QPainterPath
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
@@ -98,21 +100,29 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . defaultMeasurePoints   (                                          )
     ##########################################################################
     self . convex  = Contour      (                                          )
-    self . convex  . setProperty  ( "Mode" , 0                               )
-    self . convex  . setProperty  ( "Base" , 0                               )
+    self . convex  . setProperty  ( "Mode"    , 0                            )
+    self . convex  . setProperty  ( "Base"    , 0                            )
+    self . convex  . setProperty  ( "Z"       , 0.0                          )
+    self . convex  . setProperty  ( "RX"      , 10.0                         )
+    self . convex  . setProperty  ( "RY"      , 10.0                         )
+    ##########################################################################
+    self . Painter . addMap       ( "Points"  , 10001                        )
+    self . Painter . addPen       ( 10001 , QColor ( 255 ,  64 , 128 , 255 ) )
+    self . Painter . addBrush     ( 10001 , QColor (   0 ,   0 ,   0 ,   0 ) )
     ##########################################################################
     return
   ############################################################################
-  def Painting                  ( self , p , region , clip , color         ) :
+  def Painting                       ( self , p , region , clip , color    ) :
     ##########################################################################
-    if                          ( clip                                     ) :
-      self . PaintImageClip     (        p , region , clip , color           )
+    if                               ( clip                                ) :
+      self . PaintImageClip          (        p , region , clip , color      )
     else                                                                     :
-      self . PaintImage         (        p , region , clip , color           )
+      self . PaintImage              (        p , region , clip , color      )
     ##########################################################################
-    self   . PaintMeasureRule   (        p , region , clip , color           )
-    self   . PaintMeasurePoints (        p , region , clip , color           )
-    self   . PaintLineEditing   (        p , region , clip , color           )
+    self   . PaintMeasureRule        (        p , region , clip , color      )
+    self   . PaintMeasurePoints      (        p , region , clip , color      )
+    self   . PaintLineEditing        (        p , region , clip , color      )
+    self   . Painter . drawAllPathes (        p                              )
     ##########################################################################
     return
   ############################################################################
@@ -412,9 +422,15 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssignContourPoint ( self , pos ) :
+  def AssignContourPoint             ( self , pos                          ) :
     ##########################################################################
-    print(pos)
+    p1   = QPainterPath              (                                       )
+    p2   = QPainterPath              (                                       )
+    self . convex . AppendPlanePoint ( pos . x ( ) , pos . y ( )             )
+    p1   = self . convex . PointsToQPainterPath ( p1                         )
+    self . Painter . pathes   [ 10001 ] = p1
+    self . Painter . switches [ 10001 ] = True
+    self . update                    (                                       )
     ##########################################################################
     return
   ############################################################################
