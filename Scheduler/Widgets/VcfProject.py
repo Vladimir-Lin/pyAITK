@@ -157,18 +157,18 @@ class VcfProject                  ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
-  def addTimeSelector       ( self                                         ) :
+  def addTimeSelector      ( self                                          ) :
     ##########################################################################
-    VTS  = VcfTimeSelector  ( self , None , self . PlanFunc                  )
-    VTS  . setOptions       ( self . Options , False                         )
-    VTS  . setRange         ( QRectF     ( 0.0 , 0.0 , 0.1 , 0.1 )           )
-    ## VTS  . setMenuCaller    ( self . MenuCallerEmitter                       )
+    VTS  = VcfTimeSelector ( self , None , self . PlanFunc                   )
+    VTS  . setOptions      ( self . Options , False                          )
+    VTS  . setRange        ( QRectF     ( 0.0 , 0.0 , 0.1 , 0.1 )            )
+    VTS  . setMenuCaller   ( self . MenuCallerEmitter                        )
     ##########################################################################
     VTS  . Languages = self . Languages
     VTS  . Menus     = self . Menus
     ##########################################################################
-    self . addItem          ( VTS                                            )
-    self . Scene . addItem  ( VTS                                            )
+    self . addItem         ( VTS                                             )
+    self . Scene . addItem ( VTS                                             )
     ##########################################################################
     return VTS
   ############################################################################

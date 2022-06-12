@@ -43,6 +43,8 @@ from   PyQt5 . QtWidgets                   import QWidget
 from   PyQt5 . QtWidgets                   import QGraphicsView
 from   PyQt5 . QtWidgets                   import QGraphicsItem
 ##############################################################################
+from   AITK  . Qt . MenuManager            import MenuManager    as MenuManager
+##############################################################################
 from   AITK  . Calendars  . StarDate       import StarDate       as StarDate
 from   AITK  . Calendars  . Periode        import Periode        as Periode
 ##############################################################################
@@ -406,4 +408,52 @@ class VcfTimeSelector         ( VcfCanvas                                  ) :
     self . MouseTracking = tracking
     ##########################################################################
     return
+  ############################################################################
+  def TimeAlignMenu              ( self , mm                               ) :
+    ##########################################################################
+    msg     = self . getMenuItem ( "TimeAlignment"                           )
+    LOM     = mm   . addMenu     ( msg                                       )
+    ##########################################################################
+    ENABLED =                    ( self . Picker . TimeAlignment == 0        )
+    msg     = self . getMenuItem ( "Seconds"                                 )
+    mm      . addActionFromMenu  ( LOM , 98439001 , msg , True , ENABLED     )
+    ##########################################################################
+    ENABLED =                    ( self . Picker . TimeAlignment == 1        )
+    msg     = self . getMenuItem ( "Minutes"                                 )
+    mm      . addActionFromMenu  ( LOM , 98439002 , msg , True , ENABLED     )
+    ##########################################################################
+    ENABLED =                    ( self . Picker . TimeAlignment == 2        )
+    msg     = self . getMenuItem ( "Hours"                                   )
+    mm      . addActionFromMenu  ( LOM , 98439003 , msg , True , ENABLED     )
+    ##########################################################################
+    ENABLED =                    ( self . Picker . TimeAlignment == 3        )
+    msg     = self . getMenuItem ( "Days"                                    )
+    mm      . addActionFromMenu  ( LOM , 98439004 , msg , True , ENABLED     )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunTimeAlignMenu ( self , at                                         ) :
+    ##########################################################################
+    if                 ( ( at >= 98439001 ) and ( at <= 98439004 )         ) :
+      ########################################################################
+      self . Picker . TimeAlignment = int ( at - 98439001                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    return True
+  ############################################################################
+  def Menu               ( self , gview , pos , spos                       ) :
+    ##########################################################################
+    mm   = MenuManager   ( gview                                             )
+    ##########################################################################
+    self . TimeAlignMenu ( mm                                                )
+    ##########################################################################
+    mm   . setFont       ( gview   . menuFont ( )                            )
+    aa   = mm . exec_    ( QCursor . pos      ( )                            )
+    at   = mm . at       ( aa                                                )
+    ##########################################################################
+    if                   ( self . RunTimeAlignMenu ( at )                  ) :
+      return True
+    ##########################################################################
+    return True
 ##############################################################################
