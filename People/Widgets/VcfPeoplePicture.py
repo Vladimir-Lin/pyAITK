@@ -101,9 +101,11 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     self . convex  = Contour      (                                          )
     self . convex  . setClosed    ( True                                     )
+    self . convex  . setInvert    ( False                                    )
     self . convex  . setProperty  ( "Mode"        , 0                        )
     self . convex  . setProperty  ( "Picked"      , ""                       )
-    self . convex  . setProperty  ( "PointsId"    , 10001                    )
+    self . convex  . setProperty  ( "State"       , 0                        )
+    self . convex  . setProperty  ( "PointsId"    , 10009                    )
     self . convex  . setProperty  ( "ContourId"   , 10002                    )
     self . convex  . setProperty  ( "CubicId"     , 10003                    )
     self . convex  . setProperty  ( "QuadraticId" , 10004                    )
@@ -114,14 +116,14 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . convex  . setProperty  ( "Visible"     , True                     )
     self . convex  . PathUpdater = self . UpdateContourPoints
     ##########################################################################
-    self . Painter . addMap       ( "Points"  , 10001                        )
     self . Painter . addMap       ( "Contour" , 10002                        )
-    self . Painter . addPen       ( 10001 , QColor ( 128 ,  64 , 255 , 255 ) )
+    self . Painter . addMap       ( "Points"  , 10009                        )
     self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
-    self . Painter . addBrush     ( 10001 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . addPen       ( 10009 , QColor ( 128 ,  64 , 255 , 255 ) )
     self . Painter . addBrush     ( 10002 , QColor (   0 ,   0 ,   0 ,   0 ) )
-    self . Painter . pens [ 10001 ] . setWidth ( 3                           )
-    self . Painter . pens [ 10002 ] . setWidth ( 5                           )
+    self . Painter . addBrush     ( 10009 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . pens [ 10001 ] . setWidthF ( 4.5                        )
+    self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
     ##########################################################################
     return
   ############################################################################
@@ -141,18 +143,10 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def mousePressEvent        ( self , event                                ) :
     ##########################################################################
-    vexm = self . convex  . getProperty  ( "Mode"                            )
-    ##########################################################################
-    if                       ( vexm == 1                                   ) :
-      ########################################################################
-      self . AssignContourPoint ( event . pos ( )                            )
-      ########################################################################
+    OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 0             )
+    if                       ( OKAY                                        ) :
+      event . accept         (                                               )
       return
-    ##########################################################################
-    if                       ( vexm == 2                                   ) :
-      ########################################################################
-      if ( self . SpotContourPoint ( event . pos ( ) ) ) :
-        return
     ##########################################################################
     OKAY = self . lineEditingPressEvent   ( event                            )
     if                                    ( OKAY                           ) :
@@ -165,12 +159,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def mouseMoveEvent         ( self , event                                ) :
     ##########################################################################
-    vexm = self . convex  . getProperty  ( "Mode"                            )
-    ##########################################################################
-    if                       ( vexm == 2                                   ) :
-      ########################################################################
-      self . MoveContourPoint ( event . pos ( )                              )
-      ########################################################################
+    OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 1             )
+    if                       ( OKAY                                        ) :
+      event . accept         (                                               )
       return
     ##########################################################################
     OKAY = self . lineEditingMoveEvent    ( event                            )
@@ -183,12 +174,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def mouseReleaseEvent      ( self , event                                ) :
     ##########################################################################
-    vexm = self . convex  . getProperty  ( "Mode"                            )
-    ##########################################################################
-    if                       ( vexm == 2                                   ) :
-      ########################################################################
-      self . FinishContourPoint ( event . pos ( )                            )
-      ########################################################################
+    OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 2             )
+    if                       ( OKAY                                        ) :
+      event . accept         (                                               )
       return
     ##########################################################################
     OKAY = self . lineEditingReleaseEvent ( event                            )
@@ -196,6 +184,12 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       return
     ##########################################################################
     self . scaleReleaseEvent (        event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def Hovering                   ( self , pos                              ) :
+    ##########################################################################
+    self . convex . HandleQPoint ( pos , 3                                   )
     ##########################################################################
     return
   ############################################################################
@@ -456,26 +450,38 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateContourPoints                 ( self , convex , action         ) :
+  def UpdateContourPoints                 ( self , convex , ACT , U = True ) :
+    ##########################################################################
+    if                                    ( ACT == 1                       ) :
+      self . setCursor                    ( Qt . ArrowCursor                 )
+    elif                                  ( ACT == 2                       ) :
+      self . setCursor                    ( Qt . CrossCursor                 )
+    elif                                  ( ACT == 3                       ) :
+      self . setCursor                    ( Qt . PointingHandCursor          )
+    elif                                  ( ACT == 4                       ) :
+      self . setCursor                    ( Qt . OpenHandCursor              )
+    elif                                  ( ACT == 5                       ) :
+      self . setCursor                    ( Qt . ClosedHandCursor            )
+    ##########################################################################
+    if                                    ( not U                          ) :
+      return
     ##########################################################################
     PID  = convex . getProperty           ( "PointsId"                       )
-    CID  = convex . setProperty           ( "ContourId"                      )
-    VID  = convex . setProperty           ( "CubicId"                        )
-    QID  = convex . setProperty           ( "QuadraticId"                    )
-    ##########################################################################
-    if                                    ( action == 1                    ) :
-      self . setCursor                    ( Qt . ArrowCursor                 )
-    elif                                  ( action == 2                    ) :
-      self . setCursor                    ( Qt . CrossCursor                 )
+    CID  = convex . getProperty           ( "ContourId"                      )
+    VID  = convex . getProperty           ( "CubicId"                        )
+    QID  = convex . getProperty           ( "QuadraticId"                    )
     ##########################################################################
     p1   = QPainterPath                   (                                  )
     p2   = QPainterPath                   (                                  )
     p1   = convex . PointsToQPainterPath  ( p1                               )
     p2   = convex . ContourToQPainterPath ( p2                               )
+    ##########################################################################
     self . Painter . pathes   [ PID ] = p1
-    self . Painter . pathes   [ CID ] = p2
     self . Painter . switches [ PID ] = True
+    ##########################################################################
+    self . Painter . pathes   [ CID ] = p2
     self . Painter . switches [ CID ] = True
+    ##########################################################################
     self . update                         (                                  )
     ##########################################################################
     return
@@ -523,7 +529,6 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . convex . setProperty        ( "Picked" , ""                       )
     ##########################################################################
     self . convex . ModifyPlanePoint   ( Id , pos . x ( ) , pos . y ( )      )
-    self . setCursor                   ( Qt . ArrowCursor                    )
     ##########################################################################
     self . UpdateContourPoints         ( self . convex , 1                   )
     ##########################################################################
