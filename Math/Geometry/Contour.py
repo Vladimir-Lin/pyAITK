@@ -24,33 +24,44 @@ class Contour             (                                                ) :
     ##########################################################################
     return
   ############################################################################
-  def clear                         ( self                                 ) :
+  def clear                          ( self                                ) :
     ##########################################################################
-    self . Uuid      = 0
-    self . Name      = ""
-    self . Type      = 0x00010000
-    self . Closed    = False
-    self . Substract = False
-    self . Index     =              [                                        ]
-    self . Thickness = ControlPoint (                                        )
-    self . Points    =              {                                        }
+    self . Uuid       = 0
+    self . Name       = ""
+    self . Type       = 0x00010000
+    self . Closed     = False
+    self . Substract  = False
+    self . Index      =              [                                       ]
+    self . Thickness  = ControlPoint (                                       )
+    self . Points     =              {                                       }
+    self . Properties =              {                                       }
     ##########################################################################
-    self . Thickness . setXYZ       ( 0.05 , 0.05 , 0.05                     )
+    self . Thickness  . setXYZ       ( 0.05 , 0.05 , 0.05                    )
     ##########################################################################
     return
   ############################################################################
-  def assign                  ( self , contour                             ) :
+  def assign                   ( self , contour                            ) :
     ##########################################################################
-    self . Uuid      = contour . Uuid
-    self . Name      = contour . Name
-    self . Type      = contour . Type
-    self . Closed    = contour . Closed
-    self . Substract = contour . Substract
-    self . Index     = contour . Index
-    self . Thickness . assign ( contour . Thickness                          )
-    self . Points    = contour . Points
+    self . Uuid       = contour . Uuid
+    self . Name       = contour . Name
+    self . Type       = contour . Type
+    self . Closed     = contour . Closed
+    self . Substract  = contour . Substract
+    self . Index      = contour . Index
+    self . Thickness  . assign ( contour . Thickness                         )
+    self . Points     = contour . Points
+    self . Properties = contour . Properties
     ##########################################################################
     return
+  ############################################################################
+  def setProperty ( self , item , value                                    ) :
+    ##########################################################################
+    self . Properties [ item ] = value
+    ##########################################################################
+    return
+  ############################################################################
+  def getProperty            ( self , item                                 ) :
+    return self . Properties [        item                                   ]
   ############################################################################
   def toJson ( self                                                        ) :
     ##########################################################################
