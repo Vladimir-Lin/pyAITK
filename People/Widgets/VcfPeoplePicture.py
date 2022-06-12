@@ -105,7 +105,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . convex  . setProperty  ( "Mode"        , 0                        )
     self . convex  . setProperty  ( "Picked"      , ""                       )
     self . convex  . setProperty  ( "State"       , 0                        )
-    self . convex  . setProperty  ( "PointsId"    , 10009                    )
+    self . convex  . setProperty  ( "Cursor"      , 0                        )
+    self . convex  . setProperty  ( "PointsId"    , 10008                    )
     self . convex  . setProperty  ( "ContourId"   , 10002                    )
     self . convex  . setProperty  ( "CubicId"     , 10003                    )
     self . convex  . setProperty  ( "QuadraticId" , 10004                    )
@@ -121,10 +122,10 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . Painter . addBrush     ( 10002 , QColor (   0 ,   0 ,   0 ,   0 ) )
     self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
     ##########################################################################
-    self . Painter . addMap       ( "Points"  , 10009                        )
-    self . Painter . addPen       ( 10009 , QColor ( 128 ,  64 , 255 , 255 ) )
-    self . Painter . addBrush     ( 10009 , QColor (   0 ,   0 ,   0 ,   0 ) )
-    self . Painter . pens [ 10009 ] . setWidthF ( 4.5                        )
+    self . Painter . addMap       ( "Points"  , 10008                        )
+    self . Painter . addPen       ( 10008 , QColor ( 128 ,  64 , 255 , 255 ) )
+    self . Painter . addBrush     ( 10008 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . pens [ 10008 ] . setWidthF ( 4.5                        )
     ##########################################################################
     return
   ############################################################################

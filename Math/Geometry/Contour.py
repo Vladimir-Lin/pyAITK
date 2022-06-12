@@ -342,7 +342,8 @@ class Contour    (                                                         ) :
   def DoPathUpdater      ( self , action , Updating = True                 ) :
     ##########################################################################
     if                   ( self . PathUpdater not in [ False , None ]      ) :
-      self . PathUpdater ( self , action , Updating                          )
+      self . setProperty ( "Cursor" , action                                 )
+      self . PathUpdater ( self     , action , Updating                      )
     ##########################################################################
     return
   ############################################################################
@@ -395,21 +396,24 @@ class Contour    (                                                         ) :
     ##########################################################################
     return
   ############################################################################
-  def HoverQPoint               ( self , pos                               ) :
+  def HoverQPoint                 ( self , pos                             ) :
     ##########################################################################
-    State  = self . getProperty ( "State"                                    )
+    State    = self . getProperty ( "State"                                  )
     ##########################################################################
-    if                          ( State != 0                               ) :
+    if                            ( State != 0                             ) :
       return False
     ##########################################################################
-    RX     = self . getProperty ( "RX"                                       )
-    Id     = self . find        ( pos      , RX                              )
+    CS       = self . getProperty ( "Cursor"                                 )
+    RX       = self . getProperty ( "RX"                                     )
+    Id       = self . find        ( pos      , RX                            )
     ##########################################################################
-    if                          ( len ( Id ) <= 0                          ) :
-      self . DoPathUpdater      ( 0 , False                                  )
+    if                            ( len ( Id ) <= 0                        ) :
+      if                          ( CS != 1                                ) :
+        self . DoPathUpdater      ( 1 , False                                )
       return False
     ##########################################################################
-    self   . DoPathUpdater      ( 3 , False                                  )
+    if                            ( CS != 3                                ) :
+    self     . DoPathUpdater      ( 3 , False                                )
     ##########################################################################
     return True
   ############################################################################
