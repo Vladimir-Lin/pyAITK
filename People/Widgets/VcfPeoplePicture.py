@@ -123,7 +123,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     self . Painter . addMap       ( "Contour" , 10002                        )
     self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
-    self . Painter . addBrush     ( 10002 , QColor ( 224 , 255 , 224 , 128 ) )
+    self . Painter . addBrush     ( 10002 , QColor ( 240 , 255 , 240 ,  48 ) )
     self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
     ##########################################################################
     self . Painter . addMap       ( "Points"  , 10008                        )
@@ -570,13 +570,17 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     MSG   = self . getMenuItem   ( "AddContourPoint"                         )
     mm    . addActionFromMenu    ( LOM , Base +   1 , MSG , True , VM        )
     ##########################################################################
-    VM    =                      ( VEX == 2                                  )
-    MSG   = self . getMenuItem   ( "ModifyContourPoint"                      )
-    mm    . addActionFromMenu    ( LOM , Base +   2 , MSG , True , VM        )
+    if                           ( len ( convex . Index ) > 0              ) :
+      ########################################################################
+      VM  =                      ( VEX == 2                                  )
+      MSG = self . getMenuItem   ( "ModifyContourPoint"                      )
+      mm  . addActionFromMenu    ( LOM , Base +   2 , MSG , True , VM        )
     ##########################################################################
-    VM    =                      ( VEX == 3                                  )
-    MSG   = self . getMenuItem   ( "InsertContourPoint"                      )
-    mm    . addActionFromMenu    ( LOM , Base +   3 , MSG , True , VM        )
+    if                           ( len ( convex . Selected ) > 0           ) :
+      ########################################################################
+      VM  =                      ( VEX == 3                                  )
+      MSG = self . getMenuItem   ( "InsertContourPoint"                      )
+      mm  . addActionFromMenu    ( LOM , Base +   3 , MSG , True , VM        )
     ##########################################################################
     VM    =                      ( VEX == 4                                  )
     MSG   = self . getMenuItem   ( "PickContourPoint"                        )
@@ -584,16 +588,21 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
-    MSG   = self . getMenuItem   ( "ClearContourSelected"                    )
-    mm    . addActionFromMenu    ( LOM , Base + 101 , MSG                    )
-    ##########################################################################
-    MSG   = self . getMenuItem   ( "DeleteContourSelected"                   )
-    mm    . addActionFromMenu    ( LOM , Base + 102 , MSG                    )
+    if                           ( len ( convex . Selected ) > 0           ) :
+      ########################################################################
+      MSG = self . getMenuItem   ( "ClearContourSelected"                    )
+      mm  . addActionFromMenu    ( LOM , Base + 101 , MSG                    )
+      ########################################################################
+      MSG = self . getMenuItem   ( "DeleteContourSelected"                   )
+      mm  . addActionFromMenu    ( LOM , Base + 102 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "DeleteContour"                           )
     mm    . addActionFromMenu    ( LOM , Base + 103 , MSG                    )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    ##########################################################################
+    ## mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ImportContour"                           )
     mm    . addActionFromMenu    ( LOM , Base + 201 , MSG                    )
@@ -602,6 +611,27 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     mm    . addActionFromMenu    ( LOM , Base + 201 , MSG                    )
     ##########################################################################
     return
+  ############################################################################
+  def RunContourEditorMenu       ( self , at , Base , convex               ) :
+    ##########################################################################
+    AT     = at - 7000
+    OKAY   = self . convex . ExecuteMenuCommand ( AT                         )
+    if                           ( OKAY                                    ) :
+      return True
+    ##########################################################################
+    if                           ( at == 201                               ) :
+      ########################################################################
+      self . ImportContour       ( convex                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                           ( at == 202                               ) :
+      ########################################################################
+      self . ExportContour       ( convex                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
   ############################################################################
   def PeopleFaceMenu               ( self , mm , Menu                      ) :
     ##########################################################################
@@ -742,7 +772,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                          ( OKAY                                     ) :
       return True
     ##########################################################################
-    OKAY   = self . convex . ExecuteMenuCommand ( at - 7000                  )
+    OKAY   = self . RunContourEditorMenu ( at , 7000 , self . convex         )
     if                          ( OKAY                                     ) :
       return True
     ##########################################################################
@@ -761,18 +791,6 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                          ( at == 1003                               ) :
       ########################################################################
       self . OriginalRect       (                                            )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 7201                               ) :
-      ########################################################################
-      self . ImportContour      ( self . convex                              )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 7202                               ) :
-      ########################################################################
-      self . ExportContour      ( self . convex                              )
       ########################################################################
       return True
     ##########################################################################
