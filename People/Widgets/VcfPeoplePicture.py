@@ -120,7 +120,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     self . Painter . addMap       ( "Contour" , 10002                        )
     self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
-    self . Painter . addBrush     ( 10002 , QColor ( 255 , 255 , 255 ,  32 ) )
+    self . Painter . addBrush     ( 10002 , QColor ( 224 , 255 , 224 , 128 ) )
     self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
     ##########################################################################
     self . Painter . addMap       ( "Points"  , 10008                        )
@@ -505,7 +505,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ContourEditorMenu          ( self , mm , convex                      ) :
+  def ContourEditorMenu          ( self , mm , Base , convex               ) :
     ##########################################################################
     MSG   = self   . getMenuItem ( "ContourEditing"                          )
     LOM   = mm     . addMenu     ( MSG                                       )
@@ -514,30 +514,38 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     VM    =                      ( VEX == 1                                  )
     MSG   = self . getMenuItem   ( "AddContourPoint"                         )
-    mm    . addActionFromMenu    ( LOM , 7001 , MSG , True , VM              )
+    mm    . addActionFromMenu    ( LOM , Base +   1 , MSG , True , VM        )
     ##########################################################################
     VM    =                      ( VEX == 2                                  )
     MSG   = self . getMenuItem   ( "ModifyContourPoint"                      )
-    mm    . addActionFromMenu    ( LOM , 7002 , MSG , True , VM              )
+    mm    . addActionFromMenu    ( LOM , Base +   2 , MSG , True , VM        )
     ##########################################################################
     VM    =                      ( VEX == 3                                  )
     MSG   = self . getMenuItem   ( "InsertContourPoint"                      )
-    mm    . addActionFromMenu    ( LOM , 7003 , MSG , True , VM              )
+    mm    . addActionFromMenu    ( LOM , Base +   3 , MSG , True , VM        )
     ##########################################################################
     VM    =                      ( VEX == 4                                  )
     MSG   = self . getMenuItem   ( "PickContourPoint"                        )
-    mm    . addActionFromMenu    ( LOM , 7004 , MSG , True , VM              )
+    mm    . addActionFromMenu    ( LOM , Base +   4 , MSG , True , VM        )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ClearContourSelected"                    )
-    mm    . addActionFromMenu    ( LOM , 7101 , MSG                          )
+    mm    . addActionFromMenu    ( LOM , Base + 101 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "DeleteContourSelected"                   )
-    mm    . addActionFromMenu    ( LOM , 7102 , MSG                          )
+    mm    . addActionFromMenu    ( LOM , Base + 102 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "DeleteContour"                           )
-    mm    . addActionFromMenu    ( LOM , 7103 , MSG                          )
+    mm    . addActionFromMenu    ( LOM , Base + 103 , MSG                    )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "ImportContour"                           )
+    mm    . addActionFromMenu    ( LOM , Base + 201 , MSG                    )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "ExportContour"                           )
+    mm    . addActionFromMenu    ( LOM , Base + 201 , MSG                    )
     ##########################################################################
     return
   ############################################################################
@@ -654,7 +662,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     mm     . addAction          ( 1003 , msg                                 )
     ##########################################################################
     mm     . addSeparator       (                                            )
-    self   . ContourEditorMenu  ( mm , self . convex                         )
+    self   . ContourEditorMenu  ( mm , 7000 , self . convex                  )
     self   . RecognitionMenu    ( mm                                         )
     self   . MeasureMenu        ( mm                                         )
     self   . StatesMenu         ( mm                                         )
@@ -699,6 +707,16 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                          ( at == 1003                               ) :
       ########################################################################
       self . OriginalRect       (                                            )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 7201                               ) :
+      ########################################################################
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 7202                               ) :
+      ########################################################################
       ########################################################################
       return True
     ##########################################################################
