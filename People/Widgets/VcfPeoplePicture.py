@@ -505,6 +505,42 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ContourEditorMenu          ( self , mm , convex                      ) :
+    ##########################################################################
+    MSG   = self   . getMenuItem ( "ContourEditing"                          )
+    LOM   = mm     . addMenu     ( MSG                                       )
+    ##########################################################################
+    VEX   = convex . getProperty ( "Mode"                                    )
+    ##########################################################################
+    VM    =                      ( VEX == 1                                  )
+    MSG   = self . getMenuItem   ( "AddContourPoint"                         )
+    mm    . addActionFromMenu    ( LOM , 7001 , MSG , True , VM              )
+    ##########################################################################
+    VM    =                      ( VEX == 2                                  )
+    MSG   = self . getMenuItem   ( "ModifyContourPoint"                      )
+    mm    . addActionFromMenu    ( LOM , 7002 , MSG , True , VM              )
+    ##########################################################################
+    VM    =                      ( VEX == 3                                  )
+    MSG   = self . getMenuItem   ( "InsertContourPoint"                      )
+    mm    . addActionFromMenu    ( LOM , 7003 , MSG , True , VM              )
+    ##########################################################################
+    VM    =                      ( VEX == 4                                  )
+    MSG   = self . getMenuItem   ( "PickContourPoint"                        )
+    mm    . addActionFromMenu    ( LOM , 7004 , MSG , True , VM              )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "ClearContourSelected"                    )
+    mm    . addActionFromMenu    ( LOM , 7101 , MSG                          )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "DeleteContourSelected"                   )
+    mm    . addActionFromMenu    ( LOM , 7102 , MSG                          )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "DeleteContour"                           )
+    mm    . addActionFromMenu    ( LOM , 7103 , MSG                          )
+    ##########################################################################
+    return
+  ############################################################################
   def PeopleFaceMenu               ( self , mm , Menu                      ) :
     ##########################################################################
     MSG   = self . getMenuItem     ( "FacialRecognition"                     )
@@ -617,27 +653,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     msg    = self . getMenuItem ( "OriginalPosition"                         )
     mm     . addAction          ( 1003 , msg                                 )
     ##########################################################################
-    vexMode = self . convex  . getProperty  ( "Mode"                         )
-    VM     =                    ( vexMode == 1                               )
-    msg    = "新增點"
-    mm     . addAction          ( 7001 , msg , True , VM                     )
-    VM     =                    ( vexMode == 2                               )
-    msg    = "修改點"
-    mm     . addAction          ( 7002 , msg , True , VM                     )
-    VM     =                    ( vexMode == 3                               )
-    msg    = "插入點"
-    mm     . addAction          ( 7003 , msg , True , VM                     )
-    VM     =                    ( vexMode == 3                               )
-    msg    = "選取點"
-    mm     . addAction          ( 7004 , msg , True , VM                     )
-    msg    = "清除選取點"
-    mm     . addAction          ( 7005 , msg                                 )
-    msg    = "刪除選取點"
-    mm     . addAction          ( 7006 , msg                                 )
-    msg    = "刪除外框"
-    mm     . addAction          ( 7007 , msg                                 )
-    ##########################################################################
     mm     . addSeparator       (                                            )
+    self   . ContourEditorMenu  ( mm , self . convex                         )
     self   . RecognitionMenu    ( mm                                         )
     self   . MeasureMenu        ( mm                                         )
     self   . StatesMenu         ( mm                                         )
@@ -647,16 +664,24 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     aa     = mm . exec_         ( QCursor . pos      ( )                     )
     at     = mm . at            ( aa                                         )
     ##########################################################################
-    if                          ( self . RunLayerMenu       ( at         ) ) :
+    OKAY   = self . RunLayerMenu       ( at                                  )
+    if                          ( OKAY                                     ) :
       return True
     ##########################################################################
-    if                          ( self . RunMeasureMenu     ( at         ) ) :
+    OKAY   = self . RunMeasureMenu     ( at                                  )
+    if                          ( OKAY                                     ) :
       return True
     ##########################################################################
-    if                          ( self . RunStatesMenu      ( at         ) ) :
+    OKAY   = self . RunStatesMenu      ( at                                  )
+    if                          ( OKAY                                     ) :
       return True
     ##########################################################################
-    if                          ( self . RunRecognitionMenu ( at         ) ) :
+    OKAY   = self . RunRecognitionMenu ( at                                  )
+    if                          ( OKAY                                     ) :
+      return True
+    ##########################################################################
+    OKAY   = self . convex . ExecuteMenuCommand ( at - 7000                  )
+    if                          ( OKAY                                     ) :
       return True
     ##########################################################################
     if                          ( at == 1001                               ) :
@@ -674,72 +699,6 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                          ( at == 1003                               ) :
       ########################################################################
       self . OriginalRect       (                                            )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 7001                               ) :
-      ########################################################################
-      vexMode = self . convex  . getProperty  ( "Mode"                       )
-      VM     =                  ( vexMode == 1                               )
-      if                        ( VM                                       ) :
-        vexMode = 0
-      else                                                                   :
-        vexMode = 1
-      self . convex . setProperty ( "Mode" , vexMode                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 7002                               ) :
-      ########################################################################
-      vexMode = self . convex  . getProperty  ( "Mode"                       )
-      VM     =                  ( vexMode == 2                               )
-      if                        ( VM                                       ) :
-        vexMode = 0
-      else                                                                   :
-        vexMode = 2
-      self . convex . setProperty ( "Mode" , vexMode                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 7003                               ) :
-      ########################################################################
-      vexMode = self . convex  . getProperty  ( "Mode"                       )
-      VM     =                  ( vexMode == 3                               )
-      if                        ( VM                                       ) :
-        vexMode = 0
-      else                                                                   :
-        vexMode = 3
-      self . convex . setProperty ( "Mode" , vexMode                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 7004                               ) :
-      ########################################################################
-      vexMode = self . convex  . getProperty  ( "Mode"                       )
-      VM     =                  ( vexMode == 4                               )
-      if                        ( VM                                       ) :
-        vexMode = 0
-      else                                                                   :
-        vexMode = 4
-      self . convex . setProperty ( "Mode" , vexMode                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 7005                               ) :
-      ########################################################################
-      self . convex . ClearSelections (                                      )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 7006                               ) :
-      ########################################################################
-      self . convex . DeleteSelected (                                       )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 7007                               ) :
-      ########################################################################
-      self . convex . begin     (                                            )
       ########################################################################
       return True
     ##########################################################################
