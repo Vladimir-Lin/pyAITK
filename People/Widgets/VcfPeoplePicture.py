@@ -123,7 +123,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     self . Painter . addMap       ( "Contour" , 10002                        )
     self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
-    self . Painter . addBrush     ( 10002 , QColor ( 240 , 255 , 240 ,  64 ) )
+    self . Painter . addBrush     ( 10002 , QColor ( 224 , 255 , 224 ,  96 ) )
     self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
     ##########################################################################
     self . Painter . addMap       ( "Points"  , 10008                        )
@@ -518,7 +518,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   def ImportContour                        ( self , convex                 ) :
     ##########################################################################
     TITLE  = self . getMenuItem            ( "ImportContour"                 )
-    F , _  = QFileDialog . getOpenFileName ( self                            ,
+    F , _  = QFileDialog . getOpenFileName ( self . GraphicsView ( )         ,
                                              TITLE                           ,
                                              ""                              ,
                                              "JSON (*.json)"                 )
@@ -533,6 +533,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       return
     ##########################################################################
     convex . fromJson                      (                                 )
+    self   . UpdateContourPoints           ( convex , 0 , True               )
     self   . Notify                        ( 5                               )
     ##########################################################################
     return
@@ -540,7 +541,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   def ExportContour                        ( self , convex                 ) :
     ##########################################################################
     TITLE  = self . getMenuItem            ( "ExportContour"                 )
-    F , _  = QFileDialog . getSaveFileName ( self                            ,
+    F , _  = QFileDialog . getSaveFileName ( self . GraphicsView ( )         ,
                                              TITLE                           ,
                                              ""                              ,
                                              "JSON (*.json)"                 )
@@ -605,7 +606,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     mm    . addActionFromMenu    ( LOM , Base + 201 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ExportContour"                           )
-    mm    . addActionFromMenu    ( LOM , Base + 201 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 202 , MSG                    )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
