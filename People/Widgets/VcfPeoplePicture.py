@@ -129,9 +129,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . Painter . pens [ 10008 ] . setWidthF ( 4.5                        )
     ##########################################################################
     self . Painter . addMap       ( "Selected" , 10009                       )
-    self . Painter . addPen       ( 10009 , QColor ( 255 , 128 ,  64 , 255 ) )
-    self . Painter . addBrush     ( 10009 , QColor (   0 ,   0 ,   0 ,   0 ) )
-    self . Painter . pens [ 10008 ] . setWidthF ( 4.5                        )
+    self . Painter . addPen       ( 10009 , QColor ( 128 , 255 ,  64 , 255 ) )
+    self . Painter . addBrush     ( 10009 , QColor ( 255 , 128 ,  64 , 255 ) )
+    self . Painter . pens [ 10009 ] . setWidthF ( 5.5                        )
     ##########################################################################
     return
   ############################################################################
