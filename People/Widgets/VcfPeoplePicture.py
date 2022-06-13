@@ -106,10 +106,11 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . convex  . setProperty  ( "Picked"      , ""                       )
     self . convex  . setProperty  ( "State"       , 0                        )
     self . convex  . setProperty  ( "Cursor"      , 0                        )
-    self . convex  . setProperty  ( "PointsId"    , 10008                    )
     self . convex  . setProperty  ( "ContourId"   , 10002                    )
     self . convex  . setProperty  ( "CubicId"     , 10003                    )
     self . convex  . setProperty  ( "QuadraticId" , 10004                    )
+    self . convex  . setProperty  ( "PointsId"    , 10008                    )
+    self . convex  . setProperty  ( "SelectedId"  , 10009                    )
     self . convex  . setProperty  ( "Base"        , 0                        )
     self . convex  . setProperty  ( "Z"           , 0.0                      )
     self . convex  . setProperty  ( "RX"          , 10.0                     )
@@ -125,6 +126,11 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . Painter . addMap       ( "Points"  , 10008                        )
     self . Painter . addPen       ( 10008 , QColor ( 128 ,  64 , 255 , 255 ) )
     self . Painter . addBrush     ( 10008 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . pens [ 10008 ] . setWidthF ( 4.5                        )
+    ##########################################################################
+    self . Painter . addMap       ( "Selected" , 10009                       )
+    self . Painter . addPen       ( 10009 , QColor ( 255 , 128 ,  64 , 255 ) )
+    self . Painter . addBrush     ( 10009 , QColor (   0 ,   0 ,   0 ,   0 ) )
     self . Painter . pens [ 10008 ] . setWidthF ( 4.5                        )
     ##########################################################################
     return
@@ -473,21 +479,27 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                                    ( not U                          ) :
       return
     ##########################################################################
-    PID  = convex . getProperty           ( "PointsId"                       )
-    CID  = convex . getProperty           ( "ContourId"                      )
-    VID  = convex . getProperty           ( "CubicId"                        )
-    QID  = convex . getProperty           ( "QuadraticId"                    )
+    PID  = convex . getProperty            ( "PointsId"                      )
+    SID  = convex . getProperty            ( "SelectedId"                    )
+    CID  = convex . getProperty            ( "ContourId"                     )
+    VID  = convex . getProperty            ( "CubicId"                       )
+    QID  = convex . getProperty            ( "QuadraticId"                   )
     ##########################################################################
-    p1   = QPainterPath                   (                                  )
-    p2   = QPainterPath                   (                                  )
-    p1   = convex . PointsToQPainterPath  ( p1                               )
-    p2   = convex . ContourToQPainterPath ( p2                               )
+    p1   = QPainterPath                    (                                 )
+    p2   = QPainterPath                    (                                 )
+    p3   = QPainterPath                    (                                 )
+    p1   = convex . PointsToQPainterPath   ( p1                              )
+    p2   = convex . ContourToQPainterPath  ( p2                              )
+    p3   = convex . SelectedToQPainterPath ( p3                              )
     ##########################################################################
     self . Painter . pathes   [ PID ] = p1
     self . Painter . switches [ PID ] = True
     ##########################################################################
     self . Painter . pathes   [ CID ] = p2
     self . Painter . switches [ CID ] = True
+    ##########################################################################
+    self . Painter . pathes   [ SID ] = p3
+    self . Painter . switches [ SID ] = True
     ##########################################################################
     self . update                         (                                  )
     ##########################################################################
@@ -612,6 +624,11 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     VM     =                    ( vexMode == 2                               )
     msg    = "修改點"
     mm     . addAction          ( 7002 , msg , True , VM                     )
+    VM     =                    ( vexMode == 3                               )
+    msg    = "選取點"
+    mm     . addAction          ( 7003 , msg , True , VM                     )
+    msg    = "清除選取點"
+    mm     . addAction          ( 7004 , msg                                 )
     ##########################################################################
     mm     . addSeparator       (                                            )
     self   . RecognitionMenu    ( mm                                         )
@@ -674,6 +691,24 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       else                                                                   :
         vexMode = 2
       self . convex . setProperty ( "Mode" , vexMode                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 7003                               ) :
+      ########################################################################
+      vexMode = self . convex  . getProperty  ( "Mode"                       )
+      VM     =                  ( vexMode == 3                               )
+      if                        ( VM                                       ) :
+        vexMode = 0
+      else                                                                   :
+        vexMode = 3
+      self . convex . setProperty ( "Mode" , vexMode                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                          ( at == 7004                               ) :
+      ########################################################################
+      self . convex . ClearSelections (                                      )
       ########################################################################
       return True
     ##########################################################################
