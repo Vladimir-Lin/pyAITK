@@ -90,7 +90,7 @@ class Contour    (                                                         ) :
                "Closed"     : self . Closed                                , \
                "Substract"  : self . Substract                             , \
                "Index"      : self . Index                                 , \
-               "Thickness"  : self . Thickness                             , \
+               "Thickness"  : self . Thickness . toJson ( )                , \
                "Points"     : {                                          } , \
                "Properties" : self . Properties                              }
     ##########################################################################
