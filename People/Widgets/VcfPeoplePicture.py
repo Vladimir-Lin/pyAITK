@@ -59,6 +59,9 @@ from   PyQt5 . QtWidgets              import QGraphicsItem
 from   PyQt5 . QtWidgets              import QSpinBox
 from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
+from   AITK  . Documents  . JSON      import Load         as LoadJson
+from   AITK  . Documents  . JSON      import Save         as SaveJson
+##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager  as MenuManager
 ##############################################################################
 from   AITK  . Essentials . Object    import Object       as Object
@@ -149,15 +152,26 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ContourMouseEvent             ( self , event , convex , ACT , BTN    ) :
+    ##########################################################################
+    if                              ( BTN                                  ) :
+      ########################################################################
+      OKAY  = self . IsMask         ( event . buttons ( ) , Qt . LeftButton  )
+      if                            ( not OKAY                             ) :
+        return False
+    ##########################################################################
+    OKAY    = convex . HandleQPoint ( event . pos ( ) , ACT                  )
+    if                              ( OKAY                                 ) :
+      event . accept                (                                        )
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
   def mousePressEvent          ( self , event                              ) :
     ##########################################################################
-    OKAY      = self . IsMask  ( event . buttons ( ) , Qt . LeftButton       )
+    OKAY = self . ContourMouseEvent ( event , self . convex , 0 , True       )
     if                         ( OKAY                                      ) :
-      ########################################################################
-      OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 0           )
-      if                       ( OKAY                                      ) :
-        event . accept         (                                             )
-        return
+      return
     ##########################################################################
     OKAY = self . lineEditingPressEvent   ( event                            )
     if                                    ( OKAY                           ) :
@@ -170,12 +184,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def mouseMoveEvent           ( self , event                              ) :
     ##########################################################################
-    OKAY      = self . IsMask  ( event . buttons ( ) , Qt . LeftButton       )
+    OKAY = self . ContourMouseEvent ( event , self . convex , 1 , True       )
     if                         ( OKAY                                      ) :
-      OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 1           )
-      if                       ( OKAY                                      ) :
-        event . accept         (                                             )
-        return
+      return
     ##########################################################################
     OKAY = self . lineEditingMoveEvent    ( event                            )
     if                                    ( OKAY                           ) :
@@ -187,9 +198,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def mouseReleaseEvent      ( self , event                                ) :
     ##########################################################################
-    OKAY    = self . convex . HandleQPoint ( event . pos ( ) , 2             )
-    if                       ( OKAY                                        ) :
-      event . accept         (                                               )
+    OKAY = self . ContourMouseEvent ( event , self . convex , 2 , False      )
+    if                         ( OKAY                                      ) :
       return
     ##########################################################################
     OKAY = self . lineEditingReleaseEvent ( event                            )
@@ -505,6 +515,50 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     return
   ############################################################################
+  def ImportContour                        ( self , convex                 ) :
+    ##########################################################################
+    TITLE  = self . getMenuItem            ( "ImportContour"                 )
+    F , _  = QFileDialog . getOpenFileName ( self                            ,
+                                             TITLE                           ,
+                                             ""                              ,
+                                             "JSON (*.json)"                 )
+    ##########################################################################
+    if                                     ( len ( F ) <= 0                ) :
+      return
+    ##########################################################################
+    try                                                                      :
+      JSON = LoadJson                      ( F                               )
+    except                                                                   :
+      self . Notify                        ( 1                               )
+      return
+    ##########################################################################
+    convex . fromJson                      (                                 )
+    self   . Notify                        ( 5                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def ExportContour                        ( self , convex                 ) :
+    ##########################################################################
+    TITLE  = self . getMenuItem            ( "ExportContour"                 )
+    F , _  = QFileDialog . getSaveFileName ( self                            ,
+                                             TITLE                           ,
+                                             ""                              ,
+                                             "JSON (*.json)"                 )
+    ##########################################################################
+    if                                     ( len ( F ) <= 0                ) :
+      return
+    ##########################################################################
+    JSON   = convex . toJson               (                                 )
+    try                                                                      :
+      SaveJson                             ( F , JSON                        )
+    except                                                                   :
+      self . Notify                        ( 1                               )
+      return
+    ##########################################################################
+    self   . Notify                        ( 5                               )
+    ##########################################################################
+    return
+  ############################################################################
   def ContourEditorMenu          ( self , mm , Base , convex               ) :
     ##########################################################################
     MSG   = self   . getMenuItem ( "ContourEditing"                          )
@@ -712,11 +766,13 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     if                          ( at == 7201                               ) :
       ########################################################################
+      self . ImportContour      ( self . convex                              )
       ########################################################################
       return True
     ##########################################################################
     if                          ( at == 7202                               ) :
       ########################################################################
+      self . ExportContour      ( self . convex                              )
       ########################################################################
       return True
     ##########################################################################
