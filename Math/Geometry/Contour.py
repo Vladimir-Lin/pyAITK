@@ -101,23 +101,24 @@ class Contour    (                                                         ) :
     ##########################################################################
     return JSON
   ############################################################################
-  def fromJson                               ( self , JSON                 ) :
+  def fromJson                        ( self , JSON                        ) :
     ##########################################################################
-    self   . Uuid       = JSON               [ "Uuid"                        ]
-    self   . Name       = JSON               [ "Name"                        ]
-    self   . Type       = JSON               [ "Type"                        ]
-    self   . Closed     = JSON               [ "Closed"                      ]
-    self   . Substract  = JSON               [ "Substract"                   ]
-    self   . Index      = JSON               [ "Index"                       ]
-    self   . Thickness  . fromJson           ( JSON [ "Thickness" ]          )
-    self   . Points     =                    {                               }
-    self   . Properties = JSON               [ "Properties"                  ]
+    self   . Uuid       = JSON        [ "Uuid"                               ]
+    self   . Name       = JSON        [ "Name"                               ]
+    self   . Type       = JSON        [ "Type"                               ]
+    self   . Closed     = JSON        [ "Closed"                             ]
+    self   . Substract  = JSON        [ "Substract"                          ]
+    self   . Index      = JSON        [ "Index"                              ]
+    self   . Thickness  . fromJson    ( JSON [ "Thickness" ]                 )
+    self   . Points     =             {                                      }
+    self   . Properties = JSON        [ "Properties"                         ]
     ##########################################################################
-    KEYs   = self . JSON [ "Points" ] . keys (                               )
+    KEYs   = JSON [ "Points" ] . keys (                                      )
+    ##########################################################################
     for Id in KEYs                                                           :
       ########################################################################
-      P    = ControlPoint                    (                               )
-      P    . fromJson                        ( JSON [ "Points" ] [ Id ]      )
+      P    = ControlPoint             (                                      )
+      P    . fromJson                 ( JSON [ "Points" ] [ Id ]             )
       ########################################################################
       self . Points [ Id ] = P
     ##########################################################################
@@ -506,6 +507,9 @@ class Contour    (                                                         ) :
       if                           ( action == 0                           ) :
         return self . PickQPoint   ( pos                                     )
       ########################################################################
+      if                           ( action == 3                           ) :
+        return self . HoverQPoint  ( pos                                     )
+      ########################################################################
       return False
     ##########################################################################
     ##########################################################################
@@ -579,22 +583,6 @@ class Contour    (                                                         ) :
     path   . addPolygon                       ( PL                           )
     if                                        ( self . Closed              ) :
       path . closeSubpath                     (                              )
-    ##########################################################################
-    return   path
-  ############################################################################
-  def QuadToQPainterPath   ( self , path                                   ) :
-    ##########################################################################
-    CNT    = len           ( self . Index                                    )
-    for at in range        ( 0 , CNT                                       ) :
-      ########################################################################
-      A    = int           ( at                                              )
-      B    = int           ( int ( at + 1 ) % CNT                            )
-      AID  = self . Index  [ A                                               ]
-      BID  = self . Index  [ B                                               ]
-      P1   = self . Points [ AID ] . toQPointF (                             )
-      P2   = self . Points [ BID ] . toQPointF (                             )
-      ########################################################################
-      path . quadTo        ( P1 , P2                                         )
     ##########################################################################
     return   path
   ############################################################################

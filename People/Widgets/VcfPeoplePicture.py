@@ -126,11 +126,6 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . Painter . addBrush     ( 10002 , QColor ( 224 , 255 , 224 ,  96 ) )
     self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
     ##########################################################################
-    self . Painter . addMap       ( "Quadratic" , 10004                      )
-    self . Painter . addPen       ( 10004 , QColor (  64 , 192 , 255 , 255 ) )
-    self . Painter . addBrush     ( 10004 , QColor ( 255 , 224 , 224 ,  96 ) )
-    self . Painter . pens [ 10004 ] . setWidthF ( 7.5                        )
-    ##########################################################################
     self . Painter . addMap       ( "Points"  , 10008                        )
     self . Painter . addPen       ( 10008 , QColor ( 128 ,  64 , 255 , 255 ) )
     self . Painter . addBrush     ( 10008 , QColor (   0 ,   0 ,   0 ,   0 ) )
@@ -503,11 +498,9 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     p1   = QPainterPath                    (                                 )
     p2   = QPainterPath                    (                                 )
     p3   = QPainterPath                    (                                 )
-    p4   = QPainterPath                    (                                 )
     p1   = convex . PointsToQPainterPath   ( p1                              )
     p2   = convex . ContourToQPainterPath  ( p2                              )
     p3   = convex . SelectedToQPainterPath ( p3                              )
-    p4   = convex . QuadToQPainterPath     ( p4                              )
     ##########################################################################
     self . Painter . pathes   [ PID ] = p1
     self . Painter . switches [ PID ] = True
@@ -517,9 +510,6 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     self . Painter . pathes   [ SID ] = p3
     self . Painter . switches [ SID ] = True
-    ##########################################################################
-    self . Painter . pathes   [ QID ] = p4
-    self . Painter . switches [ QID ] = True
     ##########################################################################
     self . update                         (                                  )
     ##########################################################################
@@ -542,7 +532,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       self . Notify                        ( 1                               )
       return
     ##########################################################################
-    convex . fromJson                      (                                 )
+    convex . fromJson                      ( JSON                            )
     self   . UpdateContourPoints           ( convex , 0 , True               )
     self   . Notify                        ( 5                               )
     ##########################################################################
@@ -610,6 +600,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     MSG   = self . getMenuItem   ( "DeleteContour"                           )
     mm    . addActionFromMenu    ( LOM , Base + 103 , MSG                    )
     ##########################################################################
+    ## "ClosedContour"           : "封閉外框" ,
+    ## "InvertedContour"         : "反轉外框" ,
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ImportContour"                           )
