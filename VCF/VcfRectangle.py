@@ -27,6 +27,7 @@ from   PyQt5 . QtCore                 import QRect
 from   PyQt5 . QtCore                 import QRectF
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QImage
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QFont
 from   PyQt5 . QtGui                  import QFontMetricsF
@@ -35,13 +36,17 @@ from   PyQt5 . QtGui                  import QPen
 from   PyQt5 . QtGui                  import QBrush
 from   PyQt5 . QtGui                  import QKeySequence
 from   PyQt5 . QtGui                  import QTransform
+from   PyQt5 . QtGui                  import QPolygonF
+from   PyQt5 . QtGui                  import QPainterPath
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import qApp
 from   PyQt5 . QtWidgets              import QToolTip
 from   PyQt5 . QtWidgets              import QWidget
+from   PyQt5 . QtWidgets              import QFileDialog
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
+from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QSpinBox
 from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
