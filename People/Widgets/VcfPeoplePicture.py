@@ -693,6 +693,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       else                                                                   :
         convex . setProperty      ( "ShowPoints" , True                      )
       ########################################################################
+      convex   . DoPathUpdater    ( 0 , True                                 )
+      ########################################################################
       return True
     ##########################################################################
     if                            ( AT == 302                              ) :
@@ -702,6 +704,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
         convex . setProperty      ( "ShowLines" , False                      )
       else                                                                   :
         convex . setProperty      ( "ShowLines" , True                       )
+      ########################################################################
+      convex   . DoPathUpdater    ( 0 , True                                 )
       ########################################################################
       return True
     ##########################################################################
