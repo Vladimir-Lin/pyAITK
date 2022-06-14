@@ -1383,6 +1383,8 @@ class VcfRectangle              ( VcfItem                                  ) :
     MSG   = self . getMenuItem   ( "DeleteContour"                           )
     mm    . addActionFromMenu    ( LOM , Base + 103 , MSG                    )
     ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
     VM    = convex . Closed
     MSG   = self . getMenuItem   ( "ClosedContour"                           )
     mm    . addActionFromMenu    ( LOM , Base + 201 , MSG , True , VM        )
