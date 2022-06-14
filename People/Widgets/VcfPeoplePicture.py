@@ -56,6 +56,7 @@ from   PyQt5 . QtWidgets              import QWidget
 from   PyQt5 . QtWidgets              import QFileDialog
 from   PyQt5 . QtWidgets              import QGraphicsView
 from   PyQt5 . QtWidgets              import QGraphicsItem
+from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QSpinBox
 from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
@@ -565,6 +566,10 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     MSG   = self   . getMenuItem ( "ContourEditing"                          )
     LOM   = mm     . addMenu     ( MSG                                       )
     ##########################################################################
+    NLE   = QLineEdit            (                                           )
+    NLE   . setText              ( convex . Name                             )
+    mm    . addWidgetWithMenu    ( LOM , Base + 901 , NLE                    )
+    ##########################################################################
     VEX   = convex . getProperty ( "Mode"                                    )
     ##########################################################################
     VM    =                      ( VEX == 1                                  )
@@ -600,30 +605,42 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     MSG   = self . getMenuItem   ( "DeleteContour"                           )
     mm    . addActionFromMenu    ( LOM , Base + 103 , MSG                    )
     ##########################################################################
-    ## "ClosedContour"           : "封閉外框" ,
-    ## "InvertedContour"         : "反轉外框" ,
+    VM    = convex . Closed
+    MSG   = self . getMenuItem   ( "ClosedContour"                           )
+    mm    . addActionFromMenu    ( LOM , Base + 201 , MSG , True , VM        )
+    ##########################################################################
+    VM    = convex . Substract
+    MSG   = self . getMenuItem   ( "InvertedContour"                         )
+    mm    . addActionFromMenu    ( LOM , Base + 202 , MSG , True , VM        )
+    ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ImportContour"                           )
-    mm    . addActionFromMenu    ( LOM , Base + 201 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 301 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ExportContour"                           )
-    mm    . addActionFromMenu    ( LOM , Base + 202 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 302 , MSG                    )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ChangeContourPointColor"                 )
-    mm    . addActionFromMenu    ( LOM , Base + 301 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 401 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ChangeContourLineColor"                  )
-    mm    . addActionFromMenu    ( LOM , Base + 302 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 402 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ChangeContourBackground"                 )
-    mm    . addActionFromMenu    ( LOM , Base + 303 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 403 , MSG                    )
     ##########################################################################
     return
   ############################################################################
-  def RunContourEditorMenu       ( self , at , Base , convex               ) :
+  def RunContourEditorMenu       ( self , mm , at , Base , convex          ) :
+    ##########################################################################
+    NLE    = mm . widgetAt       ( Base + 901                                )
+    if                           ( self . IsOkay ( NLE )                   ) :
+      ########################################################################
+      NAME = NLE . text          (                                           )
+      convex . Name = NAME
     ##########################################################################
     AT     = at - 7000
     OKAY   = self . convex . ExecuteMenuCommand ( AT                         )
@@ -632,17 +649,35 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     if                           ( AT == 201                               ) :
       ########################################################################
-      self . ImportContour       ( convex                                    )
+      if                         ( convex . Closed                         ) :
+        convex . Closed = False
+      else                                                                   :
+        convex . Closed = True
       ########################################################################
       return True
     ##########################################################################
     if                           ( AT == 202                               ) :
       ########################################################################
-      self . ExportContour       ( convex                                    )
+      if                         ( convex . Substract                      ) :
+        convex . Substract = False
+      else                                                                   :
+        convex . Substract = True
       ########################################################################
       return True
     ##########################################################################
     if                           ( AT == 301                               ) :
+      ########################################################################
+      self . ImportContour       ( convex                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                           ( AT == 302                               ) :
+      ########################################################################
+      self . ExportContour       ( convex                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                           ( AT == 401                               ) :
       ########################################################################
       COLOR = self   . getSystemColor (                                      )
       ID    = convex . getProperty    ( "PointsId"                           )
@@ -651,7 +686,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                           ( AT == 302                               ) :
+    if                           ( AT == 402                               ) :
       ########################################################################
       COLOR = self   . getSystemColor (                                      )
       ID    = convex . getProperty    ( "ContourId"                          )
@@ -660,7 +695,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                           ( AT == 303                               ) :
+    if                           ( AT == 403                               ) :
       ########################################################################
       COLOR = self   . getSystemColor (                                      )
       ID    = convex . getProperty    ( "ContourId"                          )
@@ -809,7 +844,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                          ( OKAY                                     ) :
       return True
     ##########################################################################
-    OKAY   = self . RunContourEditorMenu ( at , 7000 , self . convex         )
+    OKAY   = self . RunContourEditorMenu ( mm , at , 7000 , self . convex    )
     if                          ( OKAY                                     ) :
       return True
     ##########################################################################
