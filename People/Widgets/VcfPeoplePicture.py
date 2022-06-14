@@ -120,6 +120,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . convex  . setProperty  ( "RX"          , 10.0                     )
     self . convex  . setProperty  ( "RY"          , 10.0                     )
     self . convex  . setProperty  ( "Visible"     , True                     )
+    self . convex  . setProperty  ( "ShowPoints"  , True                     )
+    self . convex  . setProperty  ( "ShowLines"   , True                     )
     self . convex  . PathUpdater = self . UpdateContourPoints
     ##########################################################################
     self . Painter . addMap       ( "Contour" , 10002                        )
@@ -490,29 +492,37 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     if                                    ( not U                          ) :
       return
     ##########################################################################
-    PID  = convex . getProperty            ( "PointsId"                      )
-    SID  = convex . getProperty            ( "SelectedId"                    )
-    CID  = convex . getProperty            ( "ContourId"                     )
-    VID  = convex . getProperty            ( "CubicId"                       )
-    QID  = convex . getProperty            ( "QuadraticId"                   )
+    PID    = convex . getProperty         ( "PointsId"                       )
+    SID    = convex . getProperty         ( "SelectedId"                     )
+    CID    = convex . getProperty         ( "ContourId"                      )
+    VID    = convex . getProperty         ( "CubicId"                        )
+    QID    = convex . getProperty         ( "QuadraticId"                    )
     ##########################################################################
-    p1   = QPainterPath                    (                                 )
-    p2   = QPainterPath                    (                                 )
-    p3   = QPainterPath                    (                                 )
-    p1   = convex . PointsToQPainterPath   ( p1                              )
-    p2   = convex . ContourToQPainterPath  ( p2                              )
-    p3   = convex . SelectedToQPainterPath ( p3                              )
+    VIS    = convex . getProperty         ( "Visible"                        )
+    SPT    = convex . getProperty         ( "ShowPoints"                     )
+    SLE    = convex . getProperty         ( "ShowLines"                      )
     ##########################################################################
-    self . Painter . pathes   [ PID ] = p1
-    self . Painter . switches [ PID ] = True
+    if                                    ( not VIS                        ) :
+      ########################################################################
+      SPT  = False
+      SLE  = False
     ##########################################################################
-    self . Painter . pathes   [ CID ] = p2
-    self . Painter . switches [ CID ] = True
+    p1     = QPainterPath                    (                               )
+    p1     = convex . PointsToQPainterPath   ( p1                            )
+    self   . Painter . pathes   [ PID ] = p1
+    self   . Painter . switches [ PID ] = SPT
     ##########################################################################
-    self . Painter . pathes   [ SID ] = p3
-    self . Painter . switches [ SID ] = True
+    p2     = QPainterPath                    (                               )
+    p2     = convex . ContourToQPainterPath  ( p2                            )
+    self   . Painter . pathes   [ CID ] = p2
+    self   . Painter . switches [ CID ] = SLE
     ##########################################################################
-    self . update                         (                                  )
+    p3     = QPainterPath                    (                               )
+    p3     = convex . SelectedToQPainterPath ( p3                            )
+    self   . Painter . pathes   [ SID ] = p3
+    self   . Painter . switches [ SID ] = True
+    ##########################################################################
+    self   . update                          (                               )
     ##########################################################################
     return
   ############################################################################
@@ -615,91 +625,121 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
+    VM    = convex . getProperty ( "ShowPoints"                              )
+    MSG   = self . getMenuItem   ( "ShowContourPoints"                       )
+    mm    . addActionFromMenu    ( LOM , Base + 301 , MSG , True , VM        )
+    ##########################################################################
+    VM    = convex . getProperty ( "ShowLines"                               )
+    MSG   = self . getMenuItem   ( "ShowContourLines"                        )
+    mm    . addActionFromMenu    ( LOM , Base + 302 , MSG , True , VM        )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( LOM                                       )
+    ##########################################################################
     MSG   = self . getMenuItem   ( "ImportContour"                           )
-    mm    . addActionFromMenu    ( LOM , Base + 301 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 401 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ExportContour"                           )
-    mm    . addActionFromMenu    ( LOM , Base + 302 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 402 , MSG                    )
     ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ChangeContourPointColor"                 )
-    mm    . addActionFromMenu    ( LOM , Base + 401 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 501 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ChangeContourLineColor"                  )
-    mm    . addActionFromMenu    ( LOM , Base + 402 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 502 , MSG                    )
     ##########################################################################
     MSG   = self . getMenuItem   ( "ChangeContourBackground"                 )
-    mm    . addActionFromMenu    ( LOM , Base + 403 , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base + 503 , MSG                    )
     ##########################################################################
     return
   ############################################################################
-  def RunContourEditorMenu       ( self , mm , at , Base , convex          ) :
+  def RunContourEditorMenu        ( self , mm , at , Base , convex         ) :
     ##########################################################################
-    NLE    = mm . widgetAt       ( Base + 901                                )
-    if                           ( self . IsOkay ( NLE )                   ) :
+    NLE    = mm . widgetAt        ( Base + 901                               )
+    if                            ( self . IsOkay ( NLE )                  ) :
       ########################################################################
-      NAME = NLE . text          (                                           )
+      NAME = NLE . text           (                                          )
       convex . Name = NAME
     ##########################################################################
     AT     = at - 7000
     OKAY   = self . convex . ExecuteMenuCommand ( AT                         )
-    if                           ( OKAY                                    ) :
+    if                            ( OKAY                                   ) :
       return True
     ##########################################################################
-    if                           ( AT == 201                               ) :
+    if                            ( AT == 201                              ) :
       ########################################################################
-      if                         ( convex . Closed                         ) :
+      if                          ( convex . Closed                        ) :
         convex . Closed = False
       else                                                                   :
         convex . Closed = True
       ########################################################################
       return True
     ##########################################################################
-    if                           ( AT == 202                               ) :
+    if                            ( AT == 202                              ) :
       ########################################################################
-      if                         ( convex . Substract                      ) :
+      if                          ( convex . Substract                     ) :
         convex . Substract = False
       else                                                                   :
         convex . Substract = True
       ########################################################################
       return True
     ##########################################################################
-    if                           ( AT == 301                               ) :
+    if                            ( AT == 301                              ) :
       ########################################################################
-      self . ImportContour       ( convex                                    )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                           ( AT == 302                               ) :
-      ########################################################################
-      self . ExportContour       ( convex                                    )
+      VM   = convex . getProperty ( "ShowPoints"                             )
+      if                          ( VM                                     ) :
+        convex . setProperty      ( "ShowPoints" , False                     )
+      else                                                                   :
+        convex . setProperty      ( "ShowPoints" , True                      )
       ########################################################################
       return True
     ##########################################################################
-    if                           ( AT == 401                               ) :
+    if                            ( AT == 302                              ) :
+      ########################################################################
+      VM   = convex . getProperty ( "ShowLines"                              )
+      if                          ( VM                                     ) :
+        convex . setProperty      ( "ShowLines" , False                      )
+      else                                                                   :
+        convex . setProperty      ( "ShowLines" , True                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( AT == 401                              ) :
+      ########################################################################
+      self . ImportContour        ( convex                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( AT == 402                              ) :
+      ########################################################################
+      self . ExportContour        ( convex                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( AT == 501                              ) :
       ########################################################################
       COLOR = self   . getSystemColor (                                      )
       ID    = convex . getProperty    ( "PointsId"                           )
-      self . Painter . addPen    ( ID , COLOR                                )
+      self . Painter . addPen     ( ID , COLOR                               )
       self . Painter . pens [ ID ] . setWidthF ( 4.5                         )
       ########################################################################
       return True
     ##########################################################################
-    if                           ( AT == 402                               ) :
+    if                            ( AT == 502                              ) :
       ########################################################################
       COLOR = self   . getSystemColor (                                      )
       ID    = convex . getProperty    ( "ContourId"                          )
-      self . Painter . addPen    ( ID , COLOR                                )
+      self . Painter . addPen     ( ID , COLOR                               )
       self . Painter . pens [ ID ] . setWidthF ( 7.5                         )
       ########################################################################
       return True
     ##########################################################################
-    if                           ( AT == 403                               ) :
+    if                            ( AT == 503                              ) :
       ########################################################################
       COLOR = self   . getSystemColor (                                      )
       ID    = convex . getProperty    ( "ContourId"                          )
-      self . Painter . addBrush  ( ID , COLOR                                )
+      self . Painter . addBrush   ( ID , COLOR                               )
       ########################################################################
       return True
     ##########################################################################
