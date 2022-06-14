@@ -50,7 +50,12 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QSpinBox
 from   PyQt5 . QtWidgets              import QDoubleSpinBox
 ##############################################################################
-from         . VcfItem                import VcfItem    as VcfItem
+from   AITK  . Documents . JSON       import Load        as LoadJson
+from   AITK  . Documents . JSON       import Save        as SaveJson
+##############################################################################
+from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
+##############################################################################
+from         . VcfItem                import VcfItem     as VcfItem
 ##############################################################################
 class VcfRectangle              ( VcfItem                                  ) :
   ############################################################################
@@ -1293,7 +1298,6 @@ class VcfRectangle              ( VcfItem                                  ) :
     ##########################################################################
     return False
   ############################################################################
-  ############################################################################
   def ImportContour                        ( self , convex                 ) :
     ##########################################################################
     TITLE  = self . getMenuItem            ( "ImportContour"                 )
@@ -1435,52 +1439,6 @@ class VcfRectangle              ( VcfItem                                  ) :
     AT     = at - 7000
     OKAY   = self . convex . ExecuteMenuCommand ( AT                         )
     if                            ( OKAY                                   ) :
-      return True
-    ##########################################################################
-    if                            ( AT == 201                              ) :
-      ########################################################################
-      if                          ( convex . Closed                        ) :
-        convex . Closed = False
-      else                                                                   :
-        convex . Closed = True
-      ########################################################################
-      convex   . DoPathUpdater    ( 0 , True                                 )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                            ( AT == 202                              ) :
-      ########################################################################
-      if                          ( convex . Substract                     ) :
-        convex . Substract = False
-      else                                                                   :
-        convex . Substract = True
-      ########################################################################
-      convex   . DoPathUpdater    ( 0 , True                                 )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                            ( AT == 301                              ) :
-      ########################################################################
-      VM   = convex . getProperty ( "ShowPoints"                             )
-      if                          ( VM                                     ) :
-        convex . setProperty      ( "ShowPoints" , False                     )
-      else                                                                   :
-        convex . setProperty      ( "ShowPoints" , True                      )
-      ########################################################################
-      convex   . DoPathUpdater    ( 0 , True                                 )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                            ( AT == 302                              ) :
-      ########################################################################
-      VM   = convex . getProperty ( "ShowLines"                              )
-      if                          ( VM                                     ) :
-        convex . setProperty      ( "ShowLines" , False                      )
-      else                                                                   :
-        convex . setProperty      ( "ShowLines" , True                       )
-      ########################################################################
-      convex   . DoPathUpdater    ( 0 , True                                 )
-      ########################################################################
       return True
     ##########################################################################
     if                            ( AT == 401                              ) :
