@@ -91,8 +91,8 @@ class Contour    (                                                         ) :
                "Substract"  : self . Substract                             , \
                "Index"      : self . Index                                 , \
                "Thickness"  : self . Thickness . toJson ( )                , \
-               "Points"     : {                                          } , \
-               "Properties" : self . Properties                              }
+               "Properties" : self . Properties                            , \
+               "Points"     : {                                            } }
     ##########################################################################
     KEYs = self . Points . keys (                                            )
     for Id in KEYs                                                           :
