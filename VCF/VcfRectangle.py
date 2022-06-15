@@ -1418,8 +1418,8 @@ class VcfRectangle              ( VcfItem                                  ) :
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MENULOAD   = convex . getProperty ( "MenuLoad"                           )
-    MENUAPPEND = convex . setProperty ( "MenuAppend"                         )
-    MENUSTORE  = convex . setProperty ( "MenuStore"                          )
+    MENUAPPEND = convex . getProperty ( "MenuAppend"                         )
+    MENUSTORE  = convex . getProperty ( "MenuStore"                          )
     ##########################################################################
     if                           ( MENULOAD  and ( convex . Uuid > 0 )     ) :
       ########################################################################
