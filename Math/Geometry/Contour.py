@@ -118,9 +118,9 @@ class Contour    (                                                         ) :
                "Type"       : self . Type                                  , \
                "Closed"     : self . Closed                                , \
                "Substract"  : self . Substract                             , \
-               "Index"      : self . Index                                 , \
                "Thickness"  : self . Thickness . toJson ( )                , \
                "Properties" : self . Properties                            , \
+               "Index"      : self . Index                                 , \
                "Points"     : {                                            } }
     ##########################################################################
     KEYs = self . Points . keys (                                            )
