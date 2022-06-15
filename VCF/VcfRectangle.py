@@ -1353,8 +1353,10 @@ class VcfRectangle              ( VcfItem                                  ) :
       MSG = str                  ( convex . Uuid                             )
       mm  . addActionFromMenu    ( LOM , Base + 999 , MSG                    )
     ##########################################################################
+    MSG   = self . getMenuItem   ( "ContourNaming"                           )
     NLE   = QLineEdit            (                                           )
     NLE   . setText              ( convex . Name                             )
+    NLE   . setPlaceholderText   ( MSG                                       )
     mm    . addWidgetWithMenu    ( LOM , Base + 901 , NLE                    )
     ##########################################################################
     VEX   = convex . getProperty ( "Mode"                                    )
