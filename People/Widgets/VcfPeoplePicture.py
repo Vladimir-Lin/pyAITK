@@ -102,45 +102,7 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . setZValue              ( 10000                                    )
     ##########################################################################
     self . defaultMeasurePoints   (                                          )
-    ##########################################################################
-    self . convex  = Contour      (                                          )
-    self . convex  . setClosed    ( True                                     )
-    self . convex  . setInvert    ( False                                    )
-    self . convex  . setProperty  ( "Mode"        , 0                        )
-    self . convex  . setProperty  ( "Picked"      , ""                       )
-    self . convex  . setProperty  ( "State"       , 0                        )
-    self . convex  . setProperty  ( "Cursor"      , 0                        )
-    self . convex  . setProperty  ( "ContourId"   , 10002                    )
-    self . convex  . setProperty  ( "CubicId"     , 10003                    )
-    self . convex  . setProperty  ( "QuadraticId" , 10004                    )
-    self . convex  . setProperty  ( "PointsId"    , 10008                    )
-    self . convex  . setProperty  ( "SelectedId"  , 10009                    )
-    self . convex  . setProperty  ( "Base"        , 0                        )
-    self . convex  . setProperty  ( "Z"           , 0.0                      )
-    self . convex  . setProperty  ( "RX"          , 10.0                     )
-    self . convex  . setProperty  ( "RY"          , 10.0                     )
-    self . convex  . setProperty  ( "Visible"     , True                     )
-    self . convex  . setProperty  ( "ShowPoints"  , True                     )
-    self . convex  . setProperty  ( "ShowLines"   , True                     )
-    self . convex  . setProperty  ( "PointSize"   , 4.5                      )
-    self . convex  . setProperty  ( "SelectedPointSize" , 5.5                )
-    self . convex  . setProperty  ( "LineWidth"   , 7.5                      )
-    self . convex  . PathUpdater = self . UpdateContourPoints
-    ##########################################################################
-    self . Painter . addMap       ( "Contour" , 10002                        )
-    self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
-    self . Painter . addBrush     ( 10002 , QColor ( 224 , 255 , 224 ,  96 ) )
-    self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
-    ##########################################################################
-    self . Painter . addMap       ( "Points"  , 10008                        )
-    self . Painter . addPen       ( 10008 , QColor ( 128 ,  64 , 255 , 255 ) )
-    self . Painter . addBrush     ( 10008 , QColor (   0 ,   0 ,   0 ,   0 ) )
-    self . Painter . pens [ 10008 ] . setWidthF ( 4.5                        )
-    ##########################################################################
-    self . Painter . addMap       ( "Selected" , 10009                       )
-    self . Painter . addPen       ( 10009 , QColor ( 128 , 255 ,  64 , 255 ) )
-    self . Painter . addBrush     ( 10009 , QColor ( 255 , 128 ,  64 , 255 ) )
-    self . Painter . pens [ 10009 ] . setWidthF ( 5.5                        )
+    self . PrepareContourDetails  (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -461,6 +423,32 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
       self . AssignMeasurePoints ( P1 , P2                                   )
       ########################################################################
       return
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareContourDetails       ( self                                   ) :
+    ##########################################################################
+    self . convex  = Contour      (                                          )
+    self . convex  . setDefaults  (                                          )
+    self . convex  . setProperty  ( "MenuLoad"   , True                      )
+    self . convex  . setProperty  ( "MenuAppend" , True                      )
+    self . convex  . setProperty  ( "MenuStore"  , True                      )
+    self . convex  . PathUpdater = self . UpdateContourPoints
+    ##########################################################################
+    self . Painter . addMap       ( "Contour" , 10002                        )
+    self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
+    self . Painter . addBrush     ( 10002 , QColor ( 224 , 255 , 224 ,  96 ) )
+    self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
+    ##########################################################################
+    self . Painter . addMap       ( "Points"  , 10008                        )
+    self . Painter . addPen       ( 10008 , QColor ( 128 ,  64 , 255 , 255 ) )
+    self . Painter . addBrush     ( 10008 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . pens [ 10008 ] . setWidthF ( 4.5                        )
+    ##########################################################################
+    self . Painter . addMap       ( "Selected" , 10009                       )
+    self . Painter . addPen       ( 10009 , QColor ( 128 , 255 ,  64 , 255 ) )
+    self . Painter . addBrush     ( 10009 , QColor ( 255 , 128 ,  64 , 255 ) )
+    self . Painter . pens [ 10009 ] . setWidthF ( 5.5                        )
     ##########################################################################
     return
   ############################################################################

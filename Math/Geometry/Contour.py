@@ -61,6 +61,35 @@ class Contour    (                                                         ) :
     ##########################################################################
     return
   ############################################################################
+  def setDefaults      ( self                                              ) :
+    ##########################################################################
+    self . setClosed   ( True                                                )
+    self . setInvert   ( False                                               )
+    self . setProperty ( "Mode"              , 0                             )
+    self . setProperty ( "Picked"            , ""                            )
+    self . setProperty ( "State"             , 0                             )
+    self . setProperty ( "Cursor"            , 0                             )
+    self . setProperty ( "ContourId"         , 10002                         )
+    self . setProperty ( "CubicId"           , 10003                         )
+    self . setProperty ( "QuadraticId"       , 10004                         )
+    self . setProperty ( "PointsId"          , 10008                         )
+    self . setProperty ( "SelectedId"        , 10009                         )
+    self . setProperty ( "Base"              , 0                             )
+    self . setProperty ( "Z"                 , 0.0                           )
+    self . setProperty ( "RX"                , 10.0                          )
+    self . setProperty ( "RY"                , 10.0                          )
+    self . setProperty ( "Visible"           , True                          )
+    self . setProperty ( "ShowPoints"        , True                          )
+    self . setProperty ( "ShowLines"         , True                          )
+    self . setProperty ( "MenuLoad"          , False                         )
+    self . setProperty ( "MenuAppend"        , False                         )
+    self . setProperty ( "MenuStore"         , False                         )
+    self . setProperty ( "PointSize"         , 4.5                           )
+    self . setProperty ( "SelectedPointSize" , 5.5                           )
+    self . setProperty ( "LineWidth"         , 7.5                           )
+    ##########################################################################
+    return
+  ############################################################################
   def setClosed ( self , closed                                            ) :
     ##########################################################################
     self . Closed = closed
@@ -597,39 +626,20 @@ class Contour    (                                                         ) :
     ##########################################################################
     VEX      = self . getProperty ( "Mode"                                   )
     ##########################################################################
-    if                            ( at  == 1                               ) :
+    if                            ( at in [ 0 , 4 ]                        ) :
       ########################################################################
-      if                          ( VEX == 1                               ) :
-        VEX  = 0
-      else                                                                   :
-        VEX  = 1
-      self   . setProperty        ( "Mode" , VEX                             )
+      self   . setProperty        ( "Mode" , at                              )
       ########################################################################
       return True
     ##########################################################################
-    if                            ( at  == 2                               ) :
+    if                            ( at in [ 1 , 2 , 3 ]                    ) :
       ########################################################################
-      if                          ( VEX == 2                               ) :
+      if                          ( VEX == at                              ) :
         VEX  = 0
       else                                                                   :
-        VEX  = 2
+        VEX  = at
+      ########################################################################
       self   . setProperty        ( "Mode" , VEX                             )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                            ( at  == 3                               ) :
-      ########################################################################
-      if                          ( VEX == 3                               ) :
-        VEX  = 0
-      else                                                                   :
-        VEX  = 3
-      self   . setProperty        ( "Mode" , VEX                             )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                            ( at  == 4                               ) :
-      ########################################################################
-      self   . setProperty        ( "Mode" , 4                               )
       ########################################################################
       return True
     ##########################################################################
