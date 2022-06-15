@@ -1359,8 +1359,9 @@ class VcfRectangle              ( VcfItem                                  ) :
     ##########################################################################
     VEX   = convex . getProperty ( "Mode"                                    )
     ##########################################################################
+    VM    =                      ( VEX == 0                                  )
     MSG   = self . getMenuItem   ( "ViewContourOnly"                         )
-    mm    . addActionFromMenu    ( LOM , Base       , MSG                    )
+    mm    . addActionFromMenu    ( LOM , Base       , MSG , True , VM        )
     ##########################################################################
     VM    =                      ( VEX == 1                                  )
     MSG   = self . getMenuItem   ( "AddContourPoint"                         )
