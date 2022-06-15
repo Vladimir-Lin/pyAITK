@@ -1300,6 +1300,7 @@ class PeopleView                     ( IconDock                            ) :
       msg  = self . getMenuItem    ( "NotSearch"                             )
       mm   . addAction             ( 7401 , msg                              )
     ##########################################################################
+    self   . StopIconMenu          ( mm                                      )
     self   . AmountIndexMenu       ( mm                                      )
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
@@ -1330,6 +1331,10 @@ class PeopleView                     ( IconDock                            ) :
       self . clear                 (                                         )
       self . startup               (                                         )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunStopIconMenu ( mm , aa                                )
+    if                             ( OKAY                                  ) :
       return True
     ##########################################################################
     OKAY   = self . RunDocking     ( mm , aa                                 )
