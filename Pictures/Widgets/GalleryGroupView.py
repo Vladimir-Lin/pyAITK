@@ -140,7 +140,7 @@ class GalleryGroupView             ( IconDock                              ) :
     self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
-    self . LinkVoice         ( self . CommandParser                          )
+    ## self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
