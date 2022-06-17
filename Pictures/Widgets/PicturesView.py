@@ -765,26 +765,26 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def ReloadLocality                ( self , DB                            ) :
+  def ReloadLocality               ( self , DB                             ) :
     ##########################################################################
-    if                              ( not self . isGrouping ( )            ) :
+    if                             ( not self . isGrouping ( )             ) :
       return
     ##########################################################################
-    PAMTAB  = self . Tables         [ "Parameters"                           ]
+    PAMTAB = self . Tables         [ "Parameters"                            ]
     ##########################################################################
-    if                              ( SCOPE == "Subordination"             ) :
+    if                             ( self . isSubordination ( )            ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t1"                                   )
-      UUID  = self . Relation . get ( "first"                                )
+      TYPE = self . Relation . get ( "t1"                                    )
+      UUID = self . Relation . get ( "first"                                 )
       ########################################################################
-    elif                            ( SCOPE == "Reverse"                   ) :
+    elif                           ( self . isReverse       ( )            ) :
       ########################################################################
-      TYPE  = self . Relation . get ( "t2"                                   )
-      UUID  = self . Relation . get ( "second"                               )
+      TYPE = self . Relation . get ( "t2"                                    )
+      UUID = self . Relation . get ( "second"                                )
     ##########################################################################
-    SCOPE   = self . Grouping
-    SCOPE   = f"PicturesView-{SCOPE}"
-    self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
+    SCOPE  = self . Grouping
+    SCOPE  = f"PicturesView-{SCOPE}"
+    self   . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
     ##########################################################################
     return
   ############################################################################
