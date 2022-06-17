@@ -78,6 +78,47 @@ class PictureEditor               ( VcfWidget                              ) :
     ##########################################################################
     return
   ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    """
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Import"     , self . ImportPictures  , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    """
+    ##########################################################################
+    self . LinkAction ( "OriginalView" , self . OriginalView  , Enabled      )
+    self . LinkAction ( "ZoomIn"       , self . ZoomIn        , Enabled      )
+    self . LinkAction ( "ZoomOut"      , self . ZoomOut       , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
+      return False
+    ##########################################################################
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    ## self . LinkVoice         ( self . CommandParser                          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def closeEvent             ( self , event                                ) :
+    ##########################################################################
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
+    ##########################################################################
+    return
+  ############################################################################
   def JsonCaller               ( self , JSON                               ) :
     ##########################################################################
     self . JsonCallback . emit (        JSON                                 )

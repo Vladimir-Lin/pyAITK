@@ -816,7 +816,8 @@ class GalleriesView                ( IconDock                              ) :
       mm   . addSeparator           (                                        )
       ########################################################################
       msg  = TRX                    [ "UI::PersonalGallery"                  ]
-      mm   . addAction              ( 1201 , msg                             )
+      icon = QIcon                  ( ":/images/pictures.png"                )
+      mm   . addActionWithIcon      ( 1201 , icon , msg                      )
       ########################################################################
       msg  = self . getMenuItem     ( "ViewFullPictures"                     )
       mm   . addAction              ( 1202 , msg                             )
