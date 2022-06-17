@@ -103,38 +103,52 @@ class GalleryGroupView             ( IconDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
-  def FocusIn             ( self                                           ) :
+  def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
+    if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
+      ########################################################################
+      msg  = self . getMenuItem     ( "Galleries"                            )
+      A    = QAction                (                                        )
+      A    . setIcon                ( QIcon ( ":/images/galleries.png" )     )
+      A    . setToolTip             ( msg                                    )
+      A    . triggered . connect    ( self . OpenCurrentGalleries            )
+      self . WindowActions . append ( A                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared        ( )            ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
-    self . LinkAction     ( "Refresh"    , self . startup                    )
-    ##########################################################################
-    self . LinkAction     ( "Insert"     , self . InsertItem                 )
-    self . LinkAction     ( "Delete"     , self . DeleteItems                )
-    self . LinkAction     ( "Rename"     , self . RenameItem                 )
-    self . LinkAction     ( "Paste"      , self . PasteItems                 )
-    self . LinkAction     ( "Copy"       , self . CopyToClipboard            )
-    ##########################################################################
-    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
-    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    ## self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
-    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
-    self . LinkAction      ( "Rename"     , self . RenameItem      , False   )
-    self . LinkAction      ( "Paste"      , self . PasteItems      , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
@@ -613,6 +627,30 @@ class GalleryGroupView             ( IconDock                              ) :
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
   ############################################################################
+  ############################################################################
+  def OpenItemGalleries            ( self , item                           ) :
+    ##########################################################################
+    uuid  = item . data            ( Qt . UserRole                           )
+    uuid  = int                    ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return False
+    ##########################################################################
+    title = item . text            (                                         )
+    tid   = self . Relation . get  ( "t2"                                    )
+    self  . GalleryGroup    . emit ( title , tid , str ( uuid )            )
+    ##########################################################################
+    return True
+  ############################################################################
+  def OpenCurrentGalleries      ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( atItem == None                           ) :
+      return False
+    ##########################################################################
+    return self . OpenItemGalleries ( atItem                                     )
+  ############################################################################
   def FunctionsMenu          ( self , mm , uuid , item                     ) :
     ##########################################################################
     msg = self . getMenuItem ( "Functions"                                   )
@@ -764,9 +802,7 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     if                               ( at == 2002                          ) :
       ########################################################################
-      title = atItem . text          (                                       )
-      tid   = self . Relation . get  ( "t2"                                  )
-      self  . GalleryGroup    . emit ( title , tid , str ( uuid )            )
+      self . OpenItemGalleries       ( atItem                                )
       ########################################################################
       return True
     ##########################################################################
