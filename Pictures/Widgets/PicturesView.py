@@ -734,10 +734,38 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ReloadLocality                ( self , DB                            ) :
+  def UpdateLocalityUsage          ( self                                  ) :
     ##########################################################################
-    SCOPE   = self . Grouping
-    ALLOWED =                       [ "Subordination" , "Reverse"            ]
+    if                             ( not self . isGrouping ( )             ) :
+      return False
+    ##########################################################################
+    DB     = self . ConnectDB      (                                         )
+    if                             ( self . NotOkay ( DB )                 ) :
+      return False
+    ##########################################################################
+    PAMTAB = self . Tables         [ "Parameters"                            ]
+    DB     . LockWrites            ( [ PAMTAB ]                              )
+    ##########################################################################
+    if                             ( self . isSubordination ( )            ) :
+      ########################################################################
+      TYPE = self . Relation . get ( "t1"                                    )
+      UUID = self . Relation . get ( "first"                                 )
+      ########################################################################
+    elif                           ( self . isReverse       ( )            ) :
+      ########################################################################
+      TYPE = self . Relation . get ( "t2"                                    )
+      UUID = self . Relation . get ( "second"                                )
+    ##########################################################################
+    SCOPE  = self . Grouping
+    SCOPE  = f"PicturesView-{SCOPE}"
+    self   . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
+    ##########################################################################
+    DB     . UnlockTables          (                                         )
+    DB     . Close                 (                                         )
+    ##########################################################################
+    return True
+  ############################################################################
+  def ReloadLocality                ( self , DB                            ) :
     ##########################################################################
     if                              ( not self . isGrouping ( )            ) :
       return
@@ -754,6 +782,7 @@ class PicturesView                 ( IconDock                              ) :
       TYPE  = self . Relation . get ( "t2"                                   )
       UUID  = self . Relation . get ( "second"                               )
     ##########################################################################
+    SCOPE   = self . Grouping
     SCOPE   = f"PicturesView-{SCOPE}"
     self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
     ##########################################################################

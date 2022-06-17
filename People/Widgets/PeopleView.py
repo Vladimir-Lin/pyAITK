@@ -222,14 +222,14 @@ class PeopleView                     ( IconDock                            ) :
     A    . triggered . connect    ( self . Search                            )
     self . WindowActions . append ( A                                        )
     ##########################################################################
-    """
-    msg  = self . getMenuItem     ( "Crowds"                                 )
+    msg  = self . getMenuItem     ( "Galleries"                              )
     A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
+    A    . setIcon                ( QIcon ( ":/images/galleries.png" )       )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationCrowds            )
+    A    . triggered . connect    ( self . OpenPersonalGalleries             )
     self . WindowActions . append ( A                                        )
     ##########################################################################
+    """
     msg  = self . getMenuItem     ( "Films"                                  )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/video.png" )           )
@@ -914,7 +914,28 @@ class PeopleView                     ( IconDock                            ) :
   ############################################################################
   ############################################################################
   ############################################################################
+  def OpenItemGalleries         ( self , item                              ) :
+    ##########################################################################
+    uuid = item . data          ( Qt . UserRole                              )
+    uuid = int                  ( uuid                                       )
+    text = item . text          (                                            )
+    icon = item . icon          (                                            )
+    xsid = str                  ( uuid                                       )
+    ##########################################################################
+    self . ShowGalleries . emit ( text , 7 , xsid , icon                     )
+    ##########################################################################
+    return
   ############################################################################
+  def OpenPersonalGalleries     ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self . OpenItemGalleries    ( atItem                                     )
+    ##########################################################################
+    return
   ############################################################################
   def OpenWebPageListings          ( self , Related                        ) :
     ##########################################################################
@@ -1169,11 +1190,7 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     if                                  ( at == 24231211                   ) :
       ########################################################################
-      text = item . text                (                                    )
-      icon = item . icon                (                                    )
-      xsid = str                        ( uuid                               )
-      ########################################################################
-      self . ShowGalleries       . emit ( text , 7 , xsid , icon             )
+      self . OpenItemGalleries          ( item                               )
       ########################################################################
       return True
     ##########################################################################
