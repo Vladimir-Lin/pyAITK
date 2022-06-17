@@ -1146,7 +1146,9 @@ class PeopleView                     ( IconDock                            ) :
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
     MSG = self . getMenuItem   ( "Galleries"                                 )
-    mm  . addActionFromMenu    ( LOM , 24231211 , MSG                        )
+    ICO = QIcon                ( ":/images/galleries.png"                    )
+    mm  . addActionFromMenuWithIcon ( LOM , 24231211 , ICO , MSG             )
+    ##########################################################################
     mm  = self . RelatedGalleriesMenu ( mm , LOM                             )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )

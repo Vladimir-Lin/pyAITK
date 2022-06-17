@@ -111,11 +111,19 @@ class PicturesView                 ( IconDock                              ) :
     A    . triggered . connect    ( self . EditCurrentPicture                )
     self . WindowActions . append ( A                                        )
     ##########################################################################
+    msg  = self . getMenuItem     ( "ImportPictures"                         )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/imagecollection.png" ) )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . ImportPictures                    )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
     return
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Import"     , self . ImportPictures  , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Cut"        , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
@@ -997,7 +1005,8 @@ class PicturesView                 ( IconDock                              ) :
       mm   . addSeparator               (                                    )
       ########################################################################
       msg  = self . getMenuItem         ( "EditPicture"                      )
-      mm   . addAction                  ( 1101 , msg                         )
+      icon = QIcon                      ( ":/images/interfaces.png"          )
+      mm   . addActionWithIcon          ( 1101 , icon , msg                  )
       ########################################################################
       msg  = self . getMenuItem         ( "ViewPicture"                      )
       mm   . addAction                  ( 1102 , msg                         )
@@ -1006,7 +1015,8 @@ class PicturesView                 ( IconDock                              ) :
       mm   . addAction                  ( 1103 , msg                         )
     ##########################################################################
     msg    = self . getMenuItem         ( "ImportPictures"                   )
-    mm     . addAction                  ( 2001 , msg                         )
+    icon   = QIcon                      ( ":/images/imagecollection.png"     )
+    mm     . addActionWithIcon          ( 2001 , icon , msg                  )
     ##########################################################################
     mm     . addSeparator               (                                    )
     self   . PropertiesMenu             ( mm                                 )
