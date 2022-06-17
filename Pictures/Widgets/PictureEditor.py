@@ -93,9 +93,11 @@ class PictureEditor               ( VcfWidget                              ) :
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     """
     ##########################################################################
-    self . LinkAction ( "OriginalView" , self . OriginalView  , Enabled      )
-    self . LinkAction ( "ZoomIn"       , self . ZoomIn        , Enabled      )
-    self . LinkAction ( "ZoomOut"      , self . ZoomOut       , Enabled      )
+    self . LinkAction  ( "OriginalView" , self . OriginalView  , Enabled     )
+    self . LinkAction  ( "ZoomIn"       , self . ZoomIn        , Enabled     )
+    self . LinkAction  ( "ZoomOut"      , self . ZoomOut       , Enabled     )
+    ##########################################################################
+    self . AttachRatio (                                         Enabled     )
     ##########################################################################
     return
   ############################################################################
