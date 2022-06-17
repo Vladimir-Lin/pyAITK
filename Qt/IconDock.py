@@ -742,7 +742,8 @@ class IconDock                      ( ListDock                             ) :
   ############################################################################
   def Shutdown          ( self                                             ) :
     ##########################################################################
-    self . LoopRunning = False
+    self . LoopRunning   = False
+    self . FetchingIcons = False
     ##########################################################################
     if                  ( self . isThreadRunning ( )                       ) :
       return False

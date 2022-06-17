@@ -103,6 +103,19 @@ class CrowdView                   ( IconDock                               ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
+  def PrepareForActions             ( self                                 ) :
+    ##########################################################################
+    if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
+      ########################################################################
+      msg  = self . getMenuItem     ( "Crowds"                               )
+      A    = QAction                (                                        )
+      A    . setIcon                ( QIcon ( ":/images/buddy.png" )         )
+      A    . setToolTip             ( msg                                    )
+      A    . triggered . connect    ( self . OpenCurrentCrowd                )
+      self . WindowActions . append ( A                                      )
+    ##########################################################################
+    return
+  ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
@@ -120,14 +133,15 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn             ( self                                           ) :
+  def FocusIn                ( self                                        ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
-    self . AttachActions  ( True                                             )
-    self . LinkVoice      ( self . CommandParser                             )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
