@@ -684,6 +684,8 @@ class OrganizationGroupView         ( IconDock                             ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
+    self   . StopIconMenu             ( mm                                   )
+    ##########################################################################
     if                                ( uuid > 0                           ) :
       ########################################################################
       mg   = self . getMenuItem       ( "Subgroup"                           )
@@ -697,15 +699,11 @@ class OrganizationGroupView         ( IconDock                             ) :
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     ##########################################################################
-    if                                ( atItem not in [ False , None ]     ) :
-      mm   = self . AppendRenameAction  ( mm , 1102                          )
+    if                                ( uuid > 0                           ) :
+      self . AppendRenameAction       ( mm , 1102                            )
+      self . AssureEditNamesAction    ( mm , 1601 , atItem                   )
     ##########################################################################
     mm     . addSeparator             (                                      )
-    ##########################################################################
-    if                                ( atItem != None                     ) :
-      if                              ( self . EditAllNames != None        ) :
-        mm . addAction                ( 1601 ,  TRX [ "UI::EditNames" ]      )
-        mm . addSeparator             (                                      )
     ##########################################################################
     self   . FunctionsMenu            ( mm , uuid , atItem                   )
     self   . SortingMenu              ( mm                                   )
@@ -727,23 +725,24 @@ class OrganizationGroupView         ( IconDock                             ) :
     OKAY   = self . HandleLocalityMenu ( at                                  )
     if                                ( OKAY                               ) :
       ########################################################################
-      self . clear                    (                                      )
-      self . startup                  (                                      )
+      self . restart                  (                                      )
       ########################################################################
       return True
     ##########################################################################
     OKAY   = self . RunSortingMenu    ( at                                   )
     if                                ( OKAY                               ) :
       ########################################################################
-      self . clear                    (                                      )
-      self . startup                  (                                      )
+      self . restart                  (                                      )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunStopIconMenu   ( at                                   )
+    if                                ( OKAY                               ) :
       return True
     ##########################################################################
     if                                ( at == 1001                         ) :
       ########################################################################
-      self . clear                    (                                      )
-      self . startup                  (                                      )
+      self . restart                  (                                      )
       ########################################################################
       return True
     ##########################################################################
