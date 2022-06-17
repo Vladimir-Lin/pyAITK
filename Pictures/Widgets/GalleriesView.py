@@ -213,42 +213,53 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def FocusIn             ( self                                           ) :
+  def PrepareForActions           ( self                                   ) :
     ##########################################################################
-    if                    ( not self . isPrepared ( )                      ) :
+    msg  = self . Translations    [ "UI::PersonalGallery"                    ]
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/pictures.png" )        )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenCurrentGallery                )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label"      , self . windowTitle ( )            )
-    self . LinkAction     ( "Refresh"    , self . startup                    )
-    ##########################################################################
-    self . LinkAction     ( "Insert"     , self . InsertItem                 )
-    self . LinkAction     ( "Delete"     , self . DeleteItems                )
-    self . LinkAction     ( "Rename"     , self . RenameItem                 )
-    ##########################################################################
-    self . LinkAction     ( "Home"       , self . PageHome                   )
-    self . LinkAction     ( "End"        , self . PageEnd                    )
-    self . LinkAction     ( "PageUp"     , self . PageUp                     )
-    self . LinkAction     ( "PageDown"   , self . PageDown                   )
-    ##########################################################################
-    self . LinkAction     ( "SelectAll"  , self . SelectAll                  )
-    self . LinkAction     ( "SelectNone" , self . SelectNone                 )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    ## self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction        ( "Refresh"    , self . startup      , False    )
-    self . LinkAction        ( "Insert"     , self . InsertItem   , False    )
-    self . LinkAction        ( "Delete"     , self . DeleteItems  , False    )
-    self . LinkAction        ( "Rename"     , self . RenameItem   , False    )
-    self . LinkAction        ( "Home"       , self . PageHome     , False    )
-    self . LinkAction        ( "End"        , self . PageEnd      , False    )
-    self . LinkAction        ( "PageUp"     , self . PageUp       , False    )
-    self . LinkAction        ( "PageDown"   , self . PageDown     , False    )
-    self . LinkAction        ( "SelectAll"  , self . SelectAll    , False    )
-    self . LinkAction        ( "SelectNone" , self . SelectNone   , False    )
-    ##########################################################################
-    self . defaultCloseEvent ( event                                         )
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
@@ -662,6 +673,31 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemGallery                 ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( Qt . UserRole                        )
+    uuid = int                        ( uuid                                 )
+    ##########################################################################
+    if                                ( uuid <= 0                          ) :
+      return False
+    ##########################################################################
+    text = item . text                (                                      )
+    icon = item . icon                (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    self . ShowPersonalGallery . emit ( text , 64 , xsid , icon              )
+    ##########################################################################
+    return True
+  ############################################################################
+  def OpenCurrentGallery          ( self                                   ) :
+    ##########################################################################
+    atItem = self . currentItem   (                                          )
+    ##########################################################################
+    if                            ( atItem == None                         ) :
+      return False
+    ##########################################################################
+    return self . OpenItemGallery ( atItem                                   )
+  ############################################################################
   def BlocMenu               ( self , mm , item                            ) :
     ##########################################################################
     MSG = self . getMenuItem ( "Bloc"                                        )
@@ -850,11 +886,7 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     if                              ( at == 1201                           ) :
       ########################################################################
-      text = atItem . text          (                                        )
-      icon = atItem . icon          (                                        )
-      xsid = str                    ( uuid                                   )
-      ########################################################################
-      self . ShowPersonalGallery . emit ( text , 64 , xsid , icon            )
+      self . OpenItemGallery        ( atItem                                 )
       ########################################################################
       return True
     ##########################################################################

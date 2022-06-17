@@ -140,7 +140,7 @@ class GalleryGroupView             ( IconDock                              ) :
     self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
-    ## self . LinkVoice         ( self . CommandParser                          )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
@@ -627,7 +627,6 @@ class GalleryGroupView             ( IconDock                              ) :
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
   ############################################################################
-  ############################################################################
   def OpenItemGalleries            ( self , item                           ) :
     ##########################################################################
     uuid  = item . data            ( Qt . UserRole                           )
@@ -642,14 +641,14 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def OpenCurrentGalleries      ( self                                     ) :
+  def OpenCurrentGalleries          ( self                                 ) :
     ##########################################################################
-    atItem = self . currentItem (                                            )
+    atItem = self . currentItem     (                                        )
     ##########################################################################
-    if                          ( atItem == None                           ) :
+    if                              ( atItem == None                       ) :
       return False
     ##########################################################################
-    return self . OpenItemGalleries ( atItem                                     )
+    return self . OpenItemGalleries ( atItem                                 )
   ############################################################################
   def FunctionsMenu          ( self , mm , uuid , item                     ) :
     ##########################################################################
