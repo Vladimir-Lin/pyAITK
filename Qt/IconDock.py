@@ -443,7 +443,8 @@ class IconDock                      ( ListDock                             ) :
     if                                 ( TOTAL  <= 0                       ) :
       return
     ##########################################################################
-    self . FetchingIcons = True
+    self       . OnBusy  . emit        (                                     )
+    self       . FetchingIcons = True
     ##########################################################################
     SLOTS      = 1
     if                                 ( TOTAL > 200                       ) :
@@ -502,6 +503,7 @@ class IconDock                      ( ListDock                             ) :
     self       . LoopRunning   = False
     self       . FetchingIcons = False
     ##########################################################################
+    self       . GoRelax . emit        (                                     )
     self       . Notify                ( 2                                   )
     self       . ShowStatus            ( ""                                  )
     ##########################################################################
