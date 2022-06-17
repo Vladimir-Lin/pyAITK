@@ -634,17 +634,14 @@ class AlbumGroupView              ( IconDock                               ) :
     if                              ( not doMenu                           ) :
       return False
     ##########################################################################
-    items  = self . selectedItems   (                                        )
-    atItem = self . itemAt          ( pos                                    )
-    uuid   = 0
-    ##########################################################################
-    if                              ( atItem != None                       ) :
-      uuid = atItem . data          ( Qt . UserRole                          )
-      uuid = int                    ( uuid                                   )
+    self   . Notify                 ( 0                                      )
+    items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
     mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
+    ##########################################################################
+    self   . StopIconMenu           ( mm                                     )
     ##########################################################################
     if                              ( uuid > 0                             ) :
       ########################################################################
@@ -656,15 +653,14 @@ class AlbumGroupView              ( IconDock                               ) :
         mm . addAction              ( 2002 , mg                              )
       mm   . addSeparator           (                                        )
     ##########################################################################
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     = self . AppendInsertAction  ( mm , 1101                          )
-    mm     = self . AppendRenameAction  ( mm , 1102                          )
-    mm     . addSeparator           (                                        )
+    self   . AppendRefreshAction    ( mm , 1001                              )
+    self   . AppendInsertAction     ( mm , 1101                              )
     ##########################################################################
-    if                              ( atItem not in [ False , None ]       ) :
-      if                            ( self . EditAllNames != None          ) :
-        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
-        mm . addSeparator           (                                        )
+    if                              ( uuid > 0                             ) :
+      self . AppendRenameAction     ( mm , 1102                              )
+      self . AssureEditNamesAction  ( mm , 1601 , atItem                     )
+    ##########################################################################
+    mm     . addSeparator           (                                        )
     ##########################################################################
     self   . FunctionsMenu          ( mm , uuid , atItem                     )
     self   . SortingMenu            ( mm                                     )
@@ -675,30 +671,35 @@ class AlbumGroupView              ( IconDock                               ) :
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                              ( self . RunDocking   ( mm , aa )      ) :
+    OKAY   = self . RunDocking      ( mm , aa                                )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if ( self . RunFunctionsMenu ( at , uuid , atItem ) )                    :
+    OKAY   = self . RunFunctionsMenu ( at , uuid , atItem                    )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . HandleLocalityMenu ( at )     ) :
+    OKAY   = self . HandleLocalityMenu ( at                                  )
+    if                              ( OKAY                                 ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( self . RunSortingMenu     ( at )     ) :
+    OKAY   = self . RunSortingMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunStopIconMenu ( at                                     )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return True
     ##########################################################################

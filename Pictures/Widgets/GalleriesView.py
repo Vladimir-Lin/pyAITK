@@ -759,40 +759,33 @@ class GalleriesView                ( IconDock                              ) :
       return False
     ##########################################################################
     self   . Notify                 ( 0                                      )
-    ##########################################################################
-    items  = self . selectedItems   (                                        )
-    atItem = self . itemAt          ( pos                                    )
-    uuid   = 0
-    ##########################################################################
-    if                              ( atItem not in [ False , None ]       ) :
-      uuid = atItem . data          ( Qt . UserRole                          )
-      uuid = int                    ( uuid                                   )
+    items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
     mm     = MenuManager            ( self                                   )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    mm     = self . AppendRefreshAction ( mm , 1001                          )
-    mm     = self . AppendInsertAction  ( mm , 1101                          )
-    ##########################################################################
-    if                              ( atItem not in [ False , None ]       ) :
-      mm   = self . AppendRenameAction  ( mm , 1102                          )
+    self   . StopIconMenu           ( mm                                     )
+    self   . AmountIndexMenu        ( mm                                     )
+    self   . AppendRefreshAction    ( mm , 1001                              )
+    self   . AppendInsertAction     ( mm , 1101                              )
     ##########################################################################
     if                              ( uuid > 0                             ) :
       ########################################################################
       mm   . addSeparator           (                                        )
       ########################################################################
-      mm   . addAction              ( 1201 , TRX [ "UI::PersonalGallery"   ] )
+      self . AppendRenameAction     ( mm , 1102                              )
+      self . AssureEditNamesAction  ( mm , 1601 , atItem                     )
+      ########################################################################
+      mm   . addSeparator           (                                        )
+      ########################################################################
+      msg  = TRX                    [ "UI::PersonalGallery"                  ]
+      mm   . addAction              ( 1201 , msg                             )
       ########################################################################
       msg  = self . getMenuItem     ( "ViewFullPictures"                     )
       mm   . addAction              ( 1202 , msg                             )
     ##########################################################################
     mm     . addSeparator           (                                        )
-    if                              ( atItem not in [ False , None ]       ) :
-      if                            ( self . EditAllNames != None          ) :
-        mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
-        mm . addSeparator           (                                        )
     ##########################################################################
     self   . BlocMenu               ( mm , atItem                            )
     self   . PropertiesMenu         ( mm , atItem                            )
@@ -804,40 +797,46 @@ class GalleriesView                ( IconDock                              ) :
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                              ( self . RunAmountIndexMenu ( )        ) :
+    OKAY   = self . RunAmountIndexMenu (                                     )
+    if                              ( OKAY                                 ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( self . RunDocking    ( mm , aa )     ) :
-      return True
-    ##########################################################################
-    if                              ( self . HandleLocalityMenu ( at )     ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( self . RunBlocMenu ( at , atItem )   ) :
+    OKAY   = self . RunDocking      ( mm , aa                                )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . RunPropertiesMenu (at,atItem) ) :
+    OKAY   = self . HandleLocalityMenu ( at                                  )
+    if                              ( OKAY                                 ) :
+      ########################################################################
+      self . restart                (                                        )
+      ########################################################################
       return True
     ##########################################################################
-    if                              ( self . RunSortingMenu     ( at )     ) :
+    OKAY   = self . RunBlocMenu     ( at , atItem                            )
+    if                              ( OKAY                                 ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunPropertiesMenu ( at , atItem                          )
+    if                              ( OKAY                                 ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunSortingMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunStopIconMenu ( at                                     )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
     if                              ( at == 1001                           ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                (                                        )
       ########################################################################
       return True
     ##########################################################################

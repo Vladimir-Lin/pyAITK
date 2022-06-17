@@ -1803,11 +1803,13 @@ class VideoAlbumsView              ( IconDock                              ) :
       msg  = self . getMenuItem    ( "NotSearch"                             )
       mm   . addAction             ( 7401 , msg                              )
     ##########################################################################
+    self   . StopIconMenu          ( mm                                      )
     self   . AmountIndexMenu       ( mm                                      )
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
-    self   . AppendRenameAction    ( mm , 1102                               )
-    self   . AssureEditNamesAction ( mm , 1601 , atItem                      )
+    if                             ( uuid > 0                              ) :
+      self . AppendRenameAction    ( mm , 1102                               )
+      self . AssureEditNamesAction ( mm , 1601 , atItem                      )
     ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
@@ -1821,38 +1823,45 @@ class VideoAlbumsView              ( IconDock                              ) :
     aa     = mm . exec_            ( QCursor . pos      ( )                  )
     at     = mm . at               ( aa                                      )
     ##########################################################################
-    if                             ( self . RunAmountIndexMenu ( )         ) :
+    OKAY   = self . RunAmountIndexMenu (                                     )
+    if                             ( OKAY                                  ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( self . RunDocking   ( mm , aa )       ) :
-      return True
-    ##########################################################################
-    if ( self . RunGroupsMenu    ( at , uuid , atItem ) )                    :
-      return True
-    ##########################################################################
-    if ( self . RunFunctionsMenu ( at , uuid , atItem ) )                    :
-      return True
-    ##########################################################################
-    if                             ( self . RunSortingMenu     ( at )      ) :
-      ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . restart               (                                         )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
+    OKAY   = self . RunDocking     ( mm , aa                                 )
+    if                             ( OKAY                                  ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunGroupsMenu  ( at , uuid , atItem                      )
+    if                             ( OKAY                                  ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunFunctionsMenu ( at , uuid , atItem                    )
+    if                             ( OKAY                                  ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunSortingMenu ( at                                      )
+    if                             ( OKAY                                  ) :
       ########################################################################
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . restart               (                                         )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . HandleLocalityMenu ( at                                  )
+    if                             ( OKAY                                  ) :
+      ########################################################################
+      self . restart               (                                         )
+      ########################################################################
+      return True
+    ##########################################################################
+    OKAY    = self . RunStopIconMenu ( at                                    )
+    if                               ( OKAY                                ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
-      self . startup               (                                         )
+      self . restart               (                                         )
       return True
     ##########################################################################
     if                             ( at == 1101                            ) :
