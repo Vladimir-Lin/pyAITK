@@ -108,6 +108,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
   ############################################################################
   def Painting                       ( self , p , region , clip , color    ) :
     ##########################################################################
+    self   . pushPainters            ( p                                     )
+    ##########################################################################
     if                               ( clip                                ) :
       self . PaintImageClip          (        p , region , clip , color      )
     else                                                                     :
@@ -117,6 +119,8 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self   . PaintMeasurePoints      (        p , region , clip , color      )
     self   . PaintLineEditing        (        p , region , clip , color      )
     self   . Painter . drawAllPathes (        p                              )
+    ##########################################################################
+    self   . popPainters             ( p                                     )
     ##########################################################################
     return
   ############################################################################
