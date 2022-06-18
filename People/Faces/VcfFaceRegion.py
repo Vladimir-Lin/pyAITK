@@ -1350,7 +1350,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self   . RegionMenu             ( mm                                     )
     self   . RecognitionMenu        ( mm                                     )
     self   . MeasureMenu            ( mm                                     )
-    self   . ContourEditorMenu      ( mm , 127000 , self . convex            )
+    self   . ContourEditorMenu      ( mm , 68727000 , self . convex          )
     self   . StatesMenu             ( mm                                     )
     self   . LayerMenu              ( mm                                     )
     self   . PluginsMenu            ( mm                                     )
@@ -1359,7 +1359,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
-    OKAY   = self . RunContourEditorMenu ( mm , at , 127000 , self.convex    )
+    OKAY   = self . RunContourEditorMenu ( mm , at , 68727000 , self.convex  )
     if                              ( OKAY                                 ) :
       return True
     ##########################################################################

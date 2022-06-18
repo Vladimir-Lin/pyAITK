@@ -1482,7 +1482,7 @@ class VcfRectangle              ( VcfItem                                  ) :
       IDENT  = ILE . text         (                                          )
       convex . Identifier = IDENT
     ##########################################################################
-    AT     = at - 7000
+    AT     = at - Base
     OKAY   = self . convex . ExecuteMenuCommand ( AT                         )
     if                            ( OKAY                                   ) :
       return True
