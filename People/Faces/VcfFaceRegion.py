@@ -152,7 +152,8 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
       ########################################################################
       self . Painter . pens [ Id ] . setWidthF ( 2.5                         )
     ##########################################################################
-    self . defaultMeasurePoints (                                            )
+    self . defaultMeasurePoints  (                                           )
+    self . PrepareContourDetails (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -201,7 +202,49 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
       ########################################################################
       self . DrawNipples             ( p                                     )
     ##########################################################################
+    self . Painter . drawPainterPath ( p , "Contour"                         )
+    self . Painter . drawPainterPath ( p , "Quadratic"                       )
+    self . Painter . drawPainterPath ( p , "Points"                          )
+    self . Painter . drawPainterPath ( p , "Selected"                        )
+    ##########################################################################
     self . popPainters               ( p                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareContourDetails       ( self                                   ) :
+    ##########################################################################
+    self . convex  = Contour      (                                          )
+    self . convex  . setDefaults  (                                          )
+    self . convex  . setProperty  ( "MenuLoad"   , True                      )
+    self . convex  . setProperty  ( "MenuAppend" , True                      )
+    self . convex  . setProperty  ( "MenuStore"  , True                      )
+    self . convex  . PathUpdater = self . UpdateContourPoints
+    ##########################################################################
+    self . Painter . addMap       ( "Contour"   , 10002                      )
+    self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
+    self . Painter . addBrush     ( 10002 , QColor ( 224 , 255 , 224 ,  96 ) )
+    self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
+    ##########################################################################
+    self . Painter . addMap       ( "Quadratic" , 10003                      )
+    self . Painter . addPen       ( 10003 , QColor ( 255 , 182 , 193 , 255 ) )
+    self . Painter . addBrush     ( 10003 , QColor ( 255 , 224 , 240 ,  96 ) )
+    self . Painter . pens [ 10003 ] . setWidthF ( 7.5                        )
+    ##########################################################################
+    self . Painter . addMap       ( "Points"    , 10008                      )
+    self . Painter . addPen       ( 10008 , QColor ( 128 ,  64 , 255 , 255 ) )
+    self . Painter . addBrush     ( 10008 , QColor (   0 ,   0 ,   0 ,   0 ) )
+    self . Painter . pens [ 10008 ] . setWidthF ( 4.5                        )
+    ##########################################################################
+    self . Painter . addMap       ( "Selected"  , 10009                       )
+    self . Painter . addPen       ( 10009 , QColor ( 128 , 255 ,  64 , 255 ) )
+    self . Painter . addBrush     ( 10009 , QColor ( 255 , 128 ,  64 , 255 ) )
+    self . Painter . pens [ 10009 ] . setWidthF ( 5.5                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateContourPoints             ( self , convex , ACT , U = True     ) :
+    ##########################################################################
+    self . defaultUpdateContourPoints (        convex , ACT , U              )
     ##########################################################################
     return
   ############################################################################
@@ -459,6 +502,10 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
   def mousePressEvent        ( self , event                                ) :
     ##########################################################################
+    OKAY = self . ContourMouseEvent ( event , self . convex , 0 , True       )
+    if                         ( OKAY                                      ) :
+      return
+    ##########################################################################
     OKAY = self . lineEditingPressEvent   ( event                            )
     if                                    ( OKAY                           ) :
       return
@@ -470,6 +517,10 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
   def mouseMoveEvent         ( self , event                                ) :
     ##########################################################################
+    OKAY = self . ContourMouseEvent ( event , self . convex , 1 , True       )
+    if                         ( OKAY                                      ) :
+      return
+    ##########################################################################
     OKAY = self . lineEditingMoveEvent    ( event                            )
     if                                    ( OKAY                           ) :
       return
@@ -480,11 +531,21 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
   def mouseReleaseEvent      ( self , event                                ) :
     ##########################################################################
+    OKAY = self . ContourMouseEvent ( event , self . convex , 2 , False      )
+    if                         ( OKAY                                      ) :
+      return
+    ##########################################################################
     OKAY = self . lineEditingReleaseEvent ( event                            )
     if                                    ( OKAY                           ) :
       return
     ##########################################################################
     self . scaleReleaseEvent (        event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def Hovering                   ( self , pos                              ) :
+    ##########################################################################
+    self . convex . HandleQPoint ( pos , 3                                   )
     ##########################################################################
     return
   ############################################################################
@@ -1288,6 +1349,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self   . RegionMenu             ( mm                                     )
     self   . RecognitionMenu        ( mm                                     )
     self   . MeasureMenu            ( mm                                     )
+    self   . ContourEditorMenu      ( mm , 62787000 , self . convex          )
     self   . StatesMenu             ( mm                                     )
     self   . LayerMenu              ( mm                                     )
     self   . PluginsMenu            ( mm                                     )
@@ -1315,6 +1377,10 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
       return True
     ##########################################################################
     if                              ( self . RunStatesMenu      ( at )     ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunContourEditorMenu ( mm , at , 62787000 , self.convex  )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
     if                              ( at == 1002                           ) :

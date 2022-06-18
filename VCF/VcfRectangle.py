@@ -1418,6 +1418,10 @@ class VcfRectangle              ( VcfItem                                  ) :
     MSG   = self . getMenuItem   ( "ShowContourLines"                        )
     mm    . addActionFromMenu    ( LOM , Base + 302 , MSG , True , VM        )
     ##########################################################################
+    VM    = convex . getProperty ( "ShowQuadratic"                           )
+    MSG   = self . getMenuItem   ( "ShowContourQuadratic"                    )
+    mm    . addActionFromMenu    ( LOM , Base + 303 , MSG , True , VM        )
+    ##########################################################################
     mm    . addSeparatorFromMenu ( LOM                                       )
     ##########################################################################
     MENULOAD   = convex . getProperty ( "MenuLoad"                           )
@@ -1530,6 +1534,63 @@ class VcfRectangle              ( VcfItem                                  ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def defaultUpdateContourPoints          ( self , convex , ACT , U = True ) :
+    ##########################################################################
+    if                                    ( ACT == 1                       ) :
+      self . setCursor                    ( Qt . ArrowCursor                 )
+    elif                                  ( ACT == 2                       ) :
+      self . setCursor                    ( Qt . CrossCursor                 )
+    elif                                  ( ACT == 3                       ) :
+      self . setCursor                    ( Qt . PointingHandCursor          )
+    elif                                  ( ACT == 4                       ) :
+      self . setCursor                    ( Qt . OpenHandCursor              )
+    elif                                  ( ACT == 5                       ) :
+      self . setCursor                    ( Qt . ClosedHandCursor            )
+    ##########################################################################
+    if                                    ( not U                          ) :
+      return
+    ##########################################################################
+    PID    = convex . getProperty         ( "PointsId"                       )
+    SID    = convex . getProperty         ( "SelectedId"                     )
+    QID    = convex . getProperty         ( "QuadraticId"                    )
+    CID    = convex . getProperty         ( "ContourId"                      )
+    VID    = convex . getProperty         ( "CubicId"                        )
+    ##########################################################################
+    VIS    = convex . getProperty         ( "Visible"                        )
+    SPT    = convex . getProperty         ( "ShowPoints"                     )
+    SLE    = convex . getProperty         ( "ShowLines"                      )
+    QLE    = convex . getProperty         ( "ShowQuadratic"                  )
+    ##########################################################################
+    if                                    ( not VIS                        ) :
+      ########################################################################
+      SPT  = False
+      SLE  = False
+      QLE  = False
+    ##########################################################################
+    p1     = QPainterPath                     (                              )
+    p1     = convex . PointsToQPainterPath    ( p1                           )
+    self   . Painter . pathes   [ PID ] = p1
+    self   . Painter . switches [ PID ] = SPT
+    ##########################################################################
+    p2     = QPainterPath                     (                              )
+    p2     = convex . ContourToQPainterPath   ( p2                           )
+    self   . Painter . pathes   [ CID ] = p2
+    self   . Painter . switches [ CID ] = SLE
+    ##########################################################################
+    p3     = QPainterPath                     (                              )
+    p3     = convex . QuadraticToQPainterPath ( p3                           )
+    self   . Painter . pathes   [ QID ] = p3
+    self   . Painter . switches [ QID ] = QLE
+    ##########################################################################
+    p4     = QPainterPath                     (                              )
+    p4     = convex . SelectedToQPainterPath  ( p4                           )
+    self   . Painter . pathes   [ SID ] = p4
+    self   . Painter . switches [ SID ] = True
+    ##########################################################################
+    self   . update                          (                               )
+    ##########################################################################
+    return
   ############################################################################
   def LoadContourFromDB    ( self , convex                                 ) :
     ##########################################################################

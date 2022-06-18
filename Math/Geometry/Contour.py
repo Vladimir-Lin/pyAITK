@@ -70,8 +70,8 @@ class Contour    (                                                         ) :
     self . setProperty ( "State"             , 0                             )
     self . setProperty ( "Cursor"            , 0                             )
     self . setProperty ( "ContourId"         , 10002                         )
-    self . setProperty ( "CubicId"           , 10003                         )
-    self . setProperty ( "QuadraticId"       , 10004                         )
+    self . setProperty ( "QuadraticId"       , 10003                         )
+    self . setProperty ( "CubicId"           , 10004                         )
     self . setProperty ( "PointsId"          , 10008                         )
     self . setProperty ( "SelectedId"        , 10009                         )
     self . setProperty ( "Base"              , 0                             )
@@ -81,6 +81,7 @@ class Contour    (                                                         ) :
     self . setProperty ( "Visible"           , True                          )
     self . setProperty ( "ShowPoints"        , True                          )
     self . setProperty ( "ShowLines"         , True                          )
+    self . setProperty ( "ShowQuadratic"     , True                          )
     self . setProperty ( "MenuLoad"          , False                         )
     self . setProperty ( "MenuAppend"        , False                         )
     self . setProperty ( "MenuStore"         , False                         )
@@ -615,6 +616,40 @@ class Contour    (                                                         ) :
     ##########################################################################
     return   path
   ############################################################################
+  ## 自動控制點為 Pc = P1 + ( P0 - P2 ) / 4 , 描繪P0到P1之間的曲線
+  ############################################################################
+  def QuadraticToQPainterPath ( self , path                                ) :
+    ##########################################################################
+    CNT    = len              ( self . Index                                 )
+    ##########################################################################
+    if                        ( CNT <= 2                                   ) :
+      return path
+    ##########################################################################
+    for id in range           ( 0 , CNT                                    ) :
+      ########################################################################
+      A    = int              ( id                                           )
+      B    = int              ( int ( id + 1 ) % CNT                         )
+      C    = int              ( int ( id + 2 ) % CNT                         )
+      ########################################################################
+      AI   = self . Index     [ A                                            ]
+      BI   = self . Index     [ B                                            ]
+      CI   = self . Index     [ C                                            ]
+      ########################################################################
+      P0   = self . Points [ AI ] . toQPointF (                              )
+      P1   = self . Points [ BI ] . toQPointF (                              )
+      P2   = self . Points [ CI ] . toQPointF (                              )
+      ########################################################################
+      VX   = float            ( float ( P0 . x ( ) - P2 . x ( ) ) / 4.0      )
+      VY   = float            ( float ( P0 . y ( ) - P2 . y ( ) ) / 4.0      )
+      PC   = QPointF          ( P1 . x ( ) + VX , P1 . y ( ) + VY            )
+      ########################################################################
+      path . moveTo           ( P0                                           )
+      path . quadTo           ( PC , P1                                      )
+    ##########################################################################
+    if                        ( self . Closed                              ) :
+      path . closeSubpath     (                                              )
+    ##########################################################################
+    return   path
   ############################################################################
   ############################################################################
   ############################################################################
@@ -702,6 +737,18 @@ class Contour    (                                                         ) :
         self . setProperty        ( "ShowLines" , False                      )
       else                                                                   :
         self . setProperty        ( "ShowLines" , True                       )
+      ########################################################################
+      self   . DoPathUpdater      ( 0 , True                                 )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                            ( at  == 303                             ) :
+      ########################################################################
+      VM     = self . getProperty ( "ShowQuadratic"                          )
+      if                          ( VM                                     ) :
+        self . setProperty        ( "ShowQuadratic" , False                  )
+      else                                                                   :
+        self . setProperty        ( "ShowQuadratic" , True                   )
       ########################################################################
       self   . DoPathUpdater      ( 0 , True                                 )
       ########################################################################

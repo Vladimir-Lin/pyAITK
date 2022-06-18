@@ -439,70 +439,31 @@ class VcfPeoplePicture           ( VcfPicture                              ) :
     self . convex  . setProperty  ( "MenuStore"  , True                      )
     self . convex  . PathUpdater = self . UpdateContourPoints
     ##########################################################################
-    self . Painter . addMap       ( "Contour" , 10002                        )
+    self . Painter . addMap       ( "Contour"   , 10002                      )
     self . Painter . addPen       ( 10002 , QColor ( 255 , 128 ,  64 , 255 ) )
     self . Painter . addBrush     ( 10002 , QColor ( 224 , 255 , 224 ,  96 ) )
     self . Painter . pens [ 10002 ] . setWidthF ( 7.5                        )
     ##########################################################################
-    self . Painter . addMap       ( "Points"  , 10008                        )
+    self . Painter . addMap       ( "Quadratic" , 10003                      )
+    self . Painter . addPen       ( 10003 , QColor ( 255 , 182 , 193 , 255 ) )
+    self . Painter . addBrush     ( 10003 , QColor ( 255 , 224 , 240 ,  96 ) )
+    self . Painter . pens [ 10003 ] . setWidthF ( 7.5                        )
+    ##########################################################################
+    self . Painter . addMap       ( "Points"    , 10008                      )
     self . Painter . addPen       ( 10008 , QColor ( 128 ,  64 , 255 , 255 ) )
     self . Painter . addBrush     ( 10008 , QColor (   0 ,   0 ,   0 ,   0 ) )
     self . Painter . pens [ 10008 ] . setWidthF ( 4.5                        )
     ##########################################################################
-    self . Painter . addMap       ( "Selected" , 10009                       )
+    self . Painter . addMap       ( "Selected"  , 10009                       )
     self . Painter . addPen       ( 10009 , QColor ( 128 , 255 ,  64 , 255 ) )
     self . Painter . addBrush     ( 10009 , QColor ( 255 , 128 ,  64 , 255 ) )
     self . Painter . pens [ 10009 ] . setWidthF ( 5.5                        )
     ##########################################################################
     return
   ############################################################################
-  def UpdateContourPoints                 ( self , convex , ACT , U = True ) :
+  def UpdateContourPoints             ( self , convex , ACT , U = True     ) :
     ##########################################################################
-    if                                    ( ACT == 1                       ) :
-      self . setCursor                    ( Qt . ArrowCursor                 )
-    elif                                  ( ACT == 2                       ) :
-      self . setCursor                    ( Qt . CrossCursor                 )
-    elif                                  ( ACT == 3                       ) :
-      self . setCursor                    ( Qt . PointingHandCursor          )
-    elif                                  ( ACT == 4                       ) :
-      self . setCursor                    ( Qt . OpenHandCursor              )
-    elif                                  ( ACT == 5                       ) :
-      self . setCursor                    ( Qt . ClosedHandCursor            )
-    ##########################################################################
-    if                                    ( not U                          ) :
-      return
-    ##########################################################################
-    PID    = convex . getProperty         ( "PointsId"                       )
-    SID    = convex . getProperty         ( "SelectedId"                     )
-    CID    = convex . getProperty         ( "ContourId"                      )
-    VID    = convex . getProperty         ( "CubicId"                        )
-    QID    = convex . getProperty         ( "QuadraticId"                    )
-    ##########################################################################
-    VIS    = convex . getProperty         ( "Visible"                        )
-    SPT    = convex . getProperty         ( "ShowPoints"                     )
-    SLE    = convex . getProperty         ( "ShowLines"                      )
-    ##########################################################################
-    if                                    ( not VIS                        ) :
-      ########################################################################
-      SPT  = False
-      SLE  = False
-    ##########################################################################
-    p1     = QPainterPath                    (                               )
-    p1     = convex . PointsToQPainterPath   ( p1                            )
-    self   . Painter . pathes   [ PID ] = p1
-    self   . Painter . switches [ PID ] = SPT
-    ##########################################################################
-    p2     = QPainterPath                    (                               )
-    p2     = convex . ContourToQPainterPath  ( p2                            )
-    self   . Painter . pathes   [ CID ] = p2
-    self   . Painter . switches [ CID ] = SLE
-    ##########################################################################
-    p3     = QPainterPath                    (                               )
-    p3     = convex . SelectedToQPainterPath ( p3                            )
-    self   . Painter . pathes   [ SID ] = p3
-    self   . Painter . switches [ SID ] = True
-    ##########################################################################
-    self   . update                          (                               )
+    self . defaultUpdateContourPoints (        convex , ACT , U              )
     ##########################################################################
     return
   ############################################################################
