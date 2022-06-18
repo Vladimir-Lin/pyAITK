@@ -181,14 +181,14 @@ class CurrencyListings             ( TreeDock                              ) :
     self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
     ## self . attachActionsTool (                                               )
-    ## self . LinkVoice         ( self . CommandParser                          )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent             ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
-    ## self . LinkVoice         ( None                                          )
+    self . LinkVoice         ( None                                          )
     self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
@@ -824,6 +824,18 @@ class CurrencyListings             ( TreeDock                              ) :
     self . DoCopyToClipboard ( False                                         )
     ##########################################################################
     return
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     return self . DefaultColumnsMenu (        mm , 1                         )
