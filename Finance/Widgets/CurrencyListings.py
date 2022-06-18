@@ -563,7 +563,7 @@ class CurrencyListings             ( TreeDock                              ) :
     self   . Countries [ 0 ] = MSG
     ##########################################################################
     NAMTAB = self . Tables       [ "Names"                                   ]
-    CTYTAB = self . Tables       [ "ISO-4217"                                ]
+    CTYTAB = self . Tables       [ "Countries"                               ]
     QQ     = f"""select `uuid` from {CTYTAB} where ( `used` > 0 ) ;"""
     UUIDs  = DB . ObtainUuids    ( QQ                                        )
     ##########################################################################
@@ -688,9 +688,9 @@ class CurrencyListings             ( TreeDock                              ) :
     elif                      ( column ==  4                               ) :
       COL  = "type"
     elif                      ( column ==  5                               ) :
-      COL  = "name"
-    elif                      ( column ==  6                               ) :
       COL  = "prefer"
+    elif                      ( column ==  6                               ) :
+      COL  = "english"
     elif                      ( column ==  7                               ) :
       COL  = "native"
     elif                      ( column ==  8                               ) :
@@ -703,8 +703,8 @@ class CurrencyListings             ( TreeDock                              ) :
     if                        ( len ( COL ) > 0                            ) :
       ########################################################################
       QQ   = f"""update {ISOTAB}
-                     set `{COL}` = %s
-                     where ( `uuid` = {uuid} ) ;"""
+                 set `{COL}` = %s
+                 where ( `uuid` = {uuid} ) ;"""
       QQ   = " " . join       ( QQ . split ( )                               )
       DB   . QueryValues      ( QQ , VAL                                     )
     ##########################################################################
