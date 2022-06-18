@@ -656,6 +656,12 @@ class CurrencyListings             ( TreeDock                              ) :
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( self . ClassTag , 11                             )
+    self . setColumnWidth ( 0 ,  60                                          )
+    self . setColumnWidth ( 1 ,  60                                          )
+    self . setColumnWidth ( 2 ,  60                                          )
+    self . setColumnWidth ( 3 ,  60                                          )
+    self . setColumnWidth ( 4 , 100                                          )
+    self . setColumnWidth ( 5 , 120                                          )
     ##########################################################################
     return
   ############################################################################
