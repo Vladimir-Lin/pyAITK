@@ -312,12 +312,14 @@ class CurrencyListings             ( TreeDock                              ) :
     if                            ( START  > 0                             ) :
       ########################################################################
       NOW   . Stardate = START
+      print("Start:",NOW.Timestamp())
       SDT   = NOW . toDateString  ( TZ , "%Y/%m/%d"                          )
     ##########################################################################
     VDT     = ""
     if                            ( VANISH > 0                             ) :
       ########################################################################
       NOW   . Stardate = VANISH
+      print("Vanish:",NOW.Timestamp())
       VDT   = NOW . toDateString  ( TZ , "%Y/%m/%d"                          )
     ##########################################################################
     UNAME   = TRX                 [ "Usage" ] [ str ( USED )                 ]

@@ -117,12 +117,31 @@ class StarDate (                                                           ) :
   def ShrinkHour           ( self                                          ) :
     return self . Subtract ( self . Timestamp ( ) % 3600                     )
   ############################################################################
-  def toDateTime            ( self , TZ = ""                               ) :
-    if                      ( len ( TZ ) > 0                               ) :
-      tzs = pytz . timezone ( TZ                                             )
-      return datetime . datetime . fromtimestamp ( self . Timestamp ( ) , tz = tzs )
-    else                                                                     :
-      return datetime . datetime . fromtimestamp ( self . Timestamp ( )      )
+  def toDateTime             ( self , TZ = ""                              ) :
+    ##########################################################################
+    if                       ( len ( TZ ) > 0                              ) :
+      ########################################################################
+      tzs = pytz . timezone  ( TZ                                            )
+      TSV = self . Timestamp (                                               )
+      ########################################################################
+      if                     ( TSV < 0                                     ) :
+        ######################################################################
+        DT  = datetime . datetime       ( 1970 , 1 , 1 , tzinfo = pytz . utc )
+        DT  = DT + datetime . timedelta ( seconds = TSV                      )
+        return DT . replace  ( tzinfo = tzs                                  )
+      ########################################################################
+      return datetime . datetime . fromtimestamp ( TSV , tz = tzs            )
+    ##########################################################################
+    TSV   = self . Timestamp (                                               )
+    ##########################################################################
+    if                       ( TSV < 0                                     ) :
+      ########################################################################
+      DT  = datetime . datetime       ( 1970 , 1 , 1 , tzinfo = pytz . utc   )
+      DT  = DT + datetime . timedelta ( seconds = TSV                        )
+      ########################################################################
+      return DT
+    ##########################################################################
+    return datetime . datetime . fromtimestamp ( self . Timestamp ( )        )
   ############################################################################
   def Weekday              ( self , TZ = ""                                ) :
     DT = self . toDateTime ( TZ                                              )
