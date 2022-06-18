@@ -216,46 +216,70 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItemContent       ( self , IT , ITEM                          ) :
+  def PrepareItemContent          ( self , IT , ITEM                       ) :
     ##########################################################################
-    ID      = ITEM             [ "Id"                                        ]
-    UUID    = ITEM             [ "Uuid"                                      ]
-    USED    = ITEM             [ "Used"                                      ]
-    TYPE    = ITEM             [ "Type"                                      ]
-    PREFER  = ITEM             [ "Prefer"                                    ]
-    NAME    = ITEM             [ "Name"                                      ]
-    NUMBER  = ITEM             [ "Number"                                    ]
-    START   = ITEM             [ "Start"                                     ]
-    VANISH  = ITEM             [ "Vanish"                                    ]
-    COUNTRY = ITEM             [ "Country"                                   ]
-    ENGLISH = ITEM             [ "English"                                   ]
-    NATIVE  = ITEM             [ "Native"                                    ]
-    UXID    = str              ( UUID                                        )
+    TRX     = self . Translations [ self . ClassTag                          ]
     ##########################################################################
-    IT      . setText          (  0 , str ( ID      )                        )
-    IT      . setToolTip       (  0 , UXID                                   )
-    IT      . setData          (  0 , Qt . UserRole , UXID                   )
-    IT      . setTextAlignment (  0 , Qt . AlignRight                        )
+    ID      = ITEM                [ "Id"                                     ]
+    UUID    = ITEM                [ "Uuid"                                   ]
+    USED    = ITEM                [ "Used"                                   ]
+    TYPE    = ITEM                [ "Type"                                   ]
+    PREFER  = ITEM                [ "Prefer"                                 ]
+    NAME    = ITEM                [ "Name"                                   ]
+    NUMBER  = ITEM                [ "Number"                                 ]
+    START   = ITEM                [ "Start"                                  ]
+    VANISH  = ITEM                [ "Vanish"                                 ]
+    COUNTRY = ITEM                [ "Country"                                ]
+    ENGLISH = ITEM                [ "English"                                ]
+    NATIVE  = ITEM                [ "Native"                                 ]
+    UXID    = str                 ( UUID                                     )
     ##########################################################################
-    IT      . setText          (  1 , NAME                                   )
+    NOW     = StarDate            (                                          )
+    TZ      = self . Settings     [ "TimeZone"                               ]
     ##########################################################################
-    IT      . setText          (  2 , NUMBER                                 )
+    SDT     = ""
+    if                            ( START  > 0                             ) :
+      ########################################################################
+      NOW   . Stardate = START
+      SDT   = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"    )
     ##########################################################################
-    IT      . setText          (  3 , str ( USED    )                        )
+    VDT     = ""
+    if                            ( VANISH > 0                             ) :
+      ########################################################################
+      NOW   . Stardate = VANISH
+      VDT   = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"    )
     ##########################################################################
-    IT      . setText          (  4 , str ( TYPE    )                        )
+    UNAME   = TRX                 [ "Usage" ] [ str ( USED )                 ]
+    TNAME   = TRX                 [ "Types" ] [ str ( TYPE )                 ]
     ##########################################################################
-    IT      . setText          (  5 , str ( PREFER  )                        )
+    IT      . setText             (  0 , str ( ID      )                     )
+    IT      . setToolTip          (  0 , UXID                                )
+    IT      . setData             (  0 , Qt . UserRole , UXID                )
+    IT      . setTextAlignment    (  0 , Qt . AlignRight                     )
     ##########################################################################
-    IT      . setText          (  6 , ENGLISH                                )
+    IT      . setText             (  1 , NAME                                )
     ##########################################################################
-    IT      . setText          (  7 , NATIVE                                 )
+    IT      . setText             (  2 , NUMBER                              )
     ##########################################################################
-    IT      . setText          (  8 , str ( COUNTRY )                        )
+    IT      . setText             (  3 , UNAME                               )
+    IT      . setData             (  3 , Qt . UserRole , USED                )
     ##########################################################################
-    IT      . setText          (  9 , str ( START   )                        )
+    IT      . setText             (  4 , TNAME                               )
+    IT      . setData             (  4 , Qt . UserRole , TYPE                )
     ##########################################################################
-    IT      . setText          ( 10 , str ( VANISH  )                        )
+    IT      . setText             (  5 , str ( PREFER  )                     )
+    IT      . setData             (  5 , Qt . UserRole , UXID                )
+    IT      . setTextAlignment    (  5 , Qt . AlignRight                     )
+    ##########################################################################
+    IT      . setText             (  6 , ENGLISH                             )
+    ##########################################################################
+    IT      . setText             (  7 , NATIVE                              )
+    ##########################################################################
+    IT      . setText             (  8 , str ( COUNTRY )                     )
+    ##########################################################################
+    IT      . setText             (  9 , str ( SDT     )                     )
+    ##########################################################################
+    IT      . setText             ( 10 , str ( VDT     )                     )
     ##########################################################################
     return
   ############################################################################
@@ -656,7 +680,7 @@ class CurrencyListings             ( TreeDock                              ) :
     return
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 11                        )
+    return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
