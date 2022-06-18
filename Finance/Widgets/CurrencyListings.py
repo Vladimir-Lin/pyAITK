@@ -396,14 +396,10 @@ class CurrencyListings             ( TreeDock                              ) :
     text   = self . CurrentItem  [ "Text"                                    ]
     msg    = line . text         (                                           )
     uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
-    ##########################################################################
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
+    ##########################################################################
     VAL    =                     ( item , column , uuid , msg ,              )
     self   . Go                  ( self . AssureUuidItem , VAL               )
     ##########################################################################
@@ -544,6 +540,7 @@ class CurrencyListings             ( TreeDock                              ) :
         DTS   = f"{msg}T00:00:00"
         NOW   . fromInput        ( msg , TZ                                  )
         value = NOW . Stardate
+        msg   = NOW . NOW . toDateString ( TZ , "%Y/%m/%d"                   )
         ######################################################################
       except                                                                 :
         pass
@@ -551,6 +548,7 @@ class CurrencyListings             ( TreeDock                              ) :
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
+    ##########################################################################
     VAL    =                     ( item , column , uuid , value ,            )
     self   . Go                  ( self . AssureUuidItem , VAL               )
     ##########################################################################
@@ -836,78 +834,82 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                          ( self , pos                          ) :
+  def Menu                            ( self , pos                        ) :
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                     )
-    if                              ( not doMenu                          ) :
+    doMenu = self . isFunction        ( self . HavingMenu                   )
+    if                                ( not doMenu                        ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                      )
+    self   . Notify                   ( 0                                    )
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
-    mm     = MenuManager            ( self                                  )
+    mm     = MenuManager              ( self                                 )
     ##########################################################################
-    self   . AmountIndexMenu        ( mm                                     )
-    self   . AppendRefreshAction    ( mm , 1001                              )
-    self   . AppendInsertAction     ( mm , 1101                              )
-    self   . AppendRenameAction     ( mm , 1102                              )
+    self   . AmountIndexMenu          ( mm                                   )
+    self   . AppendRefreshAction      ( mm , 1001                            )
+    self   . AppendInsertAction       ( mm , 1101                            )
     ##########################################################################
-    mm     . addSeparator           (                                        )
+    msg    = self . getMenuItem       ( "ModifyItem"                         )
+    mm     . addAction                ( 1102 , msg                           )
     ##########################################################################
-    self   . ColumnsMenu            ( mm                                     )
-    self   . SortingMenu            ( mm                                     )
-    self   . LocalityMenu           ( mm                                     )
-    self   . DockingMenu            ( mm                                     )
+    self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
     ##########################################################################
-    mm     . setFont                ( self    . menuFont ( )                 )
-    aa     = mm . exec_             ( QCursor . pos      ( )                 )
-    at     = mm . at                ( aa                                     )
+    mm     . addSeparator             (                                      )
+    ##########################################################################
+    self   . ColumnsMenu              ( mm                                   )
+    self   . SortingMenu              ( mm                                   )
+    self   . LocalityMenu             ( mm                                   )
+    self   . DockingMenu              ( mm                                   )
+    ##########################################################################
+    mm     . setFont                  ( self    . menuFont ( )               )
+    aa     = mm . exec_               ( QCursor . pos      ( )               )
+    at     = mm . at                  ( aa                                   )
     ##########################################################################
     OKAY   = self   . RunAmountIndexMenu (                                   )
-    if                              ( OKAY                                 ) :
+    if                                ( OKAY                               ) :
       ########################################################################
-      self . restart                (                                        )
+      self . restart                  (                                      )
       ########################################################################
       return
     ##########################################################################
-    OKAY   = self . RunDocking      ( mm , aa                                )
-    if                              ( OKAY                                 ) :
+    OKAY   = self . RunDocking        ( mm , aa                              )
+    if                                ( OKAY                               ) :
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                              ( OKAY                                 ) :
+    if                                ( OKAY                               ) :
       ########################################################################
-      self . Countries =            {                                        }
-      self . restart                (                                        )
+      self . Countries =              {                                      }
+      self . restart                  (                                      )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunColumnsMenu  ( at                                     )
-    if                              ( OKAY                                 ) :
+    OKAY   = self . RunColumnsMenu    ( at                                   )
+    if                                ( OKAY                               ) :
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu  ( at                                     )
-    if                              ( OKAY                                 ) :
-      self . restart                (                                        )
+    OKAY   = self . RunSortingMenu    ( at                                   )
+    if                                ( OKAY                               ) :
+      self . restart                  (                                      )
       return True
     ##########################################################################
-    if                              ( at == 1001                           ) :
-      self . restart                (                                        )
+    if                                ( at == 1001                         ) :
+      self . restart                  (                                      )
       return True
     ##########################################################################
-    if                              ( at == 1101                           ) :
-      self . InsertItem             (                                        )
+    if                                ( at == 1101                         ) :
+      self . InsertItem               (                                      )
       return True
     ##########################################################################
-    if                              ( at == 1102                           ) :
-      self . RenameItem             (                                        )
+    if                                ( at == 1102                         ) :
+      self . RenameItem               (                                      )
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
+    if                                ( at == 1601                         ) :
       ########################################################################
-      uuid = self . itemUuid       ( atItem , 0                              )
-      NAM  = self . Tables         [ "NamesEditing"                          ]
-      self . EditAllNames          ( self , "Currency" , uuid , NAM          )
+      uuid = self . itemUuid          ( atItem , 0                           )
+      NAM  = self . Tables            [ "NamesEditing"                       ]
+      self . EditAllNames             ( self , "Currency" , uuid , NAM       )
       ########################################################################
       return True
     ##########################################################################
