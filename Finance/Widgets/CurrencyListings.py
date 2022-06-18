@@ -661,7 +661,7 @@ class CurrencyListings             ( TreeDock                              ) :
     self . setColumnWidth ( 2 ,  60                                          )
     self . setColumnWidth ( 3 ,  60                                          )
     self . setColumnWidth ( 4 , 100                                          )
-    self . setColumnWidth ( 5 , 120                                          )
+    self . setColumnWidth ( 5 , 100                                          )
     ##########################################################################
     return
   ############################################################################
