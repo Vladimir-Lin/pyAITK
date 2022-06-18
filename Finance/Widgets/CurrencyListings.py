@@ -726,7 +726,7 @@ class CurrencyListings             ( TreeDock                              ) :
     DB     . LockWrites       ( [ ISOTAB                                   ] )
     ##########################################################################
     QQ     = f"""insert into {ISOTAB} ( `id` , `uuid` , `used` , `type`  )
-                 values ( {ID} , {CUID} , 3 , 7 ) ;"""
+                 values ( {ID} , {CUID} , 3 , 8 ) ;"""
     QQ     = " " . join       ( QQ . split ( )                               )
     DB     . Query            ( QQ                                           )
     ##########################################################################
@@ -772,7 +772,7 @@ class CurrencyListings             ( TreeDock                              ) :
       QQ     = f"""insert into {ISOTAB}
                    ( `id` , `uuid` , `used` , `type` , `prefer` , `name` , `number`  )
                    values
-                   ( {ID} , {CUID} , 3 , 7 , {ID} , '{NAME}' , '{NUM}' ) ;"""
+                   ( {ID} , {CUID} , 3 , 8 , {ID} , '{NAME}' , '{NUM}' ) ;"""
       QQ     = " " . join       ( QQ . split ( )                             )
       DB     . Query            ( QQ                                         )
       ########################################################################
