@@ -540,10 +540,10 @@ class CurrencyListings             ( TreeDock                              ) :
         DTS   = f"{msg}T00:00:00"
         NOW   . fromInput        ( msg , TZ                                  )
         value = NOW . Stardate
-        msg   = NOW . NOW . toDateString ( TZ , "%Y/%m/%d"                   )
+        msg   = NOW . toDateString ( TZ , "%Y/%m/%d"                         )
         ######################################################################
       except                                                                 :
-        pass
+        msg   = ""
     ##########################################################################
     item   . setText             ( column ,              msg                 )
     ##########################################################################
