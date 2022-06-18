@@ -479,7 +479,7 @@ class CurrencyListings             ( TreeDock                              ) :
     if                           ( value != cbv                            ) :
       ########################################################################
       uuid = int                 ( item . data ( 0 , Qt . UserRole )         )
-      msg  = self . Countries    [ str ( value )                             ]
+      msg  = self . Countries    [ int ( value )                             ]
       ########################################################################
       item . setText             ( column ,  msg                             )
       item . setData             ( column , Qt . UserRole , value            )
