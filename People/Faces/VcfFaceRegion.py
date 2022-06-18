@@ -1350,7 +1350,7 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     self   . RegionMenu             ( mm                                     )
     self   . RecognitionMenu        ( mm                                     )
     self   . MeasureMenu            ( mm                                     )
-    self   . ContourEditorMenu      ( mm , 62787000 , self . convex          )
+    self   . ContourEditorMenu      ( mm , 127000 , self . convex            )
     self   . StatesMenu             ( mm                                     )
     self   . LayerMenu              ( mm                                     )
     self   . PluginsMenu            ( mm                                     )
@@ -1359,28 +1359,35 @@ class VcfFaceRegion                 ( VcfCanvas                            ) :
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
     ##########################################################################
-    if                              ( self . RunLayerMenu       ( at )     ) :
+    OKAY   = self . RunContourEditorMenu ( mm , at , 127000 , self.convex    )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . RunMeasureMenu     ( at )     ) :
+    OKAY   = self . RunLayerMenu    ( at                                     )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . RunPicturesMenu    ( at )     ) :
+    OKAY   = self . RunMeasureMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . RunRegionMenu      ( at )     ) :
+    OKAY   = self . RunPicturesMenu ( at                                     )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . RunRecognitionMenu ( at )     ) :
+    OKAY   = self . RunRegionMenu   ( at                                     )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . RunPluginsMenu     ( at )     ) :
+    OKAY   = self . RunRecognitionMenu ( at                                  )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    if                              ( self . RunStatesMenu      ( at )     ) :
+    OKAY   = self . RunPluginsMenu  ( at                                     )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
-    OKAY   = self . RunContourEditorMenu ( mm , at , 62787000 , self.convex  )
+    OKAY   = self . RunStatesMenu   ( at                                     )
     if                              ( OKAY                                 ) :
       return True
     ##########################################################################
