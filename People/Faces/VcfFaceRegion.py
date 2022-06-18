@@ -18,61 +18,62 @@ from   PIL                            import Image as Pillow
 import cv2
 import dlib
 import skimage
-import numpy                          as np
-import mediapipe                      as mp
+import numpy                                   as np
+import mediapipe                               as mp
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                                   import QtCore
+from   PyQt5                                   import QtGui
+from   PyQt5                                   import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
-from   PyQt5 . QtCore                 import QSizeF
-from   PyQt5 . QtCore                 import QRect
-from   PyQt5 . QtCore                 import QRectF
+from   PyQt5 . QtCore                          import QObject
+from   PyQt5 . QtCore                          import pyqtSignal
+from   PyQt5 . QtCore                          import Qt
+from   PyQt5 . QtCore                          import QPoint
+from   PyQt5 . QtCore                          import QPointF
+from   PyQt5 . QtCore                          import QSize
+from   PyQt5 . QtCore                          import QSizeF
+from   PyQt5 . QtCore                          import QRect
+from   PyQt5 . QtCore                          import QRectF
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QFont
-from   PyQt5 . QtGui                  import QFontMetricsF
-from   PyQt5 . QtGui                  import QColor
-from   PyQt5 . QtGui                  import QPen
-from   PyQt5 . QtGui                  import QBrush
-from   PyQt5 . QtGui                  import QPolygonF
-from   PyQt5 . QtGui                  import QPainterPath
-from   PyQt5 . QtGui                  import QKeySequence
-from   PyQt5 . QtGui                  import QTransform
+from   PyQt5 . QtGui                           import QIcon
+from   PyQt5 . QtGui                           import QCursor
+from   PyQt5 . QtGui                           import QFont
+from   PyQt5 . QtGui                           import QFontMetricsF
+from   PyQt5 . QtGui                           import QColor
+from   PyQt5 . QtGui                           import QPen
+from   PyQt5 . QtGui                           import QBrush
+from   PyQt5 . QtGui                           import QPolygonF
+from   PyQt5 . QtGui                           import QPainterPath
+from   PyQt5 . QtGui                           import QKeySequence
+from   PyQt5 . QtGui                           import QTransform
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QToolTip
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import QFileDialog
-from   PyQt5 . QtWidgets              import QGraphicsView
-from   PyQt5 . QtWidgets              import QGraphicsItem
-from   PyQt5 . QtWidgets              import QSpinBox
-from   PyQt5 . QtWidgets              import QDoubleSpinBox
+from   PyQt5 . QtWidgets                       import QApplication
+from   PyQt5 . QtWidgets                       import qApp
+from   PyQt5 . QtWidgets                       import QToolTip
+from   PyQt5 . QtWidgets                       import QWidget
+from   PyQt5 . QtWidgets                       import QFileDialog
+from   PyQt5 . QtWidgets                       import QGraphicsView
+from   PyQt5 . QtWidgets                       import QGraphicsItem
+from   PyQt5 . QtWidgets                       import QSpinBox
+from   PyQt5 . QtWidgets                       import QDoubleSpinBox
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager  as MenuManager
+from   AITK  . Qt . MenuManager                import MenuManager  as MenuManager
 ##############################################################################
-from   AITK  . Essentials . Object    import Object       as Object
-from   AITK  . Pictures   . Picture   import Picture      as PictureItem
-from   AITK  . Pictures   . Gallery   import Gallery      as GalleryItem
+from   AITK  . Essentials . Object             import Object       as Object
+from   AITK  . Pictures   . Picture            import Picture      as PictureItem
+from   AITK  . Pictures   . Gallery            import Gallery      as GalleryItem
+from   AITK  . Math       . Geometry . Contour import Contour      as Contour
 ##############################################################################
-from   AITK  . People . Faces . Face  import Face         as FaceItem
-from   AITK  . People . Body  . Tit   import Tit          as TitItem
-from   AITK  . People . Body  . Body  import Body         as BodyItem
+from   AITK  . People . Faces . Face           import Face         as FaceItem
+from   AITK  . People . Body  . Tit            import Tit          as TitItem
+from   AITK  . People . Body  . Body           import Body         as BodyItem
 ##############################################################################
-from   AITK  . VCF . VcfItem          import VcfItem      as VcfItem
-from   AITK  . VCF . VcfLines         import VcfLines     as VcfLines
-from   AITK  . VCF . VcfContours      import VcfContours  as VcfContours
-from   AITK  . VCF . VcfPoints        import VcfPoints    as VcfPoints
-from   AITK  . VCF . VcfRectangle     import VcfRectangle as VcfRectangle
-from   AITK  . VCF . VcfCanvas        import VcfCanvas    as VcfCanvas
+from   AITK  . VCF . VcfItem                   import VcfItem      as VcfItem
+from   AITK  . VCF . VcfLines                  import VcfLines     as VcfLines
+from   AITK  . VCF . VcfContours               import VcfContours  as VcfContours
+from   AITK  . VCF . VcfPoints                 import VcfPoints    as VcfPoints
+from   AITK  . VCF . VcfRectangle              import VcfRectangle as VcfRectangle
+from   AITK  . VCF . VcfCanvas                 import VcfCanvas    as VcfCanvas
 ##############################################################################
 class VcfFaceRegion                 ( VcfCanvas                            ) :
   ############################################################################
