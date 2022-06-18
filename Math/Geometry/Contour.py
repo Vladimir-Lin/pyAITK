@@ -31,6 +31,7 @@ class Contour    (                                                         ) :
     ##########################################################################
     self . Uuid        = 0
     self . Name        = ""
+    self . Identifier  = ""
     self . Type        = ControlPoint . ContourLinear
     self . Closed      = False
     self . Substract   = False
@@ -49,6 +50,7 @@ class Contour    (                                                         ) :
     ##########################################################################
     self . Uuid        = contour . Uuid
     self . Name        = contour . Name
+    self . Identifier  = contour . Identifier
     self . Type        = contour . Type
     self . Closed      = contour . Closed
     self . Substract   = contour . Substract
@@ -116,6 +118,7 @@ class Contour    (                                                         ) :
     ##########################################################################
     JSON =   { "Uuid"       : self . Uuid                                  , \
                "Name"       : self . Name                                  , \
+               "Identifier" : self . Identifier                            , \
                "Type"       : self . Type                                  , \
                "Closed"     : self . Closed                                , \
                "Substract"  : self . Substract                             , \
@@ -135,6 +138,7 @@ class Contour    (                                                         ) :
     ##########################################################################
     self   . Uuid       = JSON        [ "Uuid"                               ]
     self   . Name       = JSON        [ "Name"                               ]
+    self   . Identifier = JSON        [ "Identifier"                         ]
     self   . Type       = JSON        [ "Type"                               ]
     self   . Closed     = JSON        [ "Closed"                             ]
     self   . Substract  = JSON        [ "Substract"                          ]

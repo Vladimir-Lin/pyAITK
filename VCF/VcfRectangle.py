@@ -1359,6 +1359,12 @@ class VcfRectangle              ( VcfItem                                  ) :
     NLE   . setPlaceholderText   ( MSG                                       )
     mm    . addWidgetWithMenu    ( LOM , Base + 901 , NLE                    )
     ##########################################################################
+    MSG   = self . getMenuItem   ( "ContourIdentifier"                       )
+    NLE   = QLineEdit            (                                           )
+    NLE   . setText              ( convex . Identifier                       )
+    NLE   . setPlaceholderText   ( MSG                                       )
+    mm    . addWidgetWithMenu    ( LOM , Base + 902 , NLE                    )
+    ##########################################################################
     VEX   = convex . getProperty ( "Mode"                                    )
     ##########################################################################
     VM    =                      ( VEX == 0                                  )
@@ -1469,6 +1475,12 @@ class VcfRectangle              ( VcfItem                                  ) :
       ########################################################################
       NAME = NLE . text           (                                          )
       convex . Name = NAME
+    ##########################################################################
+    ILE    = mm . widgetAt        ( Base + 902                               )
+    if                            ( self . IsOkay ( ILE )                  ) :
+      ########################################################################
+      IDENT  = ILE . text         (                                          )
+      convex . Identifier = IDENT
     ##########################################################################
     AT     = at - 7000
     OKAY   = self . convex . ExecuteMenuCommand ( AT                         )
