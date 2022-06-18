@@ -662,7 +662,7 @@ class CurrencyListings             ( TreeDock                              ) :
   def AssureUuidItem          ( self , item , column , uuid , name         ) :
     ##########################################################################
     DB     = self . ConnectDB (                                              )
-    if                        ( self . NotOkay ( None )                    ) :
+    if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
     ISOTAB = self . Tables    [ "ISO-4217"                                   ]
