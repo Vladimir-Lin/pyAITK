@@ -126,9 +126,10 @@ class StarDate (                                                           ) :
       ########################################################################
       if                     ( TSV < 0                                     ) :
         ######################################################################
-        DT  = datetime . datetime       ( 1970 , 1 , 1 , tzinfo = pytz . utc )
+        DT  = datetime . datetime . fromtimestamp ( 0 , tz = tzs             )
         DT  = DT + datetime . timedelta ( seconds = TSV                      )
-        return DT . replace  ( tzinfo = tzs                                  )
+        ######################################################################
+        return DT
       ########################################################################
       return datetime . datetime . fromtimestamp ( TSV , tz = tzs            )
     ##########################################################################
