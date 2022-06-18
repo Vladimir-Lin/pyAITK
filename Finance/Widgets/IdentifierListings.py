@@ -587,6 +587,7 @@ class IdentifierListings           ( TreeDock                              ) :
         QQ     = " " . join       ( QQ . split ( )                           )
         DB     . QueryValues      ( QQ , VAL                                 )
     ##########################################################################
+    DB         . UnlockTables     (                                          )
     DB         . Close            (                                          )
     ##########################################################################
     if                            ( Reload                                 ) :

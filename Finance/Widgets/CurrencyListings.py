@@ -64,12 +64,10 @@ class CurrencyListings             ( TreeDock                              ) :
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . EditAllNames       = None
-    self . ProductType        = 0
+    self . GType              = 45
     self . ClassTag           = "CurrencyListings"
-    self . Total              = 0
-    self . StartId            = 0
-    self . Amount             = 40
     self . SortOrder          = "asc"
+    self . Countries          =    {                                         }
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -160,6 +158,7 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
     ##########################################################################
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     ##########################################################################
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
@@ -190,7 +189,7 @@ class CurrencyListings             ( TreeDock                              ) :
   def closeEvent             ( self , event                                  ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
-    self . LinkVoice         ( None                                          )
+    ## self . LinkVoice         ( None                                          )
     self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
@@ -201,18 +200,93 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    """
-    if                        ( column not in [ 2 ]                        ) :
+    if                          ( column in [ 0 ]                          ) :
       return
     ##########################################################################
-    line = self . setLineEdit ( item                                       , \
-                                2                                          , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
-    """
+    if                          ( column in [ 1 , 2 , 6 , 7 ]              ) :
+      ########################################################################
+      line = self . setLineEdit ( item                                     , \
+                                  column                                   , \
+                                  "editingFinished"                        , \
+                                  self . nameChanged                         )
+      line . setFocus           ( Qt . TabFocusReason                        )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( column in [  3 ]                         ) :
+      ########################################################################
+      LL  = self . Translations [ self . ClassTag ] [ "Usage"                ]
+      val = item . data         ( column , Qt . UserRole                     )
+      val = int                 ( val                                        )
+      cb  = self . setComboBox  ( item                                       ,
+                                  column                                     ,
+                                  "activated"                                ,
+                                  self . usageChanged                        )
+      cb  . addJson             ( LL , val                                   )
+      cb  . setMaxVisibleItems  ( 20                                         )
+      cb  . showPopup           (                                            )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( column in [  4 ]                         ) :
+      ########################################################################
+      LL  = self . Translations [ self . ClassTag ] [ "Types"                ]
+      val = item . data         ( column , Qt . UserRole                     )
+      val = int                 ( val                                        )
+      cb  = self . setComboBox  ( item                                       ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . typesChanged                       )
+      cb  . addJson             ( LL , val                                   )
+      cb  . setMaxVisibleItems  ( 20                                         )
+      cb  . showPopup           (                                            )
+      ########################################################################
+      return
+    ##########################################################################
+    if                          ( column in [  5 ]                         ) :
+      ########################################################################
+      sb  = self . setSpinBox   ( item                                       ,
+                                  column                                     ,
+                                  0                                          ,
+                                  999999999                                  ,
+                                  "editingFinished"                          ,
+                                  self . preferChanged                       )
+      sb  . setAlignment        ( Qt . AlignRight                            )
+      sb  . setFocus            ( Qt . TabFocusReason                        )
+      ########################################################################
+      return
+    ##########################################################################
+    ## 國家
+    ##########################################################################
+    if                          ( column in [  8 ]                         ) :
+      ########################################################################
+      val = item . data         ( column , Qt . UserRole                     )
+      val = int                 ( val                                        )
+      cb  = self . setComboBox  ( item                                       ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . countryChanged                     )
+      cb  . addJson             ( self . Countries , val                     )
+      cb  . setMaxVisibleItems  ( 30                                         )
+      cb  . showPopup           (                                            )
+      ########################################################################
+      return
+    ##########################################################################
+    ## 開始
+    ##########################################################################
+    if                          ( column in [  9 ]                         ) :
+      ########################################################################
+      ########################################################################
+      return
+    ##########################################################################
+    ## 消亡
+    ##########################################################################
+    if                          ( column in [ 10 ]                         ) :
+      ########################################################################
+      ########################################################################
+      return
     ##########################################################################
     return
   ############################################################################
@@ -252,6 +326,10 @@ class CurrencyListings             ( TreeDock                              ) :
     UNAME   = TRX                 [ "Usage" ] [ str ( USED )                 ]
     TNAME   = TRX                 [ "Types" ] [ str ( TYPE )                 ]
     ##########################################################################
+    CNAME   = ""
+    if                            ( COUNTRY in self . Countries            ) :
+      CNAME = self . Countries    [ COUNTRY                                  ]
+    ##########################################################################
     IT      . setText             (  0 , str ( ID      )                     )
     IT      . setToolTip          (  0 , UXID                                )
     IT      . setData             (  0 , Qt . UserRole , UXID                )
@@ -275,7 +353,8 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     IT      . setText             (  7 , NATIVE                              )
     ##########################################################################
-    IT      . setText             (  8 , str ( COUNTRY )                     )
+    IT      . setText             (  8 , CNAME                               )
+    IT      . setData             (  8 , Qt . UserRole , str ( COUNTRY )     )
     ##########################################################################
     IT      . setText             (  9 , str ( SDT     )                     )
     ##########################################################################
@@ -291,15 +370,20 @@ class CurrencyListings             ( TreeDock                              ) :
     return IT
   ############################################################################
   @pyqtSlot                      (                                           )
-  def RenameItem                 ( self                                    ) :
+  def InsertItem                 ( self                                    ) :
     ##########################################################################
-    """
-    IT = self . currentItem      (                                           )
-    if                           ( IT is None                              ) :
+    self . Go                    ( self . AppendCurrency                     )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def RenameItem              ( self                                       ) :
+    ##########################################################################
+    IT   = self . currentItem (                                              )
+    if                        ( IT is None                                 ) :
       return
     ##########################################################################
-    self . doubleClicked         ( IT , 2                                    )
-    """
+    self . doubleClicked      ( IT , self . currentColumn ( )                )
     ##########################################################################
     return
   ############################################################################
@@ -323,8 +407,137 @@ class CurrencyListings             ( TreeDock                              ) :
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
+    VAL    =                     ( item , column , uuid , msg ,              )
+    self   . Go                  ( self . AssureUuidItem , VAL               )
+    ##########################################################################
+    return
+  ############################################################################
+  def usageChanged               ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      uuid = int                 ( item . data ( 0 , Qt . UserRole )         )
+      LL   = self . Translations [ self . ClassTag ] [ "Usage"               ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      VAL  =                     ( item , column , uuid , value ,            )
+      self . Go                  ( self . AssureUuidItem , VAL               )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def typesChanged               ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      uuid = int                 ( item . data ( 0 , Qt . UserRole )         )
+      LL   = self . Translations [ self . ClassTag ] [ "Types"               ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      VAL  =                     ( item , column , uuid , value ,            )
+      self . Go                  ( self . AssureUuidItem , VAL               )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def countryChanged             ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      uuid = int                 ( item . data ( 0 , Qt . UserRole )         )
+      msg  = self . Countries    [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      VAL  =                     ( item , column , uuid , value ,            )
+      self . Go                  ( self . AssureUuidItem , VAL               )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def preferChanged             ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    sb     = self . CurrentItem [ "Widget"                                   ]
+    v      = self . CurrentItem [ "Value"                                    ]
+    v      = int                ( v                                          )
+    nv     = sb   . value       (                                            )
+    ##########################################################################
+    if                          ( v != nv                                  ) :
+      ########################################################################
+      uuid = int                ( item . data ( 0 , Qt . UserRole )          )
+      item . setText            ( column , str ( nv )                        )
+      ########################################################################
+      VAL  =                    ( item , column , uuid , nv ,                )
+      self . Go                 ( self . AssureUuidItem , VAL                )
+    ##########################################################################
+    self . removeParked         (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  def LoadCountries              ( self , DB                               ) :
+    ##########################################################################
+    if                           ( len ( self . Countries ) <= 0           ) :
+      return
+    ##########################################################################
+    MSG    = self . getMenuItem  ( "NoCountry"                               )
+    self   . Countries [ 0 ] = MSG
+    ##########################################################################
+    NAMTAB = self . Tables       [ "Names"                                   ]
+    CTYTAB = self . Tables       [ "ISO-4217"                                ]
+    QQ     = f"""select `uuid` from {CTYTAB} where ( `used` > 0 ) ;"""
+    UUIDs  = DB . ObtainUuids    ( QQ                                        )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      NAME = self . GetName      ( DB , NAMTAB , UUID                        )
+      self . Countries [ UUID ] = NAME
     ##########################################################################
     return
   ############################################################################
@@ -357,6 +570,8 @@ class CurrencyListings             ( TreeDock                              ) :
     self    . ShowStatus               ( MSG                                 )
     self    . OnBusy  . emit           (                                     )
     self    . setBustle                (                                     )
+    ##########################################################################
+    self    . LoadCountries            ( DB                                  )
     ##########################################################################
     ISOTAB  = self . Tables            [ "ISO-4217"                          ]
     ORDER   = self . SortOrder
@@ -411,63 +626,82 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem              ( self , item , uuid , name              ) :
+  def AssureUuidItem          ( self , item , column , uuid , name         ) :
     ##########################################################################
-    DB         = self . ConnectDB (                                          )
-    if                            ( DB == None                             ) :
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( None )                    ) :
       return
     ##########################################################################
-    IDFTAB     = self . Tables    [ "Identifiers"                            ]
-    Reload     = False
+    ISOTAB = self . Tables    [ "ISO-4217"                                   ]
     ##########################################################################
-    DB         . LockWrites       ( [ IDFTAB                               ] )
+    DB     . LockWrites       ( [ ISOTAB                                   ] )
     ##########################################################################
-    uuid       = int              ( uuid                                     )
-    VAL        =                  ( name ,                                   )
+    uuid   = int              ( uuid                                         )
+    VAL    =                  ( name ,                                       )
+    COL    = ""
     ##########################################################################
-    if                            ( uuid > 0                               ) :
+    if                        ( column ==  1                               ) :
+      COL  = "name"
+    elif                      ( column ==  2                               ) :
+      COL  = "number"
+    elif                      ( column ==  3                               ) :
+      COL  = "used"
+    elif                      ( column ==  4                               ) :
+      COL  = "type"
+    elif                      ( column ==  5                               ) :
+      COL  = "name"
+    elif                      ( column ==  6                               ) :
+      COL  = "prefer"
+    elif                      ( column ==  7                               ) :
+      COL  = "native"
+    elif                      ( column ==  8                               ) :
+      COL  = "country"
+    elif                      ( column ==  9                               ) :
+      COL  = "start"
+    elif                      ( column == 10                               ) :
+      COL  = "vanish"
+    ##########################################################################
+    if                        ( len ( COL ) > 0                            ) :
       ########################################################################
-      QQ       = f"""update {IDFTAB}
-                     set `name` = %s
-                     where ( `id` = {uuid} ) ;"""
-      QQ       = " " . join       ( QQ . split ( )                           )
-      DB       . QueryValues      ( QQ , VAL                                 )
-      ########################################################################
-      self     . Notify           ( 5                                        )
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      if                          ( self . isUuidMethod ( )                ) :
-        ######################################################################
-        Reload = True
-        UUID   = self . Uuid
-        GTYPE  = self . ProductType
-        ######################################################################
-        QQ     = f"""insert into {IDFTAB}
-                     ( `uuid` , `type` , `name` )
-                     values
-                     ( {UUID} , {GTYPE} , %s ) ;"""
-        QQ     = " " . join       ( QQ . split ( )                           )
-        DB     . QueryValues      ( QQ , VAL                                 )
+      QQ   = f"""update {ISOTAB}
+                     set `{COL}` = %s
+                     where ( `uuid` = {uuid} ) ;"""
+      QQ   = " " . join       ( QQ . split ( )                               )
+      DB   . QueryValues      ( QQ , VAL                                     )
     ##########################################################################
-    DB         . Close            (                                          )
-    ##########################################################################
-    if                            ( Reload                                 ) :
-      self     . loading          (                                          )
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    self   . Notify           ( 5                                            )
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def AppendCurrency          ( self                                       ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
+    ISOTAB = self . Tables    [ "ISO-4217"                                   ]
     ##########################################################################
-    self . Go                     ( self . Talk , ( MSG , LID , )            )
+    CUID   = DB . LastUuid    ( ISOTAB , "uuid" , 4110000000100000000        )
+    ID     = int              ( int ( CUID ) % 10000000                      )
+    DB     . LockWrites       ( [ ISOTAB                                   ] )
+    ##########################################################################
+    QQ     = f"""insert into {ISOTAB} ( `id` , `uuid` , `used` , `type`  )
+                 values ( {ID} , {CUID} , 3 , 7 ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    DB     . Query            ( QQ                                           )
+    ##########################################################################
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
+    ##########################################################################
+    self   . loading          (                                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyToClipboard        ( self                                        ) :
+    ##########################################################################
+    self . DoCopyToClipboard ( False                                         )
     ##########################################################################
     return
   ############################################################################
@@ -700,8 +934,7 @@ class CurrencyListings             ( TreeDock                              ) :
     if                              ( not doMenu                          ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                     )
-    ##########################################################################
+    self   . Notify                 ( 0                                      )
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
     mm     = MenuManager            ( self                                  )
@@ -711,6 +944,7 @@ class CurrencyListings             ( TreeDock                              ) :
     mm     = self . AmountIndexMenu ( mm                                     )
     ##########################################################################
     self   . AppendRefreshAction    ( mm , 1001                              )
+    self   . AppendInsertAction     ( mm , 1101                              )
     self   . AppendRenameAction     ( mm , 1102                              )
     ##########################################################################
     mm     . addSeparator           (                                        )
@@ -753,8 +987,20 @@ class CurrencyListings             ( TreeDock                              ) :
       self . restart                (                                        )
       return True
     ##########################################################################
+    if                              ( at == 1101                           ) :
+      self . InsertItem             (                                        )
+      return True
+    ##########################################################################
     if                              ( at == 1102                           ) :
       self . RenameItem             (                                        )
+      return True
+    ##########################################################################
+    if                             ( at == 1601                            ) :
+      ########################################################################
+      uuid = self . itemUuid       ( atItem , 0                              )
+      NAM  = self . Tables         [ "NamesEditing"                          ]
+      self . EditAllNames          ( self , "Currency" , uuid , NAM          )
+      ########################################################################
       return True
     ##########################################################################
     return True
