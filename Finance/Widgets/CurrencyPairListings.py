@@ -64,22 +64,12 @@ class CurrencyPairListings         ( TreeDock                              ) :
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . EditAllNames       = None
-    self . ProductType        = 0
-    self . IdentifierTag      = "IdentifierListings"
-    self . Total              = 0
-    self . StartId            = 0
-    self . Amount             = 40
-    self . SortOrder          = "desc"
-    self . Uuid               = 0
-    self . UUIDs              =    [                                         ]
-    self . TypeMaps           =    {                                         }
-    ##########################################################################
-    self . Method             = "All"
-    ##########################################################################
-    self . Grouping           = "Original"
-    self . OldGrouping        = "Original"
-    ## self . Grouping           = "Subordination"
-    ## self . Grouping           = "Reverse"
+    self . GType              = 46
+    self . ClassTag           = "CurrencyPairListings"
+    self . SortOrder          = "asc"
+    self . DoReverse          = True
+    self . DoDissect          = True
+    self . Currencies         =    {                                         }
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . BottomDockWidgetArea
@@ -88,10 +78,9 @@ class CurrencyPairListings         ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . Relation = Relation     (                                         )
-    ##########################################################################
-    self . setColumnCount          ( 4                                       )
-    self . setColumnHidden         ( 3 , True                                )
+    self . setColumnCount          ( 7                                       )
+    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnHidden         ( 6 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -99,7 +88,6 @@ class CurrencyPairListings         ( TreeDock                              ) :
     self . MountClicked            ( 2                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ExtendedSelection"                     )
-    ## self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow . connect ( self . show                             )
     self . emitAllNames  . connect ( self . refresh                          )
@@ -113,34 +101,67 @@ class CurrencyPairListings         ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def setUuidMethod                ( self , UUID , TYPE                    ) :
-    ##########################################################################
-    self . Method      = "UUID"
-    self . ProductType = TYPE
-    self . Uuid        = UUID
-    ##########################################################################
-    return
-  ############################################################################
-  def isUuidMethod ( self                                                  ) :
-    return         ( self . Method in [ "UUID" ]                             )
-  ############################################################################
   def sizeHint                     ( self                                  ) :
     return QSize                   ( 1024 , 640                              )
+  ############################################################################
+  def PrepareForActions           ( self                                   ) :
+    ##########################################################################
+    """
+    msg  = self . Translations    [ "UI::EditNames"                          ]
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationNames             )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Search"                                 )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/search.png" )          )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . Search                            )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Crowds"                                 )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationCrowds            )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Films"                                  )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/video.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationVideos            )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Identifiers"                            )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/tag.png" )             )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationIdentifiers       )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "IdentWebPage"                           )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/webfind.png" )         )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenIdentifierWebPages            )
+    self . WindowActions . append ( A                                        )
+    """
+    ##########################################################################
+    return
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
     ##########################################################################
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
-    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     ##########################################################################
+    self . LinkAction ( "Import"     , self . ImportItems     , Enabled      )
+    self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
-    ##########################################################################
-    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
-    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
-    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
-    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
     ##########################################################################
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
@@ -153,13 +174,14 @@ class CurrencyPairListings         ( TreeDock                              ) :
     if                    ( not self . isPrepared ( )                      ) :
       return False
     ##########################################################################
-    self . setActionLabel ( "Label" , self . windowTitle ( )                 )
-    self . AttachActions  ( True                                             )
-    ## self . LinkVoice      ( self . CommandParser                             )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    ## self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
     self . LinkVoice         ( None                                          )
@@ -175,6 +197,7 @@ class CurrencyPairListings         ( TreeDock                              ) :
   ############################################################################
   def doubleClicked           ( self , item , column                       ) :
     ##########################################################################
+    """
     if                        ( column not in [ 2 ]                        ) :
       return
     ##########################################################################
@@ -183,25 +206,48 @@ class CurrencyPairListings         ( TreeDock                              ) :
                                 "editingFinished"                          , \
                                 self . nameChanged                           )
     line . setFocus           ( Qt . TabFocusReason                          )
+    """
     ##########################################################################
     return
   ############################################################################
-  def PrepareItemContent    ( self , IT , ITEM                             ) :
+  def PrepareItemContent          ( self , IT , ITEM                       ) :
     ##########################################################################
-    ID         = ITEM       [ "Id"                                           ]
-    UUID       = ITEM       [ "Uuid"                                         ]
-    TYPE       = ITEM       [ "Type"                                         ]
-    NAME       = ITEM       [ "Name"                                         ]
-    TNAME      = ITEM       [ "TName"                                        ]
-    IDENTIFIER = ITEM       [ "Identifier"                                   ]
-    UXID       = str        ( UUID                                           )
+    TRX     = self . Translations [ self . ClassTag                          ]
     ##########################################################################
-    IT         . setText    ( 0 , NAME                                       )
-    IT         . setToolTip ( 0 , UXID                                       )
-    IT         . setData    ( 0 , Qt . UserRole , ID                         )
+    UUID    = ITEM                [ "Uuid"                                   ]
+    USAGE   = ITEM                [ "Usage"                                  ]
+    TYPE    = ITEM                [ "Type"                                   ]
+    PREFER  = ITEM                [ "Prefer"                                 ]
+    SOURCE  = ITEM                [ "Source"                                 ]
+    TARGET  = ITEM                [ "Target"                                 ]
+    REVERSE = ITEM                [ "Reverse"                                ]
+    SYMBOL  = ITEM                [ "Symbol"                                 ]
+    UXID    = str                 ( UUID                                     )
     ##########################################################################
-    IT         . setText    ( 1 , TNAME                                      )
-    IT         . setText    ( 2 , IDENTIFIER                                 )
+    UNAME   = TRX                 [ "Usage" ] [ str ( USAGE )                ]
+    TNAME   = TRX                 [ "Types" ] [ str ( TYPE  )                ]
+    SNAME   = self . Currencies   [ SOURCE                                   ]
+    GNAME   = self . Currencies   [ TARGET                                   ]
+    ##########################################################################
+    IT      . setText             ( 0 , SYMBOL                               )
+    IT      . setToolTip          ( 0 , UXID                                 )
+    IT      . setData             ( 0 , Qt . UserRole , UXID                 )
+    ##########################################################################
+    IT      . setText             ( 1 , TNAME                                )
+    IT      . setData             ( 1 , Qt . UserRole , TYPE                 )
+    ##########################################################################
+    IT      . setText             ( 2 , UNAME                                )
+    IT      . setData             ( 2 , Qt . UserRole , USAGE                )
+    ##########################################################################
+    IT      . setText             (  3 , str ( PREFER  )                     )
+    IT      . setData             (  3 , Qt . UserRole , PREFER              )
+    IT      . setTextAlignment    (  3 , Qt . AlignRight                     )
+    ##########################################################################
+    IT      . setText             ( 4 , SNAME                                )
+    IT      . setData             ( 4 , Qt . UserRole , SOURCE               )
+    ##########################################################################
+    IT      . setText             ( 5 , GNAME                                )
+    IT      . setData             ( 5 , Qt . UserRole , TARGET               )
     ##########################################################################
     return
   ############################################################################
@@ -215,24 +261,14 @@ class CurrencyPairListings         ( TreeDock                              ) :
   @pyqtSlot                   (                                              )
   def InsertItem              ( self                                       ) :
     ##########################################################################
-    if                        ( not self . isUuidMethod ( )                ) :
-      return
-    ##########################################################################
     item = QTreeWidgetItem    (                                              )
     item . setData            ( 0 , Qt . UserRole , 0                        )
     self . addTopLevelItem    ( item                                         )
     line = self . setLineEdit ( item                                       , \
-                                2                                          , \
+                                0                                          , \
                                 "editingFinished"                          , \
                                 self . nameChanged                           )
     line . setFocus           ( Qt . TabFocusReason                          )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                   (                                              )
-  def DeleteItems             ( self                                       ) :
-    ##########################################################################
-    self . defaultDeleteItems ( 0 , self . RemoveItems                       )
     ##########################################################################
     return
   ############################################################################
@@ -243,7 +279,7 @@ class CurrencyPairListings         ( TreeDock                              ) :
     if                           ( IT is None                              ) :
       return
     ##########################################################################
-    self . doubleClicked         ( IT , 2                                    )
+    self . doubleClicked         ( IT , 0                                    )
     ##########################################################################
     return
   ############################################################################
@@ -287,211 +323,98 @@ class CurrencyPairListings         ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def GetTypeMaps               ( self , DB                                ) :
+  def LoadCurrencies               ( self , DB                             ) :
     ##########################################################################
-    CNT    = len                ( self . TypeMaps                            )
-    if                          ( CNT > 0                                  ) :
+    if                             ( len ( self . Currencies ) <= 0        ) :
       return
     ##########################################################################
-    TYPTAB = self . Tables      [ "Types"                                    ]
-    NAMTAB = self . Tables      [ "Names"                                    ]
+    self . Currencies [ 0 ] = self . getMenuItem ( "NoCurrency"              )
     ##########################################################################
-    QQ     = f"""select `uuid` from {TYPTAB}
-                 where ( `used` = 1 )
-                 order by `id` asc ;"""
-    QQ     = " " . join         ( QQ . split ( )                             )
-    UUIDs  = DB   . ObtainUuids ( QQ                                         )
-    NAMEs  = self . GetNames    ( DB , NAMTAB , UUIDs                        )
+    ISOTAB   = self . Tables       [ "ISO-4217"                              ]
+    NAMTAB   = self . Tables       [ "Names"                                 ]
+    UUIDs    =                     [                                         ]
+    ##########################################################################
+    QQ       = f"""select `uuid`,`name` from {ISOTAB}
+                   where ( `used` > 0 )
+                   order by `prefer` asc ;"""
+    QQ       = " " . join          ( QQ . split ( )                          )
+    DB       . Query               ( QQ                                      )
+    ALL      = DB . FetchAll       (                                         )
+    ##########################################################################
+    if                             ( self . NotOkay ( ALL )                ) :
+      return
+    ##########################################################################
+    if                             ( len            ( ALL ) <= 0           ) :
+      return
+    ##########################################################################
+    for R in ALL                                                             :
+      ########################################################################
+      UUID   = int                 ( R [ 0                                 ] )
+      NAME   = self . assureString ( R [ 1                                 ] )
+      UUIDs  . append              ( UUID                                    )
+      ########################################################################
+      self   . Currencies [ UUID ] = NAME
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      TYPE = int                ( UUID % 1000000                             )
-      self . TypeMaps [ TYPE ] = NAMEs [ UUID ]
+      NAME   = self . GetName      ( DB , NAMTAB , UUID                      )
+      ########################################################################
+      if                           ( len ( NAME ) > 0                      ) :
+        ######################################################################
+        self . Currencies [ UUID ] = NAME
     ##########################################################################
     return
   ############################################################################
-  def ObtainOriginal                      ( self , DB                      ) :
+  def loading                     ( self                                   ) :
     ##########################################################################
-    IDFTAB       = self . Tables          [ "Identifiers"                    ]
-    ##########################################################################
-    self . Total = 0
-    ##########################################################################
-    QQ           = f"select count(*) from {IDFTAB} ;"
-    DB           . Query                  ( QQ                               )
-    RR           = DB . FetchOne          (                                  )
-    ##########################################################################
-    if                                    ( RR not in [ False , None ]     ) :
-      if                                  ( len ( RR ) > 0                 ) :
-        self . Total = int                ( RR [ 0 ]                         )
-    ##########################################################################
-    if                                    ( self . Total <= 0              ) :
-      return                              [                                  ]
-    ##########################################################################
-    IDs          =                        [                                  ]
-    STARTID      = self . StartId
-    AMOUNT       = self . Amount
-    ORDER        = self . getSortingOrder (                                  )
-    ##########################################################################
-    QQ           = f"""select `id` from {IDFTAB}
-                       order by `id` {ORDER}
-                       limit {STARTID} , {AMOUNT} ;"""
-    QQ           = " " . join             ( QQ . split ( )                   )
-    IDs          = DB . ObtainUuids       ( QQ                               )
-    ##########################################################################
-    return IDs
-  ############################################################################
-  def ObtainSearching           ( self , DB                                ) :
-    ##########################################################################
-    ##########################################################################
-    return                      [                                            ]
-  ############################################################################
-  def ObtainSubordination       ( self , DB                                ) :
-    ##########################################################################
-    ##########################################################################
-    return                      [                                            ]
-  ############################################################################
-  def ObtainReverse             ( self , DB                                ) :
-    ##########################################################################
-    ##########################################################################
-    return                      [                                            ]
-  ############################################################################
-  def ObtainSpecified           ( self , DB                                ) :
-    ##########################################################################
-    IDFTAB       = self . Tables          [ "Identifiers"                    ]
-    ##########################################################################
-    self . Total = 0
-    UUID         = self . Uuid
-    GTYPE        = self . ProductType
-    ##########################################################################
-    QQ           = f"""select count(*) from {IDFTAB}
-                       where ( `uuid` = {UUID} )
-                         and ( `type` = {GTYPE} ) ;"""
-    QQ           = " " . join             ( QQ . split ( )                   )
-    DB           . Query                  ( QQ                               )
-    RR           = DB . FetchOne          (                                  )
-    ##########################################################################
-    if                                    ( RR not in [ False , None ]     ) :
-      if                                  ( len ( RR ) > 0                 ) :
-        self . Total = int                ( RR [ 0 ]                         )
-    ##########################################################################
-    if                                    ( self . Total <= 0              ) :
-      return                              [                                  ]
-    ##########################################################################
-    IDs          =                        [                                  ]
-    STARTID      = self . StartId
-    AMOUNT       = self . Amount
-    ORDER        = self . getSortingOrder (                                  )
-    ##########################################################################
-    QQ           = f"""select `id` from {IDFTAB}
-                       where ( `uuid` = {UUID} )
-                         and ( `type` = {GTYPE} )
-                       order by `id` {ORDER}
-                       limit {STARTID} , {AMOUNT} ;"""
-    QQ           = " " . join             ( QQ . split ( )                   )
-    IDs          = DB . ObtainUuids       ( QQ                               )
-    ##########################################################################
-    return IDs
-  ############################################################################
-  def GetIdentifierDetail             ( self , DB , ID                     ) :
-    ##########################################################################
-    IDFTAB       = self . Tables      [ "Identifiers"                        ]
-    NAMTAB       = self . Tables      [ "Names"                              ]
-    ##########################################################################
-    J            =                    { "Id"         : ID                    ,
-                                        "Uuid"       : 0                     ,
-                                        "Type"       : 0                     ,
-                                        "Name"       : ""                    ,
-                                        "TName"      : ""                    ,
-                                        "Identifier" : ""                    }
-    ##########################################################################
-    QQ           = f"""select `uuid`,`type`,`name` from {IDFTAB}
-                       where ( `id` = {ID} ) ;"""
-    QQ           = " " . join         ( QQ . split ( )                       )
-    DB           . Query              ( QQ                                   )
-    RR           = DB . FetchOne      (                                      )
-    ##########################################################################
-    if                                ( RR in [ False , None ]             ) :
-      return J
-    ##########################################################################
-    if                                ( len ( RR ) != 3                    ) :
-      return J
-    ##########################################################################
-    UUID               = int          ( RR [ 0 ]                             )
-    TYPEID             = int          ( RR [ 1 ]                             )
-    ##########################################################################
-    J [ "Uuid"       ] = UUID
-    J [ "Type"       ] = TYPEID
-    J [ "Identifier" ] = self . assureString ( RR [ 2 ]                      )
-    ##########################################################################
-    if                                ( TYPEID in self . TypeMaps          ) :
-      J [ "TName" ] = self . TypeMaps [ TYPEID                               ]
-    ##########################################################################
-    NAME = self . GetName             ( DB , NAMTAB , UUID                   )
-    J   [ "Name"  ] = NAME
-    ##########################################################################
-    return J
-  ############################################################################
-  def ObtainIdentifierDetails            ( self , DB , IDs                 ) :
-    ##########################################################################
-    if                                   ( len ( IDs ) <= 0                ) :
-      return                             [                                   ]
-    ##########################################################################
-    LISTS   =                            [                                   ]
-    ##########################################################################
-    for ID in IDs                                                            :
-      ########################################################################
-      J     = self . GetIdentifierDetail ( DB , ID                           )
-      LISTS . append                     ( J                                 )
-    ##########################################################################
-    return LISTS
-  ############################################################################
-  def ObtainIdentifiers                   ( self , DB                      ) :
-    ##########################################################################
-    IDs   =                               [                                  ]
-    ##########################################################################
-    if                                    ( self . isUuidMethod    ( )     ) :
-      ########################################################################
-      IDs = self . ObtainSpecified        ( DB                               )
-      ########################################################################
-    elif                                  ( self . isOriginal      ( )     ) :
-      IDs = self . ObtainOriginal         ( DB                               )
-    elif                                  ( self . isSearching     ( )     ) :
-      IDs = self . ObtainSearching        ( DB                               )
-    elif                                  ( self . isSubordination ( )     ) :
-      IDs = self . ObtainSubordination    ( DB                               )
-    elif                                  ( self . isReverse       ( )     ) :
-      IDs = self . ObtainReverse          ( DB                               )
-    ##########################################################################
-    return self . ObtainIdentifierDetails ( DB , IDs                         )
-  ############################################################################
-  def loading                          ( self                              ) :
-    ##########################################################################
-    DB      = self . ConnectDB         (                                     )
-    if                                 ( DB == None                        ) :
-      self . emitNamesShow . emit      (                                     )
+    DB     = self . ConnectDB     (                                          )
+    if                            ( self . NotOkay ( DB )                  ) :
+      self . emitNamesShow . emit (                                          )
       return
     ##########################################################################
-    self    . Notify                   ( 3                                   )
+    self   . Notify               ( 3                                        )
     ##########################################################################
-    FMT     = self . Translations      [ "UI::StartLoading"                  ]
-    MSG     = FMT . format             ( self . windowTitle ( )              )
-    self    . ShowStatus               ( MSG                                 )
-    self    . OnBusy  . emit           (                                     )
-    self    . setBustle                (                                     )
+    FMT    = self . Translations  [ "UI::StartLoading"                       ]
+    MSG    = FMT . format         ( self . windowTitle ( )                   )
+    self   . ShowStatus           ( MSG                                      )
+    self   . OnBusy  . emit       (                                          )
+    self   . setBustle            (                                          )
     ##########################################################################
-    self    . GetTypeMaps              ( DB                                  )
-    LISTS   = self . ObtainIdentifiers ( DB                                  )
+    self   . LoadCurrencies       ( DB                                       )
     ##########################################################################
-    self    . setVacancy               (                                     )
-    self    . GoRelax . emit           (                                     )
-    self    . ShowStatus               ( ""                                  )
-    DB      . Close                    (                                     )
+    CRPTAB = self . Tables        [ "CurrencyPairs"                          ]
+    LISTS  =                      [                                          ]
     ##########################################################################
-    if                                 ( len ( LISTS ) <= 0                ) :
-      self . emitNamesShow . emit      (                                     )
+    COLS   = "`uuid`,`used`,`type`,`prefer`,`source`,`target`,`reverse`,`symbol`"
+    QQ     = f"select {COLS} from {CRPTAB} order by `id` asc ;"
+    QQ     = " " . join           ( QQ . split ( )                           )
+    DB     . Query                ( QQ                                       )
+    ALL    = DB . FetchAll        (                                          )
+    ##########################################################################
+    if ( ( self . IsOkay ( ALL ) ) and ( len ( ALL ) > 0 ) )                 :
+      ########################################################################
+      for R in ALL                                                           :
+        ######################################################################
+        J  = { "Uuid"    : int                 ( R [ 0 ]                 ) , \
+               "Usage"   : int                 ( R [ 1 ]                 ) , \
+               "Type"    : int                 ( R [ 2 ]                 ) , \
+               "Prefer"  : int                 ( R [ 3 ]                 ) , \
+               "Source"  : int                 ( R [ 4 ]                 ) , \
+               "Target"  : int                 ( R [ 5 ]                 ) , \
+               "Reverse" : int                 ( R [ 6 ]                 ) , \
+               "Symbol"  : self . assureString ( R [ 7 ]                 )   }
+        LISTS . append            ( J                                        )
+    ##########################################################################
+    self   . setVacancy           (                                          )
+    self   . GoRelax . emit       (                                          )
+    self   . ShowStatus           ( ""                                       )
+    DB     . Close                (                                          )
+    ##########################################################################
+    if                            ( len ( LISTS ) <= 0                     ) :
+      self . emitNamesShow . emit (                                          )
       return
     ##########################################################################
-    self   . emitAllNames  . emit      ( LISTS                               )
+    self   . emitAllNames  . emit ( LISTS                                    )
     ##########################################################################
     return
   ############################################################################
@@ -507,39 +430,7 @@ class CurrencyPairListings         ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . IdentifierTag , 3                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def RemoveItems                     ( self , UUIDs                       ) :
-    ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
-      return
-    ##########################################################################
-    IDFTAB = self . Tables            [ "Identifiers"                        ]
-    SQLs   =                          [                                      ]
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      QQ   = f"delete from {IDFTAB} where ( `id` = {UUID} ) ;"
-      SQLs . append                   ( QQ                                   )
-    ##########################################################################
-    DB     = self . ConnectDB         (                                      )
-    if                                ( DB == None                         ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit           (                                      )
-    self   . setBustle                (                                      )
-    DB     . LockWrites               ( [ RELTAB                           ] )
-    ##########################################################################
-    TITLE  = "RemoveIdentifiers"
-    self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
-    ##########################################################################
-    DB     . UnlockTables             (                                      )
-    self   . setVacancy               (                                      )
-    self   . GoRelax . emit           (                                      )
-    DB     . Close                    (                                      )
-    self   . loading                  (                                      )
+    self . defaultPrepare ( self . ClassTag , 6                              )
     ##########################################################################
     return
   ############################################################################
@@ -549,38 +440,6 @@ class CurrencyPairListings         ( TreeDock                              ) :
     if                            ( DB == None                             ) :
       return
     ##########################################################################
-    IDFTAB     = self . Tables    [ "Identifiers"                            ]
-    Reload     = False
-    ##########################################################################
-    DB         . LockWrites       ( [ IDFTAB                               ] )
-    ##########################################################################
-    uuid       = int              ( uuid                                     )
-    VAL        =                  ( name ,                                   )
-    ##########################################################################
-    if                            ( uuid > 0                               ) :
-      ########################################################################
-      QQ       = f"""update {IDFTAB}
-                     set `name` = %s
-                     where ( `id` = {uuid} ) ;"""
-      QQ       = " " . join       ( QQ . split ( )                           )
-      DB       . QueryValues      ( QQ , VAL                                 )
-      ########################################################################
-      self     . Notify           ( 5                                        )
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      if                          ( self . isUuidMethod ( )                ) :
-        ######################################################################
-        Reload = True
-        UUID   = self . Uuid
-        GTYPE  = self . ProductType
-        ######################################################################
-        QQ     = f"""insert into {IDFTAB}
-                     ( `uuid` , `type` , `name` )
-                     values
-                     ( {UUID} , {GTYPE} , %s ) ;"""
-        QQ     = " " . join       ( QQ . split ( )                           )
-        DB     . QueryValues      ( QQ , VAL                                 )
     ##########################################################################
     DB         . Close            (                                          )
     ##########################################################################
@@ -589,26 +448,256 @@ class CurrencyPairListings         ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CopyToClipboard             ( self                                   ) :
+  def GetCurrencyUuid      ( self , DB , CURRENCY                          ) :
     ##########################################################################
-    IT   = self . currentItem     (                                          )
-    if                            ( IT is None                             ) :
-      return
+    ISOTAB = self . Tables [ "ISO-4217"                                      ]
+    QQ     = f"select `uuid` from {ISOTAB} where ( `name` = '{CURRENCY}' ) ;"
+    DB     . Query         ( QQ                                              )
+    RR     = DB . FetchOne (                                                 )
     ##########################################################################
-    MSG  = IT . text              ( 0                                        )
-    LID  = self . getLocality     (                                          )
-    qApp . clipboard ( ). setText ( MSG                                      )
+    if                     ( self . NotOkay ( RR )                         ) :
+      return 0
     ##########################################################################
-    self . Go                     ( self . Talk , ( MSG , LID , )            )
+    if                     ( len ( RR ) != 1                               ) :
+      return 0
+    ##########################################################################
+    UUID   = 0
+    ##########################################################################
+    try                                                                      :
+      UUID = int           ( RR [ 0                                        ] )
+    except                                                                   :
+      return 0
+    ##########################################################################
+    return UUID
+  ############################################################################
+  def GetCurrencyPair      ( self , DB , FromCurrency , ToCurrency         ) :
+    ##########################################################################
+    CRPTAB = self . Tables [ "CurrencyPairs"                                 ]
+    QQ     = f"""select `uuid` from {CRPTAB}
+                 where ( `source` = {FromCurrency} )
+                   and ( `target` = {ToCurrency} )
+                   and ( `used` > 0 ) ;"""
+    QQ     = " " . join    ( QQ . split ( )                                  )
+    DB     . Query         ( QQ                                              )
+    RR     = DB . FetchOne (                                                 )
+    ##########################################################################
+    if                     ( self . NotOkay ( RR )                         ) :
+      return 0
+    ##########################################################################
+    if                     ( len ( RR ) != 1                               ) :
+      return 0
+    ##########################################################################
+    UUID   = 0
+    ##########################################################################
+    try                                                                      :
+      UUID = int           ( RR [ 0                                        ] )
+    except                                                                   :
+      return 0
+    ##########################################################################
+    return UUID
+  ############################################################################
+  def AppendCurrencyPair   ( self                                          , \
+                             DB                                            , \
+                             FromCurrency                                  , \
+                             FUID                                          , \
+                             ToCurrency                                    , \
+                             TUID                                          ) :
+    ##########################################################################
+    CRPTAB = self . Tables [ "CurrencyPairs"                                 ]
+    CUID   = DB . LastUuid ( CRPTAB , "uuid" , 4110000000200000000           )
+    ##########################################################################
+    QQ     = f"""insert into {CRPTAB}
+                 ( `uuid` , `type` , `source` , `target` , `symbol` ) values
+                 ( {CUID} , 9 , {FUID} , {TUID} , '{FromCurrency}/{ToCurrency}' ) ;"""
+    QQ     = " " . join    ( QQ . split ( )                                  )
+    ##########################################################################
+    DB     . LockWrites    ( [ CRPTAB                                      ] )
+    DB     . Query         ( QQ                                              )
+    DB     . UnlockTables  (                                                 )
+    ##########################################################################
+    return CUID
+  ############################################################################
+  def UpdateReverseCurrencyPair ( self , DB , CUID , RUID                  ) :
+    ##########################################################################
+    CRPTAB = self . Tables      [ "CurrencyPairs"                            ]
+    QQ     = f"""update {CRPTAB}
+                 set `reverse` = {RUID}
+                 where ( `uuid` = {CUID} ) ;"""
+    QQ     = " " . join         ( QQ . split ( )                             )
+    DB     . Query              ( QQ                                         )
     ##########################################################################
     return
   ############################################################################
+  def isCurrencyPair   ( self , PAIR                                       ) :
+    ##########################################################################
+    P = PAIR . upper   (                                                     )
+    P = P    . rstrip  (                                                     )
+    P = P    .  strip  (                                                     )
+    P = P    . replace ( " " , ""                                            )
+    ##########################################################################
+    if                 ( "/" not in P                                      ) :
+      return False
+    ##########################################################################
+    C = P    . split   ( "/"                                                 )
+    if                 ( len ( C ) != 2                                    ) :
+      return False
+    ##########################################################################
+    return   True
+  ############################################################################
+  def ImportCurrencyPair               ( self , DB , PAIR                  ) :
+    ##########################################################################
+    C      = PAIR . split              ( "/"                                 )
+    if                                 ( len ( C ) != 2                    ) :
+      return False
+    ##########################################################################
+    FCUR   = C                         [ 0                                   ]
+    TCUR   = C                         [ 1                                   ]
+    ##########################################################################
+    FCUR   = FCUR . upper              (                                     )
+    TCUR   = TCUR . upper              (                                     )
+    ##########################################################################
+    FUID   = self . GetCurrencyUuid    ( DB , FCUR                           )
+    TUID   = self . GetCurrencyUuid    ( DB , TCUR                           )
+    ##########################################################################
+    if                                 ( FUID <= 0                         ) :
+      return False
+    ##########################################################################
+    if                                 ( TUID <= 0                         ) :
+      return False
+    ##########################################################################
+    CUID   = self . GetCurrencyPair    ( DB , FUID , TUID                    )
+    if                                 ( CUID <= 0                         ) :
+      ########################################################################
+      CUID = self . AppendCurrencyPair ( DB , FCUR , FUID , TCUR , TUID      )
+    ##########################################################################
+    if                                 ( CUID <= 0                         ) :
+      return False
+    ##########################################################################
+    if                                 ( not self . DoReverse              ) :
+      return True
+    ##########################################################################
+    RUID   = self . GetCurrencyPair    ( DB , TUID , FUID                    )
+    if                                 ( RUID <= 0                         ) :
+      ########################################################################
+      RUID = self . AppendCurrencyPair ( DB , TCUR , TUID , FCUR , FUID      )
+    ##########################################################################
+    if                                 ( RUID <= 0                         ) :
+      return False
+    ##########################################################################
+    self   . UpdateReverseCurrencyPair ( DB , CUID , RUID                    )
+    self   . UpdateReverseCurrencyPair ( DB , RUID , CUID                    )
+    ##########################################################################
+    return   True
+  ############################################################################
+  def AppendEmptyCurrencyPair ( self , DB , SYMBOL                         ) :
+    ##########################################################################
+    CRPTAB = self . Tables    [ "CurrencyPairs"                              ]
+    CUID   = DB . LastUuid    ( CRPTAB , "uuid" , 4110000000200000000        )
+    ##########################################################################
+    QQ     = f"""insert into {CRPTAB}
+                 ( `uuid` , `type` , `symbol` ) values
+                 ( {CUID} , 9 , %s ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    ##########################################################################
+    DB     . LockWrites       ( [ CRPTAB                                   ] )
+    DB     . QueryValues      ( QQ , ( SYMBOL , )                            )
+    DB     . UnlockTables     (                                              )
+    ##########################################################################
+    return CUID
+  ############################################################################
+  def ImportCurrencyPairs           ( self , DB , PAIRs                    ) :
+    ##########################################################################
+    LISTs      = PAIRs . split      ( "\n"                                   )
+    ##########################################################################
+    for L in LISTs                                                           :
+      ########################################################################
+      P        = L . rstrip         (                                        )
+      P        = P .  strip         (                                        )
+      P        = P . replace        ( " " , ""                               )
+      if                            ( ( len ( P ) > 0 ) and ( "/" in P )   ) :
+        C      = P . split          ( "/"                                    )
+        if                          ( len ( C ) == 2                       ) :
+          ####################################################################
+          self . ImportCurrencyPair ( DB , P                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def ImportPairs              ( self , TEXT                               ) :
+    ##########################################################################
+    DB   = self . ConnectDB    (                                             )
+    if                         ( self . NotOkay ( DB )                     ) :
+      return
+    ##########################################################################
+    self . OnBusy  . emit      (                                             )
+    self . setBustle           (                                             )
+    ##########################################################################
+    self . ImportCurrencyPairs ( DB , TEXT                                   )
+    ##########################################################################
+    self . setVacancy          (                                             )
+    self . GoRelax . emit      (                                             )
+    self . ShowStatus          ( ""                                          )
+    DB   . Close               (                                             )
+    self . loading             (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def ImportItems                           ( self                         ) :
+    ##########################################################################
+    TITLE   = self . getMenuItem            ( "ImportCurrencyPairs"          )
+    FILTERS = self . getMenuItem            ( "CurrencyPairFilters"          )
+    F , _   = QFileDialog . getOpenFileName ( self , TITLE , "" , FILTERS    )
+    ##########################################################################
+    if                                      ( len ( F ) <= 0               ) :
+      return
+    ##########################################################################
+    T       = ""
+    try                                                                      :
+      ########################################################################
+      with open                             ( F , "rb" ) as J                :
+        T   = J . read                      (                                )
+    except                                                                   :
+      self . Notify                         ( 2                              )
+      return
+    ##########################################################################
+    T       = self . assureString           ( T                              )
+    if                                      ( len ( T ) <= 0               ) :
+      self . Notify                         ( 2                              )
+      return
+    ##########################################################################
+    self   . Go ( self . ImportPairs , ( T , )                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def PasteItems        ( self                                             ) :
+    ##########################################################################
+    self . defaultPaste ( self . ImportPairs                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyToClipboard        ( self                                        ) :
+    ##########################################################################
+    self . DoCopyToClipboard ( False                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
+  ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 3                         )
+    return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9003 ) and ( at <= 9003 )         :
+    if                             ( at >= 9001 ) and ( at <= 9006 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -625,20 +714,13 @@ class CurrencyPairListings         ( TreeDock                              ) :
       return False
     ##########################################################################
     self   . Notify                 ( 0                                     )
-    ##########################################################################
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
     mm     = MenuManager            ( self                                  )
     ##########################################################################
-    TRX    = self . Translations
-    ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
-    ##########################################################################
     self   . AppendRefreshAction    ( mm , 1001                              )
-    if                              ( self . isUuidMethod ( )              ) :
-      self . AppendInsertAction     ( mm , 1101                              )
+    self   . AppendInsertAction     ( mm , 1101                              )
     self   . AppendRenameAction     ( mm , 1102                              )
-    self   . AppendDeleteAction     ( mm , 1103                              )
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
@@ -650,13 +732,6 @@ class CurrencyPairListings         ( TreeDock                              ) :
     mm     . setFont                ( self    . menuFont ( )                 )
     aa     = mm . exec_             ( QCursor . pos      ( )                 )
     at     = mm . at                ( aa                                     )
-    ##########################################################################
-    OKAY   = self   . RunAmountIndexMenu (                                   )
-    if                              ( OKAY                                 ) :
-      ########################################################################
-      self . restart                (                                        )
-      ########################################################################
-      return
     ##########################################################################
     OKAY   = self . RunDocking      ( mm , aa                                )
     if                              ( OKAY                                 ) :
@@ -686,10 +761,6 @@ class CurrencyPairListings         ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 1102                           ) :
       self . RenameItem             (                                        )
-      return True
-    ##########################################################################
-    if                              ( at == 1103                           ) :
-      self . DeleteItems            (                                        )
       return True
     ##########################################################################
     return True

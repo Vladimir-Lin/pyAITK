@@ -343,7 +343,7 @@ class CurrencyListings             ( TreeDock                              ) :
     IT      . setData             (  4 , Qt . UserRole , TYPE                )
     ##########################################################################
     IT      . setText             (  5 , str ( PREFER  )                     )
-    IT      . setData             (  5 , Qt . UserRole , UXID                )
+    IT      . setData             (  5 , Qt . UserRole , PREFER              )
     IT      . setTextAlignment    (  5 , Qt . AlignRight                     )
     ##########################################################################
     IT      . setText             (  6 , ENGLISH                             )
@@ -862,7 +862,6 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     mm     = MenuManager              ( self                                 )
     ##########################################################################
-    self   . AmountIndexMenu          ( mm                                   )
     self   . AppendRefreshAction      ( mm , 1001                            )
     self   . AppendInsertAction       ( mm , 1101                            )
     ##########################################################################
@@ -881,13 +880,6 @@ class CurrencyListings             ( TreeDock                              ) :
     mm     . setFont                  ( self    . menuFont ( )               )
     aa     = mm . exec_               ( QCursor . pos      ( )               )
     at     = mm . at                  ( aa                                   )
-    ##########################################################################
-    OKAY   = self   . RunAmountIndexMenu (                                   )
-    if                                ( OKAY                               ) :
-      ########################################################################
-      self . restart                  (                                      )
-      ########################################################################
-      return
     ##########################################################################
     OKAY   = self . RunDocking        ( mm , aa                              )
     if                                ( OKAY                               ) :
