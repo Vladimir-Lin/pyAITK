@@ -229,6 +229,10 @@ class CurrencyPairListings         ( TreeDock                              ) :
     SNAME   = self . Currencies   [ SOURCE                                   ]
     GNAME   = self . Currencies   [ TARGET                                   ]
     ##########################################################################
+    PNAME   = ""
+    if                            ( PREFER >= 0                            ) :
+      PNAME = str                 ( PREFER                                   )
+    ##########################################################################
     IT      . setText             ( 0 , SYMBOL                               )
     IT      . setToolTip          ( 0 , UXID                                 )
     IT      . setData             ( 0 , Qt . UserRole , UXID                 )
@@ -239,7 +243,7 @@ class CurrencyPairListings         ( TreeDock                              ) :
     IT      . setText             ( 2 , UNAME                                )
     IT      . setData             ( 2 , Qt . UserRole , USAGE                )
     ##########################################################################
-    IT      . setText             (  3 , str ( PREFER  )                     )
+    IT      . setText             (  3 , PNAME                               )
     IT      . setData             (  3 , Qt . UserRole , PREFER              )
     IT      . setTextAlignment    (  3 , Qt . AlignRight                     )
     ##########################################################################
@@ -325,7 +329,7 @@ class CurrencyPairListings         ( TreeDock                              ) :
   ############################################################################
   def LoadCurrencies               ( self , DB                             ) :
     ##########################################################################
-    if                             ( len ( self . Currencies ) <= 0        ) :
+    if                             ( len ( self . Currencies ) > 0         ) :
       return
     ##########################################################################
     self . Currencies [ 0 ] = self . getMenuItem ( "NoCurrency"              )
