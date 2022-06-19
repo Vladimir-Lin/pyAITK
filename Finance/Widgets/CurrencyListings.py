@@ -117,41 +117,6 @@ class CurrencyListings             ( TreeDock                              ) :
     A    . setToolTip             ( msg                                      )
     A    . triggered . connect    ( self . OpenOrganizationNames             )
     self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Search"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/search.png" )          )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . Search                            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Crowds"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationCrowds            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Films"                                  )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/video.png" )           )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationVideos            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Identifiers"                            )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/tag.png" )             )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationIdentifiers       )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "IdentWebPage"                           )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/webfind.png" )         )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenIdentifierWebPages            )
-    self . WindowActions . append ( A                                        )
     """
     ##########################################################################
     return
