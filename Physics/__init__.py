@@ -2,10 +2,10 @@
 ##############################################################################
 ## 物理元件
 ##############################################################################
-from . Length import Length     as Length
-from . Length import LengthInfo as LengthInfo
+from . Length import Length          as Length
+from . Length import LengthConverter as LengthConverter
 ##############################################################################
 __all__ = [ "Length"                                                       , \
-            "LengthInfo"                                                   , \
+            "LengthConverter"                                              , \
             "Widgets"                                                        ]
 ##############################################################################
