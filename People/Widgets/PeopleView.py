@@ -211,7 +211,9 @@ class PeopleView                     ( IconDock                            ) :
     A    . triggered . connect    ( self . Search                            )
     self . WindowActions . append ( A                                        )
     ##########################################################################
-    self . WindowActions . addSeparator (                                    )
+    A    = QAction                (                                          )
+    A    . setSeparator           ( True                                     )
+    self . WindowActions . append ( A                                        )
     ##########################################################################
     msg  = self . getMenuItem     ( "Galleries"                              )
     A    = QAction                (                                          )
@@ -234,7 +236,9 @@ class PeopleView                     ( IconDock                            ) :
     A    . triggered . connect    ( self . OpenPeopleVideos                  )
     self . WindowActions . append ( A                                        )
     ##########################################################################
-    self . WindowActions . addSeparator (                                    )
+    A    = QAction                (                                          )
+    A    . setSeparator           ( True                                     )
+    self . WindowActions . append ( A                                        )
     ##########################################################################
     msg  = self . getMenuItem     ( "BodyShapes"                             )
     A    = QAction                (                                          )
@@ -243,7 +247,9 @@ class PeopleView                     ( IconDock                            ) :
     A    . triggered . connect    ( self . DoOpenBodyShape                   )
     self . WindowActions . append ( A                                        )
     ##########################################################################
-    self . WindowActions . addSeparator (                                    )
+    A    = QAction                (                                          )
+    A    . setSeparator           ( True                                     )
+    self . WindowActions . append ( A                                        )
     ##########################################################################
     msg  = self . getMenuItem     ( "IdentWebPage"                           )
     A    = QAction                (                                          )
@@ -1225,7 +1231,7 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     MSG = self . getMenuItem   ( "Galleries"                                 )
     ICO = QIcon                ( ":/images/galleries.png"                    )
-    mm  . addActionFromMenuWithIcon ( LOM , 24231211 , ICO , MSG             )
+    mm  . addActionFromMenuWithIcon   ( LOM , 24231211 , ICO , MSG           )
     ##########################################################################
     mm  = self . RelatedGalleriesMenu ( mm , LOM                             )
     ##########################################################################
@@ -1237,7 +1243,8 @@ class PeopleView                     ( IconDock                            ) :
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
     MSG = self . getMenuItem   ( "Videos"                                    )
-    mm  . addActionFromMenu    ( LOM , 24231411 , MSG                        )
+    ICO = QIcon                ( ":/images/video.png"                        )
+    mm  . addActionFromMenuWithIcon   ( LOM , 24231411 , ICO , MSG           )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
