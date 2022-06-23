@@ -80,6 +80,7 @@ class AbstractGui        (                                                 ) :
     self . Languages       = {                                               }
     self . Menus           = {                                               }
     self . Gui             = None
+    self . StayAlive       = True
     self . Drag            = None
     self . PassDragDrop    = True
     self . dragPoint       = None

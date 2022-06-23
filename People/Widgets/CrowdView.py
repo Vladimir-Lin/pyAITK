@@ -122,14 +122,14 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    ##########################################################################
     self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     ##########################################################################
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
-    ##########################################################################
-    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     ##########################################################################
     return
   ############################################################################
@@ -565,6 +565,8 @@ class CrowdView                   ( IconDock                               ) :
       DBA      . Close                 (                                     )
       return
     ##########################################################################
+    self       . OnBusy  . emit        (                                     )
+    ##########################################################################
     RELTAB     = self . Tables         [ "Relation"                          ]
     REL        = Relation              (                                     )
     REL        . setRelation           ( "Subordination"                     )
@@ -572,7 +574,7 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      if                               ( not self . LoopRunning            ) :
+      if                               ( not self . StayAlive              ) :
         continue
       ########################################################################
       if                               ( U not in self . UuidItemMaps      ) :
@@ -605,6 +607,7 @@ class CrowdView                   ( IconDock                               ) :
       tooltip  = f"{U}\n{SMSG}\n{GMSG}"
       self     . assignToolTip         ( item    , tooltip                   )
     ##########################################################################
+    self       . GoRelax . emit        (                                     )
     DBG        . Close                 (                                     )
     DBA        . Close                 (                                     )
     self       . Notify                ( 2                                   )

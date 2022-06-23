@@ -599,10 +599,11 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return mm
   ############################################################################
-  def AppendSearchAction     ( self , mm , Id                              ) :
+  def AppendSearchAction      ( self , mm , Id                             ) :
     ##########################################################################
-    msg = self . getMenuItem ( "Search"                                      )
-    mm  . addAction          ( Id , msg                                      )
+    msg  = self . getMenuItem ( "Search"                                     )
+    icon = QIcon              ( ":/images/search.png"                        )
+    mm   . addActionWithIcon  ( Id , icon , msg                              )
     ##########################################################################
     return mm
   ############################################################################
@@ -743,6 +744,7 @@ class IconDock                      ( ListDock                             ) :
   ############################################################################
   def Shutdown          ( self                                             ) :
     ##########################################################################
+    self . StayAlive     = False
     self . LoopRunning   = False
     self . FetchingIcons = False
     ##########################################################################

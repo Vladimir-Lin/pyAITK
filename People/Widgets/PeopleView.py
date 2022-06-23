@@ -195,25 +195,14 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareForActions             ( self                                 ) :
-    ##########################################################################
-    """
-    if                              ( self . isGrouping ( )                ) :
-      ########################################################################
-      msg  = self . getMenuItem     ( "SIG"                                  )
-      A    = QAction                (                                        )
-      A    . setIcon                ( QIcon ( ":/images/lists.png" )         )
-      A    . setToolTip             ( msg                                    )
-      A    . triggered . connect    ( self . OpenOrganizationGroup           )
-      self . WindowActions . append ( A                                      )
+  def PrepareForActions           ( self                                   ) :
     ##########################################################################
     msg  = self . Translations    [ "UI::EditNames"                          ]
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/names.png" )           )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationNames             )
+    A    . triggered . connect    ( self . OpenPeopleNames                   )
     self . WindowActions . append ( A                                        )
-    """
     ##########################################################################
     msg  = self . getMenuItem     ( "Search"                                 )
     A    = QAction                (                                          )
@@ -229,19 +218,11 @@ class PeopleView                     ( IconDock                            ) :
     A    . triggered . connect    ( self . OpenPersonalGalleries             )
     self . WindowActions . append ( A                                        )
     ##########################################################################
-    """
     msg  = self . getMenuItem     ( "Films"                                  )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/video.png" )           )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationVideos            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Identifiers"                            )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/tag.png" )             )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationIdentifiers       )
+    A    . triggered . connect    ( self . OpenPeopleVideos                  )
     self . WindowActions . append ( A                                        )
     ##########################################################################
     msg  = self . getMenuItem     ( "IdentWebPage"                           )
@@ -250,7 +231,6 @@ class PeopleView                     ( IconDock                            ) :
     A    . setToolTip             ( msg                                      )
     A    . triggered . connect    ( self . OpenIdentifierWebPages            )
     self . WindowActions . append ( A                                        )
-    """
     ##########################################################################
     return
   ############################################################################
@@ -914,6 +894,50 @@ class PeopleView                     ( IconDock                            ) :
   ############################################################################
   ############################################################################
   ############################################################################
+  ############################################################################
+  ############################################################################
+  def OpenIdentifierWebPages        ( self                                 ) :
+    ##########################################################################
+    atItem = self . currentItem     (                                        )
+    if                              ( self . NotOkay ( atItem )            ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data          ( 0 , Qt . UserRole                      )
+    uuid   = int                    ( uuid                                   )
+    self   . OpenWebPageBelongings  ( uuid , atItem , "Equivalent"           )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPeopleVideos              ( self                                 ) :
+    ##########################################################################
+    atItem = self . currentItem     (                                        )
+    if                              ( self . NotOkay ( atItem )            ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data          ( 0 , Qt . UserRole                      )
+    uuid   = int                    ( uuid                                   )
+    text   = atItem . text          (                                        )
+    icon   = atItem . icon          (                                        )
+    xsid   = str                    ( uuid                                   )
+    ##########################################################################
+    self   . ShowVideoAlbums . emit ( text , 7 , xsid , icon                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPeopleNames           ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data      ( 0 , Qt . UserRole                          )
+    uuid   = int                ( uuid                                       )
+    head   = atItem . text      ( 0                                          )
+    NAM    = self . Tables      [ "NamesEditing"                             ]
+    self   . EditAllNames       ( self , "People" , uuid , NAM               )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenItemGalleries         ( self , item                              ) :
     ##########################################################################
     uuid = item . data          ( Qt . UserRole                              )
@@ -1469,8 +1493,10 @@ class PeopleView                     ( IconDock                            ) :
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
+      ########################################################################
       NAMT = self . Tables         [ "NamesEditing"                          ]
       self . EditAllNames          ( self , "People" , uuid , NAMT           )
+      ########################################################################
       return True
     ##########################################################################
     if                             ( at == 7401                            ) :
