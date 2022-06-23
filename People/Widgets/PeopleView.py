@@ -922,7 +922,7 @@ class PeopleView                     ( IconDock                            ) :
     if                              ( self . NotOkay ( atItem )            ) :
       return
     ##########################################################################
-    uuid   = atItem . data          ( 0 , Qt . UserRole                      )
+    uuid   = atItem . data          ( Qt . UserRole                          )
     uuid   = int                    ( uuid                                   )
     self   . OpenWebPageBelongings  ( uuid , atItem , "Equivalent"           )
     ##########################################################################
@@ -934,7 +934,7 @@ class PeopleView                     ( IconDock                            ) :
     if                              ( self . NotOkay ( atItem )            ) :
       return
     ##########################################################################
-    uuid   = atItem . data          ( 0 , Qt . UserRole                      )
+    uuid   = atItem . data          ( Qt . UserRole                          )
     uuid   = int                    ( uuid                                   )
     text   = atItem . text          (                                        )
     icon   = atItem . icon          (                                        )
@@ -950,7 +950,7 @@ class PeopleView                     ( IconDock                            ) :
     if                          ( self . NotOkay ( atItem )                ) :
       return
     ##########################################################################
-    uuid   = atItem . data      ( 0 , Qt . UserRole                          )
+    uuid   = atItem . data      ( Qt . UserRole                              )
     uuid   = int                ( uuid                                       )
     head   = atItem . text      ( 0                                          )
     NAM    = self . Tables      [ "NamesEditing"                             ]
