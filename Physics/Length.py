@@ -2,7 +2,12 @@
 ##############################################################################
 ## 物理長度
 ##############################################################################
-from enum import IntEnum
+from   enum  import IntEnum
+##############################################################################
+import gmpy2
+from   gmpy2 import mpz
+from   gmpy2 import mpq
+from   gmpy2 import mpfr
 ##############################################################################
 class Length             ( IntEnum                                         ) :
   ############################################################################
@@ -70,9 +75,393 @@ class Length             ( IntEnum                                         ) :
   Pica         = 701
   Point        = 702
   Verst        = 801
-  ############################################################################
-  ############################################################################
 ##############################################################################
+PrivateAllLengths =                                                          [
+  { "Id"          : Length . Pixel                                         , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 0                                                      , \
+    "Name"        : "Pixel"                                                , \
+    "Reference"   : 0                                                      , \
+    "Conversion"  : ""                                                     } ,
+  { "Id"          : Length . Parsec                                        , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 1                                                      , \
+    "Name"        : "Parsec"                                               , \
+    "Reference"   : 5                                                      , \
+    "Conversion"  : "206265"                                               } ,
+  { "Id"          : Length . LightYear                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 1                                                      , \
+    "Name"        : "Light-Year"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "9460730472580800"                                     } ,
+  { "Id"          : Length . LightDay                                      , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 1                                                      , \
+    "Name"        : "Light-Day"                                            , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "25902068371200"                                       } ,
+  { "Id"          : Length . LightHour                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 1                                                      , \
+    "Name"        : "Light-Hour"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1079252848800"                                        } ,
+  { "Id"          : Length . AU                                            , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 1                                                      , \
+    "Name"        : "AU"                                                   , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "149597870691"                                         } ,
+  { "Id"          : Length . LightMinute                                   , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 1                                                      , \
+    "Name"        : "Light-Minute"                                         , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "17987547480"                                          } ,
+  { "Id"          : Length . LightSpeed                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 1                                                      , \
+    "Name"        : "Light-Speed"                                          , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "299792458"                                            } ,
+  { "Id"          : Length . Yottametre                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Yotta-Metre"                                          , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1000000000000000000000000"                            } ,
+  { "Id"          : Length . Zettametre                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Zetta-Metre"                                          , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1000000000000000000000"                               } ,
+  { "Id"          : Length . Exametre                                      , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Exa-Metre"                                            , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1000000000000000000"                                  } ,
+  { "Id"          : Length . Petametre                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Peta-Metre"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1000000000000000"                                     } ,
+  { "Id"          : Length . Terametre                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Tera-Metre"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1000000000000"                                        } ,
+  { "Id"          : Length . Gigametre                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Giga-Metre"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1000000000"                                           } ,
+  { "Id"          : Length . Megametre                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Mega-Metre"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1000000"                                              } ,
+  { "Id"          : Length . Kilometer                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Kilo-Metre"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1000"                                                 } ,
+  { "Id"          : Length . Hectometre                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Hecto-Metre"                                          , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "100"                                                  } ,
+  { "Id"          : Length . Decametre                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Deca-Metre"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "10"                                                   } ,
+  { "Id"          : Length . Meter                                         , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Meter"                                                , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "1000000000000000"                                     } ,
+  { "Id"          : Length . Decimeter                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Deci-Meter"                                           , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "100000000000000"                                      } ,
+  { "Id"          : Length . Centimeter                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Centi-Meter"                                          , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "10000000000000"                                       } ,
+  { "Id"          : Length . Millimeter                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Milli-Meter"                                          , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "1000000000000"                                        } ,
+  { "Id"          : Length . Micrometre                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Micro-Metre"                                          , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "1000000000"                                           } ,
+  { "Id"          : Length . Nanometer                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Nano-Meter"                                           , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "1000000"                                              } ,
+  { "Id"          : Length . Angstrom                                      , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Angstrom"                                             , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "100000"                                               } ,
+  { "Id"          : Length . Picometre                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Pico-Metre"                                           , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "1000"                                                 } ,
+  { "Id"          : Length . Fermi                                         , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Fermi"                                                , \
+    "Reference"   : 123                                                    , \
+    "Conversion"  : "1000000000000000000"                                  } ,
+  { "Id"          : Length . Attometer                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Atto-Meter"                                           , \
+    "Reference"   : 123                                                    , \
+    "Conversion"  : "1000000000000000"                                     } ,
+  { "Id"          : Length . Zeptometre                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Zepto-Metre"                                          , \
+    "Reference"   : 123                                                    , \
+    "Conversion"  : "1000000000000"                                        } ,
+  { "Id"          : Length . Yoctometre                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Yocto-Metre"                                          , \
+    "Reference"   : 123                                                    , \
+    "Conversion"  : "1000000000"                                           } ,
+  { "Id"          : Length . SuperString                                   , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Super-String"                                         , \
+    "Reference"   : 126                                                    , \
+    "Conversion"  : "1000000000000"                                        } ,
+  { "Id"          : Length . Planck                                        , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Planck"                                               , \
+    "Reference"   : 126                                                    , \
+    "Conversion"  : "1000000000"                                           } ,
+  { "Id"          : Length . MilliPlanck                                   , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Milli-Planck"                                         , \
+    "Reference"   : 126                                                    , \
+    "Conversion"  : "1000000"                                              } ,
+  { "Id"          : Length . NanoPlanck                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Nano-Planck"                                          , \
+    "Reference"   : 127                                                    , \
+    "Conversion"  : "100000000000000000000000000000000000"                 } ,
+  { "Id"          : Length . Preon                                         , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Preon"                                                , \
+    "Reference"   : 0                                                      , \
+    "Conversion"  : ""                                                     } ,
+  { "Id"          : Length . Mile                                          , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Mile"                                                 , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "63360"                                                } ,
+  { "Id"          : Length . Furlong                                       , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Furlong"                                              , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "7920"                                                 } ,
+  { "Id"          : Length . Chain                                         , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Chain"                                                , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "792"                                                  } ,
+  { "Id"          : Length . Rod                                           , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Rod"                                                  , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "198"                                                  } ,
+  { "Id"          : Length . Perch                                         , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Perch"                                                , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "198"                                                  } ,
+  { "Id"          : Length . Pole                                          , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Pole"                                                 , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "198"                                                  } ,
+  { "Id"          : Length . Lug                                           , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Lug"                                                  , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "198"                                                  } ,
+  { "Id"          : Length . Fathom                                        , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Fathom"                                               , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "72"                                                   } ,
+  { "Id"          : Length . Yard                                          , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Yard"                                                 , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "36"                                                   } ,
+  { "Id"          : Length . Foot                                          , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Foot"                                                 , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "12"                                                   } ,
+  { "Id"          : Length . Hand                                          , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Foot"                                                 , \
+    "Reference"   : 212                                                    , \
+    "Conversion"  : "4"                                                    } ,
+  { "Id"          : Length . Inch                                          , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 3                                                      , \
+    "Name"        : "Inch"                                                 , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "25400000000000"                                       } ,
+  { "Id"          : Length . ChineseLi                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 4                                                      , \
+    "Name"        : "Chinese-Li"                                           , \
+    "Reference"   : 307                                                    , \
+    "Conversion"  : "150000"                                               } ,
+  { "Id"          : Length . ChineseYin                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 4                                                      , \
+    "Name"        : "Chinese-Yin"                                          , \
+    "Reference"   : 307                                                    , \
+    "Conversion"  : "10000"                                                } ,
+  { "Id"          : Length . ChineseZhang                                  , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 4                                                      , \
+    "Name"        : "Chinese-Zhang"                                        , \
+    "Reference"   : 307                                                    , \
+    "Conversion"  : "1000"                                                 } ,
+  { "Id"          : Length . ChineseBu                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 4                                                      , \
+    "Name"        : "Chinese-Bu"                                           , \
+    "Reference"   : 307                                                    , \
+    "Conversion"  : "500"                                                  } ,
+  { "Id"          : Length . ChineseChi                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 4                                                      , \
+    "Name"        : "Chinese-Chi"                                          , \
+    "Reference"   : 307                                                    , \
+    "Conversion"  : "100"                                                  } ,
+  { "Id"          : Length . ChineseCun                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 4                                                      , \
+    "Name"        : "Chinese-Cun"                                          , \
+    "Reference"   : 307                                                    , \
+    "Conversion"  : "10"                                                   } ,
+  { "Id"          : Length . ChineseFen                                    , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 4                                                      , \
+    "Name"        : "Chinese-Fen"                                          , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "10000000000000/3"                                     } ,
+  { "Id"          : Length . TangBigFoot                                   , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 4                                                      , \
+    "Name"        : "Tang-Big-Foot"                                        , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "296000000000000"                                      } ,
+  { "Id"          : Length . KoreanChi                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 5                                                      , \
+    "Name"        : "Korean-Chi"                                           , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "356000000000000"                                      } ,
+  { "Id"          : Length . YojanaMin                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 6                                                      , \
+    "Name"        : "Yojana-Min"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "13000"                                                } ,
+  { "Id"          : Length . Yojana                                        , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 6                                                      , \
+    "Name"        : "Yojana"                                               , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "14600"                                                } ,
+  { "Id"          : Length . YojanaMax                                     , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 6                                                      , \
+    "Name"        : "Yojana-Max"                                           , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "16000"                                                } ,
+  { "Id"          : Length . Nautical                                      , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 7                                                      , \
+    "Name"        : "Nautical"                                             , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "1852"                                                 } ,
+  { "Id"          : Length . Rig                                           , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 7                                                      , \
+    "Name"        : "Rig"                                                  , \
+    "Reference"   : 111                                                    , \
+    "Conversion"  : "5556"                                                 } ,
+  { "Id"          : Length . Pica                                          , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 8                                                      , \
+    "Name"        : "Pica"                                                 , \
+    "Reference"   : 702                                                    , \
+    "Conversion"  : "12"                                                   } ,
+  { "Id"          : Length . Point                                         , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 8                                                      , \
+    "Name"        : "Point"                                                , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "12700000000000/36"                                    } ,
+  { "Id"          : Length . Verst                                         , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 9                                                      , \
+    "Name"        : "Verst"                                                , \
+    "Reference"   : 119                                                    , \
+    "Conversion"  : "1066800000000000000"                                    }
+]
 """
 typedef enum       {
   Pixel       =   0, /* Not actual unit, used on computer rendition */
@@ -154,15 +543,353 @@ typedef enum       {
 } Unit             ;
 """
 ##############################################################################
-class LengthConverter (                                                    ) :
+class LengthConverter          (                                           ) :
   ############################################################################
-  def __init__        ( self                                               ) :
+  def __init__                 ( self                                      ) :
+    ##########################################################################
+    self . InitializeConverter (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def __del__                  ( self                                      ) :
     ##########################################################################
     ##########################################################################
     return
   ############################################################################
-  def __del__         ( self                                               ) :
+  def InitializeConverter       ( self                                     ) :
     ##########################################################################
+    global PrivateAllLengths
+    ##########################################################################
+    self . Denominator = ""
+    self . Numerator   = ""
+    self . FromUnit    = ""
+    self . ToUnit      = ""
+    self . Base        = 6810000000001000000
+    ##########################################################################
+    self . Units       =        [                                            ]
+    self . Uuids       =        [                                            ]
+    self . Names       =        {                                            }
+    self . Profiles    =        {                                            }
+    self . NameToIds   =        {                                            }
+    self . UuidToIds   =        {                                            }
+    ##########################################################################
+    for L in PrivateAllLengths                                               :
+      ########################################################################
+      ID               = int    ( L [ "Id"                                 ] )
+      UUID             = int    ( self . Base + ID                           )
+      CATALOG          = int    ( L [ "Catalog"                            ] )
+      NAME             = L      [ "Name"                                     ]
+      REFERENCE        = int    ( L [ "Reference"                          ] )
+      CONVERSION       = L      [ "Conversion"                               ]
+      ########################################################################
+      J                =        { "Uuid"       : UUID                      , \
+                                  "Catalog"    : CATALOG                   , \
+                                  "Name"       : NAME                      , \
+                                  "Reference"  : REFERENCE                 , \
+                                  "Conversion" : CONVERSION                  }
+      ########################################################################
+      self . Units     . append ( ID                                         )
+      self . Uuids     . append ( UUID                                       )
+      self . addName            ( NAME , ID                                  )
+      ########################################################################
+      self . Names     [ ID   ] = NAME
+      self . Profiles  [ ID   ] = J
+      self . UuidToIds [ UUID ] = ID
+    ##########################################################################
+    self   . addName            ( "km"          , Length . Kilometer         )
+    self   . addName            ( "m"           , Length . Meter             )
+    self   . addName            ( "cm"          , Length . Centimeter        )
+    self   . addName            ( "mm"          , Length . Millimeter        )
+    self   . addName            ( "nm"          , Length . Nanometer         )
+    self   . addName            ( "Å"           , Length . Angstrom          )
+    self   . addName            ( "å"           , Length . Angstrom          )
+    self   . addName            ( "fm"          , Length . Fermi             )
+    self   . addName            ( "Femto-Metre" , Length . Fermi             )
     ##########################################################################
     return
+  ############################################################################
+  def addName                    ( self , NAME , ID                        ) :
+    ##########################################################################
+    K    = NAME
+    K    = K . lower             (                                           )
+    self . NameToIds [ K ] = int ( ID                                        )
+    ##########################################################################
+    K    = NAME
+    K    = K . replace           ( "-" , ""                                  )
+    K    = K . lower             (                                           )
+    self . NameToIds [ K ] = int ( ID                                        )
+    ##########################################################################
+    K    = NAME
+    K    = K . replace           ( "-" , " "                                 )
+    K    = K . lower             (                                           )
+    self . NameToIds [ K ] = int ( ID                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def TraceUnit                  ( self , ID                               ) :
+    ##########################################################################
+    LISTS     =                  [                                           ]
+    ##########################################################################
+    if                           ( ID not in self . Profiles               ) :
+      return LISTS
+    ##########################################################################
+    RID       = self . Profiles  [ ID ] [ "Reference"                        ]
+    ##########################################################################
+    LISTS     . append           ( ID                                        )
+    if                           ( RID <= 0                                ) :
+      return LISTS
+    ##########################################################################
+    TAILs     = self . TraceUnit ( RID                                       )
+    ##########################################################################
+    if                           ( len ( TAILs ) > 0                       ) :
+      ########################################################################
+      for T in TAILs                                                         :
+        ######################################################################
+        LISTS . append           ( T                                         )
+    ##########################################################################
+    return LISTS
+  ############################################################################
+  def LongMultiply      ( self , A , B                                     ) :
+    ##########################################################################
+    if                  ( len ( A ) <= 0                                   ) :
+      return B
+    ##########################################################################
+    if                  ( len ( B ) <= 0                                   ) :
+      return A
+    ##########################################################################
+    AV = mpz            ( A                                                  )
+    BV = mpz            ( B                                                  )
+    CV = gmpy2 . mul    ( AV , BV                                            )
+    DS = gmpy2 . digits ( CV , 10                                            )
+    ##########################################################################
+    return DS
+  ############################################################################
+  def ConvertMPZ           ( self , PLEN , Denominator , Numerator         ) :
+    ##########################################################################
+    S   = mpz              ( f"{PLEN}"                                       )
+    D   = mpz              ( Denominator                                     )
+    R   = gmpy2 . mul      ( S , D                                           )
+    ##########################################################################
+    if                     ( len ( Numerator ) > 0                         ) :
+      ########################################################################
+      N = mpz              ( Numerator                                       )
+      R = gmpy2 . divexact ( R , N                                           )
+    ##########################################################################
+    return R
+  ############################################################################
+  def ConvertMPFR     ( self , PLEN , Denominator , Numerator              ) :
+    ##########################################################################
+    S   = mpfr        ( f"{PLEN}"                                            )
+    D   = mpfr        ( Denominator                                          )
+    R   = gmpy2 . mul ( S , D                                                )
+    ##########################################################################
+    if                ( len ( Numerator ) > 0                              ) :
+      ########################################################################
+      N = mpfr        ( Numerator                                            )
+      R = gmpy2 . div ( R , N                                                )
+    ##########################################################################
+    return R
+  ############################################################################
+  def GetConverter                  ( self , LISTS , AT                    ) :
+    ##########################################################################
+    ATV   = int                     ( AT                                     )
+    D     = ""
+    N     = ""
+    ##########################################################################
+    for V in LISTS                                                           :
+      ########################################################################
+      CDS = self . Profiles [ V ]   [ "Conversion"                           ]
+      ########################################################################
+      if                            ( len ( CDS ) > 0                      ) :
+        ######################################################################
+        if                          ( "/" in CDS                           ) :
+          ####################################################################
+          CDK = CDS . split         ( "/"                                    )
+          DV  = CDK                 [ 0                                      ]
+          NV  = CDK                 [ 1                                      ]
+          ####################################################################
+          D   = self . LongMultiply ( D , DV                                 )
+          N   = self . LongMultiply ( N , NV                                 )
+          ####################################################################
+        else                                                                 :
+          ####################################################################
+          D   = self . LongMultiply ( D , CDS                                )
+      ########################################################################
+      if                            ( ATV == V                             ) :
+        return                      ( D  , N ,                               )
+    ##########################################################################
+    return                          ( "" , "" ,                              )
+  ############################################################################
+  def MatchAnchor ( self , A , B                                           ) :
+    ##########################################################################
+    for V in A                                                               :
+      ########################################################################
+      if          ( V in B                                                 ) :
+        return V
+    ##########################################################################
+    return -1
+  ############################################################################
+  def GetUnitId             ( self , NAME                                  ) :
+    ##########################################################################
+    K = NAME
+    K = K . lower           (                                                )
+    ##########################################################################
+    if                      ( K not in self . NameToIds                    ) :
+      return -1
+    ##########################################################################
+    return self . NameToIds [ K                                              ]
+  ############################################################################
+  def SimplifyGMP             ( self , D , N                               ) :
+    ##########################################################################
+    if                        ( len ( D ) <= 0                             ) :
+      return                  ( D , N ,                                      )
+    ##########################################################################
+    if                        ( len ( N ) <= 0                             ) :
+      return                  ( D  , N  ,                                    )
+    ##########################################################################
+    DZ     = mpz              ( D                                            )
+    NZ     = mpz              ( N                                            )
+    RZ     = gmpy2 . f_mod    ( DZ , NZ                                      )
+    if                        ( RZ == 0                                    ) :
+      ########################################################################
+      XZ   = gmpy2 . divexact ( DZ , NZ                                      )
+      ########################################################################
+      return                  ( gmpy2 . digits ( XZ , 10 ) , ""              )
+    ##########################################################################
+    LZ     = gmpy2 . gcd      ( DZ , NZ                                      )
+    DM     = gmpy2 . divexact ( DZ , LZ                                      )
+    NM     = gmpy2 . divexact ( NZ , LZ                                      )
+    ##########################################################################
+    DV     = gmpy2 . digits   ( DM , 10                                      )
+    NV     = gmpy2 . digits   ( NM , 10                                      )
+    ##########################################################################
+    return                    ( DV , NV ,                                    )
+  ############################################################################
+  def PrepareUnit               ( self , FROMU , TOU                       ) :
+    ##########################################################################
+    if                          ( len ( FROMU ) <= 0                       ) :
+      return                    ( False , "" , ""                            )
+    ##########################################################################
+    if                          ( len ( TOU   ) <= 0                       ) :
+      return                    ( False , "" , ""                            )
+    ##########################################################################
+    FID   = self . GetUnitId    ( FROMU                                      )
+    ##########################################################################
+    if                          ( FID < 0                                  ) :
+      return                    ( False , "" , ""                            )
+    ##########################################################################
+    TID   = self . GetUnitId    ( TOU                                        )
+    ##########################################################################
+    if                          ( TID < 0                                  ) :
+      return                    ( False , "" , ""                            )
+    ##########################################################################
+    LA    = self . TraceUnit    ( FID                                        )
+    ##########################################################################
+    if                          ( len ( LA ) <= 0                          ) :
+      return                    ( False , "" , ""                            )
+    ##########################################################################
+    LB    = self . TraceUnit    ( TID                                        )
+    ##########################################################################
+    if                          ( len ( LB ) <= 0                          ) :
+      return                    ( False , "" , ""                            )
+    ##########################################################################
+    AT    = self . MatchAnchor  ( LA , LB                                    )
+    ##########################################################################
+    if                          ( AT < 0                                   ) :
+      return                    ( False , "" , ""                            )
+    ##########################################################################
+    RA    = self . GetConverter ( LA , AT                                    )
+    RB    = self . GetConverter ( LB , AT                                    )
+    ##########################################################################
+    D     = self . LongMultiply ( RA [ 0 ] , RB [ 1 ]                        )
+    N     = self . LongMultiply ( RB [ 0 ] , RA [ 1 ]                        )
+    ##########################################################################
+    RR    = self . SimplifyGMP  ( D , N                                      )
+    D     = RR                  [ 0                                          ]
+    N     = RR                  [ 1                                          ]
+    ##########################################################################
+    return                      ( True , D , N                               )
+  ############################################################################
+  def setFromUnit             ( self , NAME                                ) :
+    ##########################################################################
+    self . FromUnit = NAME
+    RR   = self . PrepareUnit ( self . FromUnit , self . ToUnit              )
+    ##########################################################################
+    self . Denominator = RR   [ 1                                            ]
+    self . Numerator   = RR   [ 2                                            ]
+    ##########################################################################
+    return RR                 [ 0                                            ]
+  ############################################################################
+  def setToUnit               ( self , NAME                                ) :
+    ##########################################################################
+    self . ToUnit = NAME
+    RR   = self . PrepareUnit ( self . FromUnit , self . ToUnit              )
+    ##########################################################################
+    self . Denominator = RR   [ 1                                            ]
+    self . Numerator   = RR   [ 2                                            ]
+    ##########################################################################
+    return RR                 [ 0                                            ]
+  ############################################################################
+  def setConverter            ( self , FROMU , TOU                         ) :
+    ##########################################################################
+    self . FromUnit = FROMU
+    self . ToUnit   = TOU
+    RR   = self . PrepareUnit ( self . FromUnit , self . ToUnit              )
+    ##########################################################################
+    self . Denominator = RR   [ 1                                            ]
+    self . Numerator   = RR   [ 2                                            ]
+    ##########################################################################
+    return RR                 [ 0                                            ]
+  ############################################################################
+  def toMPZ                   ( self , PLEN                                ) :
+    return self . ConvertMPZ  ( PLEN , self . Denominator , self . Numerator )
+    ##########################################################################
+    return float              ( R                                            )
+  ############################################################################
+  def toMPFR                  ( self , PLEN                                ) :
+    return self . ConvertMPFR ( PLEN , self . Denominator , self . Numerator )
+  ############################################################################
+  def toInt               ( self , PLEN                                    ) :
+    ##########################################################################
+    R = self . ConvertMPZ ( PLEN , self . Denominator , self . Numerator     )
+    ##########################################################################
+    return int            ( gmpy2 . digits ( R , 10 )                        )
+  ############################################################################
+  def toFloat              ( self , PLEN                                   ) :
+    ##########################################################################
+    R = self . ConvertMPFR ( PLEN , self . Denominator , self . Numerator    )
+    ##########################################################################
+    return float              ( R                                            )
+  ############################################################################
+  def ConvertToInt          ( self , PLEN , FromUnit , ToUnit              ) :
+    ##########################################################################
+    RR = self . PrepareUnit ( FromUnit , ToUnit                              )
+    ##########################################################################
+    if                      ( not RR [ 0 ]                                 ) :
+      return 0
+    ##########################################################################
+    D  = RR                 [ 1                                              ]
+    N  = RR                 [ 2                                              ]
+    ##########################################################################
+    Z  = self . ConvertMPZ  ( PLEN , D , N                                   )
+    ##########################################################################
+    return int              ( gmpy2 . digits ( Z , 10 )                      )
+  ############################################################################
+  def ConvertToFloat        ( self , PLEN , FromUnit , ToUnit              ) :
+    ##########################################################################
+    RR = self . PrepareUnit ( FromUnit , ToUnit                              )
+    ##########################################################################
+    if                      ( not RR [ 0 ]                                 ) :
+      return 0.0
+    ##########################################################################
+    D  = RR                 [ 1                                              ]
+    N  = RR                 [ 2                                              ]
+    ##########################################################################
+    Z  = self . ConvertMPFR ( PLEN , D , N                                   )
+    ##########################################################################
+    return float            ( Z                                              )
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
 ##############################################################################
