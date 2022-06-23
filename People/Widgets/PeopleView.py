@@ -211,6 +211,8 @@ class PeopleView                     ( IconDock                            ) :
     A    . triggered . connect    ( self . Search                            )
     self . WindowActions . append ( A                                        )
     ##########################################################################
+    self . WindowActions . addSeparator (                                    )
+    ##########################################################################
     msg  = self . getMenuItem     ( "Galleries"                              )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/galleries.png" )       )
@@ -218,12 +220,30 @@ class PeopleView                     ( IconDock                            ) :
     A    . triggered . connect    ( self . OpenPersonalGalleries             )
     self . WindowActions . append ( A                                        )
     ##########################################################################
-    msg  = self . getMenuItem     ( "Films"                                  )
+    msg  = self . getMenuItem     ( "PersonalGallery"                        )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenPersonalGallery               )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Videos"                                 )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/video.png" )           )
     A    . setToolTip             ( msg                                      )
     A    . triggered . connect    ( self . OpenPeopleVideos                  )
     self . WindowActions . append ( A                                        )
+    ##########################################################################
+    self . WindowActions . addSeparator (                                    )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "BodyShapes"                             )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/android.png" )         )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . DoOpenBodyShape                   )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    self . WindowActions . addSeparator (                                    )
     ##########################################################################
     msg  = self . getMenuItem     ( "IdentWebPage"                           )
     A    = QAction                (                                          )
@@ -961,6 +981,39 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenPersonalGallery               ( self                             ) :
+    ##########################################################################
+    atItem = self . currentItem         (                                    )
+    ##########################################################################
+    if                                  ( self . NotOkay ( atItem )        ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data              ( Qt . UserRole                      )
+    uuid   = int                        ( uuid                               )
+    text   = atItem . text              (                                    )
+    icon   = atItem . icon              (                                    )
+    xsid   = str                        ( uuid                               )
+    ##########################################################################
+    self   . ShowPersonalGallery . emit ( text , 7 , xsid , icon             )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoOpenBodyShape             ( self                                   ) :
+    ##########################################################################
+    atItem = self . currentItem   (                                          )
+    ##########################################################################
+    if                            ( self . NotOkay ( atItem )              ) :
+      return
+    ##########################################################################
+    uuid   = atItem . data        ( Qt . UserRole                            )
+    uuid   = int                  ( uuid                                     )
+    text   = atItem . text        (                                          )
+    xsid   = str                  ( uuid                                     )
+    ##########################################################################
+    self   . OpenBodyShape . emit ( text , xsid , { }                        )
+    ##########################################################################
+    return
+  ############################################################################
   def OpenWebPageListings          ( self , Related                        ) :
     ##########################################################################
     if                             ( not self . isGrouping ( )             ) :
@@ -1108,46 +1161,47 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return False
   ############################################################################
-  def RelatedGalleriesMenu       ( self , mm , Menu                        ) :
+  def RelatedGalleriesMenu           ( self , mm , Menu                    ) :
     ##########################################################################
-    MSG = self . getMenuItem     ( "RelatedGalleries"                        )
-    LOM = mm   . addMenuFromMenu ( Menu , MSG                                )
+    MSG  = self . getMenuItem        ( "RelatedGalleries"                    )
+    LOM  = mm   . addMenuFromMenu    ( Menu , MSG                            )
     ##########################################################################
-    MSG = self . getMenuItem     ( "PersonalGallery"                         )
-    mm  . addActionFromMenu      ( LOM , 24231311 , MSG                      )
+    MSG  = self . getMenuItem        ( "PersonalGallery"                     )
+    icon = QIcon                     ( ":/images/gallery.png"                )
+    mm   . addActionFromMenuWithIcon ( LOM , 24231311 , icon , MSG           )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Icons"                                   )
-    mm  . addActionFromMenu      ( LOM , 24231312 , MSG                      )
+    MSG  = self . getMenuItem        ( "Icons"                               )
+    mm   . addActionFromMenu         ( LOM , 24231312 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Faces"                                   )
-    mm  . addActionFromMenu      ( LOM , 24231313 , MSG                      )
+    MSG  = self . getMenuItem        ( "Faces"                               )
+    mm   . addActionFromMenu         ( LOM , 24231313 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Mouth"                                   )
-    mm  . addActionFromMenu      ( LOM , 24231314 , MSG                      )
+    MSG  = self . getMenuItem        ( "Mouth"                               )
+    mm   . addActionFromMenu         ( LOM , 24231314 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Eyes"                                    )
-    mm  . addActionFromMenu      ( LOM , 24231315 , MSG                      )
+    MSG  = self . getMenuItem        ( "Eyes"                                )
+    mm   . addActionFromMenu         ( LOM , 24231315 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Iris"                                    )
-    mm  . addActionFromMenu      ( LOM , 24231316 , MSG                      )
+    MSG  = self . getMenuItem        ( "Iris"                                )
+    mm   . addActionFromMenu         ( LOM , 24231316 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Nose"                                    )
-    mm  . addActionFromMenu      ( LOM , 24231317 , MSG                      )
+    MSG  = self . getMenuItem        ( "Nose"                                )
+    mm   . addActionFromMenu         ( LOM , 24231317 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Tits"                                    )
-    mm  . addActionFromMenu      ( LOM , 24231318 , MSG                      )
+    MSG  = self . getMenuItem        ( "Tits"                                )
+    mm   . addActionFromMenu         ( LOM , 24231318 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Umbilicus"                               )
-    mm  . addActionFromMenu      ( LOM , 24231319 , MSG                      )
+    MSG  = self . getMenuItem        ( "Umbilicus"                           )
+    mm   . addActionFromMenu         ( LOM , 24231319 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Pussy"                                   )
-    mm  . addActionFromMenu      ( LOM , 24231320 , MSG                      )
+    MSG  = self . getMenuItem        ( "Pussy"                               )
+    mm   . addActionFromMenu         ( LOM , 24231320 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Tattoo"                                  )
-    mm  . addActionFromMenu      ( LOM , 24231321 , MSG                      )
+    MSG  = self . getMenuItem        ( "Tattoo"                              )
+    mm   . addActionFromMenu         ( LOM , 24231321 , MSG                  )
     ##########################################################################
-    MSG = self . getMenuItem     ( "Texture"                                 )
-    mm  . addActionFromMenu      ( LOM , 24231322 , MSG                      )
+    MSG  = self . getMenuItem        ( "Texture"                             )
+    mm   . addActionFromMenu         ( LOM , 24231322 , MSG                  )
     ##########################################################################
     return mm
   ############################################################################
