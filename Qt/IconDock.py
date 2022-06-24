@@ -909,6 +909,9 @@ class IconDock                      ( ListDock                             ) :
   @pyqtSlot                            (                                     )
   def DoActualSearch                   ( self                              ) :
     ##########################################################################
+    qApp   . processEvents             (                                     )
+    time   . sleep                     ( 0.2                                 )
+    ##########################################################################
     L      = LineEdit                  ( None , self . PlanFunc              )
     OK     = self . attacheStatusBar   ( L , 1                               )
     ##########################################################################
