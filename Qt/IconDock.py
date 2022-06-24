@@ -70,6 +70,7 @@ class IconDock                      ( ListDock                             ) :
   emitAllIcons        = pyqtSignal  ( dict                                   )
   emitAssignIcon      = pyqtSignal  ( QListWidgetItem , QIcon                )
   emitEmptySelections = pyqtSignal  (                                        )
+  emitDoSearch        = pyqtSignal  (                                        )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
@@ -115,6 +116,7 @@ class IconDock                      ( ListDock                             ) :
     self . emitIconsShow  . connect ( self . ShowIconDock                    )
     self . emitAllIcons   . connect ( self . refresh                         )
     self . emitAssignIcon . connect ( self . AssignIcon                      )
+    self . emitDoSearch   . connect ( self . DoActualSearch                  )
     self . emitEmptySelections . connect ( self . doEmptySelections          )
     ##########################################################################
     return
@@ -905,7 +907,7 @@ class IconDock                      ( ListDock                             ) :
     return
   ############################################################################
   @pyqtSlot                            (                                     )
-  def Search                           ( self                              ) :
+  def DoActualSearch                   ( self                              ) :
     ##########################################################################
     L      = LineEdit                  ( None , self . PlanFunc              )
     OK     = self . attacheStatusBar   ( L , 1                               )
@@ -928,6 +930,13 @@ class IconDock                      ( ListDock                             ) :
     L      . setFocus                  ( Qt . TabFocusReason                 )
     ##########################################################################
     self   . SearchLine = L
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                    (                                             )
+  def Search                   ( self                                      ) :
+    ##########################################################################
+    self . emitDoSearch . emit (                                             )
     ##########################################################################
     return
   ############################################################################
