@@ -110,7 +110,7 @@ class HairColorListings    ( TreeDock                                      ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 280 , 480 )                       )
+    return self . SizeSuggestion ( QSize ( 240 , 400 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
