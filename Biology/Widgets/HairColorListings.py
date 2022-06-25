@@ -378,12 +378,16 @@ class HairColorListings    ( TreeDock                                      ) :
       return False
     ##########################################################################
     GDN         = False
+    RDN         = False
     if                                  ( Newbie                           ) :
       GDN       = True
     elif                                ( "Mime" not in self . DropInJSON  ) :
       GDN       = True
+    else                                                                     :
+      RDN       = True
     ##########################################################################
     if                                  ( GDN                              ) :
+      ########################################################################
       RDN       = self . RegularDropNew ( mimeData                           )
       if                                ( not RDN                          ) :
         return False
