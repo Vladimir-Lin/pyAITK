@@ -47,6 +47,13 @@ from         . LineEdit               import LineEdit    as LineEdit
 from         . ComboBox               import ComboBox    as ComboBox
 from         . SpinBox                import SpinBox     as SpinBox
 ##############################################################################
+from   AITK  . Essentials . Relation  import Relation    as Relation
+from   AITK  . Calendars  . StarDate  import StarDate    as StarDate
+from   AITK  . Calendars  . Periode   import Periode     as Periode
+from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
+from   AITK  . Videos     . Album     import Album       as AlbumItem
+from   AITK  . People     . People    import People      as PeopleItem
+##############################################################################
 class TreeDock                ( TreeWidget , AttachDock                    ) :
   ############################################################################
   attachNone  = pyqtSignal    ( QWidget                                      )
@@ -917,5 +924,32 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return
   ############################################################################
+  def AppendingPictures        ( self , atUuid , NAME , JSON , table , T1  ) :
+    ##########################################################################
+    UUIDs  = JSON              [ "UUIDs"                                     ]
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return False
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( self . NotOkay ( DB )                     ) :
+      return False
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ table                                       ]
+    GALM   = GalleryItem       (                                             )
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    GALM   . ConnectToPictures ( DB , RELTAB , atUuid , T1 , UUIDs           )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . Notify            ( 5                                           )
+    ##########################################################################
+    return True
   ############################################################################
 ##############################################################################

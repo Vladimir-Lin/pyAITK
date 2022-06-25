@@ -314,7 +314,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
       return True
     ##########################################################################
     atItem = self . itemAt ( mousePos                                        )
-    if                     ( atItem in [ False , None ]                    ) :
+    if                     ( self . NotOkay ( atItem )                     ) :
       return False
     if                     ( atItem . isSelected ( )                       ) :
       return False
@@ -562,6 +562,18 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
         UUIDs . append            ( UUID                                     )
     ##########################################################################
     return UUIDs
+  ############################################################################
+  def itemAtPos            ( self , pos , column , tcolumn                 ) :
+    ##########################################################################
+    atItem = self . itemAt ( pos                                             )
+    ATID   = 0
+    TEXT   = ""
+    ##########################################################################
+    if                     ( self . IsOkay ( atItem )                      ) :
+      ATID = atItem . data ( column , Qt . UserRole                          )
+      TEXT = atItem . text ( tcolumn                                         )
+    ##########################################################################
+    return ATID , TEXT
   ############################################################################
   def uuidAtItem                  ( self , UUID , column = 0               ) :
     ##########################################################################

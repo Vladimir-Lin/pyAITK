@@ -1318,7 +1318,7 @@ class IconDock                      ( ListDock                             ) :
       return False
     ##########################################################################
     DB     = self . ConnectDB  (                                             )
-    if                         ( DB == None                                ) :
+    if                         ( self . NotOkay ( DB )                     ) :
       return False
     ##########################################################################
     self   . OnBusy  . emit    (                                             )

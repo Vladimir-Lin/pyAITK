@@ -314,11 +314,11 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
+  def allowedMimeTypes     ( self , mime                                   ) :
     ##########################################################################
     formats = "people/uuids;picture/uuids"
     ##########################################################################
-    return self . MimeType    ( mime , formats                               )
+    return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     return self . dropHandler ( sourceWidget , self , mimeData               )

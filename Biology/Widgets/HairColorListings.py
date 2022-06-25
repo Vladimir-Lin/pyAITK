@@ -199,8 +199,6 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return IT
   ############################################################################
-  ############################################################################
-  ############################################################################
   @pyqtSlot                (        str  , int     , int                     )
   def AssignAmounts        ( self , UUID , Amounts , Column                ) :
     ##########################################################################
@@ -330,9 +328,11 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
+  def allowedMimeTypes     ( self , mime                                   ) :
+    ##########################################################################
+    formats = "people/uuids;picture/uuids"
+    ##########################################################################
+    return self . MimeType ( mime , formats                                  )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
     ##########################################################################
@@ -341,107 +341,134 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def dropNew                            ( self                            , \
+                                           sourceWidget                    , \
+                                           mimeData                        , \
+                                           mousePos                        ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
+    if                                   ( self == sourceWidget            ) :
       return False
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
+    RDN     = self . RegularDropNew      ( mimeData                          )
+    if                                   ( not RDN                         ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    mtype   = self . DropInJSON          [ "Mime"                            ]
+    UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
     ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    atItem  = self . itemAt              ( mousePos                          )
+    if                                   ( self . NotOkay ( atItem )       ) :
+      return False
+    ##########################################################################
+    if                                   ( mtype in [ "people/uuids" ]     ) :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
+      title = sourceWidget . windowTitle (                                   )
+      CNT   = len                        ( UUIDs                             )
+      FMT   = self . getMenuItem         ( "Copying"                         )
+      MSG   = FMT  . format              ( title , CNT                       )
+      ########################################################################
+      self  . ShowStatus                 ( MSG                               )
+    ##########################################################################
+    elif                                 ( mtype in [ "picture/uuids" ]    ) :
+      ########################################################################
+      title = sourceWidget . windowTitle (                                   )
+      CNT   = len                        ( UUIDs                             )
+      FMT   = self . getMenuItem         ( "GetPictures"                     )
+      MSG   = FMT  . format              ( title , CNT                       )
+      ########################################################################
+      self  . ShowStatus                 ( MSG                               )
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+  def dropMoving           ( self , sourceWidget , mimeData , mousePos     ) :
     ##########################################################################
-    if                         ( self . droppingAction                     ) :
+    if                     ( self . droppingAction                         ) :
       return False
     ##########################################################################
-    if                         ( sourceWidget != self                      ) :
+    if                     ( sourceWidget == self                          ) :
       return True
     ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
+    atItem = self . itemAt ( mousePos                                        )
     ##########################################################################
+    if                     ( self . NotOkay ( atItem )                     ) :
+      return False
     ##########################################################################
     return True
   ############################################################################
   def acceptPeopleDrop         ( self                                      ) :
     return True
   ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
+  def dropPeople                   ( self , source , pos , JSOX            ) :
     ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("SexualityListings::dropPeople")
-    print(JSOX)
-    if ( atItem is not None ) :
-      UUID = atItem . data ( 0 , Qt . UserRole )
-      print("TO : " , UUID , " => " , atItem . text ( 0 ) )
+    HUID , NAME = self . itemAtPos ( pos , 0 , 0                             )
+    if                             ( HUID <= 0                             ) :
+      return True
+    ##########################################################################
+    ## 從外部加入
+    ##########################################################################
+    VAL         =                  ( HUID , NAME , JSOX ,                    )
+    self        . Go               ( self . PeopleAppending , VAL            )
     ##########################################################################
     return True
   ############################################################################
-  def AssureUuidItem               ( self , item , uuid , name             ) :
+  def acceptPictureDrop        ( self                                      ) :
+    return True
+  ############################################################################
+  def dropPictures                 ( self , source , pos , JSON            ) :
     ##########################################################################
-    """
-    DB      = self . ConnectDB     (                                         )
-    if                             ( DB == None                            ) :
+    HUID , NAME = self . itemAtPos ( pos , 0 , 0                             )
+    if                             ( HUID <= 0                             ) :
+      return True
+    ##########################################################################
+    self . Go ( self . PicturesAppending , ( HUID , NAME , JSON , )          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def PeopleAppending                  ( self , atUuid , NAME , JSON       ) :
+    ##########################################################################
+    UUIDs  = JSON                      [ "UUIDs"                             ]
+    if                                 ( len ( UUIDs ) <= 0                ) :
       return
     ##########################################################################
-    TSKTAB  = self . Tables        [ "Tasks"                                 ]
-    PRDTAB  = self . Tables        [ "Periods"                               ]
-    NAMTAB  = self . Tables        [ "Names"                                 ]
-    HEAD    = 5702000000000000000
+    DB     = self . ConnectDB          (                                     )
+    if                                 ( self . NotOkay ( DB )             ) :
+      return
     ##########################################################################
-    DB      . LockWrites           ( [ PRJTAB , PRDTAB , NAMTAB ]            )
+    self   . OnBusy  . emit            (                                     )
+    self   . setBustle                 (                                     )
     ##########################################################################
-    if                             ( uuid <= 0                             ) :
-      ########################################################################
-      uuid  = DB . LastUuid        ( PRJTAB , "uuid" , HEAD                  )
-      DB    . AddUuid              ( PRJTAB , uuid   , 1                     )
-      ########################################################################
-      NOW   = StarDate             (                                         )
-      NOW   . Now                  (                                         )
-      CDT   = NOW . Stardate
-      ########################################################################
-      PRD   = Periode              (                                         )
-      PRID  = PRD  . GetUuid       ( DB , PRDTAB                             )
-      ########################################################################
-      PRD   . Realm    = uuid
-      PRD   . Role     = 71
-      PRD   . Item     = 1
-      PRD   . States   = 0
-      PRD   . Creation = CDT
-      PRD   . Modified = CDT
-      Items =                      [ "realm"                               , \
-                                     "role"                                , \
-                                     "item"                                , \
-                                     "states"                              , \
-                                     "creation"                            , \
-                                     "modified"                              ]
-      PRD   . UpdateItems          ( DB , PRDTAB , Items                     )
+    RELTAB = self . Tables             [ "RelationPeople"                    ]
     ##########################################################################
-    self    . AssureUuidName       ( DB , NAMTAB , uuid , name               )
+    REL    = Relation                  (                                     )
+    REL    . set                       ( "first" , atUuid                    )
+    REL    . setT1                     ( "Hairs"                             )
+    REL    . setT2                     ( "People"                            )
+    REL    . setRelation               ( "Subordination"                     )
     ##########################################################################
-    DB      . Close                (                                         )
+    DB     . LockWrites                ( [ RELTAB                          ] )
+    REL    . Joins                     ( DB , RELTAB , UUIDs                 )
+    OPTS   = f"order by `position` asc"
+    PUIDs  = REL . Subordination       ( DB , RELTAB , OPTS                  )
     ##########################################################################
-    item    . setData              ( 0 , Qt . UserRole , uuid                )
-    """
+    LUID   = PUIDs                     [ -1                                  ]
+    LAST   = self . GetLastestPosition ( DB     , LUID                       )
+    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
+    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
+    self   . ExecuteSqlCommands        ( "OrganizePeople" , DB , SQLs , 100  )
+    ##########################################################################
+    DB     . UnlockTables              (                                     )
+    self   . setVacancy                (                                     )
+    self   . GoRelax . emit            (                                     )
+    DB     . Close                     (                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def PicturesAppending      ( self , atUuid , NAME , JSON                 ) :
+    ##########################################################################
+    T1   = "Hairs"
+    TAB  = "RelationPictures"
+    ##########################################################################
+    self . AppendingPictures (        atUuid , NAME , JSON , TAB , T1        )
     ##########################################################################
     return
   ############################################################################
@@ -617,8 +644,11 @@ class HairColorListings    ( TreeDock                                      ) :
     ICON = QIcon                     ( ":/images/viewpeople.png"             )
     mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
     ##########################################################################
+    msg  = self . getMenuItem        ( "ColorGroup"                          )
+    mm   . addActionFromMenu         ( COL , 38521004        , msg           )
+    ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
-    mm   . addActionFromMenu         ( COL , 38522001 , msg                  )
+    mm   . addActionFromMenu         ( COL , 38522001        , msg           )
     ##########################################################################
     return mm
   ############################################################################
@@ -642,6 +672,11 @@ class HairColorListings    ( TreeDock                                      ) :
     if                              ( at == 38521003                       ) :
       ########################################################################
       self . OpenItemCrowd          ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38521004                       ) :
+      ########################################################################
       ########################################################################
       return True
     ##########################################################################
