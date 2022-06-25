@@ -356,8 +356,8 @@ class HairColorListings    ( TreeDock                                      ) :
     mtype   = self . DropInJSON          [ "Mime"                            ]
     UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
     ##########################################################################
-    atItem  = self . itemAt              ( mousePos                          )
-    if                                   ( self . NotOkay ( atItem )       ) :
+    HUID , NAME = self . itemAtPos       ( mousePos , 0 , 0                  )
+    if                                   ( HUID <= 0                       ) :
       return False
     ##########################################################################
     if                                   ( mtype in [ "people/uuids" ]     ) :
@@ -365,7 +365,7 @@ class HairColorListings    ( TreeDock                                      ) :
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                        ( UUIDs                             )
       FMT   = self . getMenuItem         ( "Copying"                         )
-      MSG   = FMT  . format              ( title , CNT                       )
+      MSG   = FMT  . format              ( title , CNT , NAME                )
       ########################################################################
       self  . ShowStatus                 ( MSG                               )
     ##########################################################################
@@ -374,23 +374,25 @@ class HairColorListings    ( TreeDock                                      ) :
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                        ( UUIDs                             )
       FMT   = self . getMenuItem         ( "GetPictures"                     )
-      MSG   = FMT  . format              ( title , CNT                       )
+      MSG   = FMT  . format              ( title , CNT , NAME                )
       ########################################################################
       self  . ShowStatus                 ( MSG                               )
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving           ( self , sourceWidget , mimeData , mousePos     ) :
+  def dropMoving                   ( self                                  , \
+                                     sourceWidget                          , \
+                                     mimeData                              , \
+                                     mousePos                              ) :
     ##########################################################################
-    if                     ( self . droppingAction                         ) :
+    if                             ( self . droppingAction                 ) :
       return False
     ##########################################################################
-    if                     ( sourceWidget == self                          ) :
+    if                             ( sourceWidget == self                  ) :
       return True
     ##########################################################################
-    atItem = self . itemAt ( mousePos                                        )
-    ##########################################################################
-    if                     ( self . NotOkay ( atItem )                     ) :
+    HUID , NAME = self . itemAtPos ( mousePos , 0 , 0                        )
+    if                             ( HUID <= 0                             ) :
       return False
     ##########################################################################
     return True
@@ -424,46 +426,38 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return True
   ############################################################################
-  def PeopleAppending                  ( self , atUuid , NAME , JSON       ) :
+  def PeopleAppending           ( self , atUuid , NAME , JSON              ) :
     ##########################################################################
-    UUIDs  = JSON                      [ "UUIDs"                             ]
-    if                                 ( len ( UUIDs ) <= 0                ) :
+    UUIDs  = JSON               [ "UUIDs"                                    ]
+    if                          ( len ( UUIDs ) <= 0                       ) :
       return
     ##########################################################################
-    DB     = self . ConnectDB          (                                     )
-    if                                 ( self . NotOkay ( DB )             ) :
+    DB     = self . ConnectDB   (                                            )
+    if                          ( self . NotOkay ( DB )                    ) :
       return
     ##########################################################################
-    self   . OnBusy  . emit            (                                     )
-    self   . setBustle                 (                                     )
+    self   . OnBusy  . emit     (                                            )
+    self   . setBustle          (                                            )
     ##########################################################################
-    RELTAB = self . Tables             [ "RelationPeople"                    ]
+    RELTAB = self . Tables      [ "RelationPeople"                           ]
     ##########################################################################
-    REL    = Relation                  (                                     )
-    REL    . set                       ( "first" , atUuid                    )
-    REL    . setT1                     ( "Hairs"                             )
-    REL    . setT2                     ( "People"                            )
-    REL    . setRelation               ( "Subordination"                     )
+    REL    = Relation           (                                            )
+    REL    . set                ( "first" , atUuid                           )
+    REL    . setT1              ( "Hairs"                                    )
+    REL    . setT2              ( "People"                                   )
+    REL    . setRelation        ( "Subordination"                            )
     ##########################################################################
-    DB     . LockWrites                ( [ RELTAB                          ] )
-    REL    . Joins                     ( DB , RELTAB , UUIDs                 )
-    OPTS   = f"order by `position` asc"
-    PUIDs  = REL . Subordination       ( DB , RELTAB , OPTS                  )
+    DB     . LockWrites         ( [ RELTAB                                 ] )
+    REL    . Joins              ( DB , RELTAB , UUIDs                        )
     ##########################################################################
-    LUID   = PUIDs                     [ -1                                  ]
-    LAST   = self . GetLastestPosition ( DB     , LUID                       )
-    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
-    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands        ( "OrganizePeople" , DB , SQLs , 100  )
+    DB     . UnlockTables       (                                            )
+    self   . setVacancy         (                                            )
+    self   . GoRelax . emit     (                                            )
+    DB     . Close              (                                            )
     ##########################################################################
-    DB     . UnlockTables              (                                     )
-    self   . setVacancy                (                                     )
-    self   . GoRelax . emit            (                                     )
-    DB     . Close                     (                                     )
-    ##########################################################################
-    if                                 ( not self . isColumnHidden ( 1 )   ) :
+    if                          ( not self . isColumnHidden ( 1 )          ) :
       ########################################################################
-      self . emitRestart . emit        (                                     )
+      self . emitRestart . emit (                                            )
     ##########################################################################
     return
   ############################################################################
