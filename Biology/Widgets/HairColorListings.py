@@ -45,13 +45,27 @@ from   AITK  . Qt . MajorListings     import MajorListings as MajorListings
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
 ##############################################################################
-class HairColorListings    ( MajorListings                                 ) :
+class HairColorListings    ( TreeDock                                      ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu        = 1371434312
+  ############################################################################
+  emitNamesShow     = pyqtSignal   (                                         )
+  emitAllNames      = pyqtSignal   ( dict                                    )
+  emitAssignAmounts = pyqtSignal   ( str , int , int                         )
+  PeopleGroup       = pyqtSignal   ( str , int , str                         )
+  OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
+  OpenLogHistory    = pyqtSignal   ( str , str , str                         )
   ############################################################################
   def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
     super ( ) . __init__   (        parent        , plan                     )
+    ##########################################################################
+    self . EditAllNames       = None
+    ##########################################################################
+    self . ClassTag           = "HairColorListings"
+    self . FetchTableKey      = "HairColorListings"
+    self . GType              = 20
+    self . SortOrder          = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -60,15 +74,150 @@ class HairColorListings    ( MajorListings                                 ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setFunction     ( self . FunctionDocking , True                   )
-    self . setFunction     ( self . HavingMenu      , True                   )
+    self . Relation = Relation     (                                         )
+    self . Relation . setT2        ( "Organization"                          )
+    self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setAcceptDrops  ( True                                            )
-    self . setDragEnabled  ( False                                           )
-    self . setDragDropMode ( QAbstractItemView . DropOnly                    )
-    ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
+    self . setColumnCount          ( 3                                       )
+    self . setColumnHidden         ( 1 , True                                )
+    self . setColumnHidden         ( 2 , True                                )
+    self . setRootIsDecorated      ( False                                   )
+    self . setAlternatingRowColors ( True                                    )
+    ##########################################################################
+    self . MountClicked            ( 1                                       )
+    self . MountClicked            ( 2                                       )
+    ##########################################################################
+    self . assignSelectionMode     ( "ExtendedSelection"                     )
+    ## self . assignSelectionMode     ( "ContiguousSelection"                   )
+    ##########################################################################
+    self . emitNamesShow     . connect ( self . show                         )
+    self . emitAllNames      . connect ( self . refresh                      )
+    self . emitAssignAmounts . connect ( self . AssignAmounts                )
+    ##########################################################################
+    self . setFunction             ( self . FunctionDocking , True           )
+    self . setFunction             ( self . HavingMenu      , True           )
+    ##########################################################################
+    self . setAcceptDrops          ( True                                    )
+    self . setDragEnabled          ( True                                    )
+    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
     ##########################################################################
     return
+  ############################################################################
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
+  ############################################################################
+  def PrepareForActions           ( self                                   ) :
+    ##########################################################################
+    """
+    msg  = self . Translations    [ "UI::EditNames"                          ]
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationNames             )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Search"                                 )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/search.png" )          )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . Search                            )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Crowds"                                 )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationCrowds            )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Films"                                  )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/video.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationVideos            )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Identifiers"                            )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/tag.png" )             )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationIdentifiers       )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "IdentWebPage"                           )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/webfind.png" )         )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenIdentifierWebPages            )
+    self . WindowActions . append ( A                                        )
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Paste"      , self . Paste           , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
+      return False
+    ##########################################################################
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
+    ##########################################################################
+    return True
+  ############################################################################
+  def closeEvent             ( self , event                                ) :
+    ##########################################################################
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def singleClicked             ( self , item , column                     ) :
+    ##########################################################################
+    self . defaultSingleClicked (        item , column                       )
+    ##########################################################################
+    return
+  ############################################################################
+  def doubleClicked           ( self , item , column                       ) :
+    ##########################################################################
+    """
+    if                        ( column not in [ 0 ]                        ) :
+      return
+    ##########################################################################
+    line = self . setLineEdit ( item                                       , \
+                                0                                          , \
+                                "editingFinished"                          , \
+                                self . nameChanged                           )
+    line . setFocus           ( Qt . TabFocusReason                          )
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def Prepare             ( self                                           ) :
+    ##########################################################################
+    self . defaultPrepare ( self . ClassTag , 1                              )
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
   ############################################################################
   def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
@@ -144,15 +293,6 @@ class HairColorListings    ( MajorListings                                 ) :
     ##########################################################################
     return True
   ############################################################################
-  def Prepare                 ( self                                       ) :
-    ##########################################################################
-    LABELs = [ "頭髮顏色" ]
-    self   . setCentralLabels ( LABELs                                       )
-    ##########################################################################
-    self   . setPrepared      ( True                                         )
-    ##########################################################################
-    return
-  ############################################################################
   def AssureUuidItem               ( self , item , uuid , name             ) :
     ##########################################################################
     """
@@ -201,6 +341,18 @@ class HairColorListings    ( MajorListings                                 ) :
     """
     ##########################################################################
     return
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
   ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
