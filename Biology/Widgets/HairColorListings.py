@@ -74,7 +74,7 @@ class HairColorListings    ( TreeDock                                      ) :
     self . GType              = 20
     self . SortOrder          = "asc"
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
+    self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
@@ -95,7 +95,6 @@ class HairColorListings    ( TreeDock                                      ) :
     self . MountClicked            ( 2                                       )
     ##########################################################################
     self . assignSelectionMode     ( "ExtendedSelection"                     )
-    ## self . assignSelectionMode     ( "ContiguousSelection"                   )
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
@@ -111,7 +110,7 @@ class HairColorListings    ( TreeDock                                      ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 320 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 280 , 480 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
