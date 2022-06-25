@@ -428,7 +428,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     fnt  = self . font      (                                                )
     fps  = fnt  . pointSize (                                                )
-    fnt  . setPointSize     ( fps - 2                                        )
+    fnt  . setPointSize     ( fps - 1                                        )
     ##########################################################################
     it   = QTreeWidgetItem  ( labels                                         )
     for i , x in enumerate  ( labels                                       ) :
