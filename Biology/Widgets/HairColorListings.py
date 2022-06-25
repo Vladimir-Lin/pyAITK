@@ -110,25 +110,13 @@ class HairColorListings    ( TreeDock                                      ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 240 , 400 )                       )
+    return self . SizeSuggestion ( QSize ( 240 , 360 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
+    self . AppendToolNamingAction (                                          )
+    ##########################################################################
     """
-    msg  = self . Translations    [ "UI::EditNames"                          ]
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationNames             )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Search"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/search.png" )          )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . Search                            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
     msg  = self . getMenuItem     ( "Crowds"                                 )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
@@ -163,7 +151,6 @@ class HairColorListings    ( TreeDock                                      ) :
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
@@ -197,25 +184,9 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    """
-    if                        ( column not in [ 0 ]                        ) :
-      return
-    ##########################################################################
-    line = self . setLineEdit ( item                                       , \
-                                0                                          , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
-    """
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot             (                                                    )
-  def RenameItem        ( self                                             ) :
-    ##########################################################################
-    self . goRenameItem ( 0                                                  )
+    self . defaultSingleClicked (        item , column                       )
     ##########################################################################
     return
   ############################################################################
@@ -445,6 +416,12 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
+    ##########################################################################
+    self . defaultOpenItemNamesEditor ( item , 0 , "Hairs" , "NamesEditing"  )
+    ##########################################################################
+    return
+  ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
     self . DoCopyToClipboard ( False                                         )
@@ -453,7 +430,7 @@ class HairColorListings    ( TreeDock                                      ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 1                              )
+    self . defaultPrepare ( self . ClassTag , 2                              )
     ##########################################################################
     return
   ############################################################################
@@ -486,8 +463,8 @@ class HairColorListings    ( TreeDock                                      ) :
       TITLE = self . windowTitle       (                                     )
       ########################################################################
       self  . OpenVariantTables . emit ( str ( TITLE )                     , \
-                                         str ( UUID  )                     , \
-                                         TYPE                              , \
+                                         "0"                               , \
+                                         self . GType                      , \
                                          self . FetchTableKey              , \
                                          self . Tables                       )
       ########################################################################
@@ -595,10 +572,7 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     mm     = MenuManager              ( self                                 )
     ##########################################################################
-    TRX    = self . Translations
-    ##########################################################################
-    self   . AppendRefreshAction      ( mm , 1001                            )
-    self   . AppendRenameAction       ( mm , 1102                            )
+    self   . AppendRefreshAction      (          mm , 1001                   )
     self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
     ##########################################################################
     mm     . addSeparator             (                                      )
@@ -650,18 +624,8 @@ class HairColorListings    ( TreeDock                                      ) :
       ########################################################################
       return True
     ##########################################################################
-    if                                 ( at == 1102                        ) :
-      ########################################################################
-      self . RenameItem                (                                     )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                 ( at == 1601                        ) :
-      ########################################################################
-      uuid = self . itemUuid           ( atItem , 0                          )
-      NAM  = self . Tables             [ "NamesEditing"                      ]
-      self . EditAllNames              ( self , "Hairs" , uuid , NAM         )
-      ########################################################################
+    OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     return True
