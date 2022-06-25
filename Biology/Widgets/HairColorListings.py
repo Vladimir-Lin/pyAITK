@@ -591,30 +591,32 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return False
   ############################################################################
-  def GroupsMenu                ( self , mm , item                         ) :
+  def GroupsMenu                     ( self , mm , item                    ) :
     ##########################################################################
-    if                          ( self . NotOkay ( item )                  ) :
+    if                               ( self . NotOkay ( item )             ) :
       return mm
     ##########################################################################
     TRX  = self . Translations
-    NAME = item . text          ( 0                                          )
-    FMT  = TRX                  [ "UI::Belongs"                              ]
-    MSG  = FMT . format         ( NAME                                       )
-    COL  = mm . addMenu         ( MSG                                        )
+    NAME = item . text               ( 0                                     )
+    FMT  = TRX                       [ "UI::Belongs"                         ]
+    MSG  = FMT . format              ( NAME                                  )
+    COL  = mm . addMenu              ( MSG                                   )
     ##########################################################################
-    msg  = self . getMenuItem   ( "CopyHairUuid"                             )
-    mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
+    msg  = self . getMenuItem        ( "CopyHairUuid"                        )
+    mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
     ##########################################################################
-    msg  = self . getMenuItem   ( "HairGallery"                              )
-    ICON = QIcon                ( ":/images/gallery.png"                     )
+    mm   . addSeparatorFromMenu      ( COL                                   )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "HairGallery"                         )
+    ICON = QIcon                     ( ":/images/gallery.png"                )
     mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
     ##########################################################################
-    msg  = self . getMenuItem   ( "Crowds"                                   )
-    ICON = QIcon                ( ":/images/viewpeople.png"                  )
+    msg  = self . getMenuItem        ( "Crowds"                              )
+    ICON = QIcon                     ( ":/images/viewpeople.png"             )
     mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
     ##########################################################################
-    msg  = self . getMenuItem   ( "Description"                              )
-    mm   . addActionFromMenu    ( COL , 38522001 , msg                       )
+    msg  = self . getMenuItem        ( "Description"                         )
+    mm   . addActionFromMenu         ( COL , 38522001 , msg                  )
     ##########################################################################
     return mm
   ############################################################################
