@@ -387,38 +387,39 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##########################################################################
     return mm
   ############################################################################
-  def AppendRefreshAction             ( self , mm , Id                     ) :
+  def AppendRefreshAction    ( self , mm , Id                              ) :
     ##########################################################################
     TRX  = self . Translations
-    msg  = TRX                        [ "UI::Refresh"                        ]
-    icon = QIcon                      ( ":/images/reload.png"                )
-    mm   . addActionWithIcon          ( Id , icon , msg                      )
+    msg  = TRX               [ "UI::Refresh"                                 ]
+    icon = QIcon             ( ":/images/reload.png"                         )
+    mm   . addActionWithIcon ( Id , icon , msg                               )
     ##########################################################################
     return mm
   ############################################################################
-  def AppendInsertAction              ( self , mm , Id                     ) :
+  def AppendInsertAction     ( self , mm , Id                              ) :
     ##########################################################################
     TRX  = self . Translations
-    msg  = TRX                        [ "UI::Insert"                         ]
-    icon = QIcon                      ( ":/images/plus.png"                  )
-    mm   . addActionWithIcon          ( Id , icon , msg                      )
+    msg  = TRX               [ "UI::Insert"                                  ]
+    icon = QIcon             ( ":/images/plus.png"                           )
+    mm   . addActionWithIcon ( Id , icon , msg                               )
     ##########################################################################
     return mm
   ############################################################################
-  def AppendDeleteAction              ( self , mm , Id                     ) :
+  def AppendDeleteAction     ( self , mm , Id                              ) :
     ##########################################################################
     TRX  = self . Translations
-    msg  = TRX                        [ "UI::Delete"                         ]
-    icon = QIcon                      ( ":/images/delete.png"                )
-    mm   . addActionWithIcon          ( Id , icon , msg                      )
+    msg  = TRX               [ "UI::Delete"                                  ]
+    icon = QIcon             ( ":/images/delete.png"                         )
+    mm   . addActionWithIcon ( Id , icon , msg                               )
     ##########################################################################
     return mm
   ############################################################################
-  def AppendRenameAction              ( self , mm , Id                     ) :
+  def AppendRenameAction     ( self , mm , Id                              ) :
     ##########################################################################
     TRX  = self . Translations
-    msg  = TRX                        [ "UI::Rename"                         ]
-    mm   . addAction                  ( Id , msg                             )
+    msg  = TRX               [ "UI::Rename"                                  ]
+    icon = QIcon             ( ":/images/rename.png"                         )
+    mm   . addActionWithIcon ( Id , icon , msg                               )
     ##########################################################################
     return mm
   ############################################################################
