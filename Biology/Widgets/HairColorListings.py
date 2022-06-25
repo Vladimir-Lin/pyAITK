@@ -368,17 +368,25 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def dropNew                           ( self                             , \
+  def HandleDropIn                      ( self                             , \
                                           sourceWidget                     , \
                                           mimeData                         , \
-                                          mousePos                         ) :
+                                          mousePos                         , \
+                                          Newbie                           ) :
     ##########################################################################
     if                                  ( self == sourceWidget             ) :
       return False
     ##########################################################################
-    RDN         = self . RegularDropNew ( mimeData                           )
-    if                                  ( not RDN                          ) :
-      return False
+    GDN         = False
+    if                                  ( Newbie                           ) :
+      GDN       = True
+    elif                                ( "Mime" not in self . DropInJSON  ) :
+      GDN       = True
+    ##########################################################################
+    if                                  ( GDN                              ) :
+      RDN       = self . RegularDropNew ( mimeData                           )
+      if                                ( not RDN                          ) :
+        return False
     ##########################################################################
     HUID , NAME = self . itemAtPos      ( mousePos , 0 , 0                   )
     if                                  ( HUID <= 0                        ) :
@@ -395,30 +403,13 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving                    ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def dropNew                  ( self , sourceWidget , mimeData , mousePos ) :
     ##########################################################################
-    if                              ( self . droppingAction                ) :
-      return False
+    return self . HandleDropIn ( sourceWidget , mimeData , mousePos , True   )
+  ############################################################################
+  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
     ##########################################################################
-    if                              ( sourceWidget == self                 ) :
-      return True
-    ##########################################################################
-    HUID , NAME = self . itemAtPos  ( mousePos , 0 , 0                       )
-    if                              ( HUID <= 0                            ) :
-      return False
-    ##########################################################################
-    mtype       = self . DropInJSON [ "Mime"                                 ]
-    UUIDs       = self . DropInJSON [ "UUIDs"                                ]
-    self        . DecideDropItems   ( sourceWidget                         , \
-                                      mtype                                , \
-                                      UUIDs                                , \
-                                      HUID                                 , \
-                                      NAME                                   )
-    ##########################################################################
-    return True
+    return self . HandleDropIn ( sourceWidget , mimeData , mousePos , False  )
   ############################################################################
   def acceptPeopleDrop         ( self                                      ) :
     return True
