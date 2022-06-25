@@ -39,11 +39,16 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager   as MenuManager
-from   AITK  . Qt . MajorListings     import MajorListings as MajorListings
+from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
+from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
+from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
+from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
+from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
+from   AITK  . Essentials . Relation  import Relation
+from   AITK  . Calendars  . StarDate  import StarDate
+from   AITK  . Calendars  . Periode   import Periode
+from   AITK  . People     . People    import People
 ##############################################################################
 class HairColorListings    ( TreeDock                                      ) :
   ############################################################################
