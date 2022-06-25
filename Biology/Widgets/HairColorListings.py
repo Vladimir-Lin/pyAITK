@@ -629,6 +629,7 @@ class HairColorListings    ( TreeDock                                      ) :
       uuid = item . data            ( 0 , Qt . UserRole                      )
       uuid = int                    ( uuid                                   )
       qApp . clipboard ( ). setText ( f"{uuid}"                              )
+      self . Notify                 ( 5                                      )
       ########################################################################
       return True
     ##########################################################################
