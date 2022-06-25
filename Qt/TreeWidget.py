@@ -424,12 +424,18 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return
   ############################################################################
-  def setCentralLabels        ( self , labels                              ) :
+  def setCentralLabels      ( self , labels                                ) :
     ##########################################################################
-    it = QTreeWidgetItem      ( labels                                       )
-    for i , x in enumerate    ( labels                                     ) :
-      it . setTextAlignment   ( i , Qt . AlignCenter                         )
-    self . setHeaderItem      ( it                                           )
+    fnt  = self . font      (                                                )
+    fps  = fnt  . pointSize (                                                )
+    fnt  . setPointSize     ( fps - 2                                        )
+    ##########################################################################
+    it   = QTreeWidgetItem  ( labels                                         )
+    for i , x in enumerate  ( labels                                       ) :
+      it . setTextAlignment ( i , Qt . AlignCenter                           )
+      it . setFont          ( i , fnt                                        )
+    ##########################################################################
+    self . setHeaderItem    ( it                                             )
     ##########################################################################
     return it
   ############################################################################
@@ -993,7 +999,9 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     self   . setColumnWidth      ( columnAt , 3                              )
     LABELs = self . Translations [ widgetName ] [ "Labels"                   ]
+    ##########################################################################
     self   . setCentralLabels    ( LABELs                                    )
+    ##########################################################################
     self   . setPrepared         ( True                                      )
     ##########################################################################
     return
