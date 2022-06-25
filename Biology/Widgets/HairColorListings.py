@@ -117,6 +117,8 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     self . AppendToolNamingAction (                                          )
     ##########################################################################
+    self . AppendWindowToolSeparatorAction (                                 )
+    ##########################################################################
     msg  = self . getMenuItem     ( "HairGallery"                            )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )

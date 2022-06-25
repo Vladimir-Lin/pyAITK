@@ -211,9 +211,7 @@ class PeopleView                     ( IconDock                            ) :
     A    . triggered . connect    ( self . Search                            )
     self . WindowActions . append ( A                                        )
     ##########################################################################
-    A    = QAction                (                                          )
-    A    . setSeparator           ( True                                     )
-    self . WindowActions . append ( A                                        )
+    self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
     msg  = self . getMenuItem     ( "Galleries"                              )
     A    = QAction                (                                          )
