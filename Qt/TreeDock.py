@@ -49,10 +49,11 @@ from         . SpinBox                import SpinBox     as SpinBox
 ##############################################################################
 class TreeDock                ( TreeWidget , AttachDock                    ) :
   ############################################################################
-  attachNone = pyqtSignal     ( QWidget                                      )
-  attachDock = pyqtSignal     ( QWidget , str , int , int                    )
-  attachMdi  = pyqtSignal     ( QWidget , int                                )
-  Clicked    = pyqtSignal     ( int                                          )
+  attachNone  = pyqtSignal    ( QWidget                                      )
+  attachDock  = pyqtSignal    ( QWidget , str , int , int                    )
+  attachMdi   = pyqtSignal    ( QWidget , int                                )
+  Clicked     = pyqtSignal    ( int                                          )
+  emitRestart = pyqtSignal    (                                              )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
@@ -87,6 +88,8 @@ class TreeDock                ( TreeWidget , AttachDock                    ) :
     ##                      Qt::BottomDockWidgetArea    |
     ##                      Qt::LeftDockWidgetArea      |
     ##                      Qt::RightDockWidgetArea     )
+    ##########################################################################
+    self . emitRestart . connect   ( self . restart                          )
     ##########################################################################
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )

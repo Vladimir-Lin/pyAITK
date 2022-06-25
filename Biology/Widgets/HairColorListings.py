@@ -200,9 +200,9 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return QQ
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################
-    ## self   . ReloadLocality           ( DB                                   )
+    self . ReloadLocality (        DB                                        )
     ##########################################################################
     return
   ############################################################################
@@ -479,23 +479,24 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateLocalityUsage      ( self                                      ) :
+  def UpdateLocalityUsage       ( self                                     ) :
     ##########################################################################
-    DB     = self . ConnectDB  (                                             )
-    if                         ( self . NotOkay ( DB )                     ) :
+    DB     = self . ConnectDB   (                                            )
+    if                          ( self . NotOkay ( DB )                    ) :
       return False
     ##########################################################################
-    PAMTAB = self . Tables     [ "Parameters"                                ]
-    DB     . LockWrites        ( [ PAMTAB                                  ] )
+    PAMTAB = self . Tables      [ "Parameters"                               ]
+    DB     . LockWrites         ( [ PAMTAB                                 ] )
     ##########################################################################
-    self   . SetLocalityByUuid ( DB                                        , \
-                                 PAMTAB                                    , \
-                                 0                                         , \
-                                 self . GType                              , \
-                                 self . ClassTag                             )
+    self   . SetLocalityByUuid  ( DB                                       , \
+                                  PAMTAB                                   , \
+                                  0                                        , \
+                                  self . GType                             , \
+                                  self . ClassTag                            )
     ##########################################################################
-    DB     . UnlockTables      (                                             )
-    DB     . Close             (                                             )
+    DB     . UnlockTables       (                                            )
+    DB     . Close              (                                            )
+    self   . emitRestart . emit (                                            )
     ##########################################################################
     return True
   ############################################################################
@@ -674,9 +675,6 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
     if                                 ( OKAY                              ) :
-      ########################################################################
-      self . restart                   (                                     )
-      ########################################################################
       return True
     ##########################################################################
     OKAY   = self . RunColumnsMenu     ( at                                  )

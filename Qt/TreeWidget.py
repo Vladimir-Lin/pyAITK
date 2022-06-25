@@ -65,6 +65,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   emitSelectAll           = pyqtSignal (                                     )
   emitBustle              = pyqtSignal (                                     )
   emitVacancy             = pyqtSignal (                                     )
+  emitClearAll            = pyqtSignal (                                     )
   OnBusy                  = pyqtSignal (                                     )
   GoRelax                 = pyqtSignal (                                     )
   emitAssignColumn        = pyqtSignal ( QTreeWidgetItem , int , str         )
@@ -79,19 +80,20 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     self . CurrentItem =                    {                                }
     self . emitPendingTopLevelItem.connect  ( self.acceptPendingTopLevelItem )
-    self . pendingRemoveItem      .connect  ( self.removeTopLevelItem        )
-    self . pickSelectionMode      .connect  ( self.assignSelectionMode       )
-    self . SubmitStatusMessage    .connect  ( self.AssignStatusMessage       )
-    self . SubmitTtsTalk          .connect  ( self.DoTtsTalk                 )
-    self . SubmitUpdate           .connect  ( self.update                    )
-    self . emitAdjustWidths       .connect  ( self.setWidths                 )
-    self . emitAutoFit            .connect  ( self.AutoResize                )
-    self . emitSelectAll          .connect  ( self.SelectAll                 )
-    self . emitBustle             .connect  ( self.DoBustle                  )
-    self . emitVacancy            .connect  ( self.DoVacancy                 )
-    self . OnBusy                 .connect  ( self.AtBusy                    )
-    self . GoRelax                .connect  ( self.OnRelax                   )
-    self . emitAssignColumn       .connect  ( self.AssignColumnText          )
+    self . pendingRemoveItem   . connect    ( self . removeTopLevelItem      )
+    self . pickSelectionMode   . connect    ( self . assignSelectionMode     )
+    self . SubmitStatusMessage . connect    ( self . AssignStatusMessage     )
+    self . SubmitTtsTalk       . connect    ( self . DoTtsTalk               )
+    self . SubmitUpdate        . connect    ( self . update                  )
+    self . emitAdjustWidths    . connect    ( self . setWidths               )
+    self . emitAutoFit         . connect    ( self . AutoResize              )
+    self . emitSelectAll       . connect    ( self . SelectAll               )
+    self . emitBustle          . connect    ( self . DoBustle                )
+    self . emitVacancy         . connect    ( self . DoVacancy               )
+    self . emitClearAll        . connect    ( self . DoClearAll              )
+    self . OnBusy              . connect    ( self . AtBusy                  )
+    self . GoRelax             . connect    ( self . OnRelax                 )
+    self . emitAssignColumn    . connect    ( self . AssignColumnText        )
     ##########################################################################
     self . setAttribute                     ( Qt . WA_InputMethodEnabled     )
     self . setAcceptDrops                   ( True                           )
@@ -414,6 +416,12 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
   ############################################################################
   def setVacancy              ( self                                       ) :
     self . emitVacancy . emit (                                              )
+    return
+  ############################################################################
+  def DoClearAll ( self                                                    ) :
+    ##########################################################################
+    self . clear (                                                           )
+    ##########################################################################
     return
   ############################################################################
   def setCentralLabels        ( self , labels                              ) :
@@ -749,6 +757,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     return True
   ############################################################################
   def UpdateLocalityUsage     ( self                                       ) :
+    ##########################################################################
+    ##########################################################################
     return True
   ############################################################################
   @pyqtSlot                 (                                                )
