@@ -117,35 +117,19 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     self . AppendToolNamingAction (                                          )
     ##########################################################################
-    """
+    msg  = self . getMenuItem     ( "HairGallery"                            )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . GotoItemGallery                   )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
     msg  = self . getMenuItem     ( "Crowds"                                 )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationCrowds            )
+    A    . triggered . connect    ( self . GotoItemCrowd                     )
     self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Films"                                  )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/video.png" )           )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationVideos            )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Identifiers"                            )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/tag.png" )             )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationIdentifiers       )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "IdentWebPage"                           )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/webfind.png" )         )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenIdentifierWebPages            )
-    self . WindowActions . append ( A                                        )
-    """
     ##########################################################################
     return
   ############################################################################
@@ -459,7 +443,48 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  
+  def OpenItemGallery                 ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( 0 , Qt . UserRole                    )
+    uuid = int                        ( uuid                                 )
+    text = item . text                ( 0                                    )
+    icon = self . windowIcon          (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    self . ShowPersonalGallery . emit ( text , 20 , xsid , icon              )
+    ##########################################################################
+    return
+  ############################################################################
+  def GotoItemGallery           ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenItemGallery    ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenItemCrowd           ( self , item                                ) :
+    ##########################################################################
+    uuid = item . data        ( 0 , Qt . UserRole                            )
+    uuid = int                ( uuid                                         )
+    xsid = str                ( uuid                                         )
+    text = item . text        ( 0                                            )
+    ##########################################################################
+    self . PeopleGroup . emit ( text , self . GType , str ( uuid )           )
+    ##########################################################################
+    return
+  ############################################################################
+  def GotoItemCrowd             ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenItemCrowd      ( atItem                                     )
+    ##########################################################################
+    return
   ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
@@ -593,84 +618,76 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu                ( self , at , item                      ) :
+  def RunGroupsMenu                 ( self , at , item                     ) :
     ##########################################################################
-    if                             ( at == 38521001                        ) :
+    if                              ( at == 38521001                       ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
       qApp . clipboard ( ). setText ( f"{uuid}"                              )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38521002                        ) :
+    if                              ( at == 38521002                       ) :
       ########################################################################
-      """
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
-      self . PeopleGroup . emit    ( head , self . GType , str ( uuid )      )
-      """
+      self . OpenItemGallery        ( item                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38521003                        ) :
+    if                              ( at == 38521003                       ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
-      self . PeopleGroup . emit    ( head , self . GType , str ( uuid )      )
+      self . OpenItemCrowd          ( item                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38522001                        ) :
+    if                              ( at == 38522001                       ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
-      self . OpenLogHistory . emit ( head , str ( uuid ) , "Description"     )
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      self . OpenLogHistory . emit  ( head , str ( uuid ) , "Description"    )
       ########################################################################
       return True
     ##########################################################################
     return False
   ############################################################################
-  def Menu                            ( self , pos                         ) :
+  def Menu                             ( self , pos                        ) :
     ##########################################################################
-    if                                ( not self . isPrepared ( )          ) :
+    if                                 ( not self . isPrepared ( )         ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction        ( self . HavingMenu                    )
-    if                                ( not doMenu                         ) :
+    doMenu = self . isFunction         ( self . HavingMenu                   )
+    if                                 ( not doMenu                        ) :
       return False
     ##########################################################################
-    self   . Notify                   ( 0                                    )
+    self   . Notify                    ( 0                                   )
     ##########################################################################
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
-    mm     = MenuManager              ( self                                 )
+    mm     = MenuManager               ( self                                )
     ##########################################################################
-    self   . AppendRefreshAction      (          mm , 1001                   )
-    self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
+    self   . AppendRefreshAction       (          mm , 1001                  )
+    self   . TryAppendEditNamesAction  ( atItem , mm , 1601                  )
     ##########################################################################
-    mm     . addSeparator             (                                      )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . FunctionsMenu            ( mm , uuid , atItem                   )
-    self   . GroupsMenu               ( mm ,        atItem                   )
-    self   . ColumnsMenu              ( mm                                   )
-    self   . SortingMenu              ( mm                                   )
-    self   . LocalityMenu             ( mm                                   )
-    self   . DockingMenu              ( mm                                   )
+    self   . FunctionsMenu             ( mm , uuid , atItem                  )
+    self   . GroupsMenu                ( mm ,        atItem                  )
+    self   . ColumnsMenu               ( mm                                  )
+    self   . SortingMenu               ( mm                                  )
+    self   . LocalityMenu              ( mm                                  )
+    self   . DockingMenu               ( mm                                  )
     ##########################################################################
-    mm     . setFont                  ( self    . menuFont ( )               )
-    aa     = mm . exec_               ( QCursor . pos      ( )               )
-    at     = mm . at                  ( aa                                   )
+    mm     . setFont                   ( self    . menuFont ( )              )
+    aa     = mm . exec_                ( QCursor . pos      ( )              )
+    at     = mm . at                   ( aa                                  )
     ##########################################################################
-    OKAY   = self . RunDocking        ( mm , aa                              )
-    if                                ( OKAY                               ) :
+    OKAY   = self . RunDocking         ( mm , aa                             )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunFunctionsMenu  ( at , uuid , atItem                   )
-    if                                ( OKAY                               ) :
+    OKAY   = self . RunFunctionsMenu   ( at , uuid , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
