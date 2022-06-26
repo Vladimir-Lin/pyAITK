@@ -68,7 +68,7 @@ class LengthListings               ( TreeDock                              ) :
     self . LengthUuids        =    [                                         ]
     self . LengthJson         =    {                                         }
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
+    self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
@@ -251,7 +251,7 @@ class LengthListings               ( TreeDock                              ) :
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
-    MSG    = FMT  . format        ( len ( LISTS )                            )
+    MSG    = FMT  . format        ( len ( self . LengthUuids )               )
     self   . setToolTip           ( MSG                                      )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
@@ -369,7 +369,8 @@ class LengthListings               ( TreeDock                              ) :
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( self . ClassTag , 7                              )
-    ## self . setColumnWidth ( 2 , 100                                          )
+    self . setColumnWidth ( 0 ,  80                                          )
+    self . setColumnWidth ( 3 , 120                                          )
     ##########################################################################
     return
   ############################################################################
