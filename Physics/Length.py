@@ -11,70 +11,72 @@ from   gmpy2 import mpfr
 ##############################################################################
 class Length             ( IntEnum                                         ) :
   ############################################################################
-  Pixel        =   0
-  Parsec       =   1
-  LightYear    =   2
-  LightDay     =   3
-  LightHour    =   4
-  AU           =   5
-  LightMinute  =   6
-  LightSpeed   =   7
-  Yottametre   = 101
-  Zettametre   = 102
-  Exametre     = 103
-  Petametre    = 104
-  Terametre    = 105
-  Gigametre    = 106
-  Megametre    = 107
-  Kilometer    = 108
-  Hectometre   = 109
-  Decametre    = 110
-  Meter        = 111
-  Decimeter    = 112
-  Centimeter   = 113
-  Millimeter   = 114
-  Micrometre   = 115
-  Nanometer    = 116
-  Angstrom     = 117
-  Picometre    = 118
-  Fermi        = 119
-  Attometer    = 120
-  Zeptometre   = 121
-  Yoctometre   = 122
-  SuperString  = 123
-  Planck       = 124
-  MilliPlanck  = 125
-  NanoPlanck   = 126
-  Preon        = 127
-  Mile         = 201
-  Furlong      = 202
-  Chain        = 203
-  Rod          = 204
-  Perch        = 205
-  Pole         = 206
-  Lug          = 207
-  Fathom       = 208
-  Yard         = 209
-  Foot         = 210
-  Hand         = 211
-  Inch         = 212
-  ChineseLi    = 301
-  ChineseYin   = 302
-  ChineseZhang = 303
-  ChineseBu    = 304
-  ChineseChi   = 305
-  ChineseCun   = 306
-  ChineseFen   = 307
-  TangBigFoot  = 308
-  KoreanChi    = 401
-  YojanaMin    = 501
-  Yojana       = 502
-  YojanaMax    = 503
-  Nautical     = 601
-  Rig          = 602
-  Pica         = 701
-  Point        = 702
-  Verst        = 801
+  Pixel           =   0
+  Parsec          =   1
+  LightYear       =   2
+  LightDay        =   3
+  LightHour       =   4
+  AU              =   5
+  LightMinute     =   6
+  LightSpeed      =   7
+  Yottametre      = 101
+  Zettametre      = 102
+  Exametre        = 103
+  Petametre       = 104
+  Terametre       = 105
+  Gigametre       = 106
+  Megametre       = 107
+  Kilometer       = 108
+  Hectometre      = 109
+  Decametre       = 110
+  Meter           = 111
+  Decimeter       = 112
+  Centimeter      = 113
+  Millimeter      = 114
+  Decimillimetre  = 115
+  Centimillimetre = 116
+  Micrometre      = 117
+  Nanometer       = 118
+  Angstrom        = 119
+  Picometre       = 120
+  Fermi           = 121
+  Attometer       = 122
+  Zeptometre      = 123
+  Yoctometre      = 124
+  SuperString     = 125
+  Planck          = 126
+  MilliPlanck     = 127
+  NanoPlanck      = 128
+  Preon           = 129
+  Mile            = 201
+  Furlong         = 202
+  Chain           = 203
+  Rod             = 204
+  Perch           = 205
+  Pole            = 206
+  Lug             = 207
+  Fathom          = 208
+  Yard            = 209
+  Foot            = 210
+  Hand            = 211
+  Inch            = 212
+  ChineseLi       = 301
+  ChineseYin      = 302
+  ChineseZhang    = 303
+  ChineseBu       = 304
+  ChineseChi      = 305
+  ChineseCun      = 306
+  ChineseFen      = 307
+  TangBigFoot     = 308
+  KoreanChi       = 401
+  YojanaMin       = 501
+  Yojana          = 502
+  YojanaMax       = 503
+  Nautical        = 601
+  Rig             = 602
+  Pica            = 701
+  Point           = 702
+  Verst           = 801
 ##############################################################################
 PrivateAllLengths =                                                          [
   { "Id"          : Length . Pixel                                         , \
@@ -87,199 +89,211 @@ PrivateAllLengths =                                                          [
     "Uuid"        : 0                                                      , \
     "Catalog"     : 1                                                      , \
     "Name"        : "Parsec"                                               , \
-    "Reference"   : 5                                                      , \
+    "Reference"   : Length . AU                                            , \
     "Conversion"  : "206265"                                               } ,
   { "Id"          : Length . LightYear                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 1                                                      , \
     "Name"        : "Light-Year"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "9460730472580800"                                     } ,
   { "Id"          : Length . LightDay                                      , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 1                                                      , \
     "Name"        : "Light-Day"                                            , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "25902068371200"                                       } ,
   { "Id"          : Length . LightHour                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 1                                                      , \
     "Name"        : "Light-Hour"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1079252848800"                                        } ,
   { "Id"          : Length . AU                                            , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 1                                                      , \
     "Name"        : "AU"                                                   , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "149597870691"                                         } ,
   { "Id"          : Length . LightMinute                                   , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 1                                                      , \
     "Name"        : "Light-Minute"                                         , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "17987547480"                                          } ,
   { "Id"          : Length . LightSpeed                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 1                                                      , \
     "Name"        : "Light-Speed"                                          , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "299792458"                                            } ,
   { "Id"          : Length . Yottametre                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Yotta-Metre"                                          , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1000000000000000000000000"                            } ,
   { "Id"          : Length . Zettametre                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Zetta-Metre"                                          , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1000000000000000000000"                               } ,
   { "Id"          : Length . Exametre                                      , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Exa-Metre"                                            , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1000000000000000000"                                  } ,
   { "Id"          : Length . Petametre                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Peta-Metre"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1000000000000000"                                     } ,
   { "Id"          : Length . Terametre                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Tera-Metre"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1000000000000"                                        } ,
   { "Id"          : Length . Gigametre                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Giga-Metre"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1000000000"                                           } ,
   { "Id"          : Length . Megametre                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Mega-Metre"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1000000"                                              } ,
   { "Id"          : Length . Kilometer                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Kilo-Metre"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1000"                                                 } ,
   { "Id"          : Length . Hectometre                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Hecto-Metre"                                          , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "100"                                                  } ,
   { "Id"          : Length . Decametre                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Deca-Metre"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "10"                                                   } ,
   { "Id"          : Length . Meter                                         , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Meter"                                                , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "1000000000000000"                                     } ,
   { "Id"          : Length . Decimeter                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Deci-Meter"                                           , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "100000000000000"                                      } ,
   { "Id"          : Length . Centimeter                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Centi-Meter"                                          , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "10000000000000"                                       } ,
   { "Id"          : Length . Millimeter                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Milli-Meter"                                          , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "1000000000000"                                        } ,
+  { "Id"          : Length . Decimillimetre                                , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Deci-Milli-Meter"                                     , \
+    "Reference"   : Length . Fermi                                         , \
+    "Conversion"  : "100000000000"                                         } ,
+  { "Id"          : Length . Centimillimetre                               , \
+    "Uuid"        : 0                                                      , \
+    "Catalog"     : 2                                                      , \
+    "Name"        : "Centi-Milli-Meter"                                    , \
+    "Reference"   : Length . Fermi                                         , \
+    "Conversion"  : "10000000000"                                          } ,
   { "Id"          : Length . Micrometre                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Micro-Metre"                                          , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "1000000000"                                           } ,
   { "Id"          : Length . Nanometer                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Nano-Meter"                                           , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "1000000"                                              } ,
   { "Id"          : Length . Angstrom                                      , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Angstrom"                                             , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "100000"                                               } ,
   { "Id"          : Length . Picometre                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Pico-Metre"                                           , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "1000"                                                 } ,
   { "Id"          : Length . Fermi                                         , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Fermi"                                                , \
-    "Reference"   : 123                                                    , \
+    "Reference"   : Length . SuperString                                   , \
     "Conversion"  : "1000000000000000000"                                  } ,
   { "Id"          : Length . Attometer                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Atto-Meter"                                           , \
-    "Reference"   : 123                                                    , \
+    "Reference"   : Length . SuperString                                   , \
     "Conversion"  : "1000000000000000"                                     } ,
   { "Id"          : Length . Zeptometre                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Zepto-Metre"                                          , \
-    "Reference"   : 123                                                    , \
+    "Reference"   : Length . SuperString                                   , \
     "Conversion"  : "1000000000000"                                        } ,
   { "Id"          : Length . Yoctometre                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Yocto-Metre"                                          , \
-    "Reference"   : 123                                                    , \
+    "Reference"   : Length . SuperString                                   , \
     "Conversion"  : "1000000000"                                           } ,
   { "Id"          : Length . SuperString                                   , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Super-String"                                         , \
-    "Reference"   : 126                                                    , \
+    "Reference"   : Length . NanoPlanck                                    , \
     "Conversion"  : "1000000000000"                                        } ,
   { "Id"          : Length . Planck                                        , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Planck"                                               , \
-    "Reference"   : 126                                                    , \
+    "Reference"   : Length . NanoPlanck                                    , \
     "Conversion"  : "1000000000"                                           } ,
   { "Id"          : Length . MilliPlanck                                   , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Milli-Planck"                                         , \
-    "Reference"   : 126                                                    , \
+    "Reference"   : Length . NanoPlanck                                    , \
     "Conversion"  : "1000000"                                              } ,
   { "Id"          : Length . NanoPlanck                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 2                                                      , \
     "Name"        : "Nano-Planck"                                          , \
-    "Reference"   : 127                                                    , \
+    "Reference"   : Length . Preon                                         , \
     "Conversion"  : "100000000000000000000000000000000000"                 } ,
   { "Id"          : Length . Preon                                         , \
     "Uuid"        : 0                                                      , \
@@ -291,175 +305,175 @@ PrivateAllLengths =                                                          [
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Mile"                                                 , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "63360"                                                } ,
   { "Id"          : Length . Furlong                                       , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Furlong"                                              , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "7920"                                                 } ,
   { "Id"          : Length . Chain                                         , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Chain"                                                , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "792"                                                  } ,
   { "Id"          : Length . Rod                                           , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Rod"                                                  , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "198"                                                  } ,
   { "Id"          : Length . Perch                                         , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Perch"                                                , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "198"                                                  } ,
   { "Id"          : Length . Pole                                          , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Pole"                                                 , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "198"                                                  } ,
   { "Id"          : Length . Lug                                           , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Lug"                                                  , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "198"                                                  } ,
   { "Id"          : Length . Fathom                                        , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Fathom"                                               , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "72"                                                   } ,
   { "Id"          : Length . Yard                                          , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Yard"                                                 , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "36"                                                   } ,
   { "Id"          : Length . Foot                                          , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Foot"                                                 , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "12"                                                   } ,
   { "Id"          : Length . Hand                                          , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Foot"                                                 , \
-    "Reference"   : 212                                                    , \
+    "Reference"   : Length . Inch                                          , \
     "Conversion"  : "4"                                                    } ,
   { "Id"          : Length . Inch                                          , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 3                                                      , \
     "Name"        : "Inch"                                                 , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "25400000000000"                                       } ,
   { "Id"          : Length . ChineseLi                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 4                                                      , \
     "Name"        : "Chinese-Li"                                           , \
-    "Reference"   : 307                                                    , \
+    "Reference"   : Length . ChineseFen                                    , \
     "Conversion"  : "150000"                                               } ,
   { "Id"          : Length . ChineseYin                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 4                                                      , \
     "Name"        : "Chinese-Yin"                                          , \
-    "Reference"   : 307                                                    , \
+    "Reference"   : Length . ChineseFen                                    , \
     "Conversion"  : "10000"                                                } ,
   { "Id"          : Length . ChineseZhang                                  , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 4                                                      , \
     "Name"        : "Chinese-Zhang"                                        , \
-    "Reference"   : 307                                                    , \
+    "Reference"   : Length . ChineseFen                                    , \
     "Conversion"  : "1000"                                                 } ,
   { "Id"          : Length . ChineseBu                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 4                                                      , \
     "Name"        : "Chinese-Bu"                                           , \
-    "Reference"   : 307                                                    , \
+    "Reference"   : Length . ChineseFen                                    , \
     "Conversion"  : "500"                                                  } ,
   { "Id"          : Length . ChineseChi                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 4                                                      , \
     "Name"        : "Chinese-Chi"                                          , \
-    "Reference"   : 307                                                    , \
+    "Reference"   : Length . ChineseFen                                    , \
     "Conversion"  : "100"                                                  } ,
   { "Id"          : Length . ChineseCun                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 4                                                      , \
     "Name"        : "Chinese-Cun"                                          , \
-    "Reference"   : 307                                                    , \
+    "Reference"   : Length . ChineseFen                                    , \
     "Conversion"  : "10"                                                   } ,
   { "Id"          : Length . ChineseFen                                    , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 4                                                      , \
     "Name"        : "Chinese-Fen"                                          , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "10000000000000/3"                                     } ,
   { "Id"          : Length . TangBigFoot                                   , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 4                                                      , \
     "Name"        : "Tang-Big-Foot"                                        , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "296000000000000"                                      } ,
   { "Id"          : Length . KoreanChi                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 5                                                      , \
     "Name"        : "Korean-Chi"                                           , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "356000000000000"                                      } ,
   { "Id"          : Length . YojanaMin                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 6                                                      , \
     "Name"        : "Yojana-Min"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "13000"                                                } ,
   { "Id"          : Length . Yojana                                        , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 6                                                      , \
     "Name"        : "Yojana"                                               , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "14600"                                                } ,
   { "Id"          : Length . YojanaMax                                     , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 6                                                      , \
     "Name"        : "Yojana-Max"                                           , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "16000"                                                } ,
   { "Id"          : Length . Nautical                                      , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 7                                                      , \
     "Name"        : "Nautical"                                             , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "1852"                                                 } ,
   { "Id"          : Length . Rig                                           , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 7                                                      , \
     "Name"        : "Rig"                                                  , \
-    "Reference"   : 111                                                    , \
+    "Reference"   : Length . Meter                                         , \
     "Conversion"  : "5556"                                                 } ,
   { "Id"          : Length . Pica                                          , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 8                                                      , \
     "Name"        : "Pica"                                                 , \
-    "Reference"   : 702                                                    , \
+    "Reference"   : Length . Point                                         , \
     "Conversion"  : "12"                                                   } ,
   { "Id"          : Length . Point                                         , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 8                                                      , \
     "Name"        : "Point"                                                , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "12700000000000/36"                                    } ,
   { "Id"          : Length . Verst                                         , \
     "Uuid"        : 0                                                      , \
     "Catalog"     : 9                                                      , \
     "Name"        : "Verst"                                                , \
-    "Reference"   : 119                                                    , \
+    "Reference"   : Length . Fermi                                         , \
     "Conversion"  : "1066800000000000000"                                    }
 ]
 """
@@ -491,19 +505,21 @@ typedef enum       {
   Decimeter   = 112, /* 10 ^ - 1 Meter */
   Centimeter  = 113, /* 10 ^ - 2 Meter */
   Millimeter  = 114, /* 10 ^ - 3 Meter */
-  Micrometre  = 115, /* 10 ^ - 6 Meter */
-  Nanometer   = 116, /* 10 ^ - 9 Meter */
-  Angstrom    = 117, /* 10 ^ -10 Meter */
-  Picometre   = 118, /* 10 ^ -12 Meter */
-  Fermi       = 119, /* 10 ^ -15 Meter */
-  Attometer   = 120, /* 10 ^ -18 Meter */
-  Zeptometre  = 121, /* 10 ^ -21 Meter */
-  Yoctometre  = 122, /* 10 ^ -24 Meter */
-  SuperString = 123, /* 10 ^ -33 Meter */
-  Planck      = 124, /* 10 ^ -36 Meter */
-  MilliPlanck = 125, /* 10 ^ -39 Meter */
-  NanoPlanck  = 126, /* 10 ^ -45 Meter */
-  Preon       = 127, /* 10 ^ -80 Meter */
+  Decimillimetre  = 115, /* 10 ^ - 4 Meter */
+  Centimillimetre = 116, /* 10 ^ - 5 Meter */
+  Micrometre  = 117, /* 10 ^ - 6 Meter */
+  Nanometer   = 118, /* 10 ^ - 9 Meter */
+  Angstrom    = 119, /* 10 ^ -10 Meter */
+  Picometre   = 120, /* 10 ^ -12 Meter */
+  Fermi       = 121, /* 10 ^ -15 Meter */
+  Attometer   = 122, /* 10 ^ -18 Meter */
+  Zeptometre  = 123, /* 10 ^ -21 Meter */
+  Yoctometre  = 124, /* 10 ^ -24 Meter */
+  SuperString = 125, /* 10 ^ -33 Meter */
+  Planck      = 126, /* 10 ^ -36 Meter */
+  MilliPlanck = 127, /* 10 ^ -39 Meter */
+  NanoPlanck  = 128, /* 10 ^ -45 Meter */
+  Preon       = 129, /* 10 ^ -80 Meter */
   /* Imperial Units */
   Mile        = 201, /* 1609.344 Meters */
   Furlong     = 202, /* 220 Yards */
