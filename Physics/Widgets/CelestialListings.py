@@ -772,6 +772,7 @@ class CelestialListings            ( TreeDock                              ) :
     uuid   = int              ( uuid                                         )
     self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
+    DB     . UnlockTables     (                                              )
     DB     . Close            (                                              )
     ##########################################################################
     item   . setData          ( 0 , Qt . UserRole , uuid                     )
@@ -800,6 +801,7 @@ class CelestialListings            ( TreeDock                              ) :
     QQ     = " " . join       ( QQ . split ( )                               )
     DB     . QueryValues      ( QQ , ( name , )                              )
     ##########################################################################
+    DB     . UnlockTables     (                                              )
     DB     . Close            (                                              )
     ##########################################################################
     return
@@ -820,6 +822,7 @@ class CelestialListings            ( TreeDock                              ) :
     QQ     = " " . join       ( QQ . split ( )                               )
     DB     . Query            ( QQ                                           )
     ##########################################################################
+    DB     . UnlockTables     (                                              )
     DB     . Close            (                                              )
     ##########################################################################
     return
