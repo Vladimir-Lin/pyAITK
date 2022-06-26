@@ -519,7 +519,7 @@ typedef enum       {
   Planck      = 126, /* 10 ^ -36 Meter */
   MilliPlanck = 127, /* 10 ^ -39 Meter */
   NanoPlanck  = 128, /* 10 ^ -45 Meter */
-  Preon       = 129, /* 10 ^ -80 Meter */
+  Preon       = 129, /* Oriphase Ground State , 10 ^ -80 Meter */
   /* Imperial Units */
   Mile        = 201, /* 1609.344 Meters */
   Furlong     = 202, /* 220 Yards */
@@ -546,7 +546,7 @@ typedef enum       {
   KoreanChi   = 401, /* 35.6 Centimeters */
   /* India Unit */
   YojanaMin   = 501, /* 13 Kilometers */
-  Yojana      = 502, /* Yojana average */
+  Yojana      = 502, /* Yojana average, 14.6 Kilometers */
   YojanaMax   = 503, /* 16 Kilometers */
   /* Nautical mile */
   Nautical    = 601, /* 1852 Meters */
