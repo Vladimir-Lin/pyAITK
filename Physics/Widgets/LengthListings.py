@@ -168,44 +168,44 @@ class LengthListings               ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                 ( self , JSON                            ) :
+  def PrepareItem                  ( self , JSON                           ) :
     ##########################################################################
-    UUID       = JSON             [ "Uuid"                                   ]
-    ID         = JSON             [ "Id"                                     ]
-    USED       = JSON             [ "Used"                                   ]
-    CATALOG    = JSON             [ "Catalog"                                ]
-    UNIT       = JSON             [ "Unit"                                   ]
-    REFERENCE  = JSON             [ "Reference"                              ]
-    CONVERSION = JSON             [ "Conversion"                             ]
-    COMMENT    = JSON             [ "Comment"                                ]
-    NAME       = JSON             [ "Name"                                   ]
-    UXID       = str              ( UUID                                     )
+    UUID       = JSON              [ "Uuid"                                  ]
+    ID         = JSON              [ "Id"                                    ]
+    USED       = JSON              [ "Used"                                  ]
+    CATALOG    = JSON              [ "Catalog"                               ]
+    UNIT       = JSON              [ "Unit"                                  ]
+    REFERENCE  = JSON              [ "Reference"                             ]
+    CONVERSION = JSON              [ "Conversion"                            ]
+    COMMENT    = JSON              [ "Comment"                               ]
+    NAME       = JSON              [ "Name"                                  ]
+    UXID       = str               ( UUID                                    )
     ##########################################################################
     RNAME      = ""
-    if                            ( REFERENCE > 0                          ) :
-      RNAME    = JSON             [ REFERENCE ] [ "Name"                     ]
+    if                             ( REFERENCE > 0                         ) :
+      RNAME    = self . LengthJson [ REFERENCE ] [ "Name"                    ]
     ##########################################################################
-    IT         = QTreeWidgetItem  (                                          )
+    IT         = QTreeWidgetItem   (                                         )
     ##########################################################################
-    IT         . setText          ( 0 , str ( ID )                           )
-    IT         . setToolTip       ( 0 , UXID                                 )
-    IT         . setData          ( 0 , Qt . UserRole , UXID                 )
-    IT         . setTextAlignment ( 0 , Qt.AlignRight                        )
+    IT         . setText           ( 0 , str ( ID )                          )
+    IT         . setToolTip        ( 0 , UXID                                )
+    IT         . setData           ( 0 , Qt . UserRole , UXID                )
+    IT         . setTextAlignment  ( 0 , Qt.AlignRight                       )
     ##########################################################################
-    IT         . setText          ( 1 , UNIT                                 )
-    IT         . setText          ( 2 , NAME                                 )
+    IT         . setText           ( 1 , UNIT                                )
+    IT         . setText           ( 2 , NAME                                )
     ##########################################################################
-    IT         . setText          ( 3 , str ( CATALOG )                      )
-    IT         . setTextAlignment ( 3 , Qt.AlignRight                        )
-    IT         . setData          ( 3 , Qt . UserRole , CATALOG              )
+    IT         . setText           ( 3 , str ( CATALOG )                     )
+    IT         . setTextAlignment  ( 3 , Qt.AlignRight                       )
+    IT         . setData           ( 3 , Qt . UserRole , CATALOG             )
     ##########################################################################
-    IT         . setText          ( 4 , RNAME                                )
-    IT         . setData          ( 4 , Qt . UserRole , REFERENCE            )
+    IT         . setText           ( 4 , RNAME                               )
+    IT         . setData           ( 4 , Qt . UserRole , REFERENCE           )
     ##########################################################################
-    IT         . setText          ( 5 , CONVERSION                           )
-    IT         . setText          ( 6 , COMMENT                              )
+    IT         . setText           ( 5 , CONVERSION                          )
+    IT         . setText           ( 6 , COMMENT                             )
     ##########################################################################
-    IT         . setData          ( 7 , Qt . UserRole , JSON                 )
+    IT         . setData           ( 7 , Qt . UserRole , JSON                )
     ##########################################################################
     return IT
   ############################################################################
