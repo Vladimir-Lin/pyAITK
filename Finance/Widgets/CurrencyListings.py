@@ -793,7 +793,7 @@ class CurrencyListings             ( TreeDock                              ) :
   ############################################################################
   def OpenGalleryItem                 ( self , item                        ) :
     ##########################################################################
-    uuid = item . data                ( Qt . UserRole                        )
+    uuid = item . data                ( 0 , Qt . UserRole                    )
     uuid = int                        ( uuid                                 )
     text = item . text                ( 6                                    )
     icon = self . windowIcon          (                                      )

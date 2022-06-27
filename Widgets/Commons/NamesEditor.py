@@ -618,12 +618,12 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     . addAction             ( 1001 ,  TRX [ "UI::Refresh" ]           )
+    self   . AppendRefreshAction   ( mm , 1001                               )
     mm     . addSeparator          (                                         )
     ##########################################################################
-    mm     . addAction             ( 1101 ,  TRX [ "UI::Insert"  ]           )
+    self   . AppendInsertAction    ( mm , 1101                               )
     if                             ( len ( items ) > 0                     ) :
-      mm   . addAction             ( 1102 ,  TRX [ "UI::Delete"  ]           )
+      self . AppendDeleteAction    ( mm , 1102                               )
       if ( self . canSpeak ( ) ) and ( len ( items ) == 1 )                  :
         mm . addAction             ( 1501 ,  TRX [ "UI::Talk"  ]             )
     ##########################################################################
@@ -633,7 +633,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
                                      True                                  , \
                                      self . ShowCompact                      )
     mm     . addSeparator          (                                         )
-    mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
+    self   . AppendTranslateAllAction ( mm , 3001                            )
     mm     . addSeparator          (                                         )
     ##########################################################################
     mm     = self . ColumnsMenu      ( mm                                    )
