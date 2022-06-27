@@ -795,7 +795,7 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     uuid = item . data                ( Qt . UserRole                        )
     uuid = int                        ( uuid                                 )
-    text = item . text                (                                      )
+    text = item . text                ( 6                                    )
     icon = self . windowIcon          (                                      )
     xsid = str                        ( uuid                                 )
     ##########################################################################
@@ -912,7 +912,7 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     if                                ( at == 1202                         ) :
       ########################################################################
-      t    = atItem . text            (                                      )
+      t    = atItem . text            ( 6                                    )
       self . OpenLogHistory . emit    ( t , str ( uuid ) , "Description"     )
       ########################################################################
       return True
