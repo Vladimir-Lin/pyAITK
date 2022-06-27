@@ -61,6 +61,7 @@ class CurrencyListings             ( TreeDock                              ) :
   emitNamesShow       = pyqtSignal (                                         )
   emitAllNames        = pyqtSignal ( list                                    )
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
+  OpenLogHistory      = pyqtSignal ( str , str , str                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -845,14 +846,21 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     if                                ( self . IsOkay ( atItem )           ) :
       ########################################################################
+      mm   . addSeparator             (                                      )
+      ########################################################################
+      msg  = self . getMenuItem       ( "ModifyItem"                         )
+      mm   . addAction                ( 1102 , msg                           )
+      ########################################################################
+      self . TryAppendEditNamesAction ( atItem , mm , 1601                   )
+      ########################################################################
+      mm   . addSeparator             (                                      )
+      ########################################################################
       msg  = self . getMenuItem       ( "CurrencyGallery"                    )
       icon = QIcon                    ( ":/images/gallery.png"               )
-      mm   . addActionWithIcon        ( 1201 , msg                           )
-    ##########################################################################
-    msg    = self . getMenuItem       ( "ModifyItem"                         )
-    mm     . addAction                ( 1102 , msg                           )
-    ##########################################################################
-    self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
+      mm   . addActionWithIcon        ( 1201 , icon , msg                    )
+      ########################################################################
+      msg  = self . getMenuItem       ( "LogHistory"                         )
+      mm   . addAction                ( 1202 ,        msg                    )
     ##########################################################################
     mm     . addSeparator             (                                      )
     ##########################################################################
@@ -900,6 +908,13 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     if                                ( at == 1201                         ) :
       self . OpenGalleryItem          ( atItem                               )
+      return True
+    ##########################################################################
+    if                                ( at == 1202                         ) :
+      ########################################################################
+      t    = atItem . text            (                                      )
+      self . OpenLogHistory . emit    ( t , str ( uuid ) , "Description"     )
+      ########################################################################
       return True
     ##########################################################################
     if                                ( at == 1601                         ) :
