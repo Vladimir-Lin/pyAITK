@@ -718,7 +718,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
       return
     ##########################################################################
     DB     = self . ConnectDB       (                                        )
-    if                              ( DB == None                           ) :
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -731,6 +731,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     DB     . UnlockTables           (                                        )
     ##########################################################################
     DB     . Close                  (                                        )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
@@ -752,7 +753,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
       return
     ##########################################################################
     DB     = self . ConnectDB       (                                        )
-    if                              ( DB == None                           ) :
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -768,6 +769,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     DB     . Close                  (                                        )
     ##########################################################################
     self   . emitRefreshItem . emit ( item , CRX                             )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
@@ -777,7 +779,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
       return
     ##########################################################################
     DB     = self . ConnectDB       (                                        )
-    if                              ( DB == None                           ) :
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -793,6 +795,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     DB     . Close                  (                                        )
     ##########################################################################
     self   . emitRefreshItem . emit ( item , CRX                             )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
@@ -802,7 +805,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
       return
     ##########################################################################
     DB     = self . ConnectDB       (                                        )
-    if                              ( DB == None                           ) :
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -818,6 +821,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     DB     . Close                  (                                        )
     ##########################################################################
     self   . emitRefreshItem . emit ( item , CRX                             )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
@@ -827,7 +831,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
       return
     ##########################################################################
     DB     = self . ConnectDB       (                                        )
-    if                              ( DB == None                           ) :
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -839,6 +843,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     DB     . UnlockTables           (                                        )
     ##########################################################################
     DB     . Close                  (                                        )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
@@ -848,7 +853,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
       return
     ##########################################################################
     DB     = self . ConnectDB       (                                        )
-    if                              ( DB == None                           ) :
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -858,6 +863,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     DB     . UnlockTables           (                                        )
     ##########################################################################
     DB     . Close                  (                                        )
+    self   . Notify                 ( 5                                      )
     ##########################################################################
     return
   ############################################################################
@@ -867,7 +873,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
       return
     ##########################################################################
     DB     = self . ConnectDB       (                                        )
-    if                              ( DB == None                           ) :
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
     TABLE  = self . Tables          [ "Names"                                ]
@@ -895,6 +901,10 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
       ########################################################################
       JSON = self . toList          (                                        )
       self . emitNewItem . emit     ( JSON                                   )
+      self . Notify                 ( 5                                      )
+      ########################################################################
+    else                                                                     :
+      self . Notify                 ( 2                                      )
     ##########################################################################
     return
   ############################################################################
@@ -905,7 +915,7 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     JSON [ "Name"      ] = item . text ( 1                                   )
     JSON [ "Locality"  ] = item . data ( 2 , Qt . UserRole                   )
     JSON [ "Relevance" ] = item . data ( 3 , Qt . UserRole                   )
-    JSON [ "Priority"  ] = item . text ( 4 , Qt . UserRole                   )
+    JSON [ "Priority"  ] = item . text ( 4                                   )
     ##########################################################################
     JSON [ "Id"        ] = int         ( JSON [ "Id"        ]                )
     JSON [ "Locality"  ] = int         ( JSON [ "Locality"  ]                )
