@@ -799,7 +799,7 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def OpenGalleryItem                 ( self , item                        ) :
+  def OpenItemGallery                 ( self , item                        ) :
     ##########################################################################
     uuid = item . data                ( 0 , Qt . UserRole                    )
     uuid = int                        ( uuid                                 )
@@ -925,7 +925,7 @@ class CurrencyListings             ( TreeDock                              ) :
       return True
     ##########################################################################
     if                                ( at == 1201                         ) :
-      self . OpenGalleryItem          ( atItem                               )
+      self . OpenItemGallery          ( atItem                               )
       return True
     ##########################################################################
     if                                ( at == 1202                         ) :
