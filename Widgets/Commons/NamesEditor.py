@@ -905,14 +905,12 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     JSON [ "Name"      ] = item . text ( 1                                   )
     JSON [ "Locality"  ] = item . data ( 2 , Qt . UserRole                   )
     JSON [ "Relevance" ] = item . data ( 3 , Qt . UserRole                   )
-    JSON [ "Priority"  ] = item . text ( 4                                   )
-    JSON [ "Relevance" ] = item . text ( 5                                   )
+    JSON [ "Priority"  ] = item . text ( 4 , Qt . UserRole                   )
     ##########################################################################
     JSON [ "Id"        ] = int         ( JSON [ "Id"        ]                )
     JSON [ "Locality"  ] = int         ( JSON [ "Locality"  ]                )
     JSON [ "Relevance" ] = int         ( JSON [ "Relevance" ]                )
     JSON [ "Priority"  ] = int         ( JSON [ "Priority"  ]                )
-    JSON [ "Relevance" ] = int         ( JSON [ "Relevance" ]                )
     ##########################################################################
     return JSON
   ############################################################################
@@ -926,14 +924,14 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     LANG = TRX                   [ "Languages" ] [ str ( L )                 ]
     ##########################################################################
     item . setText               ( 2 , str ( LANG      )                     )
-    item . setData               ( 2 , Qt . UserRole , JSON [ 2 ]            )
+    item . setData               ( 2 , Qt . UserRole , int ( JSON [ 2 ] )    )
     ##########################################################################
     item . setText               ( 3 , str ( REL       )                     )
-    item . setData               ( 3 , Qt . UserRole , JSON [ 4 ]            )
+    item . setData               ( 3 , Qt . UserRole , int ( JSON [ 4 ] )    )
     ##########################################################################
     item . setText               ( 4 , str ( JSON [  3 ] )                   )
     item . setTextAlignment      ( 4 , Qt.AlignRight                         )
-    item . setData               ( 4 , Qt . UserRole , JSON [ 3 ]            )
+    item . setData               ( 4 , Qt . UserRole , int ( JSON [ 3 ] )    )
     ##########################################################################
     return
   ############################################################################
@@ -958,14 +956,14 @@ class NamesEditor              ( TreeDock , NameItem                       ) :
     item . setText               ( 1 , str ( S         )                     )
     ##########################################################################
     item . setText               ( 2 , str ( LANG      )                     )
-    item . setData               ( 2 , Qt . UserRole , JSON [ 2 ]            )
+    item . setData               ( 2 , Qt . UserRole , int ( JSON [ 2 ] )    )
     ##########################################################################
     item . setText               ( 3 , str ( REL       )                     )
-    item . setData               ( 3 , Qt . UserRole , JSON [ 4 ]            )
+    item . setData               ( 3 , Qt . UserRole , int ( JSON [ 4 ] )    )
     ##########################################################################
     item . setText               ( 4 , str ( JSON [  3 ] )                   )
     item . setTextAlignment      ( 4 , Qt.AlignRight                         )
-    item . setData               ( 4 , Qt . UserRole , JSON [ 3 ]            )
+    item . setData               ( 4 , Qt . UserRole , int ( JSON [ 3 ] )    )
     ##########################################################################
     item . setText               ( 5 , str ( JSON [  5 ] )                   )
     item . setTextAlignment      ( 5 , Qt.AlignRight                         )
