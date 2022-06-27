@@ -112,14 +112,13 @@ class CurrencyListings             ( TreeDock                              ) :
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
-    """
-    msg  = self . Translations    [ "UI::EditNames"                          ]
+    self . AppendToolNamingAction (                                          )
+    msg  = self . getMenuItem     ( "CurrencyGallery"                        )
     A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
+    A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenOrganizationNames             )
+    A    . triggered . connect    ( self . GotoItemGallery                   )
     self . WindowActions . append ( A                                        )
-    """
     ##########################################################################
     return
   ############################################################################
@@ -785,6 +784,15 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
+    ##########################################################################
+    self . defaultOpenItemNamesEditor ( item                               , \
+                                        0                                  , \
+                                        "Currency"                         , \
+                                        "NamesEditing"                       )
+    ##########################################################################
+    return
+  ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
     self . DoCopyToClipboard ( False                                         )
@@ -800,6 +808,16 @@ class CurrencyListings             ( TreeDock                              ) :
     xsid = str                        ( uuid                                 )
     ##########################################################################
     self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
+    ##########################################################################
+    return
+  ############################################################################
+  def GotoItemGallery           ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenItemGallery    ( atItem                                     )
     ##########################################################################
     return
   ############################################################################
@@ -917,12 +935,8 @@ class CurrencyListings             ( TreeDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                                ( at == 1601                         ) :
-      ########################################################################
-      uuid = self . itemUuid          ( atItem , 0                           )
-      NAM  = self . Tables            [ "NamesEditing"                       ]
-      self . EditAllNames             ( self , "Currency" , uuid , NAM       )
-      ########################################################################
+    OKAY   = self . AtItemNamesEditor ( at , 1601 , atItem                   )
+    if                                ( OKAY                               ) :
       return True
     ##########################################################################
     return True
