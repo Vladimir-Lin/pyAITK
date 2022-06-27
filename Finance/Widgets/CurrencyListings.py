@@ -58,8 +58,9 @@ class CurrencyListings             ( TreeDock                              ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
+  emitNamesShow       = pyqtSignal (                                         )
+  emitAllNames        = pyqtSignal ( list                                    )
+  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -789,6 +790,18 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenGalleryItem                 ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( Qt . UserRole                        )
+    uuid = int                        ( uuid                                 )
+    text = item . text                (                                      )
+    icon = self . windowIcon          (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
+    ##########################################################################
+    return
+  ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
     TRX = self . Translations
@@ -829,6 +842,12 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     self   . AppendRefreshAction      ( mm , 1001                            )
     self   . AppendInsertAction       ( mm , 1101                            )
+    ##########################################################################
+    if                                ( self . IsOkay ( atItem )           ) :
+      ########################################################################
+      msg  = self . getMenuItem       ( "CurrencyGallery"                    )
+      icon = QIcon                    ( ":/images/gallery.png"               )
+      mm   . addActionWithIcon        ( 1201 , msg                           )
     ##########################################################################
     msg    = self . getMenuItem       ( "ModifyItem"                         )
     mm     . addAction                ( 1102 , msg                           )
@@ -877,6 +896,10 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     if                                ( at == 1102                         ) :
       self . RenameItem               (                                      )
+      return True
+    ##########################################################################
+    if                                ( at == 1201                         ) :
+      self . OpenGalleryItem          ( atItem                               )
       return True
     ##########################################################################
     if                                ( at == 1601                         ) :
