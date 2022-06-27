@@ -146,7 +146,7 @@ class CurrencyListings             ( TreeDock                              ) :
     ##########################################################################
     self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
-    ## self . attachActionsTool (                                               )
+    self . attachActionsTool (                                               )
     self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
