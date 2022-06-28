@@ -123,6 +123,7 @@ class AlbumGroupView              ( IconDock                               ) :
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
+    ##########################################################################
     self . LinkAction ( "Paste"      , self . PasteItems      , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     ##########################################################################
@@ -425,7 +426,6 @@ class AlbumGroupView              ( IconDock                               ) :
   @pyqtSlot                        (                                         )
   def CopyToClipboard              ( self                                  ) :
     ##########################################################################
-    print("CopyToClipboard")
     ##########################################################################
     return
   ############################################################################
@@ -454,8 +454,10 @@ class AlbumGroupView              ( IconDock                               ) :
   def AppendItemName                     ( self , item , name              ) :
     ##########################################################################
     DB       = self . ConnectDB          (                                   )
-    if                                   ( DB == None                      ) :
+    if                                   ( self . NotOkay ( DB )           ) :
       return
+    ##########################################################################
+    self     . OnBusy  . emit            (                                   )
     ##########################################################################
     TAGTAB   = self . Tables             [ "Tags"                            ]
     SUBTAB   = self . Tables             [ "Subgroups"                       ]
@@ -464,11 +466,14 @@ class AlbumGroupView              ( IconDock                               ) :
     TABLES   =                           [ NAMTAB , RELTAB                   ]
     ##########################################################################
     if                                   ( self . Grouping in [ "Tag" ]    ) :
+      ########################################################################
       TABLES . append                    ( TAGTAB                            )
       T1     =  75
       T2     = 158
       RR     =   1
+      ########################################################################
     else                                                                     :
+      ########################################################################
       TABLES . append                    ( SUBTAB                            )
       T1     = self . Relation . get     ( "t1"                              )
       T2     = self . Relation . get     ( "t2"                              )
@@ -509,6 +514,7 @@ class AlbumGroupView              ( IconDock                               ) :
                                            name                            , \
                                            self . getLocality ( )            )
     ##########################################################################
+    self     . GoRelax . emit            (                                   )
     DB       . UnlockTables              (                                   )
     DB       . Close                     (                                   )
     ##########################################################################
@@ -529,14 +535,16 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     DBA        = self . ConnectDB      (                  True               )
     ##########################################################################
-    if                                 ( DBA == None                       ) :
+    if                                 ( self . NotOkay ( DBA )            ) :
       return
     ##########################################################################
     DBG        = self . ConnectHost    ( self . GroupDB , True               )
     ##########################################################################
-    if                                 ( DBG == None                       ) :
+    if                                 ( self . NotOkay ( DBG )            ) :
       DBA      . Close                 (                                     )
       return
+    ##########################################################################
+    self       . OnBusy  . emit        (                                     )
     ##########################################################################
     RELTAB     = self . Tables         [ "Relation"                          ]
     REL        = Relation              (                                     )
@@ -578,6 +586,7 @@ class AlbumGroupView              ( IconDock                               ) :
       tooltip  = f"{U}\n{SMSG}\n{GMSG}"
       self     . assignToolTip         ( item    , tooltip                   )
     ##########################################################################
+    self       . GoRelax . emit        (                                     )
     DBG        . Close                 (                                     )
     DBA        . Close                 (                                     )
     self       . Notify                ( 2                                   )
@@ -593,6 +602,76 @@ class AlbumGroupView              ( IconDock                               ) :
   ############################################################################
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
+  ############################################################################
+  def OpenItemSubgroup             ( self , item                           ) :
+    ##########################################################################
+    uuid  = item . data            ( Qt . UserRole                           )
+    uuid  = int                    ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return False
+    ##########################################################################
+    title = item . text            (                                         )
+    tid   = self . Relation . get  ( "t2"                                    )
+    self  . AlbumSubgroup   . emit ( title , tid , str ( uuid )              )
+    ##########################################################################
+    return True
+  ############################################################################
+  def OpenCurrentSubgroup          ( self                                  ) :
+    ##########################################################################
+    atItem = self . currentItem    (                                         )
+    ##########################################################################
+    if                             ( atItem == None                        ) :
+      return False
+    ##########################################################################
+    return self . OpenItemSubgroup ( atItem                                  )
+  ############################################################################
+  def OpenItemAlbum                ( self , item                           ) :
+    ##########################################################################
+    uuid  = item . data            ( Qt . UserRole                           )
+    uuid  = int                    ( uuid                                    )
+    ##########################################################################
+    if                             ( uuid <= 0                             ) :
+      return False
+    ##########################################################################
+    title = item . text            (                                         )
+    tid   = self . Relation . get  ( "t2"                                    )
+    self  . AlbumGroup      . emit ( title , tid , str ( uuid )              )
+    ##########################################################################
+    return True
+  ############################################################################
+  def OpenCurrentAlbum          ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( atItem == None                           ) :
+      return False
+    ##########################################################################
+    return self . OpenItemAlbum ( atItem                                     )
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::OpenSubgroup" , message )  ) :
+      if            ( self . OpenCurrentSubgroup ( )                       ) :
+        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
+      else                                                                   :
+        return      { "Match" : True                                         }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::OpenAlbums"   , message )  ) :
+      if            ( self . OpenCurrentAlbum ( )                          ) :
+        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
+      else                                                                   :
+        return      { "Match" : True                                         }
+    ##########################################################################
+    return          { "Match" : False                                        }
   ############################################################################
   def FunctionsMenu          ( self , mm , uuid , item                     ) :
     ##########################################################################
@@ -726,7 +805,7 @@ class AlbumGroupView              ( IconDock                               ) :
       return True
     ##########################################################################
     if                              ( at == 1601                           ) :
-      NAM  = self . Tables          [ "Names"                                ]
+      NAM  = self . Tables          [ "NamesEditing"                         ]
       self . EditAllNames           ( self , "Albums" , uuid , NAM           )
       return True
     ##########################################################################
@@ -741,74 +820,4 @@ class AlbumGroupView              ( IconDock                               ) :
       return True
     ##########################################################################
     return True
-  ############################################################################
-  def OpenItemSubgroup             ( self , item                           ) :
-    ##########################################################################
-    uuid  = item . data            ( Qt . UserRole                           )
-    uuid  = int                    ( uuid                                    )
-    ##########################################################################
-    if                             ( uuid <= 0                             ) :
-      return False
-    ##########################################################################
-    title = item . text            (                                         )
-    tid   = self . Relation . get  ( "t2"                                    )
-    self  . AlbumSubgroup   . emit ( title , tid , str ( uuid )              )
-    ##########################################################################
-    return True
-  ############################################################################
-  def OpenCurrentSubgroup          ( self                                  ) :
-    ##########################################################################
-    atItem = self . currentItem    (                                         )
-    ##########################################################################
-    if                             ( atItem == None                        ) :
-      return False
-    ##########################################################################
-    return self . OpenItemSubgroup ( atItem                                  )
-  ############################################################################
-  def OpenItemAlbum                ( self , item                           ) :
-    ##########################################################################
-    uuid  = item . data            ( Qt . UserRole                           )
-    uuid  = int                    ( uuid                                    )
-    ##########################################################################
-    if                             ( uuid <= 0                             ) :
-      return False
-    ##########################################################################
-    title = item . text            (                                         )
-    tid   = self . Relation . get  ( "t2"                                    )
-    self  . AlbumGroup      . emit ( title , tid , str ( uuid )              )
-    ##########################################################################
-    return True
-  ############################################################################
-  def OpenCurrentAlbum          ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    ##########################################################################
-    if                          ( atItem == None                           ) :
-      return False
-    ##########################################################################
-    return self . OpenItemAlbum ( atItem                                     )
-  ############################################################################
-  def CommandParser ( self , language , message , timestamp                ) :
-    ##########################################################################
-    TRX = self . Translations
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::OpenSubgroup" , message )  ) :
-      if            ( self . OpenCurrentSubgroup ( )                       ) :
-        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
-      else                                                                   :
-        return      { "Match" : True                                         }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::OpenAlbums"   , message )  ) :
-      if            ( self . OpenCurrentAlbum ( )                          ) :
-        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
-      else                                                                   :
-        return      { "Match" : True                                         }
-    ##########################################################################
-    return          { "Match" : False                                        }
 ##############################################################################
