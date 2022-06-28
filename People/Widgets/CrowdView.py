@@ -181,7 +181,7 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `position` {ORDER}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                 [ "RelationGroup"                 ]
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
   ############################################################################
@@ -189,7 +189,7 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `reverse` {ORDER}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                 [ "RelationGroup"                 ]
     ##########################################################################
     return self . Relation . GetOwners     ( DB , RELTAB , OPTS              )
   ############################################################################
@@ -487,16 +487,19 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     TAGTAB   = self . Tables             [ "Tags"                            ]
     SUBTAB   = self . Tables             [ "Subgroups"                       ]
-    NAMTAB   = self . Tables             [ "Names"                           ]
-    RELTAB   = self . Tables             [ "RelationPeople"                  ]
+    NAMTAB   = self . Tables             [ "NamesEditing"                    ]
+    RELTAB   = self . Tables             [ "RelationGroup"                   ]
     TABLES   =                           [ NAMTAB , RELTAB                   ]
     ##########################################################################
     if                                   ( self . isTagging ( )            ) :
+      ########################################################################
       TABLES . append                    ( TAGTAB                            )
       T1     =  75
       T2     = 158
       RR     =   1
+      ########################################################################
     else                                                                     :
+      ########################################################################
       TABLES . append                    ( SUBTAB                            )
       T1     = self . Relation . get     ( "t1"                              )
       T2     = self . Relation . get     ( "t2"                              )
@@ -623,6 +626,76 @@ class CrowdView                   ( IconDock                               ) :
   ############################################################################
   def UpdateLocalityUsage             ( self                               ) :
     return catalogUpdateLocalityUsage (                                      )
+  ############################################################################
+  def OpenItemSubgroup            ( self , item                            ) :
+    ##########################################################################
+    uuid  = item . data           ( Qt . UserRole                            )
+    uuid  = int                   ( uuid                                     )
+    ##########################################################################
+    if                            ( uuid <= 0                              ) :
+      return False
+    ##########################################################################
+    title = item . text           (                                          )
+    tid   = self . Relation . get ( "t2"                                     )
+    self  . CrowdSubgroup . emit  ( title , tid , str ( uuid )               )
+    ##########################################################################
+    return True
+  ############################################################################
+  def OpenCurrentSubgroup          ( self                                  ) :
+    ##########################################################################
+    atItem = self . currentItem    (                                         )
+    ##########################################################################
+    if                             ( atItem == None                        ) :
+      return False
+    ##########################################################################
+    return self . OpenItemSubgroup ( atItem                                  )
+  ############################################################################
+  def OpenItemCrowd               ( self , item                            ) :
+    ##########################################################################
+    uuid  = item . data           ( Qt . UserRole                            )
+    uuid  = int                   ( uuid                                     )
+    ##########################################################################
+    if                            ( uuid <= 0                              ) :
+      return False
+    ##########################################################################
+    title = item . text           (                                          )
+    tid   = self . Relation . get ( "t2"                                     )
+    self  . PeopleGroup . emit    ( title , tid , str ( uuid )               )
+    ##########################################################################
+    return True
+  ############################################################################
+  def OpenCurrentCrowd          ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( atItem == None                           ) :
+      return False
+    ##########################################################################
+    return self . OpenItemCrowd ( atItem                                     )
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::OpenSubgroup" , message )  ) :
+      if            ( self . OpenCurrentSubgroup ( )                       ) :
+        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
+      else                                                                   :
+        return      { "Match" : True                                         }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::OpenAlbums"   , message )  ) :
+      if            ( self . OpenCurrentCrowd ( )                          ) :
+        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
+      else                                                                   :
+        return      { "Match" : True                                         }
+    ##########################################################################
+    return          { "Match" : False                                        }
   ############################################################################
   def FunctionsMenu          ( self , mm , uuid , item                     ) :
     ##########################################################################
@@ -783,74 +856,4 @@ class CrowdView                   ( IconDock                               ) :
       return True
     ##########################################################################
     return True
-  ############################################################################
-  def OpenItemSubgroup            ( self , item                            ) :
-    ##########################################################################
-    uuid  = item . data           ( Qt . UserRole                            )
-    uuid  = int                   ( uuid                                     )
-    ##########################################################################
-    if                            ( uuid <= 0                              ) :
-      return False
-    ##########################################################################
-    title = item . text           (                                          )
-    tid   = self . Relation . get ( "t2"                                     )
-    self  . CrowdSubgroup . emit  ( title , tid , str ( uuid )               )
-    ##########################################################################
-    return True
-  ############################################################################
-  def OpenCurrentSubgroup          ( self                                  ) :
-    ##########################################################################
-    atItem = self . currentItem    (                                         )
-    ##########################################################################
-    if                             ( atItem == None                        ) :
-      return False
-    ##########################################################################
-    return self . OpenItemSubgroup ( atItem                                  )
-  ############################################################################
-  def OpenItemCrowd               ( self , item                            ) :
-    ##########################################################################
-    uuid  = item . data           ( Qt . UserRole                            )
-    uuid  = int                   ( uuid                                     )
-    ##########################################################################
-    if                            ( uuid <= 0                              ) :
-      return False
-    ##########################################################################
-    title = item . text           (                                          )
-    tid   = self . Relation . get ( "t2"                                     )
-    self  . PeopleGroup . emit    ( title , tid , str ( uuid )               )
-    ##########################################################################
-    return True
-  ############################################################################
-  def OpenCurrentCrowd          ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    ##########################################################################
-    if                          ( atItem == None                           ) :
-      return False
-    ##########################################################################
-    return self . OpenItemCrowd ( atItem                                     )
-  ############################################################################
-  def CommandParser ( self , language , message , timestamp                ) :
-    ##########################################################################
-    TRX = self . Translations
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
-      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::OpenSubgroup" , message )  ) :
-      if            ( self . OpenCurrentSubgroup ( )                       ) :
-        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
-      else                                                                   :
-        return      { "Match" : True                                         }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "UI::OpenAlbums"   , message )  ) :
-      if            ( self . OpenCurrentCrowd ( )                          ) :
-        return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
-      else                                                                   :
-        return      { "Match" : True                                         }
-    ##########################################################################
-    return          { "Match" : False                                        }
 ##############################################################################
