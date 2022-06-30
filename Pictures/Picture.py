@@ -215,9 +215,12 @@ class Picture     (                                                        ) :
     if                        ( self . Image == None                       ) :
       return None
     ##########################################################################
-    IMG    = Image            ( self . Image                                 )
-    BLOB   = bytearray        ( IMG  . make_blob ( )                         )
-    BUFF   = np . asarray     ( BLOB , dtype = np . uint8                    )
+    try                                                                      :
+      IMG  = Image            ( self . Image                                 )
+      BLOB = bytearray        ( IMG  . make_blob ( )                         )
+      BUFF = np . asarray     ( BLOB , dtype = np . uint8                    )
+    except                                                                   :
+      return None
     ##########################################################################
     if BUFF is not None                                                      :
       return cv2 . imdecode   ( BUFF , cv2 . IMREAD_UNCHANGED                )
@@ -235,7 +238,10 @@ class Picture     (                                                        ) :
     if                        ( h <= 0                                     ) :
       return None
     ##########################################################################
-    IMG   = Image             ( self . Image                                 )
+    try                                                                      :
+      IMG = Image             ( self . Image                                 )
+    except                                                                   :
+      return None
     if                        ( Fast                                       ) :
       IMG . sample            ( w , h                                        )
     else                                                                     :
@@ -263,23 +269,26 @@ class Picture     (                                                        ) :
     if                        ( h <= 0                                     ) :
       return None
     ##########################################################################
-    IMG = Image               ( self . Image                                 )
+    try                                                                      :
+      IMG = Image             ( self . Image                                 )
+    except                                                                   :
+      return None
     ##########################################################################
-    WW  = IMG . width
-    HH  = IMG . height
+    WW    = IMG . width
+    HH    = IMG . height
     ##########################################################################
-    RR  = int                 ( x + w                                        )
-    BB  = int                 ( y + h                                        )
+    RR    = int               ( x + w                                        )
+    BB    = int               ( y + h                                        )
     ##########################################################################
     if                        ( RR > WW                                    ) :
-      w = WW - x
+      w   = WW - x
     if                        ( BB > HH                                    ) :
-      h = HH - y
+      h   = HH - y
     ##########################################################################
-    IMG . crop                ( x , y , x + w - 1 , y + h - 1                )
+    IMG   . crop              ( x , y , x + w - 1 , y + h - 1                )
     ##########################################################################
-    PIC = Picture             (                                              )
-    PIC . Image = IMG
+    PIC   = Picture           (                                              )
+    PIC   . Image = IMG
     ##########################################################################
     return PIC
   ############################################################################
@@ -291,36 +300,44 @@ class Picture     (                                                        ) :
     if                      ( self . Image == None                         ) :
       return None
     ##########################################################################
-    IMG = Image             ( self . Image                                   )
-    IMG . rotate            ( Degree                                       , \
+    try                                                                      :
+      IMG = Image           ( self . Image                                   )
+    except                                                                   :
+      return None
+    ##########################################################################
+    IMG   . rotate          ( Degree                                       , \
                               background   = wColor(Background)            , \
                               reset_coords = Reset                           )
     ##########################################################################
-    PIC = Picture           (                                                )
-    PIC . Image = IMG
+    PIC   = Picture         (                                                )
+    PIC   . Image = IMG
     ##########################################################################
     return PIC
   ############################################################################
-  def Iconize                 ( self                                       ) :
+  def Iconize                   ( self                                     ) :
     ##########################################################################
-    self . Icon = Image       ( self . Image                                 )
-    w           = self . Icon . width
-    h           = self . Icon . height
+    try                                                                      :
+      self . Icon = Image       ( self . Image                               )
+    except                                                                   :
+      return
     ##########################################################################
-    if                        ( ( w > 128 ) or ( h > 128 )                 ) :
+    w      = self . Icon . width
+    h      = self . Icon . height
+    ##########################################################################
+    if                          ( ( w > 128 ) or ( h > 128 )               ) :
       ########################################################################
-      if                      ( w > h                                      ) :
-        h = int               ( h * 128 / w                                  )
-        w = 128
+      if                        ( w > h                                    ) :
+        h  = int                ( h * 128 / w                                )
+        w  = 128
       else                                                                   :
-        w = int               ( w * 128 / h                                  )
-        h = 128
+        w  = int                ( w * 128 / h                                )
+        h  = 128
       ########################################################################
-      self . Icon . resize    ( w , h                                        )
+      self . Icon . resize      ( w , h                                      )
     ##########################################################################
-    self . Icon . format = "png"
-    self . IconData = BytesIO ( )
-    self . Icon . save        ( file = self . IconData )
+    self   . Icon . format = "png"
+    self   . IconData = BytesIO (                                            )
+    self   . Icon . save        ( file = self . IconData                     )
     ##########################################################################
     return
   ############################################################################
