@@ -513,7 +513,8 @@ class PeopleMerger                 ( TreeDock                              ) :
     if                                ( Total > 1                          ) :
       ########################################################################
       msg  = self . getMenuItem       ( "Merge"                              )
-      mm   . addAction                ( 7001 , msg                           )
+      icon = QIcon                    ( ":/images/play.png"                  )
+      mm   . addActionWithIcon        ( 7001 , icon , msg                    )
       mm   . addSeparator             (                                      )
     ##########################################################################
     self   . AppendRefreshAction      ( mm , 1001                            )
