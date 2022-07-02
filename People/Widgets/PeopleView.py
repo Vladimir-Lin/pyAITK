@@ -711,6 +711,22 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return True
   ############################################################################
+  def ImportPeopleFromClipboard         ( self                             ) :
+    ##########################################################################
+    BODY  = qApp -> clipboard() -> text (                                    )
+    UUIDs = self . GetUuidsFromText     ( BODY                               )
+    ##########################################################################
+    if                                  ( len ( UUIDs ) <= 0               ) :
+      return False
+    ##########################################################################
+    self  . SearchKey = ""
+    self  . UUIDs     = UUIDs
+    self  . Grouping  = "Searching"
+    ##########################################################################
+    self  . loading                     (                                    )
+    ##########################################################################
+    return True
+  ############################################################################
   def ExportSameNames              ( self                                  ) :
     ##########################################################################
     self . Go                      ( self . ExportSameNamesListings          )
@@ -1064,48 +1080,70 @@ class PeopleView                     ( IconDock                            ) :
     msg = self . getMenuItem     ( "AppendLists"                             )
     mm  . addActionFromMenu      ( LOM , 25355001 , msg                      )
     ##########################################################################
+    mm  . addSeparatorFromMenu   ( LOM                                       )
+    ##########################################################################
     msg = self . getMenuItem     ( "ImportLists"                             )
     mm  . addActionFromMenu      ( LOM , 25355002 , msg                      )
     ##########################################################################
-    msg = self . getMenuItem     ( "ExportSameNames"                         )
+    msg = self . getMenuItem     ( "ImportListsFromClipboard"                )
     mm  . addActionFromMenu      ( LOM , 25355003 , msg                      )
     ##########################################################################
-    msg = self . getMenuItem     ( "AllNames"                                )
+    mm  . addSeparatorFromMenu   ( LOM                                       )
+    ##########################################################################
+    msg = self . getMenuItem     ( "ExportSameNames"                         )
     mm  . addActionFromMenu      ( LOM , 25355004 , msg                      )
     ##########################################################################
-    msg = self . getMenuItem     ( "LocateSameNames"                         )
+    msg = self . getMenuItem     ( "AllNames"                                )
     mm  . addActionFromMenu      ( LOM , 25355005 , msg                      )
+    ##########################################################################
+    mm  . addSeparatorFromMenu   ( LOM                                       )
+    ##########################################################################
+    msg = self . getMenuItem     ( "LocateSameNames"                         )
+    mm  . addActionFromMenu      ( LOM , 25355006 , msg                      )
     ##########################################################################
     return mm
   ############################################################################
-  def FunctionsMenu              ( self , mm , uuid , item                 ) :
+  def FunctionsMenu               ( self , mm , uuid , item                ) :
     ##########################################################################
-    MSG   = self . getMenuItem   ( "Functions"                               )
-    LOM   = mm   . addMenu       ( MSG                                       )
+    MSG   = self . getMenuItem    ( "Functions"                              )
+    LOM   = mm   . addMenu        ( MSG                                      )
     ##########################################################################
-    msg   = self . getMenuItem   ( "Panel"                                   )
-    mm    . addActionFromMenu    ( LOM , 25351201 , msg                      )
+    msg   = self . accessibleName (                                          )
+    if                            ( len ( msg ) > 0                        ) :
+      mm  . addActionFromMenu     ( LOM , 25351201 , msg                     )
     ##########################################################################
-    if                           ( self . isSubordination ( )              ) :
+    msg   = self . getMenuItem    ( "AssignAccessibleName"                   )
+    mm    . addActionFromMenu     ( LOM , 25351202 , msg                     )
+    ##########################################################################
+    msg   = self . getMenuItem    ( "Panel"                                  )
+    mm    . addActionFromMenu     ( LOM , 25351203 , msg                     )
+    ##########################################################################
+    if                            ( self . isSubordination ( )             ) :
       ########################################################################
-      msg = self . getMenuItem   ( "AssignTables"                            )
-      mm  . addActionFromMenu    ( LOM , 25351301 , msg                      )
+      msg = self . getMenuItem    ( "AssignTables"                           )
+      mm  . addActionFromMenu     ( LOM , 25351301 , msg                     )
     ##########################################################################
-    mm    = self . IndexingMenu  ( mm , LOM , uuid , item                    )
+    mm    = self . IndexingMenu   ( mm , LOM , uuid , item                   )
     ##########################################################################
-    mm    . addSeparatorFromMenu ( LOM                                       )
+    mm    . addSeparatorFromMenu  ( LOM                                      )
     ##########################################################################
-    MSG   = self . getMenuItem   ( "WebPages"                                )
-    mm    . addActionFromMenu    ( LOM , 25351221 , MSG                      )
+    MSG   = self . getMenuItem    ( "WebPages"                               )
+    mm    . addActionFromMenu     ( LOM , 25351221 , MSG                     )
     ##########################################################################
-    MSG   = self . getMenuItem   ( "IdentWebPage"                            )
-    mm    . addActionFromMenu    ( LOM , 25351222 , MSG                      )
+    MSG   = self . getMenuItem    ( "IdentWebPage"                           )
+    mm    . addActionFromMenu     ( LOM , 25351222 , MSG                     )
     ##########################################################################
     return mm
   ############################################################################
   def RunFunctionsMenu                 ( self , at , uuid , item           ) :
     ##########################################################################
-    if                                 ( at == 25351201                    ) :
+    if                                 ( at == 25351202                    ) :
+      ########################################################################
+      self . ConfigureAccessibleName   (                                     )
+      ########################################################################
+      return
+    ##########################################################################
+    if                                 ( at == 25351203                    ) :
       ########################################################################
       ########################################################################
       return
@@ -1138,17 +1176,23 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     if                                 ( at == 25355003                    ) :
       ########################################################################
-      self . ExportSameNames           (                                     )
+      self . ImportPeopleFromClipboard (                                     )
       ########################################################################
       return True
     ##########################################################################
     if                                 ( at == 25355004                    ) :
       ########################################################################
-      self . ListAllNames              (                                     )
+      self . ExportSameNames           (                                     )
       ########################################################################
       return True
     ##########################################################################
     if                                 ( at == 25355005                    ) :
+      ########################################################################
+      self . ListAllNames              (                                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 25355006                    ) :
       ########################################################################
       self . Go                        ( self . SearchForSameNames           )
       ########################################################################
