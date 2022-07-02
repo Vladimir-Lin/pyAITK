@@ -98,19 +98,42 @@ class PeopleMerger                 ( TreeDock                              ) :
   def sizeHint                     ( self                                  ) :
     return QSize                   ( 320 , 640                               )
   ############################################################################
-  def FocusIn              ( self                                          ) :
+  def PrepareForActions           ( self                                   ) :
     ##########################################################################
-    if                     ( not self . isPrepared ( )                     ) :
+    """
+    msg  = self . getMenuItem     ( "HairGallery"                            )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . GotoItemGallery                   )
+    self . WindowActions . append ( A                                        )
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                             Enabled ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup            , Enabled   )
+    self . LinkAction ( "Delete"     , self . DeleteItems        , Enabled   )
+    self . LinkAction ( "Start"      , self . ExecuteMergePeople , Enabled   )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard    , Enabled   )
+    self . LinkAction ( "Paste"      , self . PasteItems         , Enabled   )
+    self . LinkAction ( "Import"     , self . ImportGroups       , Enabled   )
+    self . LinkAction ( "Select"     , self . SelectOne          , Enabled   )
+    self . LinkAction ( "SelectAll"  , self . SelectAll          , Enabled   )
+    self . LinkAction ( "SelectNone" , self . SelectNone         , Enabled   )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel  ( "Label"      , self . windowTitle ( )           )
-    self . LinkAction      ( "Refresh"    , self . startup                   )
-    ##########################################################################
-    self . LinkAction      ( "Paste"      , self . PasteItems                )
-    self . LinkAction      ( "Delete"     , self . DeleteItems               )
-    ##########################################################################
-    self . LinkAction      ( "SelectAll"  , self . SelectAll                 )
-    self . LinkAction      ( "SelectNone" , self . SelectNone                )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
@@ -121,16 +144,11 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def closeEvent           ( self , event                                  ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Paste"      , self . PasteItems      , False   )
-    self . LinkAction      ( "Delete"     , self . DeleteItems     , False   )
-    self . LinkAction      ( "SelectAll"  , self . SelectAll       , False   )
-    self . LinkAction      ( "SelectNone" , self . SelectNone      , False   )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
@@ -415,7 +433,7 @@ class PeopleMerger                 ( TreeDock                              ) :
       return
     ##########################################################################
     DB        = self . ConnectDB   ( UsePure = True                          )
-    if                             ( DB in [ False , None ]                ) :
+    if                             ( self . NotOkay ( DB )                 ) :
       return
     ##########################################################################
     PIT       = PeopleItem         (                                         )
@@ -465,6 +483,18 @@ class PeopleMerger                 ( TreeDock                              ) :
     ##########################################################################
     return True
   ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
+  ############################################################################
   def Menu                            ( self , pos                         ) :
     ##########################################################################
     if                                ( not self . isPrepared ( )          ) :
@@ -477,17 +507,8 @@ class PeopleMerger                 ( TreeDock                              ) :
     self   . Notify                   ( 0                                    )
     ##########################################################################
     Total  = self . topLevelItemCount (                                      )
-    items  = self . selectedItems     (                                      )
-    atItem = self . currentItem       (                                      )
-    uuid   = 0
-    ##########################################################################
-    if                                ( atItem != None                     ) :
-      uuid = atItem . data            ( 0 , Qt . UserRole                    )
-      uuid = int                      ( uuid                                 )
-    ##########################################################################
+    items , atItem , uuid = self . GetMenuDetails ( 0                        )
     mm     = MenuManager              ( self                                 )
-    ##########################################################################
-    TRX    = self . Translations
     ##########################################################################
     if                                ( Total > 1                          ) :
       ########################################################################
@@ -501,11 +522,12 @@ class PeopleMerger                 ( TreeDock                              ) :
       self . AppendDeleteAction       ( mm , 1102                            )
     ##########################################################################
     msg    = self . getMenuItem       ( "Import"                             )
-    mm     . addAction                ( 5001 , msg                           )
+    icon   = QIcon                    ( ":/images/NewProject.png"            )
+    mm     . addActionWithIcon        ( 5001 , icon , msg                    )
     ##########################################################################
     mm     . addSeparator             (                                      )
     ##########################################################################
-    mm     = self . LocalityMenu      ( mm                                   )
+    self   . LocalityMenu             ( mm                                   )
     self   . DockingMenu              ( mm                                   )
     ##########################################################################
     mm     . setFont                  ( self    . menuFont ( )               )
@@ -519,7 +541,7 @@ class PeopleMerger                 ( TreeDock                              ) :
       return True
     ##########################################################################
     if                                ( at == 1001                         ) :
-      self . startup                  (                                      )
+      self . restart                  (                                      )
       return True
     ##########################################################################
     if                                ( at == 1102                         ) :

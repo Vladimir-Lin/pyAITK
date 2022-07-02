@@ -197,12 +197,7 @@ class PeopleView                     ( IconDock                            ) :
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
-    msg  = self . Translations    [ "UI::EditNames"                          ]
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenPeopleNames                   )
-    self . WindowActions . append ( A                                        )
+    self . AppendToolNamingAction (                                          )
     ##########################################################################
     msg  = self . getMenuItem     ( "Search"                                 )
     A    = QAction                (                                          )
@@ -261,7 +256,7 @@ class PeopleView                     ( IconDock                            ) :
   def AttachActions   ( self         ,                          Enabled    ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    self . LinkAction ( "Load"       , self . LoadPeople      , Enabled      )
+    self . LinkAction ( "Load"       , self . AppendingPeople , Enabled      )
     self . LinkAction ( "Import"     , self . ImportPeople    , Enabled      )
     self . LinkAction ( "Export"     , self . ExportSameNames , Enabled      )
     self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
@@ -412,7 +407,7 @@ class PeopleView                     ( IconDock                            ) :
       return
     ##########################################################################
     DB     = self . ConnectDB (                                              )
-    if                        ( DB == None                                 ) :
+    if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
     self   . OnBusy  . emit   (                                              )
@@ -447,7 +442,7 @@ class PeopleView                     ( IconDock                            ) :
       return
     ##########################################################################
     DB     = self . ConnectDB  (                                             )
-    if                         ( DB == None                                ) :
+    if                         ( self . NotOkay ( DB )                     ) :
       return
     ##########################################################################
     self   . OnBusy  . emit    (                                             )
@@ -532,7 +527,7 @@ class PeopleView                     ( IconDock                            ) :
       SQLs . append                   ( QQ                                   )
     ##########################################################################
     DB     = self . ConnectDB         (                                      )
-    if                                ( DB == None                         ) :
+    if                                ( self . NotOkay ( DB )              ) :
       return
     ##########################################################################
     self   . OnBusy  . emit           (                                      )
@@ -555,7 +550,7 @@ class PeopleView                     ( IconDock                            ) :
   def AppendItemName                     ( self , item , name              ) :
     ##########################################################################
     DB       = self . ConnectDB          ( UsePure = True                    )
-    if                                   ( DB == None                      ) :
+    if                                   ( self . NotOkay ( DB )           ) :
       return
     ##########################################################################
     uuid     = item . data               ( Qt . UserRole                     )
@@ -628,7 +623,44 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return
   ############################################################################
-  def LoadPeople                    ( self                                 ) :
+  def JoiningPeople            ( self , UUIDs                              ) :
+    ##########################################################################
+    if                         ( len ( UUIDs ) <= 0                        ) :
+      return
+    ##########################################################################
+    DB     = self . ConnectDB  (                                             )
+    if                         ( self . NotOkay ( DB )                     ) :
+      return
+    ##########################################################################
+    self   . OnBusy  . emit    (                                             )
+    self   . setBustle         (                                             )
+    ##########################################################################
+    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    ##########################################################################
+    DB     . LockWrites        ( [ RELTAB                                  ] )
+    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
+    ##########################################################################
+    DB     . UnlockTables      (                                             )
+    self   . setVacancy        (                                             )
+    self   . GoRelax . emit    (                                             )
+    DB     . Close             (                                             )
+    ##########################################################################
+    self   . loading           (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def JoinPeopleFromFile             ( self , Filename                     ) :
+    ##########################################################################
+    UUIDs = self . LoadUuidsFromFile (        Filename                       )
+    ##########################################################################
+    if                               ( len ( UUIDs ) <= 0                  ) :
+      return
+    ##########################################################################
+    self  . JoiningPeople            ( UUIDs                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def AppendingPeople             ( self                                   ) :
     ##########################################################################
     Filters  = self . getMenuItem ( "TextFilters"                            )
     Name , t = QFileDialog . getOpenFileName                                 (
@@ -641,6 +673,8 @@ class PeopleView                     ( IconDock                            ) :
       self   . Notify             ( 1                                        )
       return
     ##########################################################################
+    VAL      =                    ( Name ,                                   )
+    self     . Go                 ( self . JoinPeopleFromFile , VAL          )
     ##########################################################################
     return
   ############################################################################
@@ -662,49 +696,18 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return
   ############################################################################
-  def ImportPeopleFromFile   ( self , Filename                             ) :
+  def ImportPeopleFromFile           ( self , Filename                     ) :
     ##########################################################################
-    TEXT     = ""
-    BODY     = ""
+    UUIDs = self . LoadUuidsFromFile (        Filename                       )
     ##########################################################################
-    try                                                                      :
-      with open              ( Filename , "rb" ) as File                     :
-        TEXT = File . read   (                                               )
-    except                                                                   :
+    if                               ( len ( UUIDs ) <= 0                  ) :
       return False
     ##########################################################################
-    try                                                                      :
-      BODY   = TEXT . decode ( "utf-8"                                       )
-    except                                                                   :
-      return False
+    self  . SearchKey = ""
+    self  . UUIDs     = UUIDs
+    self  . Grouping  = "Searching"
     ##########################################################################
-    LISTS    = BODY . split  ( "\n"                                          )
-    UUIDs    =               [                                               ]
-    ##########################################################################
-    for L in LISTS                                                           :
-      ########################################################################
-      S      = L . split     (                                               )
-      ########################################################################
-      if                     ( len ( S ) > 0                               ) :
-        ######################################################################
-        K    = S             [ 0                                             ]
-        K    = K .  strip    (                                               )
-        K    = K . rstrip    (                                               )
-        ######################################################################
-        if                   ( len ( K ) == 19                             ) :
-          ####################################################################
-          U    = int         ( K                                             )
-          if                 ( U not in UUIDs                              ) :
-            UUIDs . append   ( U                                             )
-    ##########################################################################
-    if                       ( len ( UUIDs ) <= 0                          ) :
-      return False
-    ##########################################################################
-    self     . SearchKey = ""
-    self     . UUIDs     = UUIDs
-    self     . Grouping  = "Searching"
-    ##########################################################################
-    self     . loading       (                                               )
+    self  . loading                  (                                       )
     ##########################################################################
     return True
   ############################################################################
@@ -856,7 +859,7 @@ class PeopleView                     ( IconDock                            ) :
       return False
     ##########################################################################
     DB     = self . ConnectDB      (                                         )
-    if                             ( DB == None                            ) :
+    if                             ( self . NotOkay ( DB )                 ) :
       return False
     ##########################################################################
     PAMTAB = self . Tables         [ "Parameters"                            ]
@@ -878,6 +881,7 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     DB     . UnlockTables          (                                         )
     DB     . Close                 (                                         )
+    self   . emitRestart . emit    (                                         )
     ##########################################################################
     return True
   ############################################################################
@@ -948,17 +952,10 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return
   ############################################################################
-  def OpenPeopleNames           ( self                                     ) :
+  ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
-    atItem = self . currentItem (                                            )
-    if                          ( self . NotOkay ( atItem )                ) :
-      return
-    ##########################################################################
-    uuid   = atItem . data      ( Qt . UserRole                              )
-    uuid   = int                ( uuid                                       )
-    head   = atItem . text      ( 0                                          )
-    NAM    = self . Tables      [ "NamesEditing"                             ]
-    self   . EditAllNames       ( self , "People" , uuid , NAM               )
+    self . defaultOpenItemNamesEditor ( item , "People" , "NamesEditing"     )
     ##########################################################################
     return
   ############################################################################
@@ -1064,7 +1061,7 @@ class PeopleView                     ( IconDock                            ) :
     MSG = self . getMenuItem     ( "Indexing"                                )
     LOM = mm   . addMenuFromMenu ( menu , MSG                                )
     ##########################################################################
-    msg = self . getMenuItem     ( "LoadLists"                               )
+    msg = self . getMenuItem     ( "AppendLists"                             )
     mm  . addActionFromMenu      ( LOM , 25355001 , msg                      )
     ##########################################################################
     msg = self . getMenuItem     ( "ImportLists"                             )
@@ -1129,7 +1126,7 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     if                                 ( at == 25355001                    ) :
       ########################################################################
-      self . LoadPeople                (                                     )
+      self . AppendingPeople           (                                     )
       ########################################################################
       return True
     ##########################################################################
@@ -1455,126 +1452,120 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                         ( self , pos                            ) :
+  def Menu                             ( self , pos                        ) :
     ##########################################################################
-    doMenu = self . isFunction     ( self . HavingMenu                       )
-    if                             ( not doMenu                            ) :
+    doMenu = self . isFunction         ( self . HavingMenu                   )
+    if                                 ( not doMenu                        ) :
       return False
     ##########################################################################
-    self   . Notify                ( 0                                       )
+    self   . Notify                    ( 0                                   )
     items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
-    mm     = MenuManager           ( self                                    )
+    mm     = MenuManager               ( self                                )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    if                             ( self . isSearching ( )                ) :
+    if                                 ( self . isSearching ( )            ) :
       ########################################################################
-      msg  = self . getMenuItem    ( "NotSearch"                             )
-      mm   . addAction             ( 7401 , msg                              )
+      msg  = self . getMenuItem        ( "NotSearch"                         )
+      mm   . addAction                 ( 7401 , msg                          )
     ##########################################################################
-    self   . StopIconMenu          ( mm                                      )
-    self   . AmountIndexMenu       ( mm                                      )
-    self   . AppendRefreshAction   ( mm , 1001                               )
-    self   . AppendInsertAction    ( mm , 1101                               )
-    self   . AppendSearchAction    ( mm , 1102                               )
+    self   . StopIconMenu              ( mm                                  )
+    self   . AmountIndexMenu           ( mm                                  )
+    self   . AppendRefreshAction       ( mm , 1001                           )
+    self   . AppendInsertAction        ( mm , 1101                           )
+    self   . AppendSearchAction        ( mm , 1102                           )
     ##########################################################################
-    if                             ( len ( items ) > 0                     ) :
-      self . AppendDeleteAction    ( mm , 1103                               )
+    if                                 ( len ( items ) > 0                 ) :
+      self . AppendDeleteAction        ( mm , 1103                           )
     ##########################################################################
-    if                             ( uuid > 0                              ) :
-      self . AppendRenameAction    ( mm , 1104                               )
-      self . AssureEditNamesAction ( mm , 1601 , atItem                      )
+    if                                 ( uuid > 0                          ) :
+      self . AppendRenameAction        ( mm , 1104                           )
+      self . AssureEditNamesAction     ( mm , 1601 , atItem                  )
     ##########################################################################
-    mm     . addSeparator          (                                         )
+    mm     . addSeparator              (                                     )
     ##########################################################################
-    self   . FunctionsMenu         ( mm , uuid , atItem                      )
-    self   . GroupsMenu            ( mm , uuid , atItem                      )
-    self   . SortingMenu           ( mm                                      )
-    self   . LocalityMenu          ( mm                                      )
-    self   . DockingMenu           ( mm                                      )
+    self   . FunctionsMenu             ( mm , uuid , atItem                  )
+    self   . GroupsMenu                ( mm , uuid , atItem                  )
+    self   . SortingMenu               ( mm                                  )
+    self   . LocalityMenu              ( mm                                  )
+    self   . DockingMenu               ( mm                                  )
     ##########################################################################
-    mm     . setFont               ( self    . menuFont ( )                  )
-    aa     = mm . exec_            ( QCursor . pos      ( )                  )
-    at     = mm . at               ( aa                                      )
+    mm     . setFont                   ( self    . menuFont ( )              )
+    aa     = mm . exec_                ( QCursor . pos      ( )              )
+    at     = mm . at                   ( aa                                  )
     ##########################################################################
     OKAY   = self . RunAmountIndexMenu (                                     )
-    if                             ( OKAY                                  ) :
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunDocking     ( mm , aa                                 )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunDocking         ( mm , aa                             )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunFunctionsMenu ( at , uuid , atItem                    )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunFunctionsMenu   ( at , uuid , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunGroupsMenu  ( at , uuid , atItem                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunGroupsMenu      ( at , uuid , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu ( at                                      )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunSortingMenu     ( at                                  )
+    if                                 ( OKAY                              ) :
       ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
     OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                             ( OKAY                                  ) :
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    OKAY   = self . RunStopIconMenu    ( at                                  )
+    if                                 ( OKAY                              ) :
+      return True
+    ##########################################################################
+    if                                 ( at == 1001                        ) :
       ########################################################################
-      self . restart               (                                         )
+      self . restart                   (                                     )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunStopIconMenu ( at                                     )
-    if                             ( OKAY                                  ) :
-      return True
-    ##########################################################################
-    if                             ( at == 1001                            ) :
+    if                                 ( at == 1101                        ) :
       ########################################################################
-      self . restart               (                                         )
+      self . InsertItem                (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1101                            ) :
+    if                                 ( at == 1102                        ) :
+      self . Search                    (                                     )
+      return True
+    ##########################################################################
+    if                                 ( at == 1103                        ) :
       ########################################################################
-      self . InsertItem            (                                         )
+      self . DeleteItems               (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1102                            ) :
-      self . Search                (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1103                            ) :
+    if                                 ( at == 1104                        ) :
       ########################################################################
-      self . DeleteItems           (                                         )
+      self . RenamePeople              (                                     )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1104                            ) :
-      ########################################################################
-      self . RenamePeople          (                                         )
-      ########################################################################
+    OKAY   = self . AtItemNamesEditor  ( at , 1601 , atItem                  )
+    if                                 ( OKAY                              ) :
       return True
     ##########################################################################
-    if                             ( at == 1601                            ) :
-      ########################################################################
-      NAMT = self . Tables         [ "NamesEditing"                          ]
-      self . EditAllNames          ( self , "People" , uuid , NAMT           )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                             ( at == 7401                            ) :
+    if                                 ( at == 7401                        ) :
       ########################################################################
       self . Grouping = self . OldGrouping
-      self . clear                 (                                         )
-      self . startup               (                                         )
+      self . clear                     (                                     )
+      self . startup                   (                                     )
       ########################################################################
       return True
     ##########################################################################

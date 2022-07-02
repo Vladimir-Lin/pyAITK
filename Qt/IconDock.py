@@ -71,6 +71,7 @@ class IconDock                      ( ListDock                             ) :
   emitAssignIcon      = pyqtSignal  ( QListWidgetItem , QIcon                )
   emitEmptySelections = pyqtSignal  (                                        )
   emitDoSearch        = pyqtSignal  (                                        )
+  emitRestart         = pyqtSignal  (                                        )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
@@ -117,6 +118,7 @@ class IconDock                      ( ListDock                             ) :
     self . emitAllIcons   . connect ( self . refresh                         )
     self . emitAssignIcon . connect ( self . AssignIcon                      )
     self . emitDoSearch   . connect ( self . DoActualSearch                  )
+    self . emitRestart    . connect ( self . restart                         )
     self . emitEmptySelections . connect ( self . doEmptySelections          )
     ##########################################################################
     return
@@ -609,20 +611,21 @@ class IconDock                      ( ListDock                             ) :
     ##########################################################################
     return mm
   ############################################################################
-  def AppendEditNamesAction ( self , mm , Id                               ) :
+  def AppendEditNamesAction  ( self , mm , Id                              ) :
     ##########################################################################
-    TRX = self . Translations
-    msg = TRX               [ "UI::EditNames"                                ]
-    mm  . addAction         ( Id , msg                                       )
+    TRX  = self . Translations
+    msg  = TRX               [ "UI::EditNames"                               ]
+    ICON = QIcon             ( ":/images/names.png"                          )
+    mm   . addActionWithIcon ( Id , ICON , msg                               )
     ##########################################################################
     return mm
   ############################################################################
   def AssureEditNamesAction      ( self , mm , Id , item                   ) :
     ##########################################################################
-    if                           ( item                in [ False , None ] ) :
+    if                           ( self . NotOkay ( item                 ) ) :
       return mm
     ##########################################################################
-    if                           ( self . EditAllNames in [ False , None ] ) :
+    if                           ( self . NotOkay ( self . EditAllNames  ) ) :
       return mm
     ##########################################################################
     self . AppendEditNamesAction ( mm , Id                                   )
@@ -1639,7 +1642,7 @@ class IconDock                      ( ListDock                             ) :
       return False
     ##########################################################################
     DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
+    if                              ( self . NotOkay ( DB )                ) :
       return False
     ##########################################################################
     PAMTAB  = self . Tables         [ "Parameters"                           ]
@@ -1853,6 +1856,51 @@ class IconDock                      ( ListDock                             ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def AppendToolNamingAction      ( self                                   ) :
+    ##########################################################################
+    msg  = self . Translations    [ "UI::EditNames"                          ]
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . GotoItemNamesEditor               )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def GotoItemNamesEditor        ( self                                    ) :
+    ##########################################################################
+    atItem = self . currentItem  (                                           )
+    if                           ( self . NotOkay ( atItem )               ) :
+      return
+    ##########################################################################
+    self   . OpenItemNamesEditor ( atItem                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def defaultOpenItemNamesEditor ( self , item , scope , name              ) :
+    ##########################################################################
+    uuid   = item . data         ( Qt . UserRole                             )
+    uuid   = int                 ( uuid                                      )
+    NAMTAB = self . Tables       [ name                                      ]
+    self   . EditAllNames        ( self , scope , uuid , NAMTAB              )
+    ##########################################################################
+    return
+  ############################################################################
+  def AtItemNamesEditor          ( self , at , Id , item                   ) :
+    ##########################################################################
+    if                           ( at == Id                                ) :
+      ########################################################################
+      self . OpenItemNamesEditor ( item                                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def OpenItemNamesEditor ( self , item                                    ) :
+    ##########################################################################
+    ##########################################################################
+    return
   ############################################################################
   def AppendWindowToolSeparatorAction ( self                               ) :
     ##########################################################################

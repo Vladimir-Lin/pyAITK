@@ -114,6 +114,8 @@ class CrowdView                   ( IconDock                               ) :
       A    . triggered . connect    ( self . OpenCurrentCrowd                )
       self . WindowActions . append ( A                                      )
     ##########################################################################
+    self . AppendToolNamingAction (                                          )
+    ##########################################################################
     return
   ############################################################################
   def AttachActions   ( self         ,                          Enabled    ) :
@@ -625,7 +627,11 @@ class CrowdView                   ( IconDock                               ) :
     return
   ############################################################################
   def UpdateLocalityUsage             ( self                               ) :
-    return catalogUpdateLocalityUsage (                                      )
+    ##########################################################################
+    OKAY = catalogUpdateLocalityUsage (                                      )
+    self . emitRestart . emit         (                                      )
+    ##########################################################################
+    return OKAY
   ############################################################################
   def OpenItemSubgroup            ( self , item                            ) :
     ##########################################################################
@@ -672,6 +678,12 @@ class CrowdView                   ( IconDock                               ) :
       return False
     ##########################################################################
     return self . OpenItemCrowd ( atItem                                     )
+  ############################################################################
+  def OpenItemNamesEditor             ( self , item                        ) :
+    ##########################################################################
+    self . defaultOpenItemNamesEditor ( item , "Crowds" , "NamesEditing"     )
+    ##########################################################################
+    return
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
@@ -741,127 +753,119 @@ class CrowdView                   ( IconDock                               ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                            ( self , pos                         ) :
+  def Menu                              ( self , pos                       ) :
     ##########################################################################
-    if                                ( not self . isPrepared ( )          ) :
+    if                                  ( not self . isPrepared ( )        ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction        ( self . HavingMenu                    )
-    if                                ( not doMenu                         ) :
+    doMenu = self . isFunction          ( self . HavingMenu                  )
+    if                                  ( not doMenu                       ) :
       return False
     ##########################################################################
-    self   . Notify                   ( 0                                    )
+    self   . Notify                     ( 0                                  )
     ##########################################################################
     items , atItem , uuid = self . GetMenuDetails ( pos                      )
     ##########################################################################
-    mm     = MenuManager              ( self                                 )
+    mm     = MenuManager                ( self                               )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    self   . StopIconMenu             ( mm                                   )
+    self   . StopIconMenu               ( mm                                 )
     ##########################################################################
-    if                                ( uuid > 0                           ) :
+    if                                  ( uuid > 0                         ) :
       ########################################################################
-      mg   = self . getMenuItem       ( "Subgroup"                           )
-      mm   . addAction                ( 2001 , mg                            )
+      mg   = self . getMenuItem         ( "Subgroup"                         )
+      mm   . addAction                  ( 2001      , mg                     )
       ########################################################################
-      if                              ( self . isSubgroup ( )              ) :
-        mg = self . getMenuItem       ( "Crowds"                             )
-        mm . addAction                ( 2002 , mg                            )
+      if                                ( self . isSubgroup ( )            ) :
+        mg = self . getMenuItem         ( "Crowds"                           )
+        ic = QIcon                      ( ":/images/buddy.png"               )
+        mm . addActionWithIcon          ( 2002 , ic , mg                     )
       ########################################################################
-      mg   = self . getMenuItem       ( "CopyGroupUuid"                      )
-      mm   . addAction                ( 2003 , mg                            )
+      mg   = self . getMenuItem         ( "CopyGroupUuid"                    )
+      mm   . addAction                  ( 2003      , mg                     )
       ########################################################################
-      mm   . addSeparator             (                                      )
+      mm   . addSeparator               (                                    )
     ##########################################################################
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     ##########################################################################
-    if                                ( atItem not in [ False , None ]     ) :
-      mm   = self . AppendRenameAction  ( mm , 1102                         )
+    if                                  ( self . NotOkay ( atItem )        ) :
+      ########################################################################
+      mm   = self . AppendRenameAction  ( mm , 1102                          )
+      self . AssureEditNamesAction      ( mm , 1601 , atItem                 )
     ##########################################################################
-    mm     . addSeparator             (                                      )
+    mm     . addSeparator               (                                    )
     ##########################################################################
-    if                                ( atItem != None                     ) :
-      if                              ( self . EditAllNames != None        ) :
-        mm . addAction                ( 1601 ,  TRX [ "UI::EditNames" ]      )
-        mm . addSeparator             (                                      )
+    self   . FunctionsMenu              ( mm , uuid , atItem                 )
+    self   . SortingMenu                ( mm                                 )
+    self   . LocalityMenu               ( mm                                 )
+    self   . DockingMenu                ( mm                                 )
     ##########################################################################
-    self   . FunctionsMenu            ( mm , uuid , atItem                   )
-    self   . SortingMenu              ( mm                                   )
-    self   . LocalityMenu             ( mm                                   )
-    self   . DockingMenu              ( mm                                   )
+    mm     . setFont                    ( self    . menuFont ( )             )
+    aa     = mm . exec_                 ( QCursor . pos      ( )             )
+    at     = mm . at                    ( aa                                 )
     ##########################################################################
-    mm     . setFont                  ( self    . menuFont ( )               )
-    aa     = mm . exec_               ( QCursor . pos      ( )               )
-    at     = mm . at                  ( aa                                   )
-    ##########################################################################
-    OKAY   = self . RunDocking        ( mm , aa                              )
-    if                                ( OKAY                               ) :
+    OKAY   = self . RunDocking          ( mm , aa                            )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
-    OKAY   = self . RunFunctionsMenu  ( at , uuid , atItem                   )
-    if                                ( OKAY                               ) :
+    OKAY   = self . RunFunctionsMenu    ( at , uuid , atItem                 )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
-    OKAY   = self . HandleLocalityMenu ( at                                  )
-    if                                ( OKAY                               ) :
-      ########################################################################
-      self . restart                  (                                      )
-      ########################################################################
+    OKAY   = self . HandleLocalityMenu  ( at                                 )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
-    OKAY   = self . RunSortingMenu    ( at                                   )
-    if                                ( OKAY                               ) :
+    OKAY   = self . RunSortingMenu      ( at                                 )
+    if                                  ( OKAY                             ) :
       ########################################################################
-      self . restart                  (                                      )
+      self . restart                    (                                    )
       ########################################################################
       return True
     ##########################################################################
-    OKAY   = self . RunStopIconMenu ( at                                     )
-    if                             ( OKAY                                  ) :
+    OKAY   = self . RunStopIconMenu     ( at                                 )
+    if                                  ( OKAY                             ) :
       return True
     ##########################################################################
-    if                                ( at == 1001                         ) :
+    if                                  ( at == 1001                       ) :
       ########################################################################
-      self . restart                  (                                      )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                ( at == 1101                         ) :
-      self . InsertItem               (                                      )
-      return True
-    ##########################################################################
-    if                                ( at == 1102                         ) :
-      self . RenameItem               (                                      )
-      return True
-    ##########################################################################
-    if                               ( at == 1601                          ) :
-      ########################################################################
-      NAM  = self . Tables           [ "Names"                               ]
-      self . EditAllNames            ( self , "Crowds" , uuid , NAM          )
+      self . restart                    (                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                               ( at == 2001                          ) :
+    if                                  ( at == 1101                       ) :
+      self . InsertItem                 (                                    )
+      return True
+    ##########################################################################
+    if                                  ( at == 1102                       ) :
+      self . RenameItem                 (                                    )
+      return True
+    ##########################################################################
+    OKAY   = self . AtItemNamesEditor   ( at , 1601 , atItem                 )
+    if                                  ( OKAY                             ) :
+      return True
+    ##########################################################################
+    if                                  ( at == 2001                       ) :
       ########################################################################
-      head = atItem . text           (                                       )
-      tid  = self . Relation . get   ( "t2"                                  )
-      self . CrowdSubgroup . emit    ( head , tid , str ( uuid )             )
+      head = atItem . text              (                                    )
+      tid  = self . Relation . get      ( "t2"                               )
+      self . CrowdSubgroup . emit       ( head , tid , str ( uuid )          )
       ########################################################################
       return True
     ##########################################################################
-    if                               ( at == 2002                          ) :
+    if                                  ( at == 2002                       ) :
       ########################################################################
-      head = atItem . text           (                                       )
-      tid  = self . Relation . get   ( "t2"                                  )
-      self . PeopleGroup   . emit    ( head , tid , str ( uuid )             )
+      head = atItem . text              (                                    )
+      tid  = self . Relation . get      ( "t2"                               )
+      self . PeopleGroup   . emit       ( head , tid , str ( uuid )          )
       ########################################################################
       return True
     ##########################################################################
-    if                               ( at == 2003                          ) :
+    if                                  ( at == 2003                       ) :
       ########################################################################
-      qApp . clipboard ( ). setText  ( f"{uuid}"                             )
+      qApp . clipboard ( ). setText     ( f"{uuid}"                          )
       ########################################################################
       return True
     ##########################################################################
