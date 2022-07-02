@@ -713,7 +713,7 @@ class PeopleView                     ( IconDock                            ) :
   ############################################################################
   def ImportPeopleFromClipboard         ( self                             ) :
     ##########################################################################
-    BODY  = qApp -> clipboard() -> text (                                    )
+    BODY  = qApp . clipboard ( ) . text (                                    )
     UUIDs = self . GetUuidsFromText     ( BODY                               )
     ##########################################################################
     if                                  ( len ( UUIDs ) <= 0               ) :

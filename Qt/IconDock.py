@@ -1883,6 +1883,7 @@ class IconDock                      ( ListDock                             ) :
     uuid   = item . data         ( Qt . UserRole                             )
     uuid   = int                 ( uuid                                      )
     NAMTAB = self . Tables       [ name                                      ]
+    print(NAMTAB)
     self   . EditAllNames        ( self , scope , uuid , NAMTAB              )
     ##########################################################################
     return

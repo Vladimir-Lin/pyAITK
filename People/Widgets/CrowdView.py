@@ -790,7 +790,7 @@ class CrowdView                   ( IconDock                               ) :
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     mm     = self . AppendInsertAction  ( mm , 1101                          )
     ##########################################################################
-    if                                  ( self . NotOkay ( atItem )        ) :
+    if                                  ( self . IsOkay ( atItem )         ) :
       ########################################################################
       mm   = self . AppendRenameAction  ( mm , 1102                          )
       self . AssureEditNamesAction      ( mm , 1601 , atItem                 )

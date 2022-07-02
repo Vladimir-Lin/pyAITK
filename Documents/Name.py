@@ -260,10 +260,11 @@ class Name               ( Columns                                         ) :
     U     = self . Uuid
     L     = self . tableItems  (                                             )
     IS    = self . join        ( L , " , "                                   )
-    WH    = f"where `uuid` = {U}"
+    WH    = f"where ( `uuid` = {U} )"
     SORT  = f"order by `locality` asc,`relevance` asc,`priority` asc"
     QQ    = f"select {IS} from {TABLE} {WH} {SORT} ;"
     ##########################################################################
+    QQ    = " " . join         ( QQ . split ( )                              )
     DB    . Query              ( QQ                                          )
     RR    = DB . FetchAll      (                                             )
     ##########################################################################
