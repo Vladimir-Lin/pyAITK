@@ -872,6 +872,7 @@ class PeopleView                     ( IconDock                            ) :
   def UpdateLocalityUsage          ( self                                  ) :
     ##########################################################################
     if                             ( not self . isGrouping ( )             ) :
+      self . emitRestart . emit    (                                         )
       return False
     ##########################################################################
     DB     = self . ConnectDB      (                                         )
