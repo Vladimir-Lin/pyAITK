@@ -34,8 +34,10 @@ Usages            =                                                        { \
 class Name               ( Columns                                         ) :
   ############################################################################
   def __init__           ( self                                            ) :
+    ##########################################################################
     super ( ) . __init__ (                                                   )
     self      . Clear    (                                                   )
+    ##########################################################################
     return
   ############################################################################
   def __del__  ( self )                                                      :
@@ -139,8 +141,8 @@ class Name               ( Columns                                         ) :
                    "name"                                                  , \
                    "ltime"                                                   ]
   ############################################################################
-  def pair ( self , item )                                                   :
-    v = self . get ( item )
+  def pair         ( self , item                                           ) :
+    v = self . get (        item                                             )
     return f"`{item}` = {v}"
   ############################################################################
   def valueItems ( self                                                    ) :
@@ -250,6 +252,7 @@ class Name               ( Columns                                         ) :
     ##########################################################################
     NAMEs         =              {                                           }
     for u in UUIDs                                                           :
+      ########################################################################
       self . Uuid = u
       NAMEs [ u ] = self . Fetch ( DB , TABLE                                )
     ##########################################################################
@@ -261,7 +264,7 @@ class Name               ( Columns                                         ) :
     L     = self . tableItems  (                                             )
     IS    = self . join        ( L , " , "                                   )
     WH    = f"where ( `uuid` = {U} )"
-    SORT  = f"order by `locality` asc,`relevance` asc,`priority` asc"
+    SORT  = f"order by `locality` asc, `relevance` asc, `priority` asc"
     QQ    = f"select {IS} from {TABLE} {WH} {SORT} ;"
     ##########################################################################
     QQ    = " " . join         ( QQ . split ( )                              )
@@ -276,43 +279,49 @@ class Name               ( Columns                                         ) :
     ##########################################################################
     return RR
   ############################################################################
-  def InsertSyntax               ( self , TABLE                            ) :
+  def InsertSyntax    ( self , TABLE                                       ) :
     ##########################################################################
     PU   = self . Uuid
     PL   = self . Locality
     PP   = self . Priority
     PR   = self . Relevance
     PF   = self . Flags
-    PT   = len ( self . Name                      )
-    PX   = len ( self . Name . encode ( "utf-8" ) )
+    PT   = len        ( self . Name                                          )
+    PX   = len        ( self . Name . encode ( "utf-8" )                     )
     self . Length = PX
     self . Utf8   = PT
-    return f"""insert into {TABLE}
+    ##########################################################################
+    QQ   = f"""insert into {TABLE}
                ( `uuid`,`locality`,`priority`,`relevance`,
-                `flags`,`utf8`,`length`,`name` )
-              values ( {PU},{PL},{PP},{PR},{PF},{PT},{PX},%s ) ;"""
+                 `flags`,`utf8`,`length`,`name` )
+               values ( {PU},{PL},{PP},{PR},{PF},{PT},{PX},%s ) ;"""
+    ##########################################################################
+    return " " . join ( QQ . split ( )                                       )
   ############################################################################
   def Insert                     ( self , TABLE                            ) :
     return self . InsertSyntax   (        TABLE                              )
   ############################################################################
-  def Delete                 ( self , TABLE                                ) :
-    L    =                   [ "uuid"                                        ,
-                               "locality"                                    ,
-                               "priority"                                    ,
-                               "relevance"                                   ]
-    QI   = self . QueryItems ( L                                             )
+  def Delete               ( self , TABLE                                  ) :
+    ##########################################################################
+    L  =                   [ "uuid"                                          ,
+                             "locality"                                      ,
+                             "priority"                                      ,
+                             "relevance"                                     ]
+    QI = self . QueryItems ( L                                               )
+    ##########################################################################
     return f"delete from {TABLE}{QI} ;"
   ############################################################################
-  def DeleteID               ( self , TABLE                                ) :
+  def DeleteID ( self , TABLE                                              ) :
     ID = self . Id
     return f"delete from {TABLE} where ( `id` = {ID} ) ;"
   ############################################################################
-  def DeleteIDs              ( self , TABLE , Listings                     ) :
+  def DeleteIDs      ( self , TABLE , Listings                             ) :
     UID = self . Uuid
-    DD  = "," . join          ( [ str(x) for x in Listings ]                  )
+    DD  = "," . join ( [ str(x) for x in Listings ]                          )
     return f"delete from {TABLE} where ( `uuid` = {UID} ) and ( `id` in ( {DD} ) ) ;"
   ############################################################################
   def UpdateSyntax           ( self , TABLE                                ) :
+    ##########################################################################
     L    =                   [ "uuid"                                        ,
                                "locality"                                    ,
                                "priority"                                    ,
@@ -321,38 +330,57 @@ class Name               ( Columns                                         ) :
     PF   = self . Flags
     PT   = len               ( self . Name                                   )
     PX   = len               ( self . Name . encode ( "utf-8" )              )
+    ##########################################################################
     self . Length = PX
     self . Utf8   = PT
-    return f"""update {TABLE} set `name` = %s ,
-               `flags` = {PF} , `utf8` = {PT} , `length` = {PX} {QI} ;"""
+    ##########################################################################
+    QQ   = f"""update {TABLE}
+               set `name` = %s ,
+                   `flags` = {PF} ,
+                   `utf8` = {PT} ,
+                   `length` = {PX} {QI} ;"""
+    ##########################################################################
+    return " " . join        ( QQ . split ( )                                )
   ############################################################################
   def Update                   ( self , TABLE                              ) :
     return self . UpdateSyntax (        TABLE                                )
   ############################################################################
-  def UpdateId               ( self , TABLE                                ) :
+  def UpdateId        ( self , TABLE                                       ) :
+    ##########################################################################
     ID   = self . Id
     PU   = self . Uuid
     PL   = self . Locality
     PP   = self . Priority
     PR   = self . Relevance
     PF   = self . Flags
-    PT   = len ( self . Name                      )
-    PX   = len ( self . Name . encode ( "utf-8" ) )
+    PT   = len        ( self . Name                                          )
+    PX   = len        ( self . Name . encode ( "utf-8" )                     )
+    ##########################################################################
     self . Length = PX
     self . Utf8   = PT
-    return f"""update {TABLE}
-               set `name` = %s , `uuid` = {PU} , `locality` = {PL} ,
-               `priority` = {PP} , `relevance` = {PR} , `flags` = {PF} ,
-               `utf8` = {PT} , `length` = {PX}
+    ##########################################################################
+    QQ   = f"""update {TABLE}
+               set `name` = %s ,
+                   `uuid` = {PU} ,
+                   `locality` = {PL} ,
+                   `priority` = {PP} ,
+                   `relevance` = {PR} ,
+                   `flags` = {PF} ,
+                   `utf8` = {PT} ,
+                   `length` = {PX}
                where ( `id` = {ID} ) ;"""
+    ##########################################################################
+    return " " . join ( QQ . split ( )                                       )
   ############################################################################
   def LastPosition              ( self , DB , TABLE                        ) :
+    ##########################################################################
     QQ    = self . LastPriority (             TABLE                          )
     ID    = -1
     DB    . Query               ( QQ                                         )
     RR    = DB . FetchOne       (                                            )
     if                          ( ( RR != None ) and ( len ( RR ) > 0 )    ) :
       ID  = RR                  [ 0                                          ]
+    ##########################################################################
     return ID + 1
   ############################################################################
   def GetPosition              ( self , DB , TABLE                         ) :
@@ -366,119 +394,132 @@ class Name               ( Columns                                         ) :
     ##########################################################################
     return -1
   ############################################################################
-  def UpdateNameById            ( self , DB , TABLE                        ) :
+  def UpdateNameById        ( self , DB , TABLE                            ) :
     ##########################################################################
     ID   = self . Id
-    PT   = len                  ( self . Name                                )
-    PX   = len                  ( self . Name . encode ( "utf-8" )           )
+    PT   = len              ( self . Name                                    )
+    PX   = len              ( self . Name . encode ( "utf-8" )               )
     self . Length = PX
     self . Utf8   = PT
     QQ   = f"update {TABLE} set `name` = %s , `utf8` = {PT} , `length` = {PX} where ( `id` = {ID} ) ;"
     ##########################################################################
-    return DB . QueryValues     ( QQ , ( self . Name ,                     ) )
+    return DB . QueryValues ( QQ , ( self . Name , )                         )
   ############################################################################
-  def UpdateParametersById      ( self , DB , TABLE                        ) :
+  def UpdateParametersById ( self , DB , TABLE                        ) :
     ##########################################################################
     ID = self . Id
     PL = self . Locality
     PP = self . Priority
     PR = self . Relevance
-    QQ = f"update {TABLE} set `locality` = {PL} , `priority` = {PP} , `relevance` = {PR} where ( `id` = {ID} ) ;"
+    QQ = f"""update {TABLE}
+             set `locality` = {PL} ,
+                 `priority` = {PP} ,
+                 `relevance` = {PR}
+             where ( `id` = {ID} ) ;"""
+    QQ = " " . join        ( QQ . split ( )                                  )
     ##########################################################################
-    R  = DB . Query           ( QQ                                         )
+    R  = DB . Query        ( QQ                                              )
     ##########################################################################
     return R
   ############################################################################
-  def Append                    ( self , DB , TABLE                        ) :
+  def Append                              ( self , DB , TABLE              ) :
     ##########################################################################
-    if                          ( self . Uuid <= 0                         ) :
+    if                                    ( self . Uuid <= 0               ) :
       return False
+    ##########################################################################
     self . Priority = self . LastPosition ( DB , TABLE                       )
-    QQ   = self . InsertSyntax  ( TABLE                                      )
+    QQ   = self . InsertSyntax            ( TABLE                            )
     ##########################################################################
-    return DB   . QueryValues   ( QQ , ( self . Name ,                     ) )
+    return DB   . QueryValues             ( QQ , ( self . Name , )           )
   ############################################################################
-  def Sync                      ( self , DB , TABLE                        ) :
+  def Sync                   ( self , DB , TABLE                           ) :
     ##########################################################################
-    if                          ( self . Uuid <= 0                         ) :
+    if                       ( self . Uuid <= 0                            ) :
       return False
-    QQ   = self . UpdateSyntax  ( TABLE                                      )
     ##########################################################################
-    return DB   . QueryValues   ( QQ , ( self . Name ,                     ) )
+    QQ = self . UpdateSyntax ( TABLE                                         )
+    ##########################################################################
+    return DB . QueryValues  ( QQ , ( self . Name , )                        )
   ############################################################################
-  def SyncId                    ( self , DB , TABLE                        ) :
+  def SyncId                ( self , DB , TABLE                            ) :
     ##########################################################################
-    if                          ( self . Id < 0                            ) :
+    if                      ( self . Id < 0                                ) :
       return False
-    QQ   = self . UpdateId      ( TABLE                                      )
+    QQ = self . UpdateId    ( TABLE                                          )
     ##########################################################################
-    return DB . QueryValues     ( QQ , ( self . Name ,                     ) )
+    return DB . QueryValues ( QQ , ( self . Name , )                         )
   ############################################################################
-  def Assure                       ( self , DB , TABLE                     ) :
-    if                             ( self . Id <= 0                        ) :
-      IDX  = self . GetPosition    (        DB , TABLE                       )
-      if                           ( IDX >= 0                              ) :
+  def Assure                    ( self , DB , TABLE                        ) :
+    ##########################################################################
+    if                          ( self . Id <= 0                           ) :
+      IDX  = self . GetPosition (        DB , TABLE                          )
+      if                        ( IDX >= 0                                 ) :
         self . Id = IDX
-    if                             ( self . Id >  0                        ) :
-      return self . SyncId         ( DB , TABLE                              )
-    return   self . Append         ( DB , TABLE                              )
-  ############################################################################
-  def ObtainsById                  ( self , DB , TABLE                     ) :
     ##########################################################################
-    ID   = self . Id
-    IT   = self . items            (                                         )
-    QQ   = f"select {IT} from {TABLE} where `id` = {ID} ;"
-    DB   . Query                   ( QQ                                      )
-    IT   = DB . FetchOne           (                                         )
-    if                             ( ( None != IT ) and ( len ( IT ) > 0 ) ) :
-      self . obtain                ( IT                                      )
+    if                          ( self . Id >  0                           ) :
+      return self . SyncId      ( DB , TABLE                                 )
+    ##########################################################################
+    return   self . Append      ( DB , TABLE                                 )
+  ############################################################################
+  def ObtainsById          ( self , DB , TABLE                             ) :
+    ##########################################################################
+    ID     = self . Id
+    IT     = self . items  (                                                 )
+    QQ     = f"select {IT} from {TABLE} where `id` = {ID} ;"
+    DB     . Query         ( QQ                                              )
+    IT     = DB . FetchOne (                                                 )
+    ##########################################################################
+    if                     ( ( None != IT ) and ( len ( IT ) > 0 )         ) :
+      self . obtain        ( IT                                              )
       return True
     ##########################################################################
     return False
   ############################################################################
-  def ObtainsForPriority           ( self , DB , TABLE                     ) :
+  def ObtainsForPriority    ( self , DB , TABLE                            ) :
     ##########################################################################
-    PU  = self . Uuid
-    PL  = self . Locality
-    PR  = self . Relevance
-    L   =                          [ "uuid" , "locality" , "relevance"       ]
-    QI  = self . QueryItems        ( L , "order by `priority` asc"           )
+    PU = self . Uuid
+    PL = self . Locality
+    PR = self . Relevance
+    L  =                    [ "uuid" , "locality" , "relevance"              ]
+    QI = self . QueryItems  ( L , "order by `priority` asc"                  )
     ##########################################################################
-    return DB  . ObtainUuids       ( f"select `id` from {TABLE} {QI} ;"      )
+    return DB . ObtainUuids ( f"select `id` from {TABLE} {QI} ;"             )
   ############################################################################
-  def FindByName                   ( self , DB , TABLE , Name              ) :
+  def FindByName          ( self , DB , TABLE , Name                       ) :
     ##########################################################################
     SPT   = "%" + Name + "%"
     QQ    = f"""select `uuid` from {TABLE} where `name` like %s order by `ltime` desc ;"""
-    QQ    = QQ  . replace          ( "\n" , ""                               )
-    QQ    = " " . join             ( QQ . split ( )                          )
-    DB    . QueryValues            ( QQ , ( SPT , )                          )
-    Lists = DB . FetchAll          (                                         )
-    if                             ( not Lists                             ) :
+    QQ    = QQ  . replace ( "\n" , ""                                        )
+    QQ    = " " . join    ( QQ . split ( )                                   )
+    DB    . QueryValues   ( QQ , ( SPT , )                                   )
+    Lists = DB . FetchAll (                                                  )
+    ##########################################################################
+    if                    ( not Lists                                      ) :
       return UU
+    ##########################################################################
     for x in Lists                                                           :
-      UU . append                  ( x [ index ]                             )
+      UU  . append        ( x [ index ]                                      )
     ##########################################################################
     return UU
   ############################################################################
-  def ObtainsIDs                   ( self , DB , Table                     ) :
+  def ObtainsIDs            ( self , DB , Table                            ) :
     ##########################################################################
-    UX   = self . Uuid
-    RX   = self . Relevance
-    QQ   = f"""select `id` from {Table}
-               where `uuid` = {UX} and `relevance` = {RX}
-               order by `priority`,`locality` asc ;"""
-    QQ   = QQ  . replace           ( "\n" , ""                               )
-    QQ   = " " . join              ( QQ . split ( )                          )
+    UX = self . Uuid
+    RX = self . Relevance
+    QQ = f"""select `id` from {Table}
+             where `uuid` = {UX} and `relevance` = {RX}
+             order by `priority`,`locality` asc ;"""
+    QQ = QQ   . replace     ( "\n" , ""                                      )
+    QQ = " "  . join        ( QQ . split ( )                                 )
     ##########################################################################
-    return DB  . ObtainUuids       ( QQ                                      )
+    return DB . ObtainUuids ( QQ                                             )
   ############################################################################
-  def UpdateName                   ( self , DB , Table                     ) :
+  def UpdateName             ( self , DB , Table                           ) :
     ##########################################################################
     ID   = self . Id
     LX   = self . Locality
-    PT   = len ( self . Name                      )
-    PX   = len ( self . Name . encode ( "utf-8" ) )
+    PT   = len               ( self . Name                                   )
+    PX   = len               ( self . Name . encode ( "utf-8" )              )
     self . Length = PX
     self . Utf8   = PT
     QQ   = f"""update {Table}
@@ -487,10 +528,10 @@ class Name               ( Columns                                         ) :
                `utf8` = {PT} ,
                `length` = {PX}
                where `id` = {ID} ;"""
-    QQ   = QQ  . replace           ( "\n" , ""                               )
-    QQ   = " " . join              ( QQ . split ( )                          )
+    QQ   = QQ  . replace     ( "\n" , ""                                     )
+    QQ   = " " . join        ( QQ . split ( )                                )
     ##########################################################################
-    return DB  . QueryValues       ( QQ , ( self . Name , )                  )
+    return DB  . QueryValues ( QQ , ( self . Name , )                        )
   ############################################################################
   def Editing                      ( self , DB , Table                     ) :
     ##########################################################################
@@ -507,60 +548,74 @@ class Name               ( Columns                                         ) :
   ############################################################################
   ## This will have a Table Locked
   ############################################################################
-  def UpdatePriority               ( self , DB , Table , IDs               ) :
+  def UpdatePriority    ( self , DB , Table , IDs                          ) :
     ##########################################################################
-    if                             ( len ( IDs ) <= 0                      ) :
+    if                  ( len ( IDs ) <= 0                                 ) :
       return False
-    CC     = 0
-    DB     . LockWrites            ( [ Table ]                               )
+    ##########################################################################
+    CC   = 0
+    DB   . LockWrites   ( [ Table ]                                          )
+    ##########################################################################
     for id in IDs                                                            :
-      QQ   = f"update {Table} set `priority` = {CC} where `id` = {id} ;"
-      DB   . Query                 ( QQ                                      )
-      CC  += 1
-    DB     . UnlockTables          (                                         )
+      ########################################################################
+      QQ = f"update {Table} set `priority` = {CC} where `id` = {id} ;"
+      DB . Query        ( QQ                                                 )
+      CC = CC + 1
+    ##########################################################################
+    DB   . UnlockTables (                                                    )
     ##########################################################################
     return True
   ############################################################################
-  def UpdateFlagsById          ( self , DB , Table                         ) :
+  def UpdateFlagsById ( self , DB , Table                                  ) :
     ##########################################################################
     ID = self . Id
     F  = self . Flags
     QQ = f"update {Table} set `flags` = {F} where ( `id` = {ID} ) ;"
-    DB . Query                 ( QQ                                          )
+    DB . Query        ( QQ                                                   )
     ##########################################################################
     return True
   ############################################################################
-  def UpdateSmartly                ( self , DB , Table                     ) :
+  def UpdateSmartly                    ( self , DB , Table                 ) :
     ##########################################################################
-    if                             ( self . Id < 0                         ) :
-      if                           ( len ( self . Name ) > 0               ) :
+    if                                 ( self . Id < 0                     ) :
+      ########################################################################
+      if                               ( len ( self . Name ) > 0           ) :
+        ######################################################################
         ## Append a new name
-        Priority = self . LastPosition ( DB , Table )
-        self . set                 ( "Priority" , Priority                   )
-        DB   . LockWrite           ( Table                                   )
-        self . Assure              ( DB         , Table                      )
-        DB   . UnlockTables        (                                         )
+        ######################################################################
+        Priority = self . LastPosition ( DB , Table                          )
+        self     . set                 ( "Priority" , Priority               )
+        DB       . LockWrite           ( Table                               )
+        self     . Assure              ( DB         , Table                  )
+        DB       . UnlockTables        (                                     )
+        ######################################################################
     else                                                                     :
-      if                           ( len ( self . Name ) > 0               ) :
+      ########################################################################
+      if                               ( len ( self . Name ) > 0           ) :
+        ######################################################################
         ## Update name content by Id
-        ID   = self . Id
-        LX   = self . Locality
-        QQ   = f"""update {Table}
-                   set `name` = %s ,
-                   `locality` = {LX} ,
-                     `length` = length(`name`)
-                   where `id` = {ID} ;"""
-        QQ   = QQ  . replace       ( "\n" , ""                               )
-        QQ   = " " . join          ( QQ . split ( )                          )
-        DB   . LockWrite           ( [ Table ]                               )
-        DB   . QueryValues         ( QQ , ( self . Name , )                  )
-        DB   . UnlockTables        (                                         )
+        ######################################################################
+        ID       = self . Id
+        LX       = self . Locality
+        QQ       = f"""update {Table}
+                       set `name` = %s ,
+                           `locality` = {LX} ,
+                           `length` = length(`name`)
+                       where `id` = {ID} ;"""
+        QQ       = QQ  . replace       ( "\n" , ""                           )
+        QQ       = " " . join          ( QQ . split ( )                      )
+        DB       . LockWrite           ( [ Table ]                           )
+        DB       . QueryValues         ( QQ , ( self . Name , )              )
+        DB       . UnlockTables        (                                     )
+        ######################################################################
       else                                                                   :
+        ######################################################################
         ## Name is empty, delete it
-        QQ   = self . DeleteId     ( Table                                   )
-        DB   . LockWrite           ( Table                                   )
-        DB   . Query               ( QQ                                      )
-        DB   . UnlockTables        (                                         )
+        ######################################################################
+        QQ       = self . DeleteId     ( Table                               )
+        DB       . LockWrite           ( Table                               )
+        DB       . Query               ( QQ                                  )
+        DB       . UnlockTables        (                                     )
     ##########################################################################
     return True
   ############################################################################
@@ -593,7 +648,7 @@ class Name               ( Columns                                         ) :
     ##########################################################################
     return LISTS
   ############################################################################
-  def UpdateUuidPriorityById   ( self , DB , Table                         ) :
+  def UpdateUuidPriorityById ( self , DB , Table                           ) :
     ##########################################################################
     ID = self . Id
     UX = self . Uuid
@@ -602,8 +657,8 @@ class Name               ( Columns                                         ) :
     QQ = f"""update {Table}
              set `uuid` = {UX} , `priority` = {PY}
              where ( `id` = {ID} ) ;"""
-    QQ = " " . join ( QQ . split ( ) )
-    DB . Query                 ( QQ                                          )
+    QQ = " " . join          ( QQ . split ( )                                )
+    DB . Query               ( QQ                                            )
     ##########################################################################
     return True
   ############################################################################
