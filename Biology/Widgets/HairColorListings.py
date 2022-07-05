@@ -57,7 +57,7 @@ class HairColorListings            ( TreeDock                              ) :
   HavingMenu          = 1371434312
   ############################################################################
   emitNamesShow       = pyqtSignal (                                         )
-  emitAllNames        = pyqtSignal ( dict                                    )
+  emitAllNames        = pyqtSignal ( list                                    )
   emitAssignAmounts   = pyqtSignal ( str , int , int                         )
   PeopleGroup         = pyqtSignal ( str , int , str                         )
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
@@ -188,10 +188,21 @@ class HairColorListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem               ( self , UUID , NAME                       ) :
+  def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
-    IT = self . PrepareUuidItem ( 0    , UUID , NAME                         )
-    IT . setTextAlignment       ( 1    , Qt . AlignRight                     )
+    UUID = JSON                   [ "Uuid"                                   ]
+    NAME = JSON                   [ "Name"                                   ]
+    R    = JSON                   [ "R"                                      ]
+    G    = JSON                   [ "G"                                      ]
+    B    = JSON                   [ "B"                                      ]
+    ICON = self . CreateColorIcon ( R , G , B , 24 , 24                      )
+    ##########################################################################
+    IT   = self . PrepareUuidItem ( 0 , UUID , NAME                          )
+    IT   . setIcon                ( 0 , ICON                                 )
+    ##########################################################################
+    IT   . setTextAlignment       ( 1 , Qt . AlignRight                      )
+    ##########################################################################
+    IT   . setData                ( 2 , Qt . UserRole , JSON                 )
     ##########################################################################
     return IT
   ############################################################################
@@ -238,18 +249,15 @@ class HairColorListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                       (        dict                              )
-  def refresh                     ( self , JSON                            ) :
+  @pyqtSlot                       (        list                              )
+  def refresh                     ( self , LISTs                           ) :
     ##########################################################################
     self   . clear                (                                          )
     self   . setEnabled           ( False                                    )
     ##########################################################################
-    UUIDs  = JSON                 [ "UUIDs"                                  ]
-    NAMEs  = JSON                 [ "NAMEs"                                  ]
-    ##########################################################################
-    for U in UUIDs                                                           :
+    for JSON in LISTs                                                        :
       ########################################################################
-      IT   = self . PrepareItem   ( U , NAMEs [ U ]                          )
+      IT   = self . PrepareItem   ( JSON                                     )
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     self   . setEnabled           ( True                                     )
@@ -257,47 +265,87 @@ class HairColorListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def loading                         ( self                               ) :
+  def LoadHairListings                ( self , DB                          ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      self . emitNamesShow . emit     (                                      )
-      return
-    ##########################################################################
-    self    . Notify                  ( 3                                    )
-    self    . OnBusy  . emit          (                                      )
-    self    . setBustle               (                                      )
-    ##########################################################################
-    FMT     = self . Translations     [ "UI::StartLoading"                   ]
-    MSG     = FMT . format            ( self . windowTitle ( )               )
-    self    . ShowStatus              ( MSG                                  )
-    ##########################################################################
-    self    . ObtainsInformation      ( DB                                   )
+    LISTs   =                         [                                      ]
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
-    ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . GoRelax . emit          (                                      )
-    self    . ShowStatus              ( ""                                   )
-    DB      . Close                   (                                      )
-    ##########################################################################
     if                                ( len ( UUIDs ) <= 0                 ) :
-      self . emitNamesShow . emit     (                                      )
+      return LISTs
+    ##########################################################################
+    HAIRTAB = self . Tables           [ "Hairs"                              ]
+    NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ    = f"""select `id`,`name`,`formula`,`parameter`,`R`,`G`,`B` from {HAIRTAB}
+                 where ( `uuid` = {UUID} ) ;"""
+      QQ    = " " . join              ( QQ . split ( )                       )
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      ########################################################################
+      if                              ( self . NotOkay ( RR )              ) :
+        continue
+      ########################################################################
+      if                              ( len ( RR ) != 7                    ) :
+        continue
+      ########################################################################
+      ID    = int                     ( RR [ 0                             ] )
+      NA    = self . assureString     ( RR [ 1                             ] )
+      FM    = int                     ( RR [ 2                             ] )
+      PA    = float                   ( RR [ 3                             ] )
+      R     = int                     ( RR [ 4                             ] )
+      G     = int                     ( RR [ 5                             ] )
+      B     = int                     ( RR [ 6                             ] )
+      ########################################################################
+      J     =                         { "Id"         : ID                  , \
+                                        "Uuid"       : UUID                , \
+                                        "Name"       : NAMEs [ UUID ]      , \
+                                        "Identifier" : NA                  , \
+                                        "Formula"    : FM                  , \
+                                        "Parameter"  : PA                  , \
+                                        "R"          : R                   , \
+                                        "G"          : G                   , \
+                                        "B"          : B                     }
+      LISTs . append                  ( J                                    )
+    ##########################################################################
+    return UUIDs , LISTs
+  ############################################################################
+  def loading                               ( self                         ) :
+    ##########################################################################
+    DB            = self . ConnectDB        (                                )
+    if                                      ( self . NotOkay ( DB )        ) :
+      self        . emitNamesShow . emit    (                                )
       return
     ##########################################################################
-    JSON             =                {                                      }
-    JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
+    self          . Notify                  ( 3                              )
+    self          . OnBusy  . emit          (                                )
+    self          . setBustle               (                                )
     ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
+    FMT           = self . Translations     [ "UI::StartLoading"             ]
+    MSG           = FMT . format            ( self . windowTitle ( )         )
+    self          . ShowStatus              ( MSG                            )
     ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      VAL  =                          ( UUIDs ,                              )
-      self . Go                       ( self . ReportBelongings , VAL        )
+    self          . ObtainsInformation      ( DB                             )
+    UUIDs , LISTs = self . LoadHairListings ( DB                             )
     ##########################################################################
-    self   . Notify                   ( 5                                    )
+    self          . setVacancy              (                                )
+    self          . GoRelax . emit          (                                )
+    self          . ShowStatus              ( ""                             )
+    DB            . Close                   (                                )
+    ##########################################################################
+    if                                      ( len ( LISTs ) <= 0           ) :
+      self        . emitNamesShow . emit    (                                )
+      return
+    ##########################################################################
+    self          . emitAllNames  . emit    ( LISTs                          )
+    ##########################################################################
+    OKAY          = self . isColumnHidden   ( 1                              )
+    if                                      ( not OKAY                     ) :
+      VAL         =                         ( UUIDs ,                        )
+      self        . Go                      ( self . ReportBelongings , VAL  )
+    ##########################################################################
+    self          . Notify                  ( 5                              )
     ##########################################################################
     return
   ############################################################################

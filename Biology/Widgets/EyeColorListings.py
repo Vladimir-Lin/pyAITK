@@ -279,7 +279,7 @@ class EyeColorListings             ( TreeDock                              ) :
     if                                ( len ( UUIDs ) <= 0                 ) :
       return LISTs
     ##########################################################################
-    EYETAB  = self . Tables [ "Eyes"                                         ]
+    EYETAB  = self . Tables           [ "Eyes"                               ]
     NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     for UUID in UUIDs                                                        :
