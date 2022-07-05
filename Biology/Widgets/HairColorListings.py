@@ -492,7 +492,7 @@ class HairColorListings            ( TreeDock                              ) :
     icon = self . windowIcon          (                                      )
     xsid = str                        ( uuid                                 )
     ##########################################################################
-    self . ShowPersonalGallery . emit ( text , 20 , xsid , icon              )
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
     ##########################################################################
     return
   ############################################################################

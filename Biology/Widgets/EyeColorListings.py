@@ -24,9 +24,13 @@ from   PyQt5 . QtCore                 import QPointF
 from   PyQt5 . QtCore                 import QSize
 from   PyQt5 . QtCore                 import QSizeF
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QPainter
+from   PyQt5 . QtGui                  import QColor
+from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QPixmap
+from   PyQt5 . QtGui                  import QImage
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
@@ -57,7 +61,7 @@ class EyeColorListings             ( TreeDock                              ) :
   HavingMenu          = 1371434312
   ############################################################################
   emitNamesShow       = pyqtSignal (                                         )
-  emitAllNames        = pyqtSignal ( dict                                    )
+  emitAllNames        = pyqtSignal ( list                                    )
   emitAssignAmounts   = pyqtSignal ( str , int , int                         )
   PeopleGroup         = pyqtSignal ( str , int , str                         )
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
@@ -109,27 +113,27 @@ class EyeColorListings             ( TreeDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 240 , 360 )                       )
   ############################################################################
-  def PrepareForActions           ( self                                   ) :
+  def PrepareForActions                    ( self                          ) :
     ##########################################################################
-    """
-    self . AppendToolNamingAction (                                          )
+    self . AppendToolNamingAction          (                                 )
     ##########################################################################
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
-    msg  = self . getMenuItem     ( "HairGallery"                            )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . GotoItemGallery                   )
-    self . WindowActions . append ( A                                        )
+    msg  = self . getMenuItem              ( "EyesGallery"                   )
+    A    = QAction                         (                                 )
+    ICON = QIcon                           ( ":/images/gallery.png"          )
+    A    . setIcon                         ( ICON                            )
+    A    . setToolTip                      ( msg                             )
+    A    . triggered     . connect         ( self . GotoItemGallery          )
+    self . WindowActions . append          ( A                               )
     ##########################################################################
-    msg  = self . getMenuItem     ( "Crowds"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . GotoItemCrowd                     )
-    self . WindowActions . append ( A                                        )
-    """
+    msg  = self . getMenuItem              ( "Crowds"                        )
+    A    = QAction                         (                                 )
+    ICON = QIcon                           ( ":/images/viewpeople.png"       )
+    A    . setIcon                         ( ICON                            )
+    A    . setToolTip                      ( msg                             )
+    A    . triggered     . connect         ( self . GotoItemCrowd            )
+    self . WindowActions . append          ( A                               )
     ##########################################################################
     return
   ############################################################################
@@ -190,10 +194,31 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem               ( self , UUID , NAME                       ) :
+  def CreateColorIcon      ( self , R , G , B                              ) :
     ##########################################################################
-    IT = self . PrepareUuidItem ( 0    , UUID , NAME                         )
-    IT . setTextAlignment       ( 1    , Qt . AlignRight                     )
+    IMG = QImage           ( 24 , 24 , QImage . Format_RGB32                 )
+    IMG . fill             ( QColor ( R , G , B )                            )
+    ##########################################################################
+    PIX = QPixmap          (                                                 )
+    PIX . convertFromImage ( IMG                                             )
+    ##########################################################################
+    return QIcon           ( PIX                                             )
+  ############################################################################
+  def PrepareItem                 ( self , JSON                            ) :
+    ##########################################################################
+    UUID = JSON                   [ "Uuid"                                   ]
+    NAME = JSON                   [ "Name"                                   ]
+    R    = JSON                   [ "R"                                      ]
+    G    = JSON                   [ "G"                                      ]
+    B    = JSON                   [ "B"                                      ]
+    ICON = self . CreateColorIcon ( R , G , B                                )
+    ##########################################################################
+    IT   = self . PrepareUuidItem ( 0 , UUID , NAME                          )
+    IT   . setIcon                ( 0 , ICON                                 )
+    ##########################################################################
+    IT   . setTextAlignment       ( 1 , Qt . AlignRight                      )
+    ##########################################################################
+    IT   . setData                ( 2 , Qt . UserRole , JSON                 )
     ##########################################################################
     return IT
   ############################################################################
@@ -240,24 +265,67 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                       (        dict                              )
-  def refresh                     ( self , JSON                            ) :
+  @pyqtSlot                       (        list                              )
+  def refresh                     ( self , LISTs                           ) :
     ##########################################################################
     self   . clear                (                                          )
     self   . setEnabled           ( False                                    )
     ##########################################################################
-    UUIDs  = JSON                 [ "UUIDs"                                  ]
-    NAMEs  = JSON                 [ "NAMEs"                                  ]
-    ##########################################################################
-    for U in UUIDs                                                           :
+    for JSON in LISTs                                                        :
       ########################################################################
-      IT   = self . PrepareItem   ( U , NAMEs [ U ]                          )
+      IT   = self . PrepareItem   ( JSON                                     )
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     self   . setEnabled           ( True                                     )
     self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
+  ############################################################################
+  def LoadEyesListings                ( self , DB                          ) :
+    ##########################################################################
+    LISTs   =                         [                                      ]
+    UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      return LISTs
+    ##########################################################################
+    EYETAB  = self . Tables [ "Eyes"                                         ]
+    NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      QQ    = f"""select `id`,`name`,`formula`,`parameter`,`R`,`G`,`B` from {EYETAB}
+                 where ( `uuid` = {UUID} ) ;"""
+      QQ    = " " . join              ( QQ . split ( )                       )
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      ########################################################################
+      if                              ( self . NotOkay ( RR )              ) :
+        continue
+      ########################################################################
+      if                              ( len ( RR ) != 1                    ) :
+        continue
+      ########################################################################
+      ID    = int                     ( RR [ 0                             ] )
+      NA    = self . assureString     ( RR [ 1                             ] )
+      FM    = int                     ( RR [ 2                             ] )
+      PA    = float                   ( RR [ 3                             ] )
+      R     = int                     ( RR [ 4                             ] )
+      G     = int                     ( RR [ 5                             ] )
+      B     = int                     ( RR [ 6                             ] )
+      ########################################################################
+      J     =                         { "Id"         : ID                  , \
+                                        "Uuid"       : UUID                , \
+                                        "Name"       : NAMEs [ UUID ]      , \
+                                        "Identifier" : NA                  , \
+                                        "Formula"    : FM                  , \
+                                        "Parameter"  : PA                  , \
+                                        "R"          : R                   , \
+                                        "G"          : G                   , \
+                                        "B"          : B                     }
+      LISTs . append                  ( J                                    )
+    ##########################################################################
+    return LISTs
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
@@ -275,25 +343,18 @@ class EyeColorListings             ( TreeDock                              ) :
     self    . ShowStatus              ( MSG                                  )
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+    LISTs   = sefl . LoadEyesListings ( DB                                   )
     ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax . emit          (                                      )
     self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
+    if                                ( len ( LISTs ) <= 0                 ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
-    JSON             =                {                                      }
-    JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
-    ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
+    self   . emitAllNames  . emit     ( LISTs                                )
     ##########################################################################
     if                                ( not self . isColumnHidden ( 1 )    ) :
       VAL  =                          ( UUIDs ,                              )
@@ -459,7 +520,7 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     REL    = Relation           (                                            )
     REL    . set                ( "first" , atUuid                           )
-    REL    . setT1              ( "Hairs"                                    )
+    REL    . setT1              ( "Eyes"                                     )
     REL    . setT2              ( "People"                                   )
     REL    . setRelation        ( "Subordination"                            )
     ##########################################################################
@@ -479,7 +540,7 @@ class EyeColorListings             ( TreeDock                              ) :
   ############################################################################
   def PicturesAppending      ( self , atUuid , NAME , JSON                 ) :
     ##########################################################################
-    T1   = "Hairs"
+    T1   = "Eyes"
     TAB  = "RelationPictures"
     ##########################################################################
     self . AppendingPictures (        atUuid , NAME , JSON , TAB , T1        )
@@ -494,7 +555,7 @@ class EyeColorListings             ( TreeDock                              ) :
     icon = self . windowIcon          (                                      )
     xsid = str                        ( uuid                                 )
     ##########################################################################
-    self . ShowPersonalGallery . emit ( text , 20 , xsid , icon              )
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
     ##########################################################################
     return
   ############################################################################
@@ -531,7 +592,7 @@ class EyeColorListings             ( TreeDock                              ) :
   ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
-    self . defaultOpenItemNamesEditor ( item , 0 , "Hairs" , "NamesEditing"  )
+    self . defaultOpenItemNamesEditor ( item , 0 , "Eyes" , "NamesEditing"   )
     ##########################################################################
     return
   ############################################################################
@@ -645,12 +706,12 @@ class EyeColorListings             ( TreeDock                              ) :
     MSG  = FMT . format              ( NAME                                  )
     COL  = mm . addMenu              ( MSG                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "CopyHairUuid"                        )
+    msg  = self . getMenuItem        ( "CopyEyesUuid"                        )
     mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
     ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "HairGallery"                         )
+    msg  = self . getMenuItem        ( "EyesGallery"                         )
     ICON = QIcon                     ( ":/images/gallery.png"                )
     mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
     ##########################################################################
