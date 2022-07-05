@@ -47,7 +47,15 @@ from   AITK . Calendars . Periode     import Periode
 ##############################################################################
 class EyeColorListings   ( MajorListings                                   ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu          = 1371434312
+  ############################################################################
+  ## emitNamesShow       = pyqtSignal (                                         )
+  ## emitAllNames        = pyqtSignal ( dict                                    )
+  ## emitAssignAmounts   = pyqtSignal ( str , int , int                         )
+  PeopleGroup         = pyqtSignal ( str , int , str                         )
+  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
+  OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
+  OpenLogHistory      = pyqtSignal ( str , str , str                         )
   ############################################################################
   def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
@@ -66,6 +74,30 @@ class EyeColorListings   ( MajorListings                                   ) :
     self . setDragEnabled  ( False                                           )
     self . setDragDropMode ( QAbstractItemView . DropOnly                    )
     ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareForActions           ( self                                   ) :
+    ##########################################################################
+    """
+    self . AppendToolNamingAction (                                          )
+    ##########################################################################
+    self . AppendWindowToolSeparatorAction (                                 )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "HairGallery"                            )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . GotoItemGallery                   )
+    self . WindowActions . append ( A                                        )
+    ##########################################################################
+    msg  = self . getMenuItem     ( "Crowds"                                 )
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . GotoItemCrowd                     )
+    self . WindowActions . append ( A                                        )
+    """
     ##########################################################################
     return
   ############################################################################

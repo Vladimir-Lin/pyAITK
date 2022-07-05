@@ -54,7 +54,7 @@ from   AITK  . People     . People    import People
 ##############################################################################
 class HairColorListings    ( TreeDock                                      ) :
   ############################################################################
-  HavingMenu        = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
   emitNamesShow       = pyqtSignal (                                         )
   emitAllNames        = pyqtSignal ( dict                                    )
