@@ -194,16 +194,6 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CreateColorIcon      ( self , R , G , B                              ) :
-    ##########################################################################
-    IMG = QImage           ( 24 , 24 , QImage . Format_RGB32                 )
-    IMG . fill             ( QColor ( R , G , B )                            )
-    ##########################################################################
-    PIX = QPixmap          (                                                 )
-    PIX . convertFromImage ( IMG                                             )
-    ##########################################################################
-    return QIcon           ( PIX                                             )
-  ############################################################################
   def PrepareItem                 ( self , JSON                            ) :
     ##########################################################################
     UUID = JSON                   [ "Uuid"                                   ]
@@ -211,7 +201,7 @@ class EyeColorListings             ( TreeDock                              ) :
     R    = JSON                   [ "R"                                      ]
     G    = JSON                   [ "G"                                      ]
     B    = JSON                   [ "B"                                      ]
-    ICON = self . CreateColorIcon ( R , G , B                                )
+    ICON = self . CreateColorIcon ( R , G , B , 24 , 24                      )
     ##########################################################################
     IT   = self . PrepareUuidItem ( 0 , UUID , NAME                          )
     IT   . setIcon                ( 0 , ICON                                 )
