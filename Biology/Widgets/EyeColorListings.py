@@ -303,7 +303,7 @@ class EyeColorListings             ( TreeDock                              ) :
       if                              ( self . NotOkay ( RR )              ) :
         continue
       ########################################################################
-      if                              ( len ( RR ) != 1                    ) :
+      if                              ( len ( RR ) != 7                    ) :
         continue
       ########################################################################
       ID    = int                     ( RR [ 0                             ] )
@@ -325,42 +325,43 @@ class EyeColorListings             ( TreeDock                              ) :
                                         "B"          : B                     }
       LISTs . append                  ( J                                    )
     ##########################################################################
-    return LISTs
+    return UUIDs , LISTs
   ############################################################################
-  def loading                         ( self                               ) :
+  def loading                               ( self                         ) :
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      self . emitNamesShow . emit     (                                      )
+    DB            = self . ConnectDB        (                                )
+    if                                      ( self . NotOkay ( DB )        ) :
+      self        . emitNamesShow . emit    (                                )
       return
     ##########################################################################
-    self    . Notify                  ( 3                                    )
-    self    . OnBusy  . emit          (                                      )
-    self    . setBustle               (                                      )
+    self          . Notify                  ( 3                              )
+    self          . OnBusy  . emit          (                                )
+    self          . setBustle               (                                )
     ##########################################################################
-    FMT     = self . Translations     [ "UI::StartLoading"                   ]
-    MSG     = FMT . format            ( self . windowTitle ( )               )
-    self    . ShowStatus              ( MSG                                  )
+    FMT           = self . Translations     [ "UI::StartLoading"             ]
+    MSG           = FMT . format            ( self . windowTitle ( )         )
+    self          . ShowStatus              ( MSG                            )
     ##########################################################################
-    self    . ObtainsInformation      ( DB                                   )
-    LISTs   = sefl . LoadEyesListings ( DB                                   )
+    self          . ObtainsInformation      ( DB                             )
+    UUIDs , LISTs = self . LoadEyesListings ( DB                             )
     ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . GoRelax . emit          (                                      )
-    self    . ShowStatus              ( ""                                   )
-    DB      . Close                   (                                      )
+    self          . setVacancy              (                                )
+    self          . GoRelax . emit          (                                )
+    self          . ShowStatus              ( ""                             )
+    DB            . Close                   (                                )
     ##########################################################################
-    if                                ( len ( LISTs ) <= 0                 ) :
-      self . emitNamesShow . emit     (                                      )
+    if                                      ( len ( LISTs ) <= 0           ) :
+      self        . emitNamesShow . emit    (                                )
       return
     ##########################################################################
-    self   . emitAllNames  . emit     ( LISTs                                )
+    self          . emitAllNames  . emit    ( LISTs                          )
     ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      VAL  =                          ( UUIDs ,                              )
-      self . Go                       ( self . ReportBelongings , VAL        )
+    OKAY          = self . isColumnHidden   ( 1                              )
+    if                                      ( not OKAY                     ) :
+      VAL         =                         ( UUIDs ,                        )
+      self        . Go                      ( self . ReportBelongings , VAL  )
     ##########################################################################
-    self   . Notify                   ( 5                                    )
+    self          . Notify                  ( 5                              )
     ##########################################################################
     return
   ############################################################################
