@@ -21,10 +21,16 @@ from   PyQt5 . QtCore                 import pyqtSlot
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                 import QSizeF
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
 from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                  import QPainter
+from   PyQt5 . QtGui                  import QColor
+from   PyQt5 . QtGui                  import QIcon
+from   PyQt5 . QtGui                  import QPixmap
+from   PyQt5 . QtGui                  import QImage
 ##############################################################################
 from   PyQt5 . QtWidgets              import QApplication
 from   PyQt5 . QtWidgets              import QWidget
