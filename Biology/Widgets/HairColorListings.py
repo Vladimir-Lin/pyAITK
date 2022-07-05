@@ -52,7 +52,7 @@ from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . People     . People    import People
 ##############################################################################
-class HairColorListings    ( TreeDock                                      ) :
+class HairColorListings            ( TreeDock                              ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
@@ -64,9 +64,9 @@ class HairColorListings    ( TreeDock                                      ) :
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   OpenLogHistory      = pyqtSignal ( str , str , str                         )
   ############################################################################
-  def __init__             ( self , parent = None , plan = None            ) :
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    super ( ) . __init__   (        parent        , plan                     )
+    super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
@@ -81,10 +81,6 @@ class HairColorListings    ( TreeDock                                      ) :
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
-    ##########################################################################
-    self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Organization"                          )
-    self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 3                                       )
     self . setColumnHidden         ( 1 , True                                )
@@ -177,9 +173,9 @@ class HairColorListings    ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery     ( self                                          ) :
+  def ObtainUuidsQuery      ( self                                         ) :
     ##########################################################################
-    HAIRTAB = self . Tables [ "Hairs"                                         ]
+    HAIRTAB = self . Tables [ "Hairs"                                        ]
     ORDER   = self . SortOrder
     ##########################################################################
     QQ      = f"select `uuid` from {HAIRTAB} order by `id` {ORDER} ;"
