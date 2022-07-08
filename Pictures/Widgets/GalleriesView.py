@@ -469,7 +469,7 @@ class GalleriesView                ( IconDock                              ) :
   def PicturesAppending            ( self , atUuid , NAME , JSON           ) :
     ##########################################################################
     T1  = "Gallery"
-    TAB = "RelationPeople"
+    TAB = "RelationPictures"
     ##########################################################################
     OK  = self . AppendingPictures (        atUuid , NAME , JSON , TAB , T1  )
     if                             ( not OK                                ) :
