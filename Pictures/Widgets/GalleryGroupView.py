@@ -191,7 +191,7 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     ORDER  = self . getSortingOrder         (                                )
     OPTS   = f"order by `position` {ORDER}"
-    RELTAB = self . Tables                  [ "RelationGroup"                ]
+    RELTAB = self . Tables                  [ "Relation"                     ]
     ##########################################################################
     return self . Relation . Subordination  ( DB , RELTAB , OPTS             )
   ############################################################################
@@ -199,7 +199,7 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     ORDER  = self . getSortingOrder         (                                )
     OPTS   = f"order by `reverse` {ORDER}"
-    RELTAB = self . Tables                  [ "RelationGroup"                ]
+    RELTAB = self . Tables                  [ "Relation"                     ]
     ##########################################################################
     return self . Relation . GetOwners      ( DB , RELTAB , OPTS             )
   ############################################################################
