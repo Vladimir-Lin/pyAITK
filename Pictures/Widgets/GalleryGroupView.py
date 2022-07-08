@@ -485,7 +485,7 @@ class GalleryGroupView             ( IconDock                              ) :
   def AppendItemName                     ( self , item , name              ) :
     ##########################################################################
     DB       = self . ConnectDB          (                                   )
-    if                                   ( DB == None                      ) :
+    if                                   ( self . NotOkay ( DB )           ) :
       return
     ##########################################################################
     TAGTAB   = self . Tables             [ "Tags"                            ]
@@ -548,6 +548,7 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     self     . PrepareItemContent        ( item , uuid , name                )
     self     . assignToolTip             ( item , str ( uuid )               )
+    self     . Notify                    ( 5                                 )
     ##########################################################################
     return
   ############################################################################
