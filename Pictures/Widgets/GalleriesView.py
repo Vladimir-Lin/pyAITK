@@ -251,7 +251,7 @@ class GalleriesView                ( IconDock                              ) :
     self . setActionLabel    ( "Label" , self . windowTitle ( )              )
     self . AttachActions     ( True                                          )
     self . attachActionsTool (                                               )
-    ## self . LinkVoice         ( self . CommandParser                          )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
@@ -574,7 +574,6 @@ class GalleriesView                ( IconDock                              ) :
     self . defaultDeleteItems (                                              )
     ##########################################################################
     return
-  ##
   ############################################################################
   def UpdateLocalityUsage           ( self                                 ) :
     ##########################################################################
@@ -697,6 +696,18 @@ class GalleriesView                ( IconDock                              ) :
       return False
     ##########################################################################
     return self . OpenItemGallery ( atItem                                   )
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
   ############################################################################
   def BlocMenu               ( self , mm , item                            ) :
     ##########################################################################
