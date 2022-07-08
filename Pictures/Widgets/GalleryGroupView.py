@@ -578,7 +578,7 @@ class GalleryGroupView             ( IconDock                              ) :
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      if                               ( not self . LoopRunning            ) :
+      if                               ( not self . StayAlive              ) :
         continue
       ########################################################################
       if                               ( U not in self . UuidItemMaps      ) :
@@ -649,6 +649,18 @@ class GalleryGroupView             ( IconDock                              ) :
       return False
     ##########################################################################
     return self . OpenItemGalleries ( atItem                                 )
+  ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
   ############################################################################
   def FunctionsMenu          ( self , mm , uuid , item                     ) :
     ##########################################################################
