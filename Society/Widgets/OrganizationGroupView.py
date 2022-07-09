@@ -574,7 +574,7 @@ class OrganizationGroupView         ( IconDock                             ) :
     ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
-      if                               ( not self . LoopRunning            ) :
+      if                               ( not self . StayAlive              ) :
         continue
       ########################################################################
       if                               ( U not in self . UuidItemMaps      ) :
