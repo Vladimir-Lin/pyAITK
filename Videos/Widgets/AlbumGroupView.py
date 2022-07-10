@@ -181,7 +181,7 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `position` {ORDER}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                 [ "RelationGroup"                 ]
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
   ############################################################################
@@ -189,7 +189,7 @@ class AlbumGroupView              ( IconDock                               ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `reverse` {ORDER}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                 [ "RelationGroup"                 ]
     ##########################################################################
     return self . Relation . GetOwners     ( DB , RELTAB , OPTS              )
   ############################################################################
@@ -299,7 +299,7 @@ class AlbumGroupView              ( IconDock                               ) :
   ############################################################################
   def GetLastestPosition                      ( self , DB , LUID           ) :
     ##########################################################################
-    RELTAB = "Relation"
+    RELTAB = "RelationGroup"
     ##########################################################################
     if                                        ( self . isReverse ( )       ) :
       return self . GetReverseLastestPosition ( DB , RELTAB , LUID           )
@@ -307,7 +307,7 @@ class AlbumGroupView              ( IconDock                               ) :
   ############################################################################
   def GenerateMovingSQL                   ( self   , LAST , UUIDs          ) :
     ##########################################################################
-    RELTAB = "Relation"
+    RELTAB = "RelationGroup"
     R      = self . isReverse             (                                  )
     ##########################################################################
     return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
@@ -325,7 +325,7 @@ class AlbumGroupView              ( IconDock                               ) :
     self   . OnBusy  . emit   (                                              )
     self   . setBustle        (                                              )
     ##########################################################################
-    RELTAB = self . Tables    [ "Relation"                                   ]
+    RELTAB = self . Tables    [ "RelationGroup"                              ]
     DB     . LockWrites       ( [ RELTAB                                   ] )
     ##########################################################################
     OPTS   = f"order by `position` asc"
@@ -360,7 +360,7 @@ class AlbumGroupView              ( IconDock                               ) :
     self   . OnBusy  . emit    (                                             )
     self   . setBustle         (                                             )
     ##########################################################################
-    RELTAB = self . Tables     [ "Relation"                                  ]
+    RELTAB = self . Tables     [ "RelationGroup"                             ]
     ##########################################################################
     DB     . LockWrites        ( [ RELTAB                                  ] )
     self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
@@ -462,7 +462,7 @@ class AlbumGroupView              ( IconDock                               ) :
     TAGTAB   = self . Tables             [ "Tags"                            ]
     SUBTAB   = self . Tables             [ "Subgroups"                       ]
     NAMTAB   = self . Tables             [ "Names"                           ]
-    RELTAB   = self . Tables             [ "RelationVideos"                  ]
+    RELTAB   = self . Tables             [ "RelationGroup"                   ]
     TABLES   =                           [ NAMTAB , RELTAB                   ]
     ##########################################################################
     if                                   ( self . Grouping in [ "Tag" ]    ) :
