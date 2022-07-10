@@ -312,7 +312,7 @@ class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
   def GetLastestPosition                      ( self , DB , LUID           ) :
     ##########################################################################
-    RELTAB = "RelationPeople"
+    RELTAB = "RelationGroup"
     ##########################################################################
     if                                        ( self . isReverse ( )       ) :
       return self . GetReverseLastestPosition ( DB , RELTAB , LUID           )
@@ -320,7 +320,7 @@ class GalleryGroupView             ( IconDock                              ) :
   ############################################################################
   def GenerateMovingSQL                   ( self   , LAST , UUIDs          ) :
     ##########################################################################
-    RELTAB = "RelationPeople"
+    RELTAB = "RelationGroup"
     R      = self . isReverse             (                                  )
     ##########################################################################
     return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
@@ -338,7 +338,7 @@ class GalleryGroupView             ( IconDock                              ) :
     self   . OnBusy  . emit   (                                              )
     self   . setBustle        (                                              )
     ##########################################################################
-    RELTAB = self . Tables    [ "RelationPeople"                             ]
+    RELTAB = self . Tables    [ "RelationGroup"                              ]
     DB     . LockWrites       ( [ RELTAB                                   ] )
     ##########################################################################
     OPTS   = f"order by `position` asc"
@@ -373,7 +373,7 @@ class GalleryGroupView             ( IconDock                              ) :
     self   . OnBusy  . emit    (                                             )
     self   . setBustle         (                                             )
     ##########################################################################
-    RELTAB = self . Tables     [ "RelationPeople"                            ]
+    RELTAB = self . Tables     [ "RelationGroup"                             ]
     ##########################################################################
     DB     . LockWrites        ( [ RELTAB                                  ] )
     self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
