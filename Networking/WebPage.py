@@ -323,21 +323,25 @@ class WebPage         (                                                    ) :
     ##########################################################################
     return K                 [ 0                                             ]
   ############################################################################
-  def AppendPage             ( self , DB                                   ) :
+  def AppendPage              ( self , DB                                  ) :
     ##########################################################################
-    WPGTAB   = self . Tables [ "Webpages"                                    ]
-    UUID     = DB . LastUuid ( WPGTAB , "uuid" , 8380000000000000000         )
-    URID     = self . UrlUuid
-    NAME     = self . Page
-    REVERSE  = self . Reverse
-    PATH     = self . Path
-    W        =               ( UUID , URID , NAME , REVERSE , PATH ,         )
+    WPGTAB  = self . Tables   [ "Webpages"                                   ]
+    UUID    = DB   . LastUuid ( WPGTAB , "uuid" , 8380000000000000000        )
+    URID    = self . UrlUuid
+    NAME    = self . Page
+    REVERSE = self . Reverse
+    PATH    = self . Path
+    W       =                 ( UUID , URID , NAME , REVERSE , PATH ,        )
     ##########################################################################
-    QQ       = f"""insert into {WPGTAB}
+    QQ      = f"""insert into {WPGTAB}
                    ( `uuid` , `url` , `name` , `reverse` , `path` )
                    values
                    ( %s , %s , %s , %s , %s ) ;"""
-    DB       . QueryValues   ( QQ , W                                        )
+    ##########################################################################
+    try                                                                      :
+      DB    . QueryValues     ( QQ , W                                       )
+    except                                                                   :
+      return 0
     ##########################################################################
     return UUID
   ############################################################################
@@ -415,60 +419,61 @@ class WebPage         (                                                    ) :
     ##########################################################################
     return Answer
   ############################################################################
-  def Assure                         ( self , DB                           ) :
+  def Assure                          ( self , DB                          ) :
     ##########################################################################
     Answer = False
-    self . Uuid = self . LookForPage ( DB                                    )
+    self . Uuid = self . LookForPage  ( DB                                   )
     ##########################################################################
-    if                               ( self . Uuid > 0                     ) :
+    if                                ( self . Uuid > 0                    ) :
       return True
     ##########################################################################
-    TLDTAB      = self . Tables      [ "TLD"                                 ]
-    SLDTAB      = self . Tables      [ "SLD"                                 ]
-    DOMTAB      = self . Tables      [ "Domains"                             ]
-    HSTTAB      = self . Tables      [ "Hosts"                               ]
-    URLTAB      = self . Tables      [ "URLs"                                ]
-    WPGTAB      = self . Tables      [ "Webpages"                            ]
+    TLDTAB      = self . Tables       [ "TLD"                                ]
+    SLDTAB      = self . Tables       [ "SLD"                                ]
+    DOMTAB      = self . Tables       [ "Domains"                            ]
+    HSTTAB      = self . Tables       [ "Hosts"                              ]
+    URLTAB      = self . Tables       [ "URLs"                               ]
+    WPGTAB      = self . Tables       [ "Webpages"                           ]
     ##########################################################################
-    DB          . LockWrites         ( [ TLDTAB                            , \
-                                         SLDTAB                            , \
-                                         DOMTAB                            , \
-                                         HSTTAB                            , \
-                                         URLTAB                            , \
-                                         WPGTAB                            ] )
+    DB          . LockWrites          ( [ TLDTAB                           , \
+                                          SLDTAB                           , \
+                                          DOMTAB                           , \
+                                          HSTTAB                           , \
+                                          URLTAB                           , \
+                                          WPGTAB                           ] )
     ##########################################################################
-    R           = self . LookForTLD  ( DB                                    )
-    if                               ( R != None                           ) :
-      self      . TLD = R            [ "Id"                                  ]
-      if                             ( R [ "Type" ] == 7                   ) :
+    R           = self . LookForTLD   ( DB                                   )
+    if                                ( R != None                          ) :
+      self      . TLD = R             [ "Id"                                 ]
+      if                              ( R [ "Type" ] == 7                  ) :
         self . SLD = self . LookForSLD ( DB                                  )
     ##########################################################################
-    D   = self . LookForDomain       ( DB                                    )
-    if                               ( D > 0                               ) :
+    D   = self . LookForDomain        ( DB                                   )
+    if                                ( D > 0                              ) :
       self . DomainUuid = D
     else                                                                     :
       self . DomainUuid = self . AppendDomain ( DB                           )
     ##########################################################################
-    if                               ( self . DomainUuid > 0               ) :
+    if                                ( self . DomainUuid > 0              ) :
       ########################################################################
-      H = self . LookForHost         ( DB                                    )
-      if                             ( H > 0                               ) :
+      H = self . LookForHost          ( DB                                   )
+      if                              ( H > 0                              ) :
         self . HostUuid = H
       else                                                                   :
         self . HostUuid = self . AppendHost ( DB                             )
     ##########################################################################
-    if                               ( self . HostUuid > 0                 ) :
+    if                                ( self . HostUuid > 0                ) :
       ########################################################################
-      U = self . LookForURL          ( DB                                    )
-      if                             ( U > 0                               ) :
+      U = self . LookForURL           ( DB                                   )
+      if                              ( U > 0                              ) :
         self . UrlUuid = U
       else                                                                   :
         self . UrlUuid = self . AppendURL ( DB                               )
     ##########################################################################
-    if                               ( self . UrlUuid > 0                  ) :
+    if                                ( self . UrlUuid > 0                 ) :
       ########################################################################
       self . Uuid = self . AppendPage ( DB                                   )
-      Answer = True
+      if                              ( self . Uuid > 0                    ) :
+        Answer = True
     ##########################################################################
     DB          . UnlockTables       (                                       )
     ##########################################################################
