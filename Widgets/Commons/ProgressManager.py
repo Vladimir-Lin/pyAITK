@@ -775,6 +775,8 @@ class ProgressManager           ( TreeDock                                 ) :
     if                             ( not self . WaitForReady ( Id , 1000 ) ) :
       return
     ##########################################################################
+    self   . LockGui               (                                         )
+    ##########################################################################
     self   . EnableButtons . append ( Id                                     )
     self   . Values   [ Id ] = value
     self   . Booleans [ Id ] = running
@@ -782,10 +784,12 @@ class ProgressManager           ( TreeDock                                 ) :
     self   . Begins   [ Id ] = QDateTime . currentDateTime (                 )
     self   . Final    [ Id ] = 0
     ##########################################################################
-    if                              ( Id not in self . Minimum             ) :
+    self   . UnlockGui             (                                         )
+    ##########################################################################
+    if                             ( Id not in self . Minimum              ) :
       self . Minimum [ Id ] = 0
     ##########################################################################
-    if                              ( Id not in self . Maximum             ) :
+    if                             ( Id not in self . Maximum              ) :
       self . Maximum [ Id ] = 100
     ##########################################################################
     self   . Items   [ Id ] . setData    ( 0 , Qt . UserRole , 1             )
