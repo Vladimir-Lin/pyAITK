@@ -218,12 +218,12 @@ class ProgressIndicator   ( QWidget                                        ) :
       p     . save             (                                             )
       p     . translate        ( self . rect ( ) . center ( )                )
       p     . rotate           ( self . m_angle - ( float ( i ) * angle )    )
-      p     . drawRoundedRect  ( - capsuleRadius                           , \
-                                   cornerHeight                            , \
-                                   capsuleWidth                            , \
-                                   capsuleHeight                           , \
-                                   capsuleRadius                           , \
-                                   capsuleRadius                             )
+      p     . drawRoundedRect  ( - int   ( capsuleRadius )                 , \
+                                   int   ( cornerHeight  )                 , \
+                                   int   ( capsuleWidth  )                 , \
+                                   int   ( capsuleHeight )                 , \
+                                   float ( capsuleRadius )                 , \
+                                   float ( capsuleRadius )                   )
       p     . restore          (                                             )
     ##########################################################################
     return
