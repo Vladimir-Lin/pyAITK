@@ -576,8 +576,10 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     if                         ( direction == 0                            ) :
       ########################################################################
       gw   = widget . size     (                                             )
-      sp   . setX ( ( ( mw . width ()-gw.width ())/16) * (randint(0,200)%16) )
-      sp   . setY ( ( ( mw . height()-gw.height())/16) * (randint(0,200)%16) )
+      XPV  = int  ( ( ( mw . width ()-gw.width ())/16) * (randint(0,200)%16) )
+      YPV  = int  ( ( ( mw . height()-gw.height())/16) * (randint(0,200)%16) )
+      sp   . setX              ( XPV                                         )
+      sp   . setY              ( YPV                                         )
       ########################################################################
       if                       ( gw . width ( ) < sh . width ( )           ) :
         gw . setWidth          ( sh . width ( )                              )
@@ -587,9 +589,10 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
       ########################################################################
     elif                       ( direction == Qt . Vertical ) :
       ########################################################################
-      sp   . setX ( ( mw . width ( ) / 16 ) * ( randint ( 0 , 200 ) % 10 )   )
+      XPV  = int ( ( mw . width ( ) / 16 ) * ( randint ( 0 , 200 ) % 10 )    )
+      sp   . setX              ( XPV                                         )
       sp   . setY              ( 0                                           )
-      gw   . setWidth          ( mw . width  ( ) / 5                         )
+      gw   . setWidth          ( int ( mw . width  ( ) / 5 )                 )
       gw   . setHeight         ( mw . height ( )                             )
       ########################################################################
       if                       ( gw . width ( ) < sh . width ( )           ) :
@@ -597,10 +600,11 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
       ########################################################################
     elif                       ( direction == Qt . Horizontal              ) :
       ########################################################################
+      YPV  = int  ( ( mw . height ( ) / 16 ) * ( randint ( 0 , 200 ) % 8 )   )
       sp   . setX              ( 0                                           )
-      sp   . setY ( ( mw . height ( ) / 16 ) * ( randint ( 0 , 200 ) % 8 )   )
+      sp   . setY              ( YPV                                         )
       gw   . setWidth          ( mw . width  ( )                             )
-      gw   . setHeight         ( mw . height ( ) / 3                         )
+      gw   . setHeight         ( int ( mw . height ( ) / 3 )                 )
       ########################################################################
       if                       ( gw . height ( ) < sh . height ( )         ) :
         gw . setHeight         ( sh . height ( )                             )
