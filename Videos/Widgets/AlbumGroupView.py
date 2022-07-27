@@ -738,8 +738,9 @@ class AlbumGroupView              ( IconDock                               ) :
       mm   . addAction              ( 2001 , mg                              )
       ########################################################################
       if                            ( self . Grouping == "Subgroup"        ) :
+        ic = QIcon                  ( ":/images/videos.png"                  )
         mg = self . getMenuItem     ( "Albums"                               )
-        mm . addAction              ( 2002 , mg                              )
+        mm . addActionWithIcon      ( 2002 , ic , mg                         )
       mm   . addSeparator           (                                        )
     ##########################################################################
     self   . AppendRefreshAction    ( mm , 1001                              )
