@@ -158,11 +158,16 @@ class Picture     (                                                        ) :
       return None
     ##########################################################################
     MIME     = int           ( RR [ 0 ]                                      )
-    SUFFIX   = str           ( RR [ 1 ]                                      )
     FILESIZE = int           ( RR [ 2 ]                                      )
     CHECKSUM = int           ( RR [ 3 ]                                      )
     WIDTH    = int           ( RR [ 4 ]                                      )
     HEIGHT   = int           ( RR [ 5 ]                                      )
+    ##########################################################################
+    SUFFIX   = RR            [ 1                                             ]
+    try                                                                      :
+      SUFFIX = SUFFIX . decode ( "utf-8"                                     )
+    except                                                                   :
+      pass
     ##########################################################################
     SFX      = SUFFIX
     SFX      = SFX . lower   (                                               )
