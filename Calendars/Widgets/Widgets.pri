@@ -11,7 +11,3 @@ SOURCES += $${PWD}/*.rb
 SOURCES += $${PWD}/*.rs
 SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
-
-include ($${PWD}/modules/modules.pri)
-include ($${PWD}/documents/documents.pri)
-include ($${PWD}/Widgets/Widgets.pri)
