@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## 曆法
+## 曆法基底元件
 ##############################################################################
-import os
-import sys
-import getopt
 import time
 import datetime
 import pytz
@@ -90,6 +87,7 @@ class Base                       (                                         ) :
     self . TzShift          = 0
     self . TimeZone         = ""
     self . Format           = ""
+    self . Signature        = ""
     self . defaultFormatter = None
     self . defaultParser    = None
     ##########################################################################
@@ -147,6 +145,22 @@ class Base                       (                                         ) :
   def getTimeZone ( self                                                   ) :
     return self . TimeZone
   ############################################################################
+  def setSignature       ( self , signature                                ) :
+    ##########################################################################
+    FTS   = signature
+    ##########################################################################
+    try                                                                      :
+      FTS = FTS . decode ( "utf-8"                                           )
+    except                                                                   :
+      pass
+    ##########################################################################
+    self . Signature = f"{FTS}"
+    ##########################################################################
+    return self . Signature
+  ############################################################################
+  def getSignature ( self                                                  ) :
+    return self . Signature
+  ############################################################################
   def setFormat          ( self , formatString                             ) :
     ##########################################################################
     FTS   = formatString
@@ -176,6 +190,9 @@ class Base                       (                                         ) :
     return self . defaultParser
   ############################################################################
   def valueChanged            ( self                                       ) :
+    raise NotImplementedError (                                              )
+  ############################################################################
+  def toJson                  ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
   def toString                ( self , format = ""                         ) :
