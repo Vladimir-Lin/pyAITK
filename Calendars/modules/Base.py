@@ -78,7 +78,7 @@ class Base                       (                                         ) :
   def __repr__                ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
-  def typeString              ( self                                       ) :
+  def typeStrings             ( self                                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
   def DefaultCalendarValues ( self                                         ) :

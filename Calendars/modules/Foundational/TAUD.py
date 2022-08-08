@@ -78,8 +78,8 @@ class TAUD                       ( Base                                    ) :
   def __repr__          ( self                                             ) :
     return json . dumps ( self . toJson ( )                                  )
   ############################################################################
-  def typeString ( self                                                    ) :
-    return "TAUD"
+  def typeStrings ( self                                                   ) :
+    return        [ "TAUD"                                                   ]
   ############################################################################
   def valueChanged          ( self                                         ) :
     ##########################################################################
@@ -99,7 +99,7 @@ class TAUD                       ( Base                                    ) :
     return
   ############################################################################
   def toJson ( self                                                        ) :
-    return   { "Type"      : "TAUD"                                        , \
+    return   { "Type"      : self . typeStrings ( )                        , \
                "Signature" : self . Signature                              , \
                "StarDate"  : self . Stardate                               , \
                "TimeZone"  : self . TimeZone                               , \
