@@ -189,6 +189,15 @@ class TAUD                       ( Base                                    ) :
   def typeStrings ( self                                                   ) :
     return        [ "TAUD"                                                   ]
   ############################################################################
+  def hasLeapYear ( self                                                   ) :
+    return False
+  ############################################################################
+  def isLeapYear  ( self                                                   ) :
+    return False
+  ############################################################################
+  def hasTimeZone ( self                                                   ) :
+    return False
+  ############################################################################
   def valueChanged          ( self                                         ) :
     ##########################################################################
     self   . Value  = 0
@@ -211,6 +220,7 @@ class TAUD                       ( Base                                    ) :
                "Signature" : self . Signature                              , \
                "StarDate"  : self . Stardate                               , \
                "TimeZone"  : self . TimeZone                               , \
+               "TzOffset"  : self . TzShift                                , \
                "Format"    : self . Format                                 , \
                "TAUD"      : self . Value                                  , \
                "Remain"    : self . Remain                                 , \
