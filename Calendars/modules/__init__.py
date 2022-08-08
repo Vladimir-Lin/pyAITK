@@ -8,6 +8,7 @@ __all__ = [ "Base"                                                         , \
             "Formatter"                                                    , \
             "Parser"                                                       , \
             "Artifical"                                                    , \
+            "Astronomy"                                                    , \
             "Dynastic"                                                     , \
             "Eras"                                                         , \
             "Ethnic"                                                       , \

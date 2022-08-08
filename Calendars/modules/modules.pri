@@ -13,6 +13,7 @@ SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
 
 include ($${PWD}/Artificial/Artificial.pri)
+include ($${PWD}/Astronomy/Astronomy.pri)
 include ($${PWD}/Dynastic/Dynastic.pri)
 include ($${PWD}/Eras/Eras.pri)
 include ($${PWD}/Ethnic/Ethnic.pri)
