@@ -179,34 +179,64 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 560 , 800                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 560 , 800 )                       )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def PrepareForActions           ( self                                   ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    """
+    msg  = self . Translations    [ "UI::EditNames"                          ]
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationNames             )
+    self . WindowActions . append ( A                                        )
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Start"      , self . UpdateBettings  , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    self . LinkAction ( "Paste"      , self . Paste           , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
-    self . LinkAction              ( "Start"      , self . UpdateBettings    )
-    self . LinkAction              ( "Insert"     , self . InsertItem        )
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Paste"      , self . Paste             )
-    self . LinkAction              ( "SelectAll"  , self . PickAll           )
-    self . LinkAction              ( "SelectNone" , self . PickNone          )
-    ##########################################################################
-    self . LinkVoice               ( self . CommandParser                    )
-    self . Notify                  ( 0                                       )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
+    self . Notify            ( 0                                             )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
+  ############################################################################
+  def closeEvent             ( self , event                                ) :
+    ##########################################################################
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
+    ##########################################################################
+    return
   ############################################################################
   def singleClicked           ( self , item , column                       ) :
     ##########################################################################
@@ -851,26 +881,27 @@ class tblPredictListings            ( TreeDock                             ) :
     self    . LoadSettings             (                                     )
     ##########################################################################
     DB      = self . ConnectDB         (                                     )
-    if                                 ( DB == None                        ) :
+    if                                 ( self . NotOkay ( DB )             ) :
       return
+    ##########################################################################
+    self    . Notify                   ( 3                                   )
+    self    . OnBusy  . emit           (                                     )
+    self    . setBustle                (                                     )
+    ##########################################################################
+    FMT     = self . Translations      [ "UI::StartLoading"                  ]
+    MSG     = FMT . format             ( self . windowTitle ( )              )
+    self    . ShowStatus               ( MSG                                 )
     ##########################################################################
     self    . ObtainsInformation       ( DB                                  )
     RECORDs = self . ObtainsPrediction ( DB                                  )
     ##########################################################################
+    self    . setVacancy               (                                     )
+    self    . GoRelax . emit           (                                     )
+    self    . ShowStatus               ( ""                                  )
     DB      . Close                    (                                     )
     ##########################################################################
     self    . emitAllHistory . emit    ( RECORDs                             )
     self    . ShowStatus               ( ""                                  )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def startup                    ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
-    ##########################################################################
-    self   . Go                  ( self . loading                            )
     ##########################################################################
     return
   ############################################################################
@@ -889,35 +920,6 @@ class tblPredictListings            ( TreeDock                             ) :
     DB      . Close                    (                                     )
     ##########################################################################
     self    . Optimizing = False
-    ##########################################################################
-    return
-  ############################################################################
-  """
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None"                      ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock"                      ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"                       ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  """
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . LinkAction      ( "Refresh"    , self . startup         , False   )
-    self . LinkAction      ( "Start"      , self . UpdateBettings  , False   )
-    self . LinkAction      ( "Insert"     , self . InsertItem      , False   )
-    self . LinkAction      ( "Copy"       , self . CopyToClipboard , False   )
-    self . LinkAction      ( "SelectAll"  , self . PickAll         , False   )
-    self . LinkAction      ( "SelectNone" , self . PickNone        , False   )
-    self . LinkVoice       ( None                                            )
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
     ##########################################################################
     return
   ############################################################################
@@ -1191,6 +1193,9 @@ class tblPredictListings            ( TreeDock                             ) :
     return   False
   ############################################################################
   def Menu                          ( self , pos                           ) :
+    ##########################################################################
+    if                              ( not self . isPrepared ( )            ) :
+      return False
     ##########################################################################
     doMenu = self . isFunction      ( self . HavingMenu                      )
     if                              ( not doMenu                           ) :
