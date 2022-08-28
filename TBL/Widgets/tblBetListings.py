@@ -95,42 +95,72 @@ class tblBetListings                ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 880 , 640                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 880 , 640 )                       )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def PrepareForActions           ( self                                   ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    """
+    msg  = self . Translations    [ "UI::EditNames"                          ]
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationNames             )
+    self . WindowActions . append ( A                                        )
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
+    self . LinkAction ( "End"        , self . PageEnd         , Enabled      )
+    self . LinkAction ( "PageUp"     , self . PageUp          , Enabled      )
+    self . LinkAction ( "PageDown"   , self . PageDown        , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
-    ##########################################################################
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    self . LinkAction              ( "Home"       , self . PageHome          )
-    self . LinkAction              ( "End"        , self . PageEnd           )
-    self . LinkAction              ( "PageUp"     , self . PageUp            )
-    self . LinkAction              ( "PageDown"   , self . PageDown          )
-    ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . Notify             ( 0                                            )
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def singleClicked ( self , item , column                                 ) :
+    ##########################################################################
+    self . Notify   ( 0                                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def doubleClicked ( self , item , column                                 ) :
     ##########################################################################
     ##########################################################################
     return
@@ -157,8 +187,9 @@ class tblBetListings                ( TreeDock                             ) :
     ##########################################################################
     IT   = QTreeWidgetItem       (                                           )
     IT   . setText               ( 0 , DATE                                  )
-    IT   . setText               ( 1 , str ( SERIAL  )                       )
+    IT   . setText               ( 1 ,                 str ( SERIAL )        )
     IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    IT   . setData               ( 1 , Qt . UserRole , str ( SERIAL )        )
     IT   . setText               ( 2 , str ( BETS    )                       )
     IT   . setTextAlignment      ( 2 , Qt.AlignRight                         )
     IT   . setText               ( 3 , str ( TWD     )                       )
@@ -245,14 +276,25 @@ class tblBetListings                ( TreeDock                             ) :
       QQ        = " " . join          ( QQ . split ( )                       )
       DB        . Query               ( QQ                                   )
       RR        = DB . FetchOne       (                                      )
-      if ( RR not in [ False , None ] ) and ( len ( RR ) > 0 )               :
-        RESULTs [ SERIAL ] [ "Bets"     ] = int ( RR [ 0 ] )
-        RESULTs [ SERIAL ] [ "TWD"      ] = int ( RR [ 1 ] )
-        RESULTs [ SERIAL ] [ "Earnings" ] = int ( RR [ 2 ] )
-      else                                                                   :
-        RESULTs [ SERIAL ] [ "Bets"     ] = 0
-        RESULTs [ SERIAL ] [ "TWD"      ] = 0
-        RESULTs [ SERIAL ] [ "Earnings" ] = 0
+      ########################################################################
+      RESULTs [ SERIAL ] [ "Bets"     ] = 0
+      RESULTs [ SERIAL ] [ "TWD"      ] = 0
+      RESULTs [ SERIAL ] [ "Earnings" ] = 0
+      RESULTs [ SERIAL ] [ "Rewards"  ] = 0
+      ########################################################################
+      if ( self . IsOkay ( RR ) ) and ( len ( RR ) > 0 )                     :
+        ######################################################################
+        try                                                                  :
+          ####################################################################
+          RESULTs [ SERIAL ] [ "Bets"     ] = int ( RR [ 0 ]                 )
+          RESULTs [ SERIAL ] [ "TWD"      ] = int ( RR [ 1 ]                 )
+          RESULTs [ SERIAL ] [ "Earnings" ] = int ( RR [ 2 ]                 )
+          ####################################################################
+        except                                                               :
+          ####################################################################
+          RESULTs [ SERIAL ] [ "Bets"     ] = 0
+          RESULTs [ SERIAL ] [ "TWD"      ] = 0
+          RESULTs [ SERIAL ] [ "Earnings" ] = 0
       ########################################################################
       QQ        = f"""select count(*) from {TBLTAB}
                       where ( `serial` = '{SERIAL}' )
@@ -261,63 +303,50 @@ class tblBetListings                ( TreeDock                             ) :
       DB        . Query               ( QQ                                   )
       RR        = DB . FetchOne       (                                      )
       ########################################################################
-      if ( RR not in [ False , None ] ) and ( len ( RR ) > 0 )               :
-        RESULTs [ SERIAL ] [ "Rewards" ] = RR [ 0 ]
-      else                                                                   :
-        RESULTs [ SERIAL ] [ "Rewards" ] = 0
+      if ( self . IsOkay ( RR ) ) and ( len ( RR ) > 0 )                     :
+        ######################################################################
+        try                                                                  :
+          ####################################################################
+          RESULTs [ SERIAL ] [ "Rewards" ] = int ( RR [ 0 ]                  )
+          ####################################################################
+        except                                                               :
+          ####################################################################
+          RESULTs [ SERIAL ] [ "Rewards" ] = 0
     ##########################################################################
     return RESULTs
   ############################################################################
-  def loading                         ( self                               ) :
+  def loading                       ( self                                 ) :
     ##########################################################################
     TRX     = self . Translations
     ##########################################################################
-    msg     = TRX                      [ "UI::Loading"                       ]
-    self    . TtsTalk                  ( msg , self . getLocality ( )        )
+    msg     = TRX                   [ "UI::Loading"                          ]
+    self    . TtsTalk               ( msg , self . getLocality ( )           )
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
+    DB      = self . ConnectDB      (                                        )
+    if                              ( self . NotOkay ( DB )                ) :
       return
     ##########################################################################
-    self    . ObtainsInformation      ( DB                                   )
-    RECORDs = self . ObtainsHistory   ( DB                                   )
-    RESULTs = self . ObtainsResults   ( DB , RECORDs                         )
+    self    . Notify                ( 3                                      )
+    self    . OnBusy  . emit        (                                        )
+    self    . setBustle             (                                        )
     ##########################################################################
-    DB      . Close                   (                                      )
+    FMT     = self . Translations   [ "UI::StartLoading"                     ]
+    MSG     = FMT . format          ( self . windowTitle ( )                 )
+    self    . ShowStatus            ( MSG                                    )
     ##########################################################################
-    if                                ( len ( RECORDs ) <= 0               ) :
+    self    . ObtainsInformation    ( DB                                     )
+    RECORDs = self . ObtainsHistory ( DB                                     )
+    RESULTs = self . ObtainsResults ( DB , RECORDs                           )
+    ##########################################################################
+    self    . setVacancy            (                                        )
+    self    . GoRelax . emit        (                                        )
+    self    . ShowStatus            ( ""                                     )
+    DB      . Close                 (                                        )
+    ##########################################################################
+    if                              ( len ( RECORDs ) <= 0                 ) :
       return
     ##########################################################################
-    self    . emitAllHistory . emit   ( RECORDs , RESULTs                    )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def startup                    ( self                                    ) :
-    ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
-    ##########################################################################
-    self   . Go                  ( self . loading                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
+    self    . emitAllHistory . emit ( RECORDs , RESULTs                      )
     ##########################################################################
     return
   ############################################################################
@@ -333,48 +362,6 @@ class tblBetListings                ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def PageHome                     ( self                                  ) :
-    ##########################################################################
-    self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageEnd                      ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . Total - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageUp                       ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId - self . Amount
-    if                             ( self . StartId <= 0                   ) :
-      self . StartId  = 0
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
-  def PageDown                     ( self                                  ) :
-    ##########################################################################
-    self . StartId    = self . StartId + self . Amount
-    if                             ( self . StartId > self . Total         ) :
-      self . StartId  = self . Total
-    ##########################################################################
-    self . clear                   (                                         )
-    self . startup                 (                                         )
-    ##########################################################################
-    return
-  ############################################################################
   def CopyToClipboard             ( self                                   ) :
     ##########################################################################
     IT   = self . currentItem     (                                          )
@@ -384,66 +371,75 @@ class tblBetListings                ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def Menu                          ( self , pos                           ) :
+  def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                      )
-    if                              ( not doMenu                           ) :
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
+  ############################################################################
+  def Menu                              ( self , pos                           ) :
+    ##########################################################################
+    if                                  ( not self . isPrepared ( )        ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                      )
+    doMenu = self . isFunction          ( self . HavingMenu                  )
+    if                                  ( not doMenu                       ) :
+      return False
     ##########################################################################
-    items  = self . selectedItems   (                                        )
-    atItem = self . currentItem     (                                        )
-    ##########################################################################
-    mm     = MenuManager            ( self                                   )
+    self   . Notify                     ( 0                                  )
+    items , atItem , uuid = self . GetMenuDetails ( 1                        )
+    mm     = MenuManager                ( self                               )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . AmountIndexMenu ( mm                                     )
+    mm     = self . AmountIndexMenu     ( mm                                 )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
     ##########################################################################
-    if                              ( atItem not in [ False , None ]       ) :
+    if                                  ( self . NotOkay ( atItem )        ) :
       ########################################################################
-      MSG  = self . getMenuItem     ( "Betting"                              )
-      mm   . addAction              ( 1002 , MSG                             )
+      MSG  = self . getMenuItem         ( "Betting"                          )
+      mm   . addAction                  ( 1002 , MSG                         )
     ##########################################################################
-    mm     . addSeparator           (                                        )
+    mm     . addSeparator               (                                    )
     ##########################################################################
-    mm     = self . SortingMenu     ( mm                                     )
-    self   . DockingMenu            ( mm                                     )
+    mm     = self . SortingMenu         ( mm                                 )
+    self   . DockingMenu                ( mm                                 )
     ##########################################################################
-    mm     . setFont                ( self    . menuFont ( )                 )
-    aa     = mm . exec_             ( QCursor . pos      ( )                 )
-    at     = mm . at                ( aa                                     )
+    mm     . setFont                    ( self    . menuFont ( )             )
+    aa     = mm . exec_                 ( QCursor . pos      ( )             )
+    at     = mm . at                    ( aa                                 )
     ##########################################################################
-    if                              ( self . RunAmountIndexMenu (        ) ) :
+    if                                  ( self . RunAmountIndexMenu (    ) ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( self . RunSortingMenu ( at         ) ) :
-      ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                    (                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( self . RunDocking     ( mm , aa    ) ) :
-      return True
-    ##########################################################################
-    if                              ( at == 1001                           ) :
+    if                                  ( self . RunSortingMenu ( at     ) ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                (                                        )
+      self . restart                    (                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 1002                           ) :
+    if                                  ( self . RunDocking ( mm , aa    ) ) :
+      return True
+    ##########################################################################
+    if                                  ( at == 1001                       ) :
       ########################################################################
-      serial = atItem . text        ( 1                                      )
-      self   . emitTblSerial . emit ( serial                                 )
+      self . restart                    (                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 1002                       ) :
+      ########################################################################
+      serial = atItem . text            ( 1                                  )
+      self   . emitTblSerial . emit     ( serial                             )
       ########################################################################
       return True
     ##########################################################################

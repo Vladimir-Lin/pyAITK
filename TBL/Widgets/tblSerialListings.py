@@ -99,38 +99,67 @@ class tblSerialListings             ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                     ( self                                  ) :
-    return QSize                   ( 880 , 640                               )
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 880 , 640 )                       )
   ############################################################################
-  def FocusIn                      ( self                                  ) :
+  def PrepareForActions           ( self                                   ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    """
+    msg  = self . Translations    [ "UI::EditNames"                          ]
+    A    = QAction                (                                          )
+    A    . setIcon                ( QIcon ( ":/images/names.png" )           )
+    A    . setToolTip             ( msg                                      )
+    A    . triggered . connect    ( self . OpenOrganizationNames             )
+    self . WindowActions . append ( A                                        )
+    """
+    ##########################################################################
+    return
+  ############################################################################
+  def AttachActions   ( self         ,                          Enabled    ) :
+    ##########################################################################
+    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
+    ##########################################################################
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusIn                ( self                                        ) :
+    ##########################################################################
+    if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    self . setActionLabel          ( "Label"      , self . windowTitle ( )   )
-    self . LinkAction              ( "Refresh"    , self . startup           )
-    ##########################################################################
-    self . LinkAction              ( "Copy"       , self . CopyToClipboard   )
-    ##########################################################################
-    self . LinkAction              ( "SelectAll"  , self . SelectAll         )
-    self . LinkAction              ( "SelectNone" , self . SelectNone        )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
     ##########################################################################
     return True
   ############################################################################
-  def FocusOut                     ( self                                  ) :
+  def FocusOut ( self                                                      ) :
     ##########################################################################
-    if                             ( not self . isPrepared ( )             ) :
+    if         ( not self . isPrepared ( )                                 ) :
       return True
     ##########################################################################
     return False
   ############################################################################
-  def singleClicked           ( self , item , column                       ) :
+  def closeEvent             ( self , event                                ) :
     ##########################################################################
-    self . Notify             ( 0                                            )
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def singleClicked ( self , item , column                                 ) :
+    ##########################################################################
+    self . Notify   ( 0                                                      )
+    ##########################################################################
+    return
+  ############################################################################
+  def doubleClicked ( self , item , column                                 ) :
     ##########################################################################
     ##########################################################################
     return
@@ -205,6 +234,8 @@ class tblSerialListings             ( TreeDock                             ) :
       IT   = self . PrepareItem ( i + 1 , B                                  )
       self . addTopLevelItem    ( IT                                         )
     ##########################################################################
+    self   . Notify             ( 5                                          )
+    ##########################################################################
     TRX    = self . Translations
     msg    = TRX                [ "UI::Ready"                                ]
     self   . TtsTalk            ( msg , self . getLocality ( )               )
@@ -256,17 +287,28 @@ class tblSerialListings             ( TreeDock                             ) :
   ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
-    TRX     = self . Translations
+    TRX      = self . Translations
     ##########################################################################
-    msg     = TRX                      [ "UI::Loading"                       ]
-    self    . TtsTalk                  ( msg , self . getLocality ( )        )
+    msg      = TRX                    [ "UI::Loading"                        ]
+    self     . TtsTalk                ( msg , self . getLocality ( )         )
     ##########################################################################
     DB       = self . ConnectDB       (                                      )
-    if                                ( DB == None                         ) :
+    if                                ( self . NotOkay ( DB )              ) :
       return
+    ##########################################################################
+    self     . Notify                 ( 3                                    )
+    self     . OnBusy  . emit         (                                      )
+    self     . setBustle              (                                      )
+    ##########################################################################
+    FMT      = self . Translations    [ "UI::StartLoading"                   ]
+    MSG      = FMT . format           ( self . windowTitle ( )               )
+    self     . ShowStatus             ( MSG                                  )
     ##########################################################################
     BETTINGs = self . ObtainsBettings ( DB                                   )
     ##########################################################################
+    self     . setVacancy             (                                      )
+    self     . GoRelax . emit         (                                      )
+    self     . ShowStatus             ( ""                                   )
     DB       . Close                  (                                      )
     ##########################################################################
     if                                ( len ( BETTINGs ) <= 0              ) :
@@ -276,49 +318,20 @@ class tblSerialListings             ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def startup                    ( self                                    ) :
+  def Prepare                 ( self                                       ) :
     ##########################################################################
-    if                           ( not self . isPrepared ( )               ) :
-      self . Prepare             (                                           )
+    for i in range            (  0 ,   7                                   ) :
+      self . setColumnWidth   (  i ,  60                                     )
     ##########################################################################
-    self   . Go                  ( self . loading                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def PrepareMessages            ( self                                    ) :
-    ##########################################################################
-    IDPMSG = self . Translations [ "Docking" ] [ "None" ]
-    DCKMSG = self . Translations [ "Docking" ] [ "Dock" ]
-    MDIMSG = self . Translations [ "Docking" ] [ "MDI"  ]
-    ##########################################################################
-    self   . setLocalMessage     ( self . AttachToNone , IDPMSG              )
-    self   . setLocalMessage     ( self . AttachToMdi  , MDIMSG              )
-    self   . setLocalMessage     ( self . AttachToDock , DCKMSG              )
-    ##########################################################################
-    return
-  ############################################################################
-  def closeEvent           ( self , event                                  ) :
-    ##########################################################################
-    self . Leave . emit    ( self                                            )
-    super ( ) . closeEvent ( event                                           )
-    ##########################################################################
-    return
-  ############################################################################
-  def Prepare                     ( self                                   ) :
-    ##########################################################################
-    for i in range                (  0 ,   7                               ) :
-      self . setColumnWidth       (  i ,  60                                 )
-    ##########################################################################
-    self   . setColumnWidth       (  7 , 180                                 )
-    self   . setColumnWidth       (  8 , 100                                 )
-    self   . setColumnWidth       (  9 , 120                                 )
-    self   . setColumnWidth       ( 10 ,   3                                 )
+    self   . setColumnWidth   (  7 , 180                                     )
+    self   . setColumnWidth   (  8 , 100                                     )
+    self   . setColumnWidth   (  9 , 120                                     )
+    self   . setColumnWidth   ( 10 ,   3                                     )
     ##########################################################################
     TRX    = self . Translations
-    self   . setCentralLabels     ( TRX [ "TBL" ] [ "Serial" ] [ "Labels" ]  )
+    self   . setCentralLabels ( TRX [ "TBL" ] [ "Serial" ] [ "Labels" ]      )
     ##########################################################################
-    self   . setPrepared          ( True                                     )
+    self   . setPrepared      ( True                                         )
     ##########################################################################
     return
   ############################################################################
@@ -331,17 +344,29 @@ class tblSerialListings             ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
+  def CommandParser ( self , language , message , timestamp                ) :
+    ##########################################################################
+    TRX = self . Translations
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectAll"    , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    if ( self . WithinCommand ( language , "UI::SelectNone"   , message )  ) :
+      return        { "Match" : True , "Message" : TRX [ "UI::SelectAll" ]   }
+    ##########################################################################
+    return          { "Match" : False                                        }
+  ############################################################################
   def Menu                              ( self , pos                       ) :
+    ##########################################################################
+    if                                  ( not self . isPrepared ( )        ) :
+      return False
     ##########################################################################
     doMenu = self . isFunction          ( self . HavingMenu                  )
     if                                  ( not doMenu                       ) :
       return False
     ##########################################################################
     self   . Notify                     ( 0                                  )
-    ##########################################################################
-    items  = self . selectedItems       (                                    )
-    atItem = self . currentItem         (                                    )
-    ##########################################################################
+    items , atItem , uuid = self . GetMenuDetails ( 0                        )
     mm     = MenuManager                ( self                               )
     ##########################################################################
     TRX    = self . Translations
@@ -361,8 +386,7 @@ class tblSerialListings             ( TreeDock                             ) :
     ##########################################################################
     if                                  ( at == 1001                       ) :
       ########################################################################
-      self . clear                      (                                    )
-      self . startup                    (                                    )
+      self . restart                    (                                    )
       ########################################################################
       return True
     ##########################################################################
