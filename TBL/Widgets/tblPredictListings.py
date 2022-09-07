@@ -142,6 +142,7 @@ class tblPredictListings            ( TreeDock                             ) :
     self . Optimizing         = False
     self . MinBalls           = -1
     self . MaxBalls           = -1
+    self . SelectBalls        = 20
     self . Periods            = 100
     self . Bettings           = [                                            ]
     self . tblSettings        = {                                            }
@@ -827,9 +828,9 @@ class tblPredictListings            ( TreeDock                             ) :
     BALLX   = TBLs . PickAppears       ( LASTEST                           , \
                                          self . Periods                    , \
                                          1                                 , \
-                                         20                                , \
+                                         self . SelectBalls                , \
                                          BALLX                               )
-    for i in range                     ( 0 , 20                            ) :
+    for i in range                     ( 0 , self . SelectBalls            ) :
       ########################################################################
       BB    = BALLX                    [ i                                   ]
       BALLS . append                   ( BB                                  )
@@ -1155,6 +1156,29 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
+  def isBallPicked                     ( self , DB                         ) :
+    ##########################################################################
+    ##########################################################################
+    return [ ]
+  ############################################################################
+  def GeneratePickingBalls             ( self , DB                         ) :
+    ##########################################################################
+    print(self.Prediction)
+    ##########################################################################
+    return [ ]
+  ############################################################################
+  def PickBalls                 ( self                                     ) :
+    ##########################################################################
+    DB   = self . ConnectDB     (                                            )
+    if                          ( self . NotOkay ( DB )                    ) :
+      return
+    ##########################################################################
+    self . GeneratePickingBalls ( DB                                         )
+    ##########################################################################
+    DB   . Close                (                                            )
+    ##########################################################################
+    return
+  ############################################################################
   def PredictionMenu                ( self , mm                            ) :
     ##########################################################################
     TRX    = self  . Translations
@@ -1195,14 +1219,21 @@ class tblPredictListings            ( TreeDock                             ) :
     self   . spinPeriod . setValue  ( self . Periods                         )
     mm     . addWidgetWithMenu      ( LOM , 312236326003 , self . spinPeriod )
     ##########################################################################
+    msg    = self . getMenuItem     ( "SelectBalls"                          )
+    self   . spinBalls  = SpinBox   ( None , self . PlanFunc                 )
+    self   . spinBalls  . setPrefix ( msg                                    )
+    self   . spinBalls  . setRange  ( 6 , 49                                 )
+    self   . spinBalls  . setValue  ( self . SelectBalls                     )
+    mm     . addWidgetWithMenu      ( LOM , 312236326004 , self . spinBalls  )
+    ##########################################################################
     return mm
   ############################################################################
   def RunPredictionMenu            ( self , atId                           ) :
     ##########################################################################
-    self . MinBalls = self . spinMin    . value (                            )
-    self . MaxBalls = self . spinMax    . value (                            )
-    self . Periods  = self . spinPeriod . value (                            )
-    ##########################################################################
+    self . MinBalls    = self . spinMin    . value (                         )
+    self . MaxBalls    = self . spinMax    . value (                         )
+    self . Periods     = self . spinPeriod . value (                         )
+    self . SelectBalls = self . spinBalls  . value (                         )
     ##########################################################################
     if                             ( atId == 3001                          ) :
       self . LoadSettings          (                                         )
@@ -1227,6 +1258,9 @@ class tblPredictListings            ( TreeDock                             ) :
     return   False
   ############################################################################
   def Menu                          ( self , pos                           ) :
+    ##########################################################################
+    if                              ( len ( self . Prediction ) <= 0       ) :
+      return False
     ##########################################################################
     if                              ( not self . isPrepared ( )            ) :
       return False
@@ -1262,8 +1296,14 @@ class tblPredictListings            ( TreeDock                             ) :
     msg    = self . getMenuItem     ( "SelectNone"                           )
     mm     . addAction              ( 1104 , msg                             )
     ##########################################################################
-    msg    = "分析"
+    msg    = self . getMenuItem     ( "Pickings"                             )
     mm     . addAction              ( 5114 , msg                             )
+    ##########################################################################
+    msg    = self . getMenuItem     ( "OpenPickings"                         )
+    mm     . addAction              ( 5115 , msg                             )
+    ##########################################################################
+    msg    = self . getMenuItem     ( "Analysis"                             )
+    mm     . addAction              ( 5116 , msg                             )
     ##########################################################################
     mm     . addSeparator           (                                        )
     mm     = self . PredictionMenu  ( mm                                     )
@@ -1326,6 +1366,18 @@ class tblPredictListings            ( TreeDock                             ) :
       return True
     ##########################################################################
     if                              ( at == 5114                           ) :
+      ########################################################################
+      self . Go                     ( self . PickBalls                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 5115                           ) :
+      ########################################################################
+      self . emitPickings . emit    ( self . Prediction                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 5116                           ) :
       ########################################################################
       self . Go                     ( self . Analysis                        )
       ########################################################################
