@@ -124,7 +124,10 @@ class Download    (                                                        ) :
     self   . Code     = 0
     self   . Success  = False
     ##########################################################################
-    URL    = urllib . parse . quote ( self . URL                             )
+    URL    = urllib . parse . quote ( self . URL , encoding = "utf-8"        )
+    if                         ( URL != self . URL                         ) :
+      print                    ( self . URL                                  )
+      print                    (        URL                                  )
     ##########################################################################
     self   . download . setopt ( pycurl . URL            , URL               )
     self   . download . setopt ( pycurl . HEADERFUNCTION , self . GetHeader  )
