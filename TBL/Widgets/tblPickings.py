@@ -42,7 +42,7 @@ from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
-from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
+from   AITK  . Qt . TableWidget       import TableWidget as TableWidget
 from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
 from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
@@ -116,7 +116,7 @@ Position12x6x5 = [ [  0 ,  2 ,  4 ,  6 ,  8 , 10 ]                         , \
                    [  1 ,  3 ,  5 ,  7 ,  8 , 10 ]                         , \
                    [  1 ,  3 ,  5 ,  7 ,  9 , 11 ]                         ] ;
 ##############################################################################
-class tblPredictListings            ( TreeDock                             ) :
+class tblPickings                   ( TableWidget                          ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
@@ -126,7 +126,6 @@ class tblPredictListings            ( TreeDock                             ) :
   emitUpdate     = pyqtSignal       (                                        )
   emitPickAll    = pyqtSignal       (                                        )
   emitPickNone   = pyqtSignal       (                                        )
-  emitPickings   = pyqtSignal       ( str                                    )
   addText        = pyqtSignal       ( str                                    )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
