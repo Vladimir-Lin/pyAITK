@@ -119,28 +119,74 @@ class Download    (                                                        ) :
     ##########################################################################
     return JST
   ############################################################################
-  def Download                 ( self                                      ) :
+  def toAsciiURL                     ( self                                ) :
     ##########################################################################
-    self   . Code     = 0
-    self   . Success  = False
+    OKAY    = False
     ##########################################################################
-    URL    = urllib . parse . quote ( self . URL , encoding = "utf-8"        )
-    if                         ( URL != self . URL                         ) :
-      print                    ( self . URL                                  )
-      print                    (        URL                                  )
+    FHTTPS  = self   . URL           [ 0 : 8                                 ]
+    FHTTP   = self   . URL           [ 0 : 7                                 ]
     ##########################################################################
-    self   . download . setopt ( pycurl . URL            , URL               )
-    self   . download . setopt ( pycurl . HEADERFUNCTION , self . GetHeader  )
-    self   . download . setopt ( pycurl . WRITEDATA      , self . Data       )
-    self   . download . setopt ( pycurl . HTTPHEADER     , self . Headers    )
-    self   . download . setopt ( pycurl . FOLLOWLOCATION , 1                 )
+    XHTTPS  = FHTTPS
+    XHTTPS  = XHTTPS . lower         (                                       )
     ##########################################################################
-    if                         ( self . Timeout > 0                        ) :
-      self . download . setopt ( pycurl . CONNECTTIMEOUT , self . Timeout    )
+    XHTTP   = FHTTP
+    XHTTP   = XHTTP  . lower         (                                       )
     ##########################################################################
-    self   . CheckHttps        (                                             )
-    self   . Success  = self . Execute (                                     )
-    self   . download . close  (                                             )
+    HTTPX   = ""
+    TAILX   = ""
+    ##########################################################################
+    if                               ( "https://" == XHTTPS                ) :
+      ########################################################################
+      HTTPX = FHTTPS
+      TAILX = self   . URL           [ 8 :                                   ]
+      OKAY  = True
+    ##########################################################################
+    elif                             ( "http://"  == XHTTP                 ) :
+      ########################################################################
+      HTTPX = FHTTP
+      TAILX = self   . URL           [ 7 :                                   ]
+      OKAY  = True
+    ##########################################################################
+    if                               ( not OKAY                            ) :
+      return self . URL
+    ##########################################################################
+    URL     = urllib . parse . quote ( TAILX , encoding = "utf-8"            )
+    URL     = f"{HTTPX}{URL}"
+    ##########################################################################
+    if                               ( URL != self . URL                   ) :
+      print                          ( self . URL                            )
+      print                          (        URL                            )
+    ##########################################################################
+    return URL
+  ############################################################################
+  def Download                           ( self                            ) :
+    ##########################################################################
+    self     . Code     = 0
+    self     . Success  = False
+    ##########################################################################
+    URL      = self . toAsciiURL         (                                   )
+    ##########################################################################
+    try                                                                      :
+      ########################################################################
+      self   . download . setopt         ( pycurl . URL            , URL     )
+      self   . download . setopt         ( pycurl . HEADERFUNCTION         , \
+                                           self   . GetHeader                )
+      self   . download . setopt         ( pycurl . WRITEDATA              , \
+                                           self   . Data                     )
+      self   . download . setopt         ( pycurl . HTTPHEADER             , \
+                                           self   . Headers                  )
+      self   . download . setopt         ( pycurl . FOLLOWLOCATION , 1       )
+      ########################################################################
+      if                                 ( self   . Timeout > 0            ) :
+        self . download . setopt         ( pycurl . CONNECTTIMEOUT         , \
+                                           self   . Timeout                  )
+      ########################################################################
+      self   . CheckHttps                (                                   )
+      self   . Success  = self . Execute (                                   )
+      self   . download . close          (                                   )
+      ########################################################################
+    except                                                                   :
+      return self . Success
     ##########################################################################
     return self . Success
 ##############################################################################
