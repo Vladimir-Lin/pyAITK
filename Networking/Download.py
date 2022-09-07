@@ -124,7 +124,9 @@ class Download    (                                                        ) :
     self   . Code     = 0
     self   . Success  = False
     ##########################################################################
-    self   . download . setopt ( pycurl . URL            , self . URL        )
+    URL    = urllib . parse . quote ( self . URL                             )
+    ##########################################################################
+    self   . download . setopt ( pycurl . URL            , URL               )
     self   . download . setopt ( pycurl . HEADERFUNCTION , self . GetHeader  )
     self   . download . setopt ( pycurl . WRITEDATA      , self . Data       )
     self   . download . setopt ( pycurl . HTTPHEADER     , self . Headers    )

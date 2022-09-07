@@ -821,13 +821,40 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     BALLX   =                          {                                     }
     BALLS   =                          [                                     ]
+    KKBB    =                          [                                     ]
+    KKYY    =                          [                                     ]
     BALLX   = TBLs . PickAppears       ( LASTEST                           , \
                                          self . Periods                    , \
                                          1                                 , \
                                          20                                , \
                                          BALLX                               )
     for i in range                     ( 0 , 20                            ) :
-      BALLS . append                   ( BALLX [ i ]                         )
+      ########################################################################
+      BB    = BALLX                    [ i                                   ]
+      BALLS . append                   ( BB                                  )
+      ########################################################################
+      if                               ( BB < 10                           ) :
+        NN  = f"`n0{BB}`"
+      else                                                                   :
+        NN  = f"`n{BB}`"
+      ########################################################################
+      KKBB  . append                   ( NN                                  )
+      KKYY  . append                   ( "1"                                 )
+    ##########################################################################
+    SERIX   = self . Prediction
+    QQ      = f"""delete from `predictions`.`tbl-pickings`
+                  where ( `serial` = '{SERIX}' ) ;"""
+    QQ      = " " . join               ( QQ . split ( )                      )
+    print                              ( QQ                                  )
+    DB      . Query                    ( QQ                                  )
+    ##########################################################################
+    NLS     = "," . join               ( KKBB                                )
+    VLS     = "," . join               ( KKYY                                )
+    QQ      = f"""insert into `predictions`.`tbl-pickings`
+                  ( `serial`,{NLS} ) values ( '{SERIX}',{VLS} ) ;"""
+    QQ      = " " . join               ( QQ . split ( )                      )
+    print                              ( QQ                                  )
+    DB      . Query                    ( QQ                                  )
     ##########################################################################
     ## MSG     = f"{MIN} , {MAX} : {ABALLS}"
     ## self    . appendText               ( MSG                                 )
@@ -840,12 +867,18 @@ class tblPredictListings            ( TreeDock                             ) :
     while                              ( not WORK                          ) :
       ########################################################################
       LW    = self . GenerateBettings  (      TBLs , BALLS , WETMT49         )
+      print                            ( json . dumps ( LW )                 )
       LW    = self . FilterAllRules    (      TBLs , LW                      )
+      print                            ( json . dumps ( LW )                 )
       LW    = self . HistoryDuplicate  (      TBLs , LW                      )
+      print                            ( json . dumps ( LW )                 )
       LW    = self . HistoryInRange    (      TBLs , LW                      )
+      print                            ( json . dumps ( LW )                 )
       LW    = self . TripleDuplicate   (      TBLs , LW                      )
+      print                            ( json . dumps ( LW )                 )
       LW    = self . RuleOutBettings   ( DB , TBLs , LW                      )
       ########################################################################
+      print                            ( json . dumps ( LW )                 )
       self  . appendText               ( json . dumps ( LW )                 )
       ########################################################################
       LZ    = len                      ( LW                                  )
