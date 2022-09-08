@@ -830,9 +830,13 @@ class tblPredictListings            ( TreeDock                             ) :
     if                          ( self . NotOkay ( ALLs )                  ) :
       return                    [                                            ]
     ##########################################################################
-    if                          ( len ( ALLs ) != 49                       ) :
+    if                          ( len ( ALLs       ) != 1                  ) :
       return                    [                                            ]
     ##########################################################################
+    if                          ( len ( ALLs [ 0 ] ) != 49                 ) :
+      return                    [                                            ]
+    ##########################################################################
+    ALL         = ALLs          [ 0                                          ]
     BALLs       =               [                                            ]
     ##########################################################################
     for i in range              ( 0 , 49                                   ) :
@@ -840,7 +844,7 @@ class tblPredictListings            ( TreeDock                             ) :
       try                                                                    :
         ######################################################################
         BALL    = int           ( i + 1                                      )
-        BV      = int           ( ALLs [ i ]                                 )
+        BV      = int           ( ALL [ i ]                                  )
         if                      ( BV > 0                                   ) :
           BALLs . append        ( BALL                                       )
         ######################################################################
@@ -915,7 +919,7 @@ class tblPredictListings            ( TreeDock                             ) :
     DISAPPW = TBLs . ConvertDisappearWeight  ( CDISAPP                       )
     self    . WETMT49 = TBLs . MultiplyTwo49 ( APPEARS , DISAPPW             )
     ##########################################################################
-    return BALLS
+    return
   ############################################################################
   def Predicting                       ( self                              ) :
     ##########################################################################
@@ -932,7 +936,6 @@ class tblPredictListings            ( TreeDock                             ) :
     BALLS   = self . isBallPicked      ( DB , self . Prediction              )
     if                                 ( len ( BALLS ) > 0                 ) :
       self  . PreparePickings          ( DB , TBLs                           )
-      print ( json . dumps ( BALLS ) )
     else                                                                     :
       BALLS = self . GetPickingBalls   ( DB , TBLs                           )
     ##########################################################################
@@ -957,7 +960,7 @@ class tblPredictListings            ( TreeDock                             ) :
       ########################################################################
       TRYS  = TRYS + 1
       LZ    = len                      ( LW                                  )
-      print                            ( LZ , json . dumps ( LW )            )
+      ## print                            ( LZ , json . dumps ( LW )            )
       ########################################################################
       if                               ( LZ < self . MinBalls              ) :
         continue
