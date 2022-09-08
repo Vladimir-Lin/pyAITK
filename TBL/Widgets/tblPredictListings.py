@@ -148,6 +148,7 @@ class tblPredictListings            ( TreeDock                             ) :
     self . tblSettings        = {                                            }
     self . tblParameters      = {                                            }
     self . tblAppears         = {                                            }
+    self . WETMT49            = {                                            }
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . LeftDockWidgetArea
@@ -520,6 +521,9 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     MIN    = self . tblSettings       [ "Bettings" ] [ "Range" ] [ "Min"     ]
     MAX    = self . tblSettings       [ "Bettings" ] [ "Range" ] [ "Max"     ]
+    BALLS  = self . tblSettings       [ "Bettings" ] [ "Range" ] [ "Balls"   ]
+    ##########################################################################
+    self   . SelectBalls = BALLS
     ##########################################################################
     if                                ( self . MinBalls < 0                ) :
       self . MinBalls = MIN
@@ -790,6 +794,129 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return LW
   ############################################################################
+  def GetTBLs                                  ( self , DB                 ) :
+    ##########################################################################
+    HISTORY = self . ObtainAllHistory          ( DB                          )
+    TBLs    = TaiwanBLs                        (                             )
+    TBLs    . setAppearanceWeight              ( self . tblAppears           )
+    TBLs    . ImportHistory                    ( HISTORY                     )
+    LASTEST = TBLs . Serials                   (                             )
+    MSG     = TBLs . at ( LASTEST ) . toString (                             )
+    NUMS    = TBLs . at ( LASTEST ) . numbers  ( 6                           )
+    self    . appendText                       ( MSG                         )
+    ##########################################################################
+    return TBLs
+  ############################################################################
+  def isBallPicked              ( self , DB , SERIAL                       ) :
+    ##########################################################################
+    ITEMs       =               [                                            ]
+    ##########################################################################
+    for i in range              ( 1 , 50                                   ) :
+      ########################################################################
+      if                        ( i < 10                                   ) :
+        NN      = f"`n0{i}`"
+      else                                                                   :
+        NN      = f"`n{i}`"
+      ########################################################################
+      ITEMs     . append        ( NN                                         )
+    ##########################################################################
+    ITEMX       = " , " . join  ( ITEMs                                      )
+    QQ          = f"""select {ITEMX} from `predictions`.`tbl-pickings`
+                      where ( `serial` = '{SERIAL}' ) ;"""
+    QQ          = " " . join    ( QQ . split ( )                             )
+    DB          . Query         ( QQ                                         )
+    ALLs        = DB . FetchAll (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( ALLs )                  ) :
+      return                    [                                            ]
+    ##########################################################################
+    if                          ( len ( ALLs ) != 49                       ) :
+      return                    [                                            ]
+    ##########################################################################
+    BALLs       =               [                                            ]
+    ##########################################################################
+    for i in range              ( 0 , 49                                   ) :
+      ########################################################################
+      try                                                                    :
+        ######################################################################
+        BALL    = int           ( i + 1                                      )
+        BV      = int           ( ALLs [ i ]                                 )
+        if                      ( BV > 0                                   ) :
+          BALLs . append        ( BALL                                       )
+        ######################################################################
+      except                                                                 :
+        pass
+    ##########################################################################
+    return BALLs
+  ############################################################################
+  def GetPickingBalls                        ( self , DB , TBLs            ) :
+    ##########################################################################
+    MIN     = self . tblSettings [ "Bettings" ] [ "Range" ] [ "Min"          ]
+    MAX     = self . tblSettings [ "Bettings" ] [ "Range" ] [ "Max"          ]
+    ABALLS  = self . tblSettings [ "Bettings" ] [ "Balls"                    ]
+    LASTEST = TBLs . Serials                 (                               )
+    LX      =                                [                               ]
+    ##########################################################################
+    APPEARS = TBLs . CreateAppears           ( 32 , 7                        )
+    CDISAPP = TBLs . CountDisappears         ( LASTEST , 6                   )
+    DISAPPW = TBLs . ConvertDisappearWeight  ( CDISAPP                       )
+    self    . WETMT49 = TBLs . MultiplyTwo49 ( APPEARS , DISAPPW             )
+    ##########################################################################
+    BALLX   =                                {                               }
+    BALLS   =                                [                               ]
+    KKBB    =                                [                               ]
+    KKYY    =                                [                               ]
+    ##########################################################################
+    BALLX   = TBLs . PickAppears             ( LASTEST                     , \
+                                               self . Periods              , \
+                                               1                           , \
+                                               self . SelectBalls          , \
+                                               BALLX                         )
+    for i in range                           ( 0 , self . SelectBalls      ) :
+      ########################################################################
+      BB    = BALLX                          [ i                             ]
+      BALLS . append                         ( BB                            )
+      ########################################################################
+      if                                     ( BB < 10                     ) :
+        NN  = f"`n0{BB}`"
+      else                                                                   :
+        NN  = f"`n{BB}`"
+      ########################################################################
+      KKBB  . append                         ( NN                            )
+      KKYY  . append                         ( "1"                           )
+    ##########################################################################
+    SERIX   = self . Prediction
+    QQ      = f"""delete from `predictions`.`tbl-pickings`
+                  where ( `serial` = '{SERIX}' ) ;"""
+    QQ      = " " . join                     ( QQ . split ( )                )
+    DB      . Query                          ( QQ                            )
+    ##########################################################################
+    NLS     = "," . join                     ( KKBB                          )
+    VLS     = "," . join                     ( KKYY                          )
+    QQ      = f"""insert into `predictions`.`tbl-pickings`
+                  ( `serial`,{NLS} ) values ( '{SERIX}',{VLS} ) ;"""
+    QQ      = " " . join                     ( QQ . split ( )                )
+    DB      . Query                          ( QQ                            )
+    ##########################################################################
+    self    . appendText                     ( json . dumps ( BALLS   )      )
+    ##########################################################################
+    return BALLS
+  ############################################################################
+  def PreparePickings                        ( self , DB , TBLs            ) :
+    ##########################################################################
+    MIN     = self . tblSettings [ "Bettings" ] [ "Range" ] [ "Min"          ]
+    MAX     = self . tblSettings [ "Bettings" ] [ "Range" ] [ "Max"          ]
+    ABALLS  = self . tblSettings [ "Bettings" ] [ "Balls"                    ]
+    LASTEST = TBLs . Serials                 (                               )
+    LX      =                                [                               ]
+    ##########################################################################
+    APPEARS = TBLs . CreateAppears           ( 32 , 7                        )
+    CDISAPP = TBLs . CountDisappears         ( LASTEST , 6                   )
+    DISAPPW = TBLs . ConvertDisappearWeight  ( CDISAPP                       )
+    self    . WETMT49 = TBLs . MultiplyTwo49 ( APPEARS , DISAPPW             )
+    ##########################################################################
+    return BALLS
+  ############################################################################
   def Predicting                       ( self                              ) :
     ##########################################################################
     TRX     = self . Translations
@@ -801,89 +928,36 @@ class tblPredictListings            ( TreeDock                             ) :
     if                                 ( DB == None                        ) :
       return
     ##########################################################################
-    HISTORY = self . ObtainAllHistory  ( DB                                  )
-    TBLs    = TaiwanBLs                (                                     )
-    TBLs    . setAppearanceWeight      ( self . tblAppears                   )
-    TBLs    . ImportHistory            ( HISTORY                             )
-    LASTEST = TBLs . Serials           (                                     )
-    MSG     = TBLs . at ( LASTEST ) . toString (                             )
-    NUMS    = TBLs . at ( LASTEST ) . numbers  ( 6                           )
-    self    . appendText               ( MSG                                 )
+    TBLs    = self . GetTBLs           ( DB                                  )
+    BALLS   = self . isBallPicked      ( DB , self . Prediction              )
+    if                                 ( len ( BALLS ) > 0                 ) :
+      self  . PreparePickings          ( DB , TBLs                           )
+      print ( json . dumps ( BALLS ) )
+    else                                                                     :
+      BALLS = self . GetPickingBalls   ( DB , TBLs                           )
     ##########################################################################
-    MIN     = self . tblSettings [ "Bettings" ] [ "Range" ] [ "Min" ]
-    MAX     = self . tblSettings [ "Bettings" ] [ "Range" ] [ "Max" ]
-    ABALLS  = self . tblSettings [ "Bettings" ] [ "Balls" ]
     WORK    = False
-    LX      =                          [                                     ]
-    ##########################################################################
-    APPEARS = TBLs . CreateAppears     ( 32 , 7                              )
-    CDISAPP = TBLs . CountDisappears   ( LASTEST , 6                         )
-    DISAPPW = TBLs . ConvertDisappearWeight ( CDISAPP                        )
-    WETMT49 = TBLs . MultiplyTwo49     ( APPEARS , DISAPPW                   )
-    ##########################################################################
-    BALLX   =                          {                                     }
-    BALLS   =                          [                                     ]
-    KKBB    =                          [                                     ]
-    KKYY    =                          [                                     ]
-    BALLX   = TBLs . PickAppears       ( LASTEST                           , \
-                                         self . Periods                    , \
-                                         1                                 , \
-                                         self . SelectBalls                , \
-                                         BALLX                               )
-    for i in range                     ( 0 , self . SelectBalls            ) :
-      ########################################################################
-      BB    = BALLX                    [ i                                   ]
-      BALLS . append                   ( BB                                  )
-      ########################################################################
-      if                               ( BB < 10                           ) :
-        NN  = f"`n0{BB}`"
-      else                                                                   :
-        NN  = f"`n{BB}`"
-      ########################################################################
-      KKBB  . append                   ( NN                                  )
-      KKYY  . append                   ( "1"                                 )
-    ##########################################################################
-    SERIX   = self . Prediction
-    QQ      = f"""delete from `predictions`.`tbl-pickings`
-                  where ( `serial` = '{SERIX}' ) ;"""
-    QQ      = " " . join               ( QQ . split ( )                      )
-    print                              ( QQ                                  )
-    DB      . Query                    ( QQ                                  )
-    ##########################################################################
-    NLS     = "," . join               ( KKBB                                )
-    VLS     = "," . join               ( KKYY                                )
-    QQ      = f"""insert into `predictions`.`tbl-pickings`
-                  ( `serial`,{NLS} ) values ( '{SERIX}',{VLS} ) ;"""
-    QQ      = " " . join               ( QQ . split ( )                      )
-    print                              ( QQ                                  )
-    DB      . Query                    ( QQ                                  )
-    ##########################################################################
-    ## MSG     = f"{MIN} , {MAX} : {ABALLS}"
-    ## self    . appendText               ( MSG                                 )
-    ## self    . appendText               ( json . dumps ( APPEARS )            )
-    ## self    . appendText               ( json . dumps ( CDISAPP )            )
-    ## self    . appendText               ( json . dumps ( DISAPPW )            )
-    ## self    . appendText               ( json . dumps ( WETMT49 )            )
-    self    . appendText               ( json . dumps ( BALLS   )            )
+    TRYS    = 0
+    LW      =                          [                                     ]
     ##########################################################################
     while                              ( not WORK                          ) :
       ########################################################################
-      LW    = self . GenerateBettings  (      TBLs , BALLS , WETMT49         )
-      print                            ( json . dumps ( LW )                 )
+      if                               ( TRYS > 500                        ) :
+        WORK = True
+        continue
+      ########################################################################
+      LW    = self . GenerateBettings  (      TBLs , BALLS , self . WETMT49  )
       LW    = self . FilterAllRules    (      TBLs , LW                      )
-      print                            ( json . dumps ( LW )                 )
       LW    = self . HistoryDuplicate  (      TBLs , LW                      )
-      print                            ( json . dumps ( LW )                 )
       LW    = self . HistoryInRange    (      TBLs , LW                      )
-      print                            ( json . dumps ( LW )                 )
       LW    = self . TripleDuplicate   (      TBLs , LW                      )
-      print                            ( json . dumps ( LW )                 )
       LW    = self . RuleOutBettings   ( DB , TBLs , LW                      )
       ########################################################################
-      print                            ( json . dumps ( LW )                 )
       self  . appendText               ( json . dumps ( LW )                 )
       ########################################################################
+      TRYS  = TRYS + 1
       LZ    = len                      ( LW                                  )
+      print                            ( LZ , json . dumps ( LW )            )
       ########################################################################
       if                               ( LZ < self . MinBalls              ) :
         continue
@@ -1156,16 +1230,12 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
-  def isBallPicked                     ( self , DB                         ) :
+  def GeneratePickingBalls         ( self , DB                             ) :
     ##########################################################################
+    TBLs  = self . GetTBLs         ( DB                                      )
+    BALLS = self . GetPickingBalls ( DB , TBLs                               )
     ##########################################################################
-    return [ ]
-  ############################################################################
-  def GeneratePickingBalls             ( self , DB                         ) :
-    ##########################################################################
-    print(self.Prediction)
-    ##########################################################################
-    return [ ]
+    return BALLS
   ############################################################################
   def PickBalls                 ( self                                     ) :
     ##########################################################################
@@ -1176,6 +1246,8 @@ class tblPredictListings            ( TreeDock                             ) :
     self . GeneratePickingBalls ( DB                                         )
     ##########################################################################
     DB   . Close                (                                            )
+    ##########################################################################
+    self . Notify               ( 5                                          )
     ##########################################################################
     return
   ############################################################################
