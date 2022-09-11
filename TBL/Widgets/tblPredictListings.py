@@ -126,7 +126,7 @@ class tblPredictListings            ( TreeDock                             ) :
   emitUpdate     = pyqtSignal       (                                        )
   emitPickAll    = pyqtSignal       (                                        )
   emitPickNone   = pyqtSignal       (                                        )
-  emitPickings   = pyqtSignal       ( str                                    )
+  emitPickings   = pyqtSignal       ( str , bool                             )
   addText        = pyqtSignal       ( str                                    )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
@@ -1459,7 +1459,7 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     if                              ( at == 5115                           ) :
       ########################################################################
-      self . emitPickings . emit    ( self . Prediction                      )
+      self . emitPickings . emit    ( self . Prediction , True               )
       ########################################################################
       return True
     ##########################################################################
