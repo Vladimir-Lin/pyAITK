@@ -439,7 +439,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return it
   ############################################################################
-  @pyqtSlot(str,int)
+  @pyqtSlot                   (        str     , int                         )
   def AssignStatusMessage     ( self , message , timeout = 0               ) :
     self . statusMessage      (        message , timeout                     )
     return
