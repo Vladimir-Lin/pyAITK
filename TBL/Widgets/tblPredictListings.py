@@ -144,6 +144,7 @@ class tblPredictListings            ( TreeDock                             ) :
     self . MaxBalls           = -1
     self . SelectBalls        = 20
     self . Periods            = 100
+    self . tblHost            = "http://insider.actions.com.tw:8364"
     self . Bettings           = [                                            ]
     self . tblSettings        = {                                            }
     self . tblParameters      = {                                            }
@@ -1073,6 +1074,22 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
+  ## 發送RPC命令
+  ############################################################################
+  def SendRPC                  ( self , Command , JSON                     ) :
+    ##########################################################################
+    HOST     = self . tblHost
+    CMD      = f"{HOST}/{Command}"
+    Headers  = { "Username" : "foxman"                                       ,
+                 "Password" : "actionsfox2019"                               }
+    try                                                                      :
+      status = requests . post ( CMD                                         ,
+                                 data    = json . dumps ( JSON )             ,
+                                 headers = Headers                           )
+    except                                                                   :
+      return False
+    ##########################################################################
+    return status . status_code
   ############################################################################
   def CopyToClipboard              ( self                                  ) :
     ##########################################################################
@@ -1235,9 +1252,21 @@ class tblPredictListings            ( TreeDock                             ) :
   ############################################################################
   ## 列印投注
   ############################################################################
-  def PrintPdfNumbers              ( self                                  ) :
+  def PrintPdfNumbers           ( self                                     ) :
     ##########################################################################
-    print ( "Print PDF Numbers" )
+    JSON              =         {                                            }
+    PAPER             = self . tblSettings [ "Bettings" ] [ "Paper"          ]
+    ##########################################################################
+    JSON [ "Action" ] = "PrintBets"
+    JSON [ "X"      ] = PAPER   [ "X"                                        ]
+    JSON [ "Y"      ] = PAPER   [ "Y"                                        ]
+    JSON [ "Gap"    ] = PAPER   [ "Gap"                                      ]
+    JSON [ "W"      ] = PAPER   [ "Width"                                    ]
+    JSON [ "H"      ] = PAPER   [ "Height"                                   ]
+    JSON [ "L"      ] = PAPER   [ "Length"                                   ]
+    JSON [ "Text"   ] = PAPER   [ "Text"                                     ]
+    ##########################################################################
+    self              . SendRPC ( "TBL" , JSON                               )
     ##########################################################################
     return
   ############################################################################
