@@ -115,11 +115,11 @@ class tblPickings                   ( TableDock                            ) :
     self . emitBalls . connect      ( self . refresh                         )
     ##########################################################################
     ## self . setFunction              ( self . FunctionDocking , True          )
-    ## self . setFunction              ( self . HavingMenu      , True          )
+    self . setFunction              ( self . HavingMenu      , True          )
     ##########################################################################
-    ## self . setDragEnabled           ( False                                  )
-    ## self . setAcceptDrops           ( False                                  )
-    ## self . setDragDropMode          ( QAbstractItemView . NoDragDrop         )
+    self . setDragEnabled           ( False                                  )
+    self . setAcceptDrops           ( False                                  )
+    self . setDragDropMode          ( QAbstractItemView . NoDragDrop         )
     ##########################################################################
     return
   ############################################################################
@@ -226,8 +226,9 @@ class tblPickings                   ( TableDock                            ) :
     ##########################################################################
     return
   ############################################################################
-  def Prepare ( self                                                       ) :
+  def Prepare          ( self                                              ) :
     ##########################################################################
+    self . setPrepared ( True                                                )
     ##########################################################################
     return
   ############################################################################
@@ -424,13 +425,16 @@ class tblPickings                   ( TableDock                            ) :
     if                              ( not self . isPrepared ( )            ) :
       return False
     ##########################################################################
-    """
     doMenu = self . isFunction      ( self . HavingMenu                      )
     if                              ( not doMenu                           ) :
       return False
     ##########################################################################
     self   . Notify                 ( 0                                      )
     ##########################################################################
+    ITEM = self . itemAt ( pos )
+    if ( self . IsOkay ( ITEM ) ) :
+      print(ITEM.text())
+    """
     items  = self . selectedItems   (                                        )
     atItem = self . currentItem     (                                        )
     ##########################################################################
