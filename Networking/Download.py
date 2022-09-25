@@ -17,6 +17,7 @@ import urllib . parse
 from   pathlib import Path
 from   io import BytesIO
 import pycurl
+import certifi
 ##############################################################################
 class Download    (                                                        ) :
   ############################################################################
@@ -60,7 +61,8 @@ class Download    (                                                        ) :
     ##########################################################################
     self   . URL  = url
     self   . isHTTPS   = False
-    if ( "https://" in url . lower ( ) ) :
+    ##########################################################################
+    if            ( "https://" in url . lower ( )                          ) :
       self . isHTTPS   = True
     ##########################################################################
     return
@@ -82,13 +84,19 @@ class Download    (                                                        ) :
     return True
   ############################################################################
   def CheckHttps             (     self                                    ) :
-    if                       ( not self . isHTTPS                          ) :
-      return False
+    ##########################################################################
     self . download . setopt ( pycurl . SSL_VERIFYPEER , 0                   )
     self . download . setopt ( pycurl . SSL_VERIFYHOST , 0                   )
+    ##########################################################################
+    if                       ( not self . isHTTPS                          ) :
+      return False
+    ##########################################################################
+    ## self . download . setopt ( pycurl . CAINFO , certifi . where ( )         )
+    ##########################################################################
     return True
   ############################################################################
   def GetHeader        ( self , headerLine                                 ) :
+    ##########################################################################
     self . Responses = {                                                     }
     headerLine       = headerLine . decode ( 'iso-8859-1' )
     if ":" not in headerLine                                                 :
@@ -98,6 +106,7 @@ class Download    (                                                        ) :
     h_value = h_value . strip ( )
     h_name  = h_name  . lower ( )
     self . Responses [ h_name ] = h_value
+    ##########################################################################
     return
   ############################################################################
   def Write                  (     self                                    ) :
