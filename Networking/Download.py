@@ -37,6 +37,7 @@ class Download    (                                                        ) :
     self . Data      = BytesIO       (                                       )
     self . download  = pycurl . Curl (                                       )
     self . Code      = 0
+    self . Error     = ""
     self . Timeout   = 30
     ##########################################################################
     return
@@ -71,9 +72,11 @@ class Download    (                                                        ) :
       self . download . perform (                                            )
       self . Code = self . download . getinfo ( pycurl . HTTP_CODE           )
       ########################################################################
-    except pycurl . error                                                    :
+    except pycurl . error as e                                               :
       ########################################################################
-      self . Code = 400
+      self . Code  = 400
+      self . Error = str        ( e                                          )
+      ########################################################################
       return False
     ##########################################################################
     return True
