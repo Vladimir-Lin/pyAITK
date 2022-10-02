@@ -17,5 +17,7 @@ __all__ = [ "Binary"                                                       , \
             "Graph"                                                        , \
             "SetOperator"                                                  , \
             "SetsAlgebra"                                                  , \
-            "Geometry"                                                       ]
+            "Geometry"                                                     , \
+            "Numbers"                                                      , \
+            "Widgets"                                                        ]
 ##############################################################################
