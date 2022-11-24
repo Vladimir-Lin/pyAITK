@@ -39,6 +39,7 @@ from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QFileDialog
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
 from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
@@ -50,6 +51,11 @@ from   AITK  . Essentials . Relation  import Relation
 ##############################################################################
 from   AITK . Calendars . StarDate    import StarDate
 from   AITK . Calendars . Periode     import Periode
+##############################################################################
+from   AITK . Documents  . JSON       import Load        as LoadJson
+from   AITK . Documents  . JSON       import Save        as SaveJson
+from   AITK . Documents  . JSON       import Merge       as MergeJson
+from   AITK . Documents  . JSON       import LoadBoth    as LoadBoth
 ##############################################################################
 class PlaceListings                ( TreeDock                              ) :
   ############################################################################
@@ -780,6 +786,110 @@ class PlaceListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def toLLTD                 ( self , V                                    ) :
+    ##########################################################################
+    SI   = True
+    ##########################################################################
+    if                       ( V < 0                                       ) :
+      SI = False
+      V  = -V
+    ##########################################################################
+    II   = int               ( V  % 1000000                                  )
+    VV   = int               ( V  / 1000000                                  )
+    SS   = int               ( VV %     100                                  )
+    XX   = int               ( VV /     100                                  )
+    MM   = int               ( XX %     100                                  )
+    HH   = int               ( XX /     100                                  )
+    ##########################################################################
+    DD   = float             ( II                                            )
+    DD   = float             ( DD / 1000000                                  )
+    DD   = float             ( DD + float ( SS )                             )
+    DD   = float             ( DD /      60                                  )
+    DD   = float             ( DD + float ( MM )                             )
+    DD   = float             ( DD /      60                                  )
+    DD   = float             ( DD + float ( HH )                             )
+    ##########################################################################
+    return DD
+  ############################################################################
+  def GetPlacePositions            ( self , PLACEs                         ) :
+    ##########################################################################
+    DB          = self . ConnectDB (                                         )
+    if                             ( DB == None                            ) :
+      return PLACEs
+    ##########################################################################
+    POSTAB      = self . Tables    [ "Positions"                             ]
+    POS         =                  [                                         ]
+    ##########################################################################
+    for J in PLACEs                                                          :
+      ########################################################################
+      UUID      = J                [ "UUID"                                  ]
+      J [ "Location" ] = False
+      ########################################################################
+      QQ        = f"select `latitude`,`longitude` from {POSTAB} where ( `uuid` = {UUID} ) ;"
+      DB        . Query            ( QQ                                      )
+      RR        = DB . FetchOne    (                                         )
+      ########################################################################
+      if                           ( RR in [ False , None ]                ) :
+        ######################################################################
+        POS     . append           ( J                                       )
+        ######################################################################
+        continue
+      ########################################################################
+      if                           ( len ( RR ) != 2                       ) :
+        ######################################################################
+        POS     . append           ( J                                       )
+        ######################################################################
+        continue
+      ########################################################################
+      mLati     = int              ( RR [ 0 ]                                )
+      mLong     = int              ( RR [ 1 ]                                )
+      dLati     = self . toLLTD    ( mLati                                   )
+      dLong     = self . toLLTD    ( mLong                                   )
+      ########################################################################
+      J [ "Latitude"   ] = dLati
+      J [ "Longitude"  ] = dLong
+      J [ "ILatitude"  ] = f"{mLati}"
+      J [ "ILongitude" ] = f"{mLong}"
+      J [ "Location"   ] = True
+      ########################################################################
+      POS       . append           ( J                                       )
+    ##########################################################################
+    DB          . Close            (                                         )
+    ##########################################################################
+    return POS
+  ############################################################################
+  def ExportPositions                   ( self                             ) :
+    ##########################################################################
+    PLACEs   =                          [                                    ]
+    ##########################################################################
+    for i in range                      ( 0 , self . topLevelItemCount ( ) ) :
+      ########################################################################
+      titem  = self . topLevelItem      ( i                                  )
+      ########################################################################
+      name   = titem . text             ( 0                                  )
+      uuid   = titem . data             ( 0 , Qt . UserRole                  )
+      ########################################################################
+      J      =                          { "UUID" : uuid , "Name" : name      }
+      PLACEs . append                   ( J                                  )
+    ##########################################################################
+    PLACEs   = self . GetPlacePositions ( PLACEs                             )
+    ##########################################################################
+    Filters  = self . getMenuItem       ( "JsonFilters"                      )
+    Name , t = QFileDialog . getSaveFileName                                 (
+                                          self                             , \
+                                          self . windowTitle ( )           , \
+                                          ""                               , \
+                                          Filters                            )
+    ##########################################################################
+    if                                  ( len ( Name ) <= 0                ) :
+      self   . Notify                   ( 1                                  )
+      return
+    ##########################################################################
+    SaveJson                            ( Name , PLACEs                      )
+    self     . Notify                   ( 5                                  )
+    ##########################################################################
+    return
+  ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
@@ -847,6 +957,9 @@ class PlaceListings                ( TreeDock                              ) :
       mm   . addSeparator          (                                         )
       mm   . addAction             ( 1201 ,  MSG                             )
     ##########################################################################
+    msg    = self . getMenuItem    ( "ExportPositions"                       )
+    mm     . addAction             ( 6327 , msg                              )
+    ##########################################################################
     mm     . addSeparator          (                                         )
     ##########################################################################
     if                             ( atItem not in [ False , None ]        ) :
@@ -859,6 +972,7 @@ class PlaceListings                ( TreeDock                              ) :
     mm     = self . ColumnsMenu    ( mm                                      )
     mm     = self . SortingMenu    ( mm                                      )
     mm     = self . LocalityMenu   ( mm                                      )
+    ##########################################################################
     mm     . addSeparator          (                                         )
     mm     . addAction             ( 3001 ,  TRX [ "UI::TranslateAll"      ] )
     self   . DockingMenu           ( mm                                      )
@@ -922,6 +1036,10 @@ class PlaceListings                ( TreeDock                              ) :
     if                             ( at == 3001                            ) :
       self . Go                    ( self . TranslateAll                     )
       return True
+    ##########################################################################
+    if                             ( at == 6327                            ) :
+      ########################################################################
+      self . ExportPositions       (                                         )
     ##########################################################################
     if                             ( at == 7401                            ) :
       ########################################################################
