@@ -10,6 +10,9 @@ import requests
 import threading
 import gettext
 import json
+import math
+##############################################################################
+from   AITK  . Documents  . JSON       import Save              as SaveJson
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -49,6 +52,20 @@ from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
+##############################################################################
+from   AITK  . Physics  . SunEarth    import LocateSunEarthPerihelion
+from   AITK  . Physics  . SunEarth    import TakeSunEarthPerihelion
+from   AITK  . Physics  . SunEarth    import SunEarthApproximateDistance
+from   AITK  . Physics  . SunEarth    import LocateEquinoxAngles
+from   AITK  . Physics  . SunEarth    import TakeEquinoxAngles
+from   AITK  . Physics  . SunEarth    import GetEquinoxAngles
+from   AITK  . Physics  . SunEarth    import GetSolarTransformMatrix
+from   AITK  . Physics  . SunEarth    import GetRollingSolarAngle
+from   AITK  . Physics  . SunEarth    import GetProjectToSolarPoint
+from   AITK  . Physics  . SunEarth    import GetProjectPointToSunriseSunset
+from   AITK  . Physics  . SunEarth    import GetSunriseSunsetSinAngle
+from   AITK  . Physics  . SunEarth    import GetAppearSunriseSinAngle
+from   AITK  . Physics  . SunEarth    import GetCriticalTwilightAngle
 ##############################################################################
 class CelestialListings            ( TreeDock                              ) :
   ############################################################################
@@ -827,6 +844,45 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def EarthSun               ( self                                        ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    TZ     = "Asia/Taipei"
+    LATI   = 23.0
+    OMEGA  = 120.174
+    NOW    = StarDate         (                                              )
+    NOW    . Now              (                                              )
+    SOD    = NOW . SecondsOfDay ( "Asia/Taipei" )
+    KDT    = NOW . Stardate - SOD
+    ##########################################################################
+    for i in range ( 0 , 1440                                              ) :
+      ########################################################################
+      DIST   = SunEarthApproximateDistance ( KDT )
+      Mvs    = GetSolarTransformMatrix     ( KDT )
+      ANGLE  = GetRollingSolarAngle        ( KDT , OMEGA )
+      Pj     = GetProjectToSolarPoint      ( ANGLE , LATI )
+      YY     = GetProjectPointToSunriseSunset ( Pj , Mvs )
+      SRS    = GetSunriseSunsetSinAngle    ( DIST )
+      SAS    = GetAppearSunriseSinAngle    ( DIST )
+      A5     = GetCriticalTwilightAngle    ( 4.9  )
+      A6     = GetCriticalTwilightAngle    ( 6    )
+      A12    = GetCriticalTwilightAngle    ( 12   )
+      A18    = GetCriticalTwilightAngle    ( 18   )
+      ########################################################################
+      NOW    . Stardate = KDT
+      TTT    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
+      ########################################################################
+      print ( TTT , DIST , YY , SRS , SAS , A5 , A6 , A12 , A18 )
+      ########################################################################
+      KDT    = KDT + 60
+    ##########################################################################
+    DB     . Close            (                                              )
+    ##########################################################################
+    return
+  ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
     self . DoCopyToClipboard (                                               )
@@ -940,6 +996,7 @@ class CelestialListings            ( TreeDock                              ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
     ##########################################################################
     mm     . addAction              ( 3001 ,  TRX [ "UI::TranslateAll"     ] )
+    mm     . addAction              ( 5001 ,  "日地距離" )
     mm     . addSeparator           (                                        )
     ##########################################################################
     self   . FiltersMenu            ( mm                                     )
@@ -1015,6 +1072,10 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 3001                           ) :
       self . Go                     ( self . TranslateAll                    )
+      return True
+    ##########################################################################
+    if                              ( at == 5001                           ) :
+      self . Go                     ( self . EarthSun                        )
       return True
     ##########################################################################
     return True
