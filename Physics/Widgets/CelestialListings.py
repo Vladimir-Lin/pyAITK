@@ -67,6 +67,11 @@ from   AITK  . Physics  . SunEarth    import GetSunriseSunsetSinAngle
 from   AITK  . Physics  . SunEarth    import GetAppearSunriseSinAngle
 from   AITK  . Physics  . SunEarth    import GetCriticalTwilightAngle
 ##############################################################################
+import datetime
+import pytz
+from astral       import LocationInfo
+from astral . sun import sun
+##############################################################################
 Midday120 = [ "2022-01-01 12:03:24"                                          ,
   "2022-01-02 12:03:52"                                                      ,
   "2022-01-03 12:04:20"                                                      ,
@@ -1586,14 +1591,88 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     TZ     = "Asia/Taipei"
     NOW    = StarDate         (                                              )
-    """
+    tzs    = pytz . timezone  ( TZ                                           )
+    ##########################################################################
+    LI     = LocationInfo     (                                              )
+    LI . latitude  = 23.0
+    LI . longitude = 120.0
     ##########################################################################
     for DT in Midday120                                                      :
       ########################################################################
-      SDT  = NOW . fromInput  ( DT , TZ                                      )
-      print ( DT , SDT )
+      NOW . fromInput         ( DT , TZ                                      )
+      KDT = NOW . Stardate
+      ########################################################################
+      dtp = datetime . datetime . strptime ( DT , "%Y-%m-%d %H:%M:%S"        )
+      dt  = tzs      . localize            ( dtp                             )
+      da  = dt       . date                (                                 )
+      ########################################################################
+      s   = sun               ( LI . observer , date = da                    )
+      NOW . fromDateTime      ( s["noon"]                                    )
+      ADT = NOW . Stardate
+      TTT = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
+      ########################################################################
+      print(DT,TTT,KDT-ADT)
+    ##########################################################################
+    """
+    NOW    . Now              (                                              )
+    CDT    = NOW . Stardate
+    TSY    = NOW . toSiderealYear (                                          )
+    TTY    = NOW . toTropicalYear (                                          )
+    TSK    = TSY - float ( int ( TSY ) )
+    RMX    = ( 31558149.54 * 23 ) + 0.816
+    RMI    = int ( RMX )
+    RMK    = RMX - float ( RMI )
+    RMS    = f"{RMK}"
+    RMS    = RMS . replace ( "0." , "" )
+    NOW    . Stardate = 1420092378650807935 + RMI
+    DTS    = CDT - NOW . Stardate
+    DTS    = float ( DTS ) - RMK
+    DTS    = DTS / 86164.0905
+    DTZ    = int ( DTS )
+    DTR    = DTS - float ( DTZ )
+    DTR    = DTR * 360.0
+    TTT    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
+    print(TSY,TTY,TTY-TSY,TSK,TSK*360,f"{TTT}.{RMS}",DTS,DTR)
     """
     ##########################################################################
+    """
+    for DT in Midday120                                                      :
+      ########################################################################
+      SDT  = NOW . fromInput  ( DT , TZ                                      )
+      ########################################################################
+      ## AT   = 0
+      ## while                   ( AT < 100                                   ) :
+      ##   ######################################################################
+      ##   V  = SYL              [ AT                                           ]
+      ##   ######################################################################
+      ##   if                    ( SDT < V                                    ) :
+      ##     AT = AT - 1
+      ##     break
+      ##   ######################################################################
+      ##   AT = AT + 1
+      ########################################################################
+      ## V    = 1420092378650807935
+      ## R    = 0.816
+      ########################################################################
+      ## KDT  = int              ( SDT - V                                      )
+      ## DTX  = float            ( float ( KDT ) - R                            )
+      DTX  = NOW . toJ2000    (                                              )
+      ## DTS  = NOW . toSiderealDay (                                           )
+      DTS  = float            ( DTX / 86164.0905                             )
+      DTZ  = int              ( DTS                                          )
+      DTR  = float            ( DTS - float ( DTZ )                          )
+      DTR  = float            ( DTR * 360.0                                  )
+      DTR  = float            ( DTR + 120.0                                  )
+      DTM  = int              ( DTR / 360.0                                  )
+      DTR  = float            ( DTR - float ( DTM * 360 )                    )
+      ########################################################################
+      NOW    . Stardate = V
+      TTT    = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
+      ########################################################################
+      print                   ( DT , SDT , DTX , DTR , TTT                   )
+    """
+    ##########################################################################
+    """
     QQ     = "select `perihelion` from `astronomy`.`earth-helions` order by `id` asc ;"
     PERIs  = DB . ObtainUuids ( QQ                                           )
     ##########################################################################
@@ -1617,6 +1696,7 @@ class CelestialListings            ( TreeDock                              ) :
       ########################################################################
       PREV = PREV + 1
       AT   = AT   + 1
+    """
     ##########################################################################
     """
     TZ     = "Asia/Taipei"
