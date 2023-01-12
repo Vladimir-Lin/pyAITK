@@ -12,7 +12,12 @@ import gettext
 import json
 import math
 ##############################################################################
-from   AITK  . Documents  . JSON       import Save              as SaveJson
+import gmpy2
+from   gmpy2 import mpz
+from   gmpy2 import mpq
+from   gmpy2 import mpfr
+##############################################################################
+from   AITK  . Documents  . JSON      import Save               as SaveJson
 ##############################################################################
 from   PyQt5                          import QtCore
 from   PyQt5                          import QtGui
@@ -52,6 +57,11 @@ from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
+##############################################################################
+from   AITK  . Physics                import AU             as AU
+from   AITK  . Physics                import J2000          as J2000
+from   AITK  . Physics                import TsiderealDay   as TsiderealDay
+from   AITK  . Physics                import TsiderealYear  as TsiderealYear
 ##############################################################################
 from   AITK  . Physics  . SunEarth    import LocateSunEarthPerihelion
 from   AITK  . Physics  . SunEarth    import TakeSunEarthPerihelion
@@ -1612,6 +1622,10 @@ class CelestialListings            ( TreeDock                              ) :
       TTT = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
       ########################################################################
       print(DT,TTT,KDT-ADT)
+    ##########################################################################
+    KAU = AU * TsiderealDay
+    KPI = gmpy2 . const_pi ( precision = 1024 )
+    print ( float ( KAU ) , float ( KAU * KPI ) )
     ##########################################################################
     """
     NOW    . Now              (                                              )
