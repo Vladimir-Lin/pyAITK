@@ -62,6 +62,10 @@ from   AITK  . Physics                import AU             as AU
 from   AITK  . Physics                import J2000          as J2000
 from   AITK  . Physics                import TsiderealDay   as TsiderealDay
 from   AITK  . Physics                import TsiderealYear  as TsiderealYear
+from   AITK  . Physics                import JulianDayToJulianCentury as JulianDayToJulianCentury
+##############################################################################
+from   AITK  . Physics  . Earth       import Earth          as Earth
+from   AITK  . Physics  . Sun         import Sun            as Sun
 ##############################################################################
 from   AITK  . Physics  . SunEarth    import LocateSunEarthPerihelion
 from   AITK  . Physics  . SunEarth    import TakeSunEarthPerihelion
@@ -1606,26 +1610,96 @@ class CelestialListings            ( TreeDock                              ) :
     LI     = LocationInfo     (                                              )
     LI . latitude  = 23.0
     LI . longitude = 120.0
+    DLT    = NOW . TzDiff     ( "UTC" , TZ                                   )
+    ##########################################################################
+    ET     = Earth            (                                              )
+    SN     = Sun              (                                              )
+    PERX   = mpfr             ( "147098928029" , 1024                        )
+    ##########################################################################
+    NOW    . Stardate = 1420092379376929020
+    JPERX  = NOW . toJ2000            (                                      )
+    JPERC  = JulianDayToJulianCentury ( JPERX                                )
+    JPEMA  = ET  . SunMeanAnomalyJC   ( JPERC                                )
     ##########################################################################
     for DT in Midday120                                                      :
       ########################################################################
-      NOW . fromInput         ( DT , TZ                                      )
+      NOW . fromInput          ( DT , TZ                                     )
       KDT = NOW . Stardate
+      SOD = NOW . SecondsOfDay ( TZ                                          )
+      BDT = int                ( KDT - SOD                                   )
       ########################################################################
       dtp = datetime . datetime . strptime ( DT , "%Y-%m-%d %H:%M:%S"        )
       dt  = tzs      . localize            ( dtp                             )
       da  = dt       . date                (                                 )
       ########################################################################
-      s   = sun               ( LI . observer , date = da                    )
-      NOW . fromDateTime      ( s["noon"]                                    )
-      ADT = NOW . Stardate
-      TTT = NOW . toDateTimeString ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"   )
+      JC  = JulianDayToJulianCentury     ( NOW . toJ2000 ( )                 )
+      MA  = ET  . SunMeanAnomalyJC       ( JC                                )
+      ML  = ET  . SunMeanLongitudeJC     ( JC                                )
+      TA  = ET  . SunTrueAnomalyJC       ( JC                                )
+      TL  = ET  . SunTrueLongitudeJC     ( JC                                )
+      ## RV  = ET  . SunRadialVectorJC      ( JC                                )
+      ## OA  = ET  . SunOmegaAngleJC        ( JC                                )
+      AL  = ET  . SunApparentLongitudeJC ( JC                                )
+      OE  = ET  . SunMeanObliquityEclipticJC ( JC                            )
+      ## OC  = ET  . SunObliquityCorrectionJC   ( JC                            )
+      ## RA  = ET  . SunRightAscensionJC        ( JC                            )
+      ## DEC = ET  . SunDeclinationJC           ( JC                            )
+      ## OY2 = ET  . SunTanObliquity2JC         ( JC                            )
+      EE  = ET  . eccentricityJC             ( JC                            )
+      DA  = ET  . SubtractAngle              ( MA , JPEMA                    )
+      DST = SN  . Distance                   ( EE , PERX , DA                )
+      AD  = SN  . AngularDiameter            ( DST                           )
+      EOT = ET  . SunEqualOfTimeJC           ( JC                            )
       ########################################################################
-      print(DT,TTT,KDT-ADT)
-    ##########################################################################
-    KAU = AU * TsiderealDay
-    KPI = gmpy2 . const_pi ( precision = 1024 )
-    print ( float ( KAU ) , float ( KAU * KPI ) )
+      NOW . Stardate = BDT + 43200
+      JB  = JulianDayToJulianCentury ( NOW . toJ2000 ( )                     )
+      ########################################################################
+      NOJ = ET  . NoonJC                     ( 120.0 , JB                    )
+      EDT = ET  . AdjustTzDiff               ( NOJ , DLT                     )
+      NDT = int                              ( BDT + EDT                     )
+      NOW . Stardate = NDT
+      TNN = NOW . toDateTimeString   ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"    )
+      ########################################################################
+      NOW . Stardate = BDT
+      JN  = JulianDayToJulianCentury ( NOW . toJ2000 ( )                     )
+      ########################################################################
+      NOJ = ET  . MidnightJC                 ( 121.0 , JN                    )
+      EDT = ET  . AdjustTzDiff               ( NOJ , DLT                     )
+      XDT = int                              ( BDT + EDT                     )
+      NOW . Stardate = XDT
+      MNT = NOW . toDateTimeString   ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"    )
+      ########################################################################
+      NOW . Stardate = BDT + ( 3600 * 5 )
+      JR  = JulianDayToJulianCentury ( NOW . toJ2000 ( )                     )
+      ########################################################################
+      NOR = ET  . SunTimeOfTransitJC ( JR                                    ,
+                                       23.0                                  ,
+                                       120.0                                 ,
+                                       0.0                                   ,
+                                       90.0 + 0.26                           ,
+                                       True                                  ,
+                                       True                                  )
+      EDT = ET  . AdjustTzDiff       ( NOR , DLT                             )
+      XDT = int                      ( BDT + EDT                             )
+      NOW . Stardate = XDT
+      SRT = NOW . toDateTimeString   ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"    )
+      ########################################################################
+      NOW . Stardate = BDT + ( 3600 * 17 )
+      JS  = JulianDayToJulianCentury ( NOW . toJ2000 ( )                     )
+      ########################################################################
+      NOS = ET  . SunTimeOfTransitJC ( JS                                    ,
+                                       23.0                                  ,
+                                       120.0                                 ,
+                                       0.0                                   ,
+                                       90.0 + 0.26                           ,
+                                       False                                 ,
+                                       True                                  )
+      EDT = ET  . AdjustTzDiff       ( NOS , DLT                             )
+      WDT = int                      ( BDT + EDT                             )
+      NOW . Stardate = WDT
+      SET = NOW . toDateTimeString   ( TZ , " " , "%Y/%m/%d" , "%H:%M:%S"    )
+      ########################################################################
+      print(DT,TNN,SRT,SET)
     ##########################################################################
     """
     NOW    . Now              (                                              )
