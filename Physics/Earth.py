@@ -1196,6 +1196,46 @@ class Earth               (                                                ) :
                                        isRising                            , \
                                        withRefraction                        )
   ############################################################################
+  def SunTimeAtElevationJC           ( self                                , \
+                                       JC                                  , \
+                                       Latitude                            , \
+                                       Longitude                           , \
+                                       Altitude                            , \
+                                       Elevation                           , \
+                                       isRising                            , \
+                                       withRefraction = True               ) :
+    ##########################################################################
+    if                               ( Elevation > 90.0                    ) :
+      ########################################################################
+      Elevation = float              ( 180.0 - Elevation                     )
+      isRising  = False
+    ##########################################################################
+    Zenith = self . SunZenithToElevation ( Elevation                         )
+    ##########################################################################
+    return self . SunTimeOfTransitJC ( JC                                    ,
+                                       Latitude                              ,
+                                       Longitude                             ,
+                                       Altitude                              ,
+                                       Zenith                                ,
+                                       isRising                              ,
+                                       withRefraction                        )
+  ############################################################################
+  def SunTimeAtElevation               ( self                              , \
+                                         T                                 , \
+                                         Latitude                          , \
+                                         Longitude                         , \
+                                         Altitude                          , \
+                                         Elevation                         , \
+                                         isRising                          , \
+                                         withRefraction                    ) :
+    return self . SunTimeAtElevationJC ( JulianDayToJulianCentury ( T )    , \
+                                         Latitude                          , \
+                                         Longitude                         , \
+                                         Altitude                          , \
+                                         Elevation                         , \
+                                         isRising                          , \
+                                         withRefraction                      )
+  ############################################################################
   def SunZenithAzimuthJC                ( self                             , \
                                           JC                               , \
                                           SecondsOfDay                     , \
@@ -1219,11 +1259,11 @@ class Earth               (                                                ) :
     solarTimeFix    = float ( EQTIME ) + ( 4.0 * Longitude ) + TzZone
     trueSolarTime   = SOD + solarTimeFix
     ##########################################################################
-    while                               ( trueSolarTime > 1440             ) :
-      trueSolarTime = trueSolarTime - 1440
+    while                               ( trueSolarTime > 1440.0           ) :
+      trueSolarTime = trueSolarTime - 1440.0
     ##########################################################################
     HourAngle       = float             ( trueSolarTime / 4.0 ) - 180.0
-    if                                  ( HourAngle < -180                 ) :
+    if                                  ( HourAngle < -180.0               ) :
       HourAngle     = HourAngle + 360.0
     ##########################################################################
     RHRA            = math . radians    ( HourAngle                          )
@@ -1247,7 +1287,7 @@ class Earth               (                                                ) :
     Zenith          = math . degrees    ( ZRAD                               )
     azDenom         = CLAT * math . sin ( ZRAD                               )
     ##########################################################################
-    if                                  ( math . fabs ( azDenom ) > 0.001  ) :
+    if                                  ( math . fabs (azDenom) > 0.000001 ) :
       ########################################################################
       azRad         = float             ( SLAT  * math . cos ( ZRAD )        )
       azRad         = float             ( azRad - SDEC                       )
@@ -1277,9 +1317,9 @@ class Earth               (                                                ) :
       Azimuth       = Azimuth + 360.0
     ##########################################################################
     if                                  ( withRefraction                   ) :
-      Zenith       -= self . RefractionAtZenith ( zenith                     )
+      Zenith       -= self . RefractionAtZenith ( Zenith                     )
     ##########################################################################
-    return Zenith , Azimuth
+    return Zenith , Azimuth , HourAngle
   ############################################################################
   def SunZenithAzimuth               ( self                                , \
                                        T                                   , \
@@ -1327,6 +1367,505 @@ class Earth               (                                                ) :
   ############################################################################
   def Midnight               ( self , Longitude , T                        ) :
     return self . MidnightJC ( Longitude , JulianDayToJulianCentury ( T )    )
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  def Sunlight                     ( self , Spot , Now , TZ                ) :
+    ##########################################################################
+    JSON      =                    { "Spot"       : {                      } ,
+                                     "Current"    : {                      } ,
+                                     "Parameters" : {                      } ,
+                                     "Timestamps" : {                      } ,
+                                     "DateTime"   : {                      } }
+    ##########################################################################
+    SN        = Sun                (                                         )
+    SDT       = StarDate           (                                         )
+    SDT       . Stardate = Now . Stardate
+    ##########################################################################
+    MND       = SDT . toDateString       ( TZ , "%Y/%m/%d"                   )
+    MNT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    JSON [ "Current"    ] [ "Date"                ] = MND
+    JSON [ "Current"    ] [ "DateTime"            ] = MNT
+    ##########################################################################
+    Latitude  = Spot . Latitude
+    Longitude = Spot . Longitude
+    Altitude  = Spot . Altitude
+    ##########################################################################
+    KDT       = SDT . Stardate
+    SOD       = SDT . SecondsOfDay ( TZ                                      )
+    BDT       = int                ( KDT - SOD                               )
+    NDT       = int                ( BDT + 43200                             )
+    TzDiff    = SDT . TzDiff       ( "UTC" , TZ                              )
+    ##########################################################################
+    SDT       . Stardate = KDT
+    JC        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
+    ##########################################################################
+    SDT       . Stardate = BDT
+    JB        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
+    ##########################################################################
+    SDT       . Stardate = NDT
+    JN        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
+    ##########################################################################
+    JSON [ "Spot"       ] [ "Latitude"            ] = Latitude
+    JSON [ "Spot"       ] [ "Longitude"           ] = Longitude
+    JSON [ "Spot"       ] [ "Altitude"            ] = Altitude
+    JSON [ "Current"    ] [ "TimeZone"            ] = TZ
+    JSON [ "Current"    ] [ "TimeDefault"         ] = KDT
+    JSON [ "Current"    ] [ "TimeBase"            ] = BDT
+    JSON [ "Current"    ] [ "TimeNoon"            ] = NDT
+    JSON [ "Current"    ] [ "Seconds-Of-Day"      ] = SOD
+    JSON [ "Current"    ] [ "TimeZone-Difference" ] = TzDiff
+    JSON [ "Current"    ] [ "J2000-Current"       ] = float ( JC             )
+    JSON [ "Current"    ] [ "J2000-Night"         ] = float ( JB             )
+    JSON [ "Current"    ] [ "J2000-Noon"          ] = float ( JN             )
+    ##########################################################################
+    Zenith , Azimuth , HourAngle = self . SunZenithAzimuthJC                 (
+                                     JN                                    , \
+                                     43200                                 , \
+                                     TzDiff                                , \
+                                     Latitude                              , \
+                                     Longitude                             , \
+                                     True                                    )
+    ##########################################################################
+    JSON [ "Parameters" ] [ "Zenith"              ] = float ( Zenith         )
+    JSON [ "Parameters" ] [ "Azimuth"             ] = float ( Azimuth        )
+    JSON [ "Parameters" ] [ "Hour-Angle"          ] = float ( HourAngle      )
+    ##########################################################################
+    PolarNight   = False
+    if                             ( Zenith > 90.0                         ) :
+      PolarNight = True
+    ##########################################################################
+    AT              = self . LocateSunEarthPerihelion ( NDT                  )
+    V , N , VD , ND = self . TakeSunEarthPerihelion   ( AT                   )
+    ##########################################################################
+    JSON [ "Parameters" ] [ "Perihelion"               ] = V
+    JSON [ "Parameters" ] [ "Perihelion-Next"          ] = N
+    JSON [ "Parameters" ] [ "Perihelion-Distance"      ] = VD
+    JSON [ "Parameters" ] [ "Perihelion-Next-Distance" ] = ND
+    ##########################################################################
+    PERX      = mpfr                              ( VD , 1024                )
+    ##########################################################################
+    SDT       . Stardate = V
+    RC        = JulianDayToJulianCentury          ( SDT . toJ2000 (        ) )
+    JPEMA     = self . SunMeanAnomalyJC           ( RC                       )
+    ##########################################################################
+    JSON [ "Parameters" ] [ "Perihelion-Mean-Anomaly"  ] = float ( JPEMA     )
+    ##########################################################################
+    MA        = self . SunMeanAnomalyJC           ( JN                       )
+    ML        = self . SunMeanLongitudeJC         ( JN                       )
+    TA        = self . SunTrueAnomalyJC           ( JN                       )
+    TL        = self . SunTrueLongitudeJC         ( JN                       )
+    RV        = self . SunRadialVectorJC          ( JN                       )
+    OA        = self . SunOmegaAngleJC            ( JN                       )
+    AL        = self . SunApparentLongitudeJC     ( JN                       )
+    OE        = self . SunMeanObliquityEclipticJC ( JN                       )
+    OC        = self . SunObliquityCorrectionJC   ( JN                       )
+    RA        = self . SunRightAscensionJC        ( JN                       )
+    DEC       = self . SunDeclinationJC           ( JN                       )
+    OY2       = self . SunTanObliquity2JC         ( JN                       )
+    EE        = self . eccentricityJC             ( JN                       )
+    DA        = self . SubtractAngle              ( MA , JPEMA               )
+    DIST      = SN   . Distance                   ( EE , PERX , DA           )
+    Angular   = SN   . AngularDiameter            ( DIST                     )
+    EOT       = self . SunEqualOfTimeJC           ( JN                       )
+    ##########################################################################
+    FAngular  = float                             ( Angular                  )
+    HAngular  = float                             ( FAngular / 2.0           )
+    VAngular  = float                             ( 90.0 + HAngular          )
+    CAngular  = float                             ( 90.0 + FAngular          )
+    ##########################################################################
+    EternDay  = float                             ( 90.0 - OC                )
+    ##########################################################################
+    JSON [ "Parameters" ] [ "Mean-Anomaly"             ] = float ( MA        )
+    JSON [ "Parameters" ] [ "Mean-Longitude"           ] = float ( ML        )
+    JSON [ "Parameters" ] [ "True-Anomaly"             ] = float ( TA        )
+    JSON [ "Parameters" ] [ "True-Longitude"           ] = float ( TL        )
+    JSON [ "Parameters" ] [ "Radial-Vector"            ] = float ( RV        )
+    JSON [ "Parameters" ] [ "Omega"                    ] = float ( OA        )
+    JSON [ "Parameters" ] [ "Apparent-Longitude"       ] = float ( AL        )
+    JSON [ "Parameters" ] [ "Mean-Obliquity-Ecliptic"  ] = float ( OE        )
+    JSON [ "Parameters" ] [ "Obliquity-Correction"     ] = float ( OC        )
+    JSON [ "Parameters" ] [ "Eternal-Day"              ] = float ( EternDay  )
+    JSON [ "Parameters" ] [ "Right-Ascension"          ] = float ( RA        )
+    JSON [ "Parameters" ] [ "Declination"              ] = float ( DEC       )
+    JSON [ "Parameters" ] [ "Eccentricity"             ] = float ( EE        )
+    JSON [ "Parameters" ] [ "Distance"                 ] = float ( DIST      )
+    JSON [ "Parameters" ] [ "Angular-Diameter"         ] = float ( Angular   )
+    JSON [ "Parameters" ] [ "Equal"                    ] = float ( EOT       )
+    ##########################################################################
+    ## 需要計算極晝的公式
+    ## EternDay
+    ## TL
+    ##########################################################################
+    PolarDay     = False
+    ##########################################################################
+    JSON [ "Parameters" ] [ "Polar-Day"           ] = PolarDay
+    JSON [ "Parameters" ] [ "Polar-Night"         ] = PolarNight
+    ##########################################################################
+    ## 計算太陽日正當中
+    ##########################################################################
+    NOJ       = self . NoonJC            ( Longitude , JN                    )
+    EDT       = self . AdjustTzDiff      ( NOJ , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    TNN       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Noon"                     ] = XDT
+    JSON [ "DateTime"   ] [ "Noon"                     ] = TNN
+    ##########################################################################
+    JX        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
+    MA        = self . SunMeanAnomalyJC           ( JX                       )
+    DA        = self . SubtractAngle              ( MA , JPEMA               )
+    DIST      = SN   . Distance                   ( EE , PERX , DA           )
+    ##########################################################################
+    JSON [ "Parameters" ] [ "Noon-Angle"               ] = float ( DA        )
+    JSON [ "Parameters" ] [ "Noon-Distance"            ] = float ( DIST      )
+    ##########################################################################
+    NOJ       = self . MidnightJC        ( Longitude , JB                    )
+    EDT       = self . AdjustTzDiff      ( NOJ , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    MNT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Midnight"                 ] = XDT
+    JSON [ "DateTime"   ] [ "Midnight"                 ] = MNT
+    ##########################################################################
+    SDT       . Stardate = BDT +         ( 3600 * 5                          )
+    JR        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
+    ##########################################################################
+    NOR       = self . SunTimeOfTransitJC ( JR                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            VAngular                         ,
+                                            True                             ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOR , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    SRT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Sunrise"                  ] = XDT
+    JSON [ "DateTime"   ] [ "Sunrise"                  ] = SRT
+    ##########################################################################
+    NOR       = self . SunTimeOfTransitJC ( JR                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            CAngular                         ,
+                                            True                             ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOR , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    SRT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Sunrise-Start"             ] = XDT
+    JSON [ "DateTime"   ] [ "Sunrise-Start"             ] = SRT
+    ##########################################################################
+    NOR       = self . SunTimeOfTransitJC ( JR                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0                             ,
+                                            True                             ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOR , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    SRT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Sunrise-Finish"            ] = XDT
+    JSON [ "DateTime"   ] [ "Sunrise-Finish"            ] = SRT
+    ##########################################################################
+    NOR       = self . SunTimeOfTransitJC ( JR                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 - 6.0                       ,
+                                            True                             ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOR , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    SRT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dawn-Golden"               ] = XDT
+    JSON [ "DateTime"   ] [ "Dawn-Golden"               ] = SRT
+    ##########################################################################
+    NOR       = self . SunTimeOfTransitJC ( JR                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 + 4.0                       ,
+                                            True                             ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOR , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    SRT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dawn-Blue"                 ] = XDT
+    JSON [ "DateTime"   ] [ "Dawn-Blue"                 ] = SRT
+    ##########################################################################
+    NOR       = self . SunTimeOfTransitJC ( JR                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 + 6.0                       ,
+                                            True                             ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOR , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    SRT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dawn-Civil"                ] = XDT
+    JSON [ "DateTime"   ] [ "Dawn-Civil"                ] = SRT
+    ##########################################################################
+    NOR       = self . SunTimeOfTransitJC ( JR                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 + 12.0                      ,
+                                            True                             ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOR , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    SRT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dawn-Nautical"             ] = XDT
+    JSON [ "DateTime"   ] [ "Dawn-Nautical"             ] = SRT
+    ##########################################################################
+    NOR       = self . SunTimeOfTransitJC ( JR                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 + 18.0                      ,
+                                            True                             ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOR , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    SRT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dawn-Astronomical"         ] = XDT
+    JSON [ "DateTime"   ] [ "Dawn-Astronomical"         ] = SRT
+    ##########################################################################
+    SDT       . Stardate = BDT +         ( 3600 * 17                         )
+    JS        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
+    ##########################################################################
+    NOS       = self . SunTimeOfTransitJC ( JS                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            VAngular                         ,
+                                            False                            ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOS , TzDiff                      )
+    WDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = WDT
+    SET       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Sunset"                   ] = WDT
+    JSON [ "DateTime"   ] [ "Sunset"                   ] = SET
+    ##########################################################################
+    NOS       = self . SunTimeOfTransitJC ( JS                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            CAngular                         ,
+                                            False                            ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOS , TzDiff                      )
+    WDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = WDT
+    SET       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Sunset-Finish"            ] = WDT
+    JSON [ "DateTime"   ] [ "Sunset-Finish"            ] = SET
+    ##########################################################################
+    NOS       = self . SunTimeOfTransitJC ( JS                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0                             ,
+                                            False                            ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOS , TzDiff                      )
+    WDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = WDT
+    SET       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Sunset-Start"             ] = WDT
+    JSON [ "DateTime"   ] [ "Sunset-Start"             ] = SET
+    ##########################################################################
+    NOS       = self . SunTimeOfTransitJC ( JS                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 - 6.0                       ,
+                                            False                            ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOS , TzDiff                      )
+    WDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = WDT
+    SET       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dusk-Golden"              ] = WDT
+    JSON [ "DateTime"   ] [ "Dusk-Golden"              ] = SET
+    ##########################################################################
+    NOS       = self . SunTimeOfTransitJC ( JS                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 + 4.0                       ,
+                                            False                            ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOS , TzDiff                      )
+    WDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = WDT
+    SET       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dusk-Blue"                ] = WDT
+    JSON [ "DateTime"   ] [ "Dusk-Blue"                ] = SET
+    ##########################################################################
+    NOS       = self . SunTimeOfTransitJC ( JS                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 + 6.0                       ,
+                                            False                            ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOS , TzDiff                      )
+    WDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = WDT
+    SET       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dusk-Civil"               ] = WDT
+    JSON [ "DateTime"   ] [ "Dusk-Civil"               ] = SET
+    ##########################################################################
+    NOS       = self . SunTimeOfTransitJC ( JS                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 + 12.0                      ,
+                                            False                            ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOS , TzDiff                      )
+    WDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = WDT
+    SET       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dusk-Nautical"            ] = WDT
+    JSON [ "DateTime"   ] [ "Dusk-Nautical"            ] = SET
+    ##########################################################################
+    NOS       = self . SunTimeOfTransitJC ( JS                               ,
+                                            Latitude                         ,
+                                            Longitude                        ,
+                                            Altitude                         ,
+                                            90.0 + 18.0                      ,
+                                            False                            ,
+                                            True                             )
+    EDT       = self . AdjustTzDiff      ( NOS , TzDiff                      )
+    WDT       = int                      ( BDT + EDT                         )
+    ##########################################################################
+    SDT       . Stardate = WDT
+    SET       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Dusk-Astronomical"        ] = WDT
+    JSON [ "DateTime"   ] [ "Dusk-Astronomical"        ] = SET
+    ##########################################################################
+    return JSON
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
   ############################################################################
   ############################################################################
   ############################################################################
