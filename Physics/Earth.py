@@ -1040,8 +1040,6 @@ class Earth               (                                                ) :
       return 0.0
     ##########################################################################
     return math . degrees ( math . acos ( Radius / ( Radius + Altitude ) )   )
-    ##########################################################################
-    return
   ############################################################################
   def RefractionAtZenith ( self , Zenith                                   ) :
     ##########################################################################
@@ -1070,7 +1068,7 @@ class Earth               (                                                ) :
       ########################################################################
     else                                                                     :
       ########################################################################
-        refraction_correction = float ( -20.774               / te           )
+      refraction_correction = float   ( -20.774               / te           )
     ##########################################################################
     return float                      ( refraction_correction / 3600.0       )
   ############################################################################
@@ -1282,8 +1280,6 @@ class Earth               (                                                ) :
   ############################################################################
   def SunTanObliquity2JC                    ( self , JC                    ) :
     ##########################################################################
-    global ThreeCircle
-    ##########################################################################
     OC  = self  . SunObliquityCorrectionJC  ( JC                             )
     OCR = gmpy2 . radians                   ( OC                             )
     ##########################################################################
@@ -1297,8 +1293,6 @@ class Earth               (                                                ) :
     return self . SunTanObliquity2JC ( JulianDayToJulianCentury ( T )        )
   ############################################################################
   def SunEqualOfTimeJC                  ( self , JC                        ) :
-    ##########################################################################
-    global ThreeCircle
     ##########################################################################
     L0     = self  . SunMeanLongitudeJC ( JC                                 )
     E      = self  . eccentricityJC     ( JC                                 )
@@ -1606,7 +1600,7 @@ class Earth               (                                                ) :
     ##########################################################################
     SN        = Sun                (                                         )
     SDT       = StarDate           (                                         )
-    SDT       . Stardate = Now . Stardate
+    SDT       . Stardate = Now
     ##########################################################################
     MND       = SDT . toDateString       ( TZ , "%Y/%m/%d"                   )
     MNT       = SDT . toDateTimeString   ( TZ                                ,
@@ -1624,6 +1618,8 @@ class Earth               (                                                ) :
     SOD       = SDT . SecondsOfDay ( TZ                                      )
     BDT       = int                ( KDT - SOD                               )
     NDT       = int                ( BDT + 43200                             )
+    PDT       = int                ( BDT - 86400                             )
+    ZDT       = int                ( BDT + 86400                             )
     TzDiff    = SDT . TzDiff       ( "UTC" , TZ                              )
     ##########################################################################
     SDT       . Stardate = KDT
@@ -1634,6 +1630,12 @@ class Earth               (                                                ) :
     ##########################################################################
     SDT       . Stardate = NDT
     JN        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
+    ##########################################################################
+    SDT       . Stardate = PDT
+    JP        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
+    ##########################################################################
+    SDT       . Stardate = ZDT
+    JZ        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
     ##########################################################################
     JSON [ "Spot"       ] [ "Latitude"            ] = Latitude
     JSON [ "Spot"       ] [ "Longitude"           ] = Longitude
@@ -1703,7 +1705,7 @@ class Earth               (                                                ) :
     OY2       = self . SunTanObliquity2JC         ( JN                       )
     EE        = self . eccentricityJC             ( JN                       )
     DA        = self . SubtractAngle              ( MA , JPEMA               )
-    DIST      = SN   . Distance                   ( EE , PERX , DA           )
+    DIST      = SN   . Distance                   ( EE , PERX , TA           )
     Angular   = SN   . AngularDiameter            ( DIST                     )
     EOT       = self . SunEqualOfTimeJC           ( JN                       )
     ##########################################################################
@@ -1766,6 +1768,8 @@ class Earth               (                                                ) :
     NOJ       = self . MidnightJC        ( Longitude , JB                    )
     EDT       = self . AdjustTzDiff      ( NOJ , TzDiff                      )
     XDT       = int                      ( BDT + EDT                         )
+    if                                   ( NOJ > 43200                     ) :
+      XDT     = int                      ( XDT - 86400                       )
     ##########################################################################
     SDT       . Stardate = XDT
     MNT       = SDT . toDateTimeString   ( TZ                                ,
@@ -1775,6 +1779,36 @@ class Earth               (                                                ) :
     ##########################################################################
     JSON [ "Timestamps" ] [ "Midnight"                 ] = XDT
     JSON [ "DateTime"   ] [ "Midnight"                 ] = MNT
+    ##########################################################################
+    NOJ       = self . MidnightJC        ( Longitude , JP                    )
+    EDT       = self . AdjustTzDiff      ( NOJ , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    if                                   ( NOJ > 43200                     ) :
+      XDT     = int                      ( XDT - 86400                       )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    MNT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Midnight-Previous"        ] = XDT
+    JSON [ "DateTime"   ] [ "Midnight-Previous"        ] = MNT
+    ##########################################################################
+    NOJ       = self . MidnightJC        ( Longitude , JZ                    )
+    EDT       = self . AdjustTzDiff      ( NOJ , TzDiff                      )
+    XDT       = int                      ( BDT + EDT                         )
+    if                                   ( NOJ > 43200                     ) :
+      XDT     = int                      ( XDT - 86400                       )
+    ##########################################################################
+    SDT       . Stardate = XDT
+    MNT       = SDT . toDateTimeString   ( TZ                                ,
+                                           " "                               ,
+                                           "%Y/%m/%d"                        ,
+                                           "%H:%M:%S"                        )
+    ##########################################################################
+    JSON [ "Timestamps" ] [ "Midnight-Next"            ] = XDT
+    JSON [ "DateTime"   ] [ "Midnight-Next"            ] = MNT
     ##########################################################################
     SDT       . Stardate = BDT +         ( 3600 * 5                          )
     JR        = JulianDayToJulianCentury ( SDT . toJ2000 ( )                 )
