@@ -5,32 +5,31 @@
 import os
 from . Object import Object as Object
 ##############################################################################
-class Ownership           ( Object                                         ) :
+class Ownership              ( Object                                      ) :
   ############################################################################
-  def __init__            ( self                                           ) :
+  def __init__               ( self                                        ) :
     ##########################################################################
-    super ( ) . __init__  (                                                  )
-    self      . relation = 1
+    self . setOwnershipEmpty (                                               )
     ##########################################################################
     return
   ############################################################################
-  def __del__             ( self                                           ) :
+  def __del__                ( self                                        ) :
     return
   ############################################################################
-  def setOwnershipEmpty   ( self                                           ) :
+  def setOwnershipEmpty      ( self                                        ) :
     ##########################################################################
-    self . setObjectEmpty (                                                  )
+    self . setObjectEmpty    (                                               )
     self . relation = 1
     ##########################################################################
     return
   ############################################################################
-  def Connexion           ( self                                           ) :
-    return int            ( self . relation                                  )
+  def Connexion              ( self                                        ) :
+    return int               ( self . relation                               )
   ############################################################################
-  def isConnexion         ( self , r                                       ) :
-    return                ( int ( self . relation ) == int ( r )             )
+  def isConnexion            ( self , r                                    ) :
+    return                   ( int ( self . relation ) == int ( r )          )
   ############################################################################
-  def setConnexion        ( self , r                                       ) :
-    self . relation = int ( r                                                )
-    return            int ( self . relation                                  )
+  def setConnexion           ( self , r                                    ) :
+    self . relation = int    ( r                                             )
+    return            int    ( self . relation                               )
 ##############################################################################

@@ -76,8 +76,11 @@ class Group         (                                                      ) :
   def hasPosition          ( self                                          ) :
     return self . activate ( 5                                               )
   ############################################################################
-  def hasMembership        ( self                                          ) :
+  def hasReversal          ( self                                          ) :
     return self . activate ( 6                                               )
+  ############################################################################
+  def hasMembership        ( self                                          ) :
+    return self . activate ( 7                                               )
   ############################################################################
   def setGroupEmpty     ( self                                             ) :
     self . setEmpty     (                                                    )

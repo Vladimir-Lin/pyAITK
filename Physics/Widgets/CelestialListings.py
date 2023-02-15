@@ -88,6 +88,9 @@ import pytz
 from astral       import LocationInfo
 from astral . sun import sun
 ##############################################################################
+from sunpy   . coordinates . ephemeris import get_body_heliographic_stonyhurst
+from astropy . time                    import Time as AstroTime
+##############################################################################
 Midday120 = [ "2022-01-01 12:03:24"                                          ,
   "2022-01-02 12:03:52"                                                      ,
   "2022-01-03 12:04:20"                                                      ,
@@ -1612,19 +1615,31 @@ class CelestialListings            ( TreeDock                              ) :
     for DT in Midday120                                                      :
       ########################################################################
       NOW  . fromInput        ( DT , TZ                                      )
+      ########################################################################
+      ########################################################################
       J    = ET . Sunlight    ( LOC , NOW . Stardate , TZ                    )
+      ########################################################################
+      UDT  = NOW  . toDateTimeString ( "UTC"                                 )
+      OBS  = AstroTime        ( UDT                                          )
+      PCX  = get_body_heliographic_stonyhurst ( "earth" , time = OBS         )
+      SAU  = float ( 149597870700.0 * float ( PCX . radius . value ) )
       ########################################################################
       DM   = J                [ "Parameters" ] [ "Noon-Angle"                ]
       DM   = float            ( DM + 360.0                                   )
       DM   = DM - J           [ "Parameters" ] [ "Perihelion-Mean-Anomaly"   ]
       DM   = float            ( DM % 360.0                                   )
+      NOD  = J                [ "Parameters" ] [ "Noon-Distance"             ]
       ########################################################################
       print                   ( J [ "Current"    ] [ "Date"                ] ,
                                 J [ "DateTime"   ] [ "Sunrise-Start"       ] ,
                                 J [ "DateTime"   ] [ "Noon"                ] ,
                                 J [ "DateTime"   ] [ "Sunset-Finish"       ] ,
                                 DM                                           ,
-                                J [ "Parameters" ] [ "Noon-Distance"       ] )
+                                NOD                                          ,
+                                SAU                                          ,
+                                SAU - NOD                                    ,
+                                PCX . lon                                    ,
+                                PCX . lat                                    )
     ##########################################################################
     """
     NOW    . Now              (                                              )

@@ -215,8 +215,8 @@ class Periode            ( Columns                                         ) :
     self . States = states
     return
   ############################################################################
-  def setInterval       ( self , seconds                                    ) :
-    self . End += seconds
+  def setInterval       ( self , seconds                                   ) :
+    self . End = int    ( self . Start + seconds                             )
     return
   ############################################################################
   def setNow            ( self , shrink = False                            ) :

@@ -53,7 +53,7 @@ class Object     (                                                         ) :
     return int      ( self . objectType                                      )
   ############################################################################
   def isObjectType ( self , type                                           ) :
-    return         ( int ( type ) == int ( self . Type )                     )
+    return         ( int ( type ) == int ( self . objectType )               )
   ############################################################################
   def isStandby ( self                                                     ) :
     ##########################################################################
