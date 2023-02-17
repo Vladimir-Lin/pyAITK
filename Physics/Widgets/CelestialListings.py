@@ -1629,17 +1629,37 @@ class CelestialListings            ( TreeDock                              ) :
       DM   = DM - J           [ "Parameters" ] [ "Perihelion-Mean-Anomaly"   ]
       DM   = float            ( DM % 360.0                                   )
       NOD  = J                [ "Parameters" ] [ "Noon-Distance"             ]
+      ML   = J                [ "Parameters" ] [ "Mean-Longitude"            ]
+      TL   = J                [ "Parameters" ] [ "True-Longitude"            ]
       ########################################################################
       print                   ( J [ "Current"    ] [ "Date"                ] ,
                                 J [ "DateTime"   ] [ "Sunrise-Start"       ] ,
                                 J [ "DateTime"   ] [ "Noon"                ] ,
                                 J [ "DateTime"   ] [ "Sunset-Finish"       ] ,
                                 DM                                           ,
+                                ML                                           ,
+                                TL                                           ,
                                 NOD                                          ,
                                 SAU                                          ,
                                 SAU - NOD                                    ,
                                 PCX . lon                                    ,
                                 PCX . lat                                    )
+    ##########################################################################
+    NOW  . fromInput          ( "2023-01-01T00:00:00" , TZ                   )
+    SDT  = NOW . Stardate
+    NOW  . fromInput          ( "2025-01-01T00:00:00" , TZ                   )
+    FDT  = NOW . Stardate
+    ##########################################################################
+    ## TTL  = ET . LocateTrueLongitude ( SDT , FDT , 285.0                      )
+    ## NOW  . Stardate = TTL
+    ## SET  = NOW . toDateTimeString   ( TZ                                     ,
+    ##                                   " "                                    ,
+    ##                                   "%Y/%m/%d"                             ,
+    ##                                   "%H:%M:%S"                             )
+    ## print ( SET )
+    ##########################################################################
+    TERMs = ET . FindSolarTerms ( SDT , FDT , TZ )
+    print(json.dumps(TERMs))
     ##########################################################################
     """
     NOW    . Now              (                                              )
