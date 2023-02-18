@@ -2367,12 +2367,15 @@ class Earth               (                                                ) :
   ############################################################################
   ## 地球到太陽的距離
   ############################################################################
-  def DistanceToSun               ( self , Stardate                        ) :
+  def DistanceToSun                        ( self , Stardate               ) :
     ##########################################################################
-    NOW = StarDate                (                                          )
+    NOW = StarDate                         (                                 )
     NOW . Stardate = Stardate
-    UDT = NOW  . toDateTimeString ( "UTC"                                    )
-    OBS = AstroTime               ( UDT                                      )
+    ##########################################################################
+    JD  = NOW . toJulianDay                (                                 )
+    ## UDT = NOW . toDateTimeString           ( "UTC"                           )
+    ## OBS = AstroTime                        ( UDT                             )
+    OBS = AstroTime                        ( f"{JD}" , format="jd"           )
     PCX = get_body_heliographic_stonyhurst ( "earth" , time = OBS            )
     ##########################################################################
     return float ( 149597870700.0 * float ( PCX . radius . value )           )
