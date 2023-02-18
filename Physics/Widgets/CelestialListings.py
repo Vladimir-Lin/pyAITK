@@ -1616,7 +1616,6 @@ class CelestialListings            ( TreeDock                              ) :
       ########################################################################
       NOW  . fromInput        ( DT , TZ                                      )
       ########################################################################
-      ########################################################################
       J    = ET . Sunlight    ( LOC , NOW . Stardate , TZ                    )
       ########################################################################
       UDT  = NOW  . toDateTimeString ( "UTC"                                 )
@@ -1650,7 +1649,15 @@ class CelestialListings            ( TreeDock                              ) :
     NOW  . fromInput          ( "2025-01-01T00:00:00" , TZ                   )
     FDT  = NOW . Stardate
     ##########################################################################
-    ## TTL  = ET . LocateTrueLongitude ( SDT , FDT , 285.0                      )
+    TERMs = ET . FindSolarTerms ( SDT , FDT , TZ )
+    print(json.dumps(TERMs))
+    ##########################################################################
+    ## NOW  . fromInput          ( "2022-11-01T00:00:00" , TZ                   )
+    ## SDT  = NOW . Stardate
+    ## NOW  . fromInput          ( "2023-03-01T00:00:00" , TZ                   )
+    ## FDT  = NOW . Stardate
+    ##########################################################################
+    ## TTL  = ET . FindSunEarthPerihelion ( SDT , FDT                           )
     ## NOW  . Stardate = TTL
     ## SET  = NOW . toDateTimeString   ( TZ                                     ,
     ##                                   " "                                    ,
@@ -1658,7 +1665,11 @@ class CelestialListings            ( TreeDock                              ) :
     ##                                   "%H:%M:%S"                             )
     ## print ( SET )
     ##########################################################################
-    TERMs = ET . FindSolarTerms ( SDT , FDT , TZ )
+    StartYear  = 1900
+    FinishYear = 2100
+    TERMs = ET . FindSunEarthPerihelions ( StartYear , FinishYear , TZ )
+    print(json.dumps(TERMs))
+    TERMs = ET . FindSunEarthAphelions   ( StartYear , FinishYear , TZ )
     print(json.dumps(TERMs))
     ##########################################################################
     """
