@@ -1665,12 +1665,17 @@ class CelestialListings            ( TreeDock                              ) :
     ##                                   "%H:%M:%S"                             )
     ## print ( SET )
     ##########################################################################
-    StartYear  = 1800
-    FinishYear = 2200
+    StartYear  = 2001
+    FinishYear = 2100
     TERMs = ET . FindSunEarthPerihelions ( StartYear , FinishYear , TZ )
+    T0    = TERMs [  0 ] [ "Stardate" ]
+    T1    = TERMs [ 99 ] [ "Stardate" ]
+    dT    = int ( T1 - T0 )
+    AVT   = float ( float(dT) / 100.0 )
     print(json.dumps(TERMs))
     TERMs = ET . FindSunEarthAphelions   ( StartYear , FinishYear , TZ )
     print(json.dumps(TERMs))
+    print(AVT)
     ##########################################################################
     """
     NOW    . Now              (                                              )
