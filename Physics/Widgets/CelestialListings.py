@@ -1665,17 +1665,80 @@ class CelestialListings            ( TreeDock                              ) :
     ##                                   "%H:%M:%S"                             )
     ## print ( SET )
     ##########################################################################
-    StartYear  = 2001
-    FinishYear = 2100
-    TERMs = ET . FindSunEarthPerihelions ( StartYear , FinishYear , TZ )
-    T0    = TERMs [  0 ] [ "Stardate" ]
-    T1    = TERMs [ 99 ] [ "Stardate" ]
-    dT    = int ( T1 - T0 )
-    AVT   = float ( float(dT) / 100.0 )
-    print(json.dumps(TERMs))
-    TERMs = ET . FindSunEarthAphelions   ( StartYear , FinishYear , TZ )
-    print(json.dumps(TERMs))
-    print(AVT)
+    ## 1420092000000000000
+    ##########################################################################
+    NOW  . fromInput          ( "9999-01-01T00:00:00" , TZ                   )
+    SDT  = NOW . Stardate
+    EDT  = int                ( SDT + ( 365 * 86400 * 2 )                    )
+    ##########################################################################
+    NOW  . fromInput          ( "2000-01-01T00:00:00" , TZ                   )
+    SDT  = NOW . Stardate
+    dT   = int                ( SDT - 1420092000000000000                    )
+    dY   = int                ( float ( dT ) / 31558432.5386496              )
+    dY   = int                ( dY + 1 - 5201                                )
+    ## dY   = int                ( dY + 1 - 5201 - 9500                         )
+    dY   = int                ( float ( dY ) * 31558432.5386496              )
+    BDT  = int                ( SDT - dY                                     )
+    NTS  = int                (  90 * 86400                                  )
+    DTS  = int                (  92 * 86400                                  )
+    DTF  = int                ( 272 * 86400                                  )
+    HOLO = -4800
+    ##########################################################################
+    while                     ( BDT < EDT                                  ) :
+      ########################################################################
+      SDT   = int             ( BDT - NTS                                    )
+      FDT   = int             ( BDT + NTS                                    )
+      ########################################################################
+      NSEP  = ET . FindSunEarthPerihelion ( SDT , FDT                        )
+      NDIST = ET . DistanceToSun   ( NSEP                                    )
+      NOW   . Stardate = NSEP
+      NAU   = float           ( NDIST / 149597870700.0                       )
+      NJD   = NOW . toJulianDay (                                            )
+      NJ2   = NOW . toJ2000     (                                            )
+      ########################################################################
+      SDT   = int             ( BDT + DTS                                    )
+      FDT   = int             ( BDT + DTF                                    )
+      ########################################################################
+      FSEP  = ET . FindSunEarthAphelion ( SDT , FDT                          )
+      FDIST = ET . DistanceToSun   ( FSEP                                    )
+      NOW   . Stardate = FSEP
+      FAU   = float           ( FDIST / 149597870700.0                       )
+      FJD   = NOW . toJulianDay (                                            )
+      FJ2   = NOW . toJ2000     (                                            )
+      ########################################################################
+      ## print(HOLO,NSEP,NJD,NJ2,NDIST,NAU,FSEP,FJD,FJ2,FDIST,FAU)
+      print(HOLO,NSEP,NAU,NDIST,FSEP,FAU,FDIST)
+      ########################################################################
+      QQ    = f"""insert into `astronomy`.`xhelions`
+                 ( `helion` , `jd` , `j2000` , `au` , `distance` , `near` )
+                 values
+                 ( {NSEP} , {NJD} , {NJ2} , {NAU} , {NDIST} , 1 ) ;"""
+      QQ    = " " . join      ( QQ . split ( )                               )
+      ########################################################################
+      DB    . Query           ( QQ                                           )
+      ########################################################################
+      QQ    = f"""insert into `astronomy`.`xhelions`
+                 ( `helion` , `jd` , `j2000` , `au` , `distance` , `near` )
+                 values
+                 ( {FSEP} , {FJD} , {FJ2} , {FAU} , {FDIST} , 0 ) ;"""
+      QQ    = " " . join      ( QQ . split ( )                               )
+      ########################################################################
+      DB    . Query           ( QQ                                           )
+      ########################################################################
+      BDT = int               ( BDT + 31558432                               )
+      HOLO = HOLO + 1
+    ##########################################################################
+    ## StartYear  = 2001
+    ## FinishYear = 2100
+    ## TERMs = ET . FindSunEarthPerihelions ( StartYear , FinishYear , TZ )
+    ## T0    = TERMs [  0 ] [ "Stardate" ]
+    ## T1    = TERMs [ 99 ] [ "Stardate" ]
+    ## dT    = int ( T1 - T0 )
+    ## AVT   = float ( float(dT) / 100.0 )
+    ## print(json.dumps(TERMs))
+    ## TERMs = ET . FindSunEarthAphelions   ( StartYear , FinishYear , TZ )
+    ## print(json.dumps(TERMs))
+    ## print(AVT)
     ##########################################################################
     """
     NOW    . Now              (                                              )
