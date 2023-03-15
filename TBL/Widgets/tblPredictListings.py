@@ -534,6 +534,38 @@ class tblPredictListings            ( TreeDock                             ) :
     ##########################################################################
     return
   ############################################################################
+  def GetOptionItems        ( self , DB , KEY                              ) :
+    ##########################################################################
+    QQ = f"""select `index` from `predictions`.`tbl-options`
+             where ( `key` = '{KEY}' )
+               and ( `value` > 0 )
+             order by `index` asc ;"""
+    QQ = " " . join         ( QQ . split (                                 ) )
+    ##########################################################################
+    return DB . ObtainUuids ( QQ                                             )
+  ############################################################################
+  def UpdateSettings               ( self , DB                             ) :
+    ##########################################################################
+    FIRST  = self . GetOptionItems ( DB , "First"                            )
+    ENDING = self . GetOptionItems ( DB , "Ending"                           )
+    SUMS   = self . GetOptionItems ( DB , "Sums"                             )
+    AC     = self . GetOptionItems ( DB , "AC"                               )
+    ODDS   = self . GetOptionItems ( DB , "Odd"                              )
+    GAPS   = self . GetOptionItems ( DB , "Gaps"                             )
+    FSUMS  = self . GetOptionItems ( DB , "Head-Sums"                        )
+    ESUMS  = self . GetOptionItems ( DB , "Tail-Sums"                        )
+    ##########################################################################
+    self . tblSettings [ "Bettings" ] [ "First"     ] = FIRST
+    self . tblSettings [ "Bettings" ] [ "Ending"    ] = ENDING
+    self . tblSettings [ "Bettings" ] [ "Sums"      ] = SUMS
+    self . tblSettings [ "Bettings" ] [ "AC"        ] = AC
+    self . tblSettings [ "Bettings" ] [ "Odds"      ] = ODDS
+    self . tblSettings [ "Bettings" ] [ "Gaps"      ] = GAPS
+    self . tblSettings [ "Bettings" ] [ "FirstSums" ] = FSUMS
+    self . tblSettings [ "Bettings" ] [ "EndSums"   ] = ESUMS
+    ##########################################################################
+    return
+  ############################################################################
   def updating                   ( self , RECORDs                          ) :
     ##########################################################################
     TRX    = self . Translations
@@ -996,6 +1028,8 @@ class tblPredictListings            ( TreeDock                             ) :
     DB      = self . ConnectDB         (                                     )
     if                                 ( self . NotOkay ( DB )             ) :
       return
+    ##########################################################################
+    self    . UpdateSettings           ( DB                                  )
     ##########################################################################
     self    . Notify                   ( 3                                   )
     self    . OnBusy  . emit           (                                     )
