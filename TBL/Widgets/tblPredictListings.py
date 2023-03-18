@@ -983,11 +983,17 @@ class tblPredictListings            ( TreeDock                             ) :
         continue
       ########################################################################
       LW    = self . GenerateBettings  (      TBLs , BALLS , self . WETMT49  )
+      ## print ( "GenerateBettings : " , len ( LW ) )
       LW    = self . FilterAllRules    (      TBLs , LW                      )
+      ## print ( "FilterAllRules : " , len ( LW ) )
       LW    = self . HistoryDuplicate  (      TBLs , LW                      )
+      ## print ( "HistoryDuplicate : " , len ( LW ) )
       LW    = self . HistoryInRange    (      TBLs , LW                      )
+      ## print ( "HistoryInRange : "   , len ( LW ) )
       LW    = self . TripleDuplicate   (      TBLs , LW                      )
+      ## print ( "TripleDuplicate : "  , len ( LW ) )
       LW    = self . RuleOutBettings   ( DB , TBLs , LW                      )
+      ## print ( "RuleOutBettings : "  , len ( LW ) )
       ########################################################################
       self  . appendText               ( json . dumps ( LW )                 )
       ########################################################################
