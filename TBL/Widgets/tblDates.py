@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## tblPredictListings
+## tblDates
 ##############################################################################
 import os
 import sys
@@ -37,14 +37,14 @@ from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QMenu
 from   PyQt5 . QtWidgets              import QAbstractItemView
-from   PyQt5 . QtWidgets              import QTableWidget
-from   PyQt5 . QtWidgets              import QTableWidgetItem
+from   PyQt5 . QtWidgets              import QTreeWidget
+from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
 from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
-from   AITK  . Qt . TableDock         import TableDock   as TableDock
+from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
 from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
 from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
 from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
@@ -54,64 +54,40 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
-from   AITK  . TBL . TblMaps          import tblStatisticsAC6        as tblStatisticsAC6
-from   AITK  . TBL . TblMaps          import tblStatisticsAC7        as tblStatisticsAC7
-from   AITK  . TBL . TblMaps          import tblStatisticsOdds6      as tblStatisticsOdds6
-from   AITK  . TBL . TblMaps          import tblStatisticsOdds7      as tblStatisticsOdds7
-from   AITK  . TBL . TblMaps          import tblStatisticsEvens6     as tblStatisticsEvens6
-from   AITK  . TBL . TblMaps          import tblStatisticsEvens7     as tblStatisticsEvens7
-from   AITK  . TBL . TblMaps          import tblStatisticsHead6      as tblStatisticsHead6
-from   AITK  . TBL . TblMaps          import tblStatisticsHead7      as tblStatisticsHead7
-from   AITK  . TBL . TblMaps          import tblStatisticsTail6      as tblStatisticsTail6
-from   AITK  . TBL . TblMaps          import tblStatisticsTail7      as tblStatisticsTail7
-from   AITK  . TBL . TblMaps          import tblStatisticsFirst6     as tblStatisticsFirst6
-from   AITK  . TBL . TblMaps          import tblStatisticsFirst7     as tblStatisticsFirst7
-from   AITK  . TBL . TblMaps          import tblStatisticsEnding6    as tblStatisticsEnding6
-from   AITK  . TBL . TblMaps          import tblStatisticsEnding7    as tblStatisticsEnding7
-from   AITK  . TBL . TblMaps          import tblStatisticsGaps6      as tblStatisticsGaps6
-from   AITK  . TBL . TblMaps          import tblStatisticsGaps7      as tblStatisticsGaps7
-from   AITK  . TBL . TblMaps          import tblStatisticsTotalSums6 as tblStatisticsTotalSums6
-from   AITK  . TBL . TblMaps          import tblStatisticsTotalSums7 as tblStatisticsTotalSums7
-from   AITK  . TBL . TblMaps          import tblStatisticsHeadSums6  as tblStatisticsHeadSums6
-from   AITK  . TBL . TblMaps          import tblStatisticsHeadSums7  as tblStatisticsHeadSums7
-from   AITK  . TBL . TblMaps          import tblStatisticsTailSums6  as tblStatisticsTailSums6
-from   AITK  . TBL . TblMaps          import tblStatisticsTailSums7  as tblStatisticsTailSums7
-from   AITK  . TBL . TblSquare        import tblStatisticsSquare6    as tblStatisticsSquare6
-##############################################################################
-from   AITK  . TBL . TblDistribution  import TblDistribution         as TblDistribution
-from   AITK  . TBL . TaiwanBL         import TaiwanBL                as TaiwanBL
-from   AITK  . TBL . TaiwanBLs        import TaiwanBLs               as TaiwanBLs
-##############################################################################
-class tblPickings                   ( TableDock                            ) :
+class tblDates                      ( TreeDock                             ) :
   ############################################################################
   HavingMenu = 1371434312
   ############################################################################
-  emitBalls  = pyqtSignal           (                                        )
+  emitDates  = pyqtSignal           ( list                                   )
+  addText    = pyqtSignal           ( str                                    )
   ############################################################################
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
     super ( ) . __init__            (        parent        , plan            )
     ##########################################################################
-    random . seed                   ( time . time ( )                        )
+    self . Total     = 0
+    self . StartId   = 0
+    self . Amount    = 28
+    self . SortOrder = "desc"
     ##########################################################################
-    self . Serial   = ""
-    self . Editable = True
-    self . Pickings = [ ]
-    self . Columns  = 7
-    self . Rows     = 7
+    self . dockingOrientation = Qt . Vertical
+    self . dockingPlace       = Qt . LeftDockWidgetArea
+    self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
+                                Qt . BottomDockWidgetArea                  | \
+                                Qt . LeftDockWidgetArea                    | \
+                                Qt . RightDockWidgetArea
     ##########################################################################
-    ## self . setColumnCount           ( 9                                      )
-    ## self . setRootIsDecorated       ( False                                  )
-    ## self . setAlternatingRowColors  ( True                                   )
+    self . emitDates . connect      ( self . refresh                         )
     ##########################################################################
-    ## self . MountClicked             ( 1                                      )
-    ## self . MountClicked             ( 2                                      )
+    self . setColumnCount           ( 4                                      )
+    self . setRootIsDecorated       ( False                                  )
+    self . setAlternatingRowColors  ( True                                   )
     ##########################################################################
-    ## self . assignSelectionMode      ( "ContiguousSelection"                  )
+    self . MountClicked             ( 0                                      )
+    self . MountClicked             ( 1                                      )
+    self . MountClicked             ( 2                                      )
     ##########################################################################
-    self . emitBalls . connect      ( self . refresh                         )
-    ##########################################################################
-    ## self . setFunction              ( self . FunctionDocking , True          )
+    self . assignSelectionMode      ( "ContiguousSelection"                  )
     self . setFunction              ( self . HavingMenu      , True          )
     ##########################################################################
     self . setDragEnabled           ( False                                  )
@@ -121,7 +97,7 @@ class tblPickings                   ( TableDock                            ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 360 , 320 )                       )
+    return self . SizeSuggestion ( QSize ( 480 , 640 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
@@ -140,14 +116,12 @@ class tblPickings                   ( TableDock                            ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
     ##########################################################################
-    ## self . LinkAction ( "Start"      , self . UpdateBettings  , Enabled      )
-    ## self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
-    ## self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
-    ## self . LinkAction ( "Paste"      , self . Paste           , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     ##########################################################################
-    ## self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
-    ## self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
-    ## self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
+    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
+    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
     ##########################################################################
     return
   ############################################################################
@@ -156,26 +130,35 @@ class tblPickings                   ( TableDock                            ) :
     if                       ( not self . isPrepared ( )                   ) :
       return False
     ##########################################################################
-    ## self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    ## self . AttachActions     ( True                                          )
-    ## self . attachActionsTool (                                               )
-    ## self . LinkVoice         ( self . CommandParser                          )
-    ## self . Notify            ( 0                                             )
+    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
+    self . AttachActions     ( True                                          )
+    self . attachActionsTool (                                               )
+    self . LinkVoice         ( self . CommandParser                          )
+    self . Notify            ( 0                                             )
     ##########################################################################
     return True
   ############################################################################
   def FocusOut ( self                                                      ) :
     ##########################################################################
-    ## if         ( not self . isPrepared ( )                                 ) :
-    ##   return True
+    if         ( not self . isPrepared ( )                                 ) :
+      return True
     ##########################################################################
     return False
   ############################################################################
   def closeEvent             ( self , event                                ) :
     ##########################################################################
-    ## self . AttachActions     ( False                                         )
-    ## self . LinkVoice         ( None                                          )
-    ## self . defaultCloseEvent (        event                                  )
+    self . AttachActions     ( False                                         )
+    self . LinkVoice         ( None                                          )
+    self . defaultCloseEvent (        event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def CopyToClipboard             ( self                                   ) :
+    ##########################################################################
+    IT   = self . currentItem     (                                          )
+    if                            ( IT is None                             ) :
+      return
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -193,111 +176,140 @@ class tblPickings                   ( TableDock                            ) :
       return                  { "Match"   : True                           , \
                                 "Message" : TRX [ "UI::SelectNone" ]         }
     ##########################################################################
-    if ( self . WithinCommand ( language , "TBL::DoPredict"   , message )  ) :
-      self . emitPredict . emit (                                            )
-      return                  { "Match"   : True                             }
-    ##########################################################################
-    if ( self . WithinCommand ( language , "TBL::DoUpdate"    , message )  ) :
-      self . emitUpdate . emit (                                             )
-      return                  { "Match"   : True                             }
-    ##########################################################################
     return                    { "Match" : False                              }
   ############################################################################
-  def setLabels                           ( self                           ) :
+  def Prepare                    ( self                                    ) :
     ##########################################################################
-    LineStr   = self . getMenuItem        ( "BallStatistics"                 )
-    HLabels   =                           [                                  ]
-    VLabels   =                           [                                  ]
+    self . setColumnWidth        ( 3 ,   3                                   )
     ##########################################################################
-    for i in range                        ( 1 , self . Columns + 1         ) :
-      HLabels . append                    ( str ( i )                        )
+    TRX  = self . Translations
+    self . setCentralLabels      ( TRX [ "TBL" ] [ "Dates" ] [ "Labels" ]    )
     ##########################################################################
-    for i in range                        ( 1 , self . Rows    + 1         ) :
-      VLabels . append                    ( str ( i )                        )
-    ##########################################################################
-    HLabels   . append                    ( LineStr                          )
-    VLabels   . append                    ( LineStr                          )
-    ##########################################################################
-    self      . setHorizontalHeaderLabels ( HLabels                          )
-    self      . setVerticalHeaderLabels   ( VLabels                          )
+    self . setPrepared           ( True                                      )
     ##########################################################################
     return
   ############################################################################
-  def Prepare          ( self                                              ) :
+  def singleClicked ( self , item , column                                 ) :
     ##########################################################################
-    self . setPrepared ( True                                                )
-    ##########################################################################
-    return
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  @pyqtSlot                            (                                     )
-  def refresh                          ( self                              ) :
-    ##########################################################################
-    for   x in range                   ( 0 , self . Columns + 1            ) :
-      for y in range                   ( 0 , self . Rows    + 1            ) :
-        ######################################################################
-        ITEM = QTableWidgetItem        (                                     )
-        ITEM . setTextAlignment        ( Qt . AlignRight | Qt . AlignVCenter )
-        self . setItem                 ( y , x , ITEM                        )
-    ##########################################################################
-    self     . UpdateBalls             (                                     )
-    self     . resizeColumnsToContents (                                     )
+    self . Notify   ( 0                                                      )
     ##########################################################################
     return
   ############################################################################
-  def LoadPickings                  ( self , DB                            ) :
+  def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    SERIAL          = self . Serial
-    TABLE           = self . Tables [ "Pickings"                             ]
-    self . Pickings =               [                                        ]
-    ##########################################################################
-    ITEMs           =               [                                        ]
-    ##########################################################################
-    for i in range                  ( 1 , 50                               ) :
+    if                          ( column in [ 0 ]                          ) :
       ########################################################################
-      if                            ( i < 10                               ) :
-        NN          = f"`n0{i}`"
-      else                                                                   :
-        NN          = f"`n{i}`"
+      line = self . setLineEdit ( item                                     , \
+                                  column                                   , \
+                                  "editingFinished"                        , \
+                                  self . serialChanged                       )
+      line . setFocus           ( Qt . TabFocusReason                        )
       ########################################################################
-      ITEMs         . append        ( NN                                     )
-    ##########################################################################
-    ITEMX           = " , " . join  ( ITEMs                                  )
-    QQ              = f"""select {ITEMX} from {TABLE}
-                          where ( `serial` = '{SERIAL}' ) ;"""
-    QQ              = " " . join    ( QQ . split ( )                         )
-    DB              . Query         ( QQ                                     )
-    ALLs            = DB . FetchAll (                                        )
-    ##########################################################################
-    if                              ( self . NotOkay ( ALLs )              ) :
       return
     ##########################################################################
-    if                              ( len ( ALLs       ) != 1              ) :
-      return
-    ##########################################################################
-    if                              ( len ( ALLs [ 0 ] ) != 49             ) :
-      return
-    ##########################################################################
-    ALL             = ALLs          [ 0                                      ]
-    BALLs           =               [                                        ]
-    ##########################################################################
-    for i in range                  ( 0 , 49                               ) :
+    if                          ( column in [ 1 ]                          ) :
       ########################################################################
-      try                                                                    :
-        ######################################################################
-        BALL        = int           ( i + 1                                  )
-        BV          = int           ( ALL [ i ]                              )
-        if                          ( BV > 0                               ) :
-          BALLs     . append        ( BALL                                   )
-        ######################################################################
-      except                                                                 :
-        pass
+      line = self . setLineEdit ( item                                     , \
+                                  column                                   , \
+                                  "editingFinished"                        , \
+                                  self . dateChanged                         )
+      line . setFocus           ( Qt . TabFocusReason                        )
+      ########################################################################
+      return
     ##########################################################################
-    self . Pickings = BALLs
+    if                          ( column in [ 2 ]                          ) :
+      ########################################################################
+      self . SwitchBonus        ( item                                       )
+      ########################################################################
+      return
     ##########################################################################
     return
+  ############################################################################
+  def PrepareItem             ( self , LDATE                               ) :
+    ##########################################################################
+    TRX    = self . Translations
+    ##########################################################################
+    SID    = LDATE            [ 0                                            ]
+    SERIAL = LDATE            [ 1                                            ]
+    ODATE  = LDATE            [ 2                                            ]
+    BONUS  = LDATE            [ 3                                            ]
+    ##########################################################################
+    BSTR   = ""
+    if                        ( BONUS > 0                                  ) :
+      ########################################################################
+      BSTR = TRX              [ "TBL" ] [ "Dates" ] [ "Bonus"                ]
+    ##########################################################################
+    IT     = QTreeWidgetItem  (                                              )
+    IT     . setText          ( 0 ,                 str ( SERIAL )           )
+    IT     . setTextAlignment ( 0 , Qt.AlignRight                            )
+    IT     . setData          ( 1 , Qt . UserRole , str ( SERIAL )           )
+    IT     . setText          ( 1 ,                 str ( ODATE  )           )
+    IT     . setData          ( 1 , Qt . UserRole , str ( ODATE  )           )
+    IT     . setText          ( 2 ,                 str ( BSTR   )           )
+    IT     . setData          ( 2 , Qt . UserRole , BONUS                    )
+    IT     . setData          ( 3 , Qt . UserRole , SID                      )
+    ##########################################################################
+    return IT
+  ############################################################################
+  @pyqtSlot                     (        list                                )
+  def refresh                   ( self , DATEs                             ) :
+    ##########################################################################
+    self   . clear              (                                            )
+    ##########################################################################
+    for D in DATEs                                                           :
+      ########################################################################
+      IT   = self . PrepareItem ( D                                          )
+      self . addTopLevelItem    ( IT                                         )
+    ##########################################################################
+    TRX    = self . Translations
+    msg    = TRX                [ "UI::Ready"                                ]
+    self   . TtsTalk            ( msg , self . getLocality ( )               )
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainsInformation              ( self , DB                          ) :
+    ##########################################################################
+    self    . Total = 0
+    ##########################################################################
+    TBLTAB  = self . Tables           [ "Calendars"                          ]
+    ##########################################################################
+    QQ      = f"select count(*) from {TBLTAB} ;"
+    DB      . Query                   ( QQ                                   )
+    RR      = DB . FetchOne           (                                      )
+    ##########################################################################
+    if ( not RR ) or ( RR is None ) or ( len ( RR ) <= 0 )                   :
+      return
+    ##########################################################################
+    self    . Total = RR              [ 0                                    ]
+    ##########################################################################
+    return
+  ############################################################################
+  def ObtainUuidsQuery        ( self                                       ) :
+    ##########################################################################
+    TBLTAB  = self . Tables   [ "Calendars"                                  ]
+    STID    = self . StartId
+    AMOUNT  = self . Amount
+    ORDER   = self . SortOrder
+    ##########################################################################
+    QQ      = f"""select `id`,`serial`,`date`,`bonus` from {TBLTAB}
+                  order by `id` {ORDER}
+                  limit {STID} , {AMOUNT} ;"""
+    ##########################################################################
+    return " " . join         ( QQ . split ( )                               )
+  ############################################################################
+  def LoadDates                       ( self , DB                          ) :
+    ##########################################################################
+    QQ      = self . ObtainUuidsQuery (                                      )
+    DB      . Query                   ( QQ                                   )
+    RECORDs = DB . FetchAll           (                                      )
+    ##########################################################################
+    if                                ( RECORDs in [ False , None ]        ) :
+      return                          [                                      ]
+    ##########################################################################
+    if                                ( len ( RECORDs ) <= 0               ) :
+      return                          [                                      ]
+    ##########################################################################
+    return RECORDs
   ############################################################################
   def loading                  ( self                                      ) :
     ##########################################################################
@@ -306,7 +318,7 @@ class tblPickings                   ( TableDock                            ) :
     msg  = TRX                 [ "UI::Loading"                               ]
     self . TtsTalk             ( msg , self . getLocality ( )                )
     ##########################################################################
-    msg  = TRX [ "TBL" ] [ "Predictions" ] [ "Loading"                       ]
+    msg  = TRX [ "TBL" ] [ "Dates" ] [ "Loading"                             ]
     self . ShowStatus          ( msg                                         )
     ##########################################################################
     DB   = self . ConnectDB    (                                             )
@@ -321,287 +333,231 @@ class tblPickings                   ( TableDock                            ) :
     MSG  = FMT . format        ( self . windowTitle ( )                      )
     self . ShowStatus          ( MSG                                         )
     ##########################################################################
-    self . LoadPickings        ( DB                                          )
+    self . ObtainsInformation  ( DB                                          )
+    RR   = self . LoadDates    ( DB                                          )
     ##########################################################################
     self . setVacancy          (                                             )
     self . GoRelax . emit      (                                             )
     self . ShowStatus          ( ""                                          )
     DB   . Close               (                                             )
     ##########################################################################
-    self . emitBalls . emit    (                                             )
-    self . ShowStatus          ( ""                                          )
-    self . Notify              ( 5                                           )
-    ##########################################################################
-    return
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  @pyqtSlot                (        str    , bool                            )
-  def startup              ( self , SERIAL , Editable                      ) :
-    ##########################################################################
-    if                     ( not self . isPrepared ( )                     ) :
-      self . Prepare       (                                                 )
-    ##########################################################################
-    self . Serial   = SERIAL
-    self . Editable = Editable
-    ##########################################################################
-    Title = self . Translations [ "TBL" ] [ "Predictions" ] [ "Title"        ]
-    MSG   = f"{Title} : {SERIAL}"
-    self  . setWindowTitle ( MSG                                             )
-    ##########################################################################
-    self  . setColumnCount ( self . Columns + 1                              )
-    self  . setRowCount    ( self . Rows    + 1                              )
-    self  . setLabels      (                                                 )
-    ##########################################################################
-    self  . Go             ( self . loading                                  )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                      (                                           )
-  def UpdateBalls                ( self                                    ) :
-    ##########################################################################
-    XLINE  =                     {                                           }
-    YLINE  =                     {                                           }
-    ##########################################################################
-    for   x in range             ( 0 , self . Columns                      ) :
-      ########################################################################
-      XLINE [ x ] = 0
-    ##########################################################################
-    for   y in range             ( 0 , self . Rows                         ) :
-      ########################################################################
-      YLINE [ y ] = 0
-    ##########################################################################
-    for   x in range             ( 0 , self . Columns + 1                  ) :
-      for y in range             ( 0 , self . Rows    + 1                  ) :
-        ######################################################################
-        BALL     = int           ( ( y * self . Columns ) + x + 1            )
-        ITEM     = self . item   ( y , x                                     )
-        ######################################################################
-        if ( ( x < self . Columns ) and ( y < self . Rows )                ) :
-          ####################################################################
-          if                     ( BALL < 50                               ) :
-            ##################################################################
-            ITEM . setData       ( Qt . UserRole , 1                         )
-            F    = Qt . ItemIsSelectable
-            if                   ( self . Editable                         ) :
-              F  = F | Qt . ItemIsEnabled
-            ITEM . setFlags      ( F                                         )
-            ITEM . setForeground ( QBrush ( QColor ( 0 , 0 , 255 ) )         )
-            ##################################################################
-            if                   ( BALL in self . Pickings                 ) :
-              ################################################################
-              ITEM . setText     ( str ( BALL )                              )
-              ################################################################
-              XLINE [ x ] = XLINE [ x ] + 1
-              YLINE [ y ] = YLINE [ y ] + 1
-            ##################################################################
-          else                                                               :
-            ##################################################################
-            ITEM . setData       ( Qt . UserRole , 0                         )
-            ITEM . setFlags      ( Qt . NoItemFlags                          )
-          ####################################################################
-        else                                                                 :
-          ####################################################################
-          ITEM   . setData       ( Qt . UserRole , 2                         )
-          ITEM   . setFlags      ( Qt . NoItemFlags                          )
-    ##########################################################################
-    for   x in range             ( 0 , self . Columns                      ) :
-      ########################################################################
-      ITEM = self . item         ( self . Rows , x                           )
-      ITEM . setText             ( str ( XLINE [ x ] )                       )
-    ##########################################################################
-    for   y in range             ( 0 , self . Rows                         ) :
-      ########################################################################
-      ITEM = self . item         ( y , self . Columns                        )
-      ITEM . setText             ( str ( YLINE [ y ] )                       )
-    ##########################################################################
-    ITEM   = self . item         ( self . Rows , self . Columns              )
-    ITEM   . setText             ( str ( len ( self . Pickings ) )           )
-    ITEM   . setData             ( Qt . UserRole , 3                         )
-    ITEM   . setFlags            ( Qt . NoItemFlags                          )
-    ITEM   . setForeground       ( QBrush ( QColor ( 0 , 128 , 0 ) )         )
-    ##########################################################################
-    return
-  ############################################################################
-  def GetBalls                   ( self                                    ) :
-    ##########################################################################
-    self         . Pickings =    [                                           ]
-    ##########################################################################
-    for   x in range             ( 0 , self . Columns                      ) :
-      for y in range             ( 0 , self . Rows                         ) :
-        ######################################################################
-        ITEM     = self . item   ( y , x                                     )
-        if                       ( self . NotOkay ( ITEM )                 ) :
-          continue
-        ######################################################################
-        TEXT     = ITEM . text   (                                           )
-        if                       ( len ( TEXT ) <= 0                       ) :
-          continue
-        ######################################################################
-        V        = 0
-        try                                                                  :
-          V      = int           ( TEXT                                      )
-        except                                                               :
-          continue
-        ######################################################################
-        BALL     = int           ( ( y * self . Columns ) + x + 1            )
-        if                       ( V != BALL                               ) :
-          continue
-        ######################################################################
-        if                       ( BALL < 1                                ) :
-          continue
-        ######################################################################
-        if                       ( BALL > 49                               ) :
-          continue
-        ######################################################################
-        self . Pickings . append ( BALL                                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def SavePickings          ( self , DB                                    ) :
-    ##########################################################################
-    KKBB    =               [                                                ]
-    KKYY    =               [                                                ]
-    ##########################################################################
-    for i in self . Pickings                                                 :
-      ########################################################################
-      if                    ( i < 10                                       ) :
-        NN  = f"`n0{i}`"
-      else                                                                   :
-        NN  = f"`n{i}`"
-      ########################################################################
-      KKBB  . append        ( NN                                             )
-      KKYY  . append        ( "1"                                            )
-    ##########################################################################
-    SERIAL  = self . Serial
-    TABLE   = self . Tables [ "Pickings"                                     ]
-    ##########################################################################
-    QQ      = f"""delete from {TABLE}
-                  where ( `serial` = '{SERIAL}' ) ;"""
-    QQ      = " " . join    ( QQ . split ( )                                 )
-    DB      . Query         ( QQ                                             )
-    ##########################################################################
-    if                      ( len ( self . Pickings ) <= 0                 ) :
+    if                         ( len ( RR ) <= 0                           ) :
       return
     ##########################################################################
-    NLS     = "," . join    ( KKBB                                           )
-    VLS     = "," . join    ( KKYY                                           )
-    QQ      = f"""insert into {TABLE}
-                  ( `serial`,{NLS} ) values ( '{SERIAL}',{VLS} ) ;"""
-    QQ      = " " . join    ( QQ . split ( )                                 )
-    DB      . Query         ( QQ                                             )
+    self . emitDates . emit    ( RR                                          )
     ##########################################################################
     return
   ############################################################################
-  def StorePickings         ( self                                         ) :
+  @pyqtSlot                     (                                            )
+  def serialChanged             ( self                                     ) :
     ##########################################################################
-    DB   = self . ConnectDB (                                                )
-    if                      ( self . NotOkay ( DB )                        ) :
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    line   = self . CurrentItem [ "Widget"                                   ]
+    text   = self . CurrentItem [ "Text"                                     ]
+    msg    = line . text        (                                            )
+    uuid   = self . itemUuid    ( item , 3                                   )
+    ##########################################################################
+    if                          ( len ( msg ) <= 0                         ) :
+      self . removeTopLevelItem ( item                                       )
       return
     ##########################################################################
-    self . SavePickings     ( DB                                             )
+    item   . setText            ( column ,              msg                  )
+    ##########################################################################
+    self   . removeParked       (                                            )
+    self   . Go                 ( self . UpdateCalendarItem                , \
+                                  ( uuid , "serial" , msg , )                )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                     (                                            )
+  def dateChanged               ( self                                     ) :
+    ##########################################################################
+    if                          ( not self . isItemPicked ( )              ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem [ "Item"                                     ]
+    column = self . CurrentItem [ "Column"                                   ]
+    line   = self . CurrentItem [ "Widget"                                   ]
+    text   = self . CurrentItem [ "Text"                                     ]
+    msg    = line . text        (                                            )
+    uuid   = self . itemUuid    ( item , 3                                   )
+    ##########################################################################
+    if                          ( len ( msg ) <= 0                         ) :
+      self . removeTopLevelItem ( item                                       )
+      return
+    ##########################################################################
+    item   . setText            ( column ,              msg                  )
+    ##########################################################################
+    self   . removeParked       (                                            )
+    self   . Go                 ( self . UpdateCalendarItem                , \
+                                  ( uuid , "date" , msg , )                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchBonus             ( self , item                                ) :
+    ##########################################################################
+    TRX     = self . Translations
+    ##########################################################################
+    uuid    = self . itemUuid ( item , 3                                     )
+    bonus   = self . itemUuid ( item , 2                                     )
+    ##########################################################################
+    if                        ( bonus == 0                                 ) :
+      bonus = 1
+    else                                                                     :
+      bonus = 0
+    ##########################################################################
+    BSTR    = ""
+    if                        ( bonus > 0                                  ) :
+      ########################################################################
+      BSTR  = TRX             [ "TBL" ] [ "Dates" ] [ "Bonus"                ]
+    ##########################################################################
+    item    . setText         ( 2 ,                 str ( BSTR   )           )
+    item    . setData         ( 2 , Qt . UserRole , bonus                    )
+    ##########################################################################
+    self    . Go              ( self . UpdateCalendarItem                  , \
+                                ( uuid , "bonus" , bonus , )                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateCalendarItem      ( self , ID , COLUMN , VALUE                 ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( self . NotOkay ( DB )                      ) :
+      return
+    ##########################################################################
+    V      = VALUE
+    ##########################################################################
+    if                        ( COLUMN not in [ "bonus" ]                  ) :
+      ########################################################################
+      V    = f"'{VALUE}'"
+    ##########################################################################
+    TBLTAB = self . Tables [ "Calendars"                                    ]
+    ##########################################################################
+    QQ      = f"""update {TBLTAB}
+                  set `{COLUMN}` = {V}
+                  where ( `id` = {ID} ) ;"""
+    QQ      = " " . join    ( QQ . split ( )                                 )
+    DB      . Query         ( QQ                                             )
     ##########################################################################
     DB   . Close            (                                                )
     ##########################################################################
     return
   ############################################################################
-  def SyncBalls        ( self                                              ) :
+  def AppendSerial          ( self                                         ) :
     ##########################################################################
-    self . GetBalls    (                                                     )
-    self . UpdateBalls (                                                     )
-    self . Go          ( self . StorePickings                                )
-    self . Notify      ( 5                                                   )
+    DB   = self . ConnectDB (                                                )
+    if                      ( self . NotOkay ( DB )                        ) :
+      return
+    ##########################################################################
+    NOW     = StarDate      (                                                )
+    TBLTAB  = self . Tables [ "Calendars"                                    ]
+    ##########################################################################
+    QQ      = f"""select `serial`,`date` from {TBLTAB}
+                  order by `serial` desc
+                  limit 0 , 1 ;"""
+    QQ      = " " . join    ( QQ . split ( )                                 )
+    DB      . Query         ( QQ                                             )
+    RR      = DB . FetchOne (                                                )
+    ##########################################################################
+    if ( RR not in [ False , None ] ) and ( len ( RR ) == 2 )                :
+      ########################################################################
+      S     = RR            [ 0                                              ]
+      D     = RR            [ 1                                              ]
+      ########################################################################
+      S     = str           ( int ( int ( S ) + 1 )                          )
+      ########################################################################
+      NOW   . fromFormat    ( f"{D} 00:00:00" , "Asia/Taipei"                )
+      CDT   = int           ( NOW . Stardate + 86400                         )
+      LOOK  = True
+      ########################################################################
+      while LOOK                                                             :
+        ######################################################################
+        NOW . Stardate = CDT
+        WD  = NOW . Weekday ( "Asia/Taipei"                                  )
+        ######################################################################
+        if                  ( WD in [ 2 , 5 ]                              ) :
+          ####################################################################
+          D = NOW . toDateString ( "Asia/Taipei"                             )
+          LOOK = False
+        ######################################################################
+        CDT = int           ( CDT + 86400                                    )
+      ########################################################################
+      QQ    = f"""insert into {TBLTAB}
+                  ( `serial` , `date` )
+                  values
+                  ( '{S}' , '{D}' ) ;"""
+      QQ    = " " . join    ( QQ . split ( )                                 )
+      DB    . Query         ( QQ                                             )
+    ##########################################################################
+    DB   . Close            (                                                )
+    self . loading          (                                                )
     ##########################################################################
     return
   ############################################################################
-  def PickingMenu                 ( self , mm , ITEM                       ) :
+  @pyqtSlot      (                                                           )
+  def InsertItem ( self                                                    ) :
     ##########################################################################
-    if                            ( self . NotOkay ( ITEM )                ) :
-      return mm
+    self . Go    ( self . AppendSerial                                       )
     ##########################################################################
-    TYPE     = ITEM . data        ( Qt . UserRole                            )
-    if                            ( TYPE not in [ 1 ]                      ) :
-      return mm
-    ##########################################################################
-    NUM      = ITEM . text        (                                          )
-    BALL     = 0
-    ##########################################################################
-    if                            ( len ( NUM ) > 0                        ) :
-      ########################################################################
-      try                                                                    :
-        BALL = int                ( NUM                                      )
-      except                                                                 :
-        pass
-    ##########################################################################
-    if                            ( BALL > 0                               ) :
-      ########################################################################
-      msg    = self . getMenuItem ( "Cancel"                                 )
-      mm     . addAction          ( 2001 , msg                               )
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      ROW    = ITEM . row         (                                          )
-      COL    = ITEM . column      (                                          )
-      BALL   = int                ( ( ROW * self . Columns ) + COL + 1       )
-      msg    = str                ( BALL                                     )
-      mm     . addAction          ( 2002 , msg                               )
-    ##########################################################################
-    mm       . addSeparator       (                                          )
-    ##########################################################################
-    return mm
+    return
   ############################################################################
-  def Menu                          ( self , pos                           ) :
+  def Menu                              ( self , pos                       ) :
     ##########################################################################
-    if                              ( not self . isPrepared ( )            ) :
+    if                                  ( not self . isPrepared ( )        ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction      ( self . HavingMenu                      )
-    if                              ( not doMenu                           ) :
+    doMenu = self . isFunction          ( self . HavingMenu                  )
+    if                                  ( not doMenu                       ) :
       return False
     ##########################################################################
-    self   . Notify                 ( 0                                      )
+    self   . Notify                     ( 0                                  )
     ##########################################################################
-    ITEM   = self . itemAt          ( pos                                    )
+    ITEM   = self . itemAt              ( pos                                )
     ##########################################################################
-    mm     = MenuManager            ( self                                   )
+    mm     = MenuManager                ( self                               )
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    mm     = self . PickingMenu     ( mm , ITEM                              )
-    ## mm     . addSeparator           (                                        )
+    mm     = self . AmountIndexMenu     ( mm                                 )
     mm     = self . AppendRefreshAction ( mm , 1001                          )
-    ## mm     . addSeparator           (                                        )
-    ## msg    = self . getMenuItem     ( "Prediction"                           )
-    ## mm     . addAction              ( 1101 , msg                             )
+    self   . AppendInsertAction         ( mm , 1101                          )
     ##########################################################################
-    mm     . setFont                ( self    . menuFont ( )                 )
-    aa     = mm . exec_             ( QCursor . pos      ( )                 )
-    at     = mm . at                ( aa                                     )
+    mm     . addSeparator               (                                    )
     ##########################################################################
-    if                              ( at == 1001                           ) :
+    mm     = self . SortingMenu         ( mm                                 )
+    self   . DockingMenu                ( mm                                 )
+    ##########################################################################
+    mm     . setFont                    ( self    . menuFont ( )             )
+    aa     = mm . exec_                 ( QCursor . pos      ( )             )
+    at     = mm . at                    ( aa                                 )
+    ##########################################################################
+    if                                  ( self . RunAmountIndexMenu (    ) ) :
       ########################################################################
-      self . clear                  (                                        )
-      self . startup                ( self . Serial , self . Editable        )
+      self . restart                    (                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 2001                           ) :
+    if                                  ( self . RunSortingMenu ( at     ) ) :
       ########################################################################
-      ITEM . setText                ( ""                                     )
-      self . SyncBalls              (                                        )
+      self . restart                    (                                    )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 2002                           ) :
+    if                                  ( self . RunDocking ( mm , aa    ) ) :
+      return True
+    ##########################################################################
+    if                                  ( at == 1001                       ) :
       ########################################################################
-      ROW  = ITEM . row             (                                        )
-      COL  = ITEM . column          (                                        )
-      BALL = int                    ( ( ROW * self . Columns ) + COL + 1     )
-      msg  = str                    ( BALL                                   )
-      ITEM . setText                ( msg                                    )
-      self . SyncBalls              (                                        )
+      self . restart                    (                                    )
       ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 1101                       ) :
+      self . InsertItem                 (                                    )
       return True
     ##########################################################################
     return True
