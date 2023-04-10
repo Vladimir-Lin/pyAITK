@@ -671,27 +671,28 @@ class tblPredictListings            ( TreeDock                             ) :
   ############################################################################
   def GenerateBettings                    ( self , TBLs , BALLS , AP       ) :
     ##########################################################################
-    PC            = TBLs . RandomBalls    ( 10 , BALLS , AP , [ ]            )
-    random        . shuffle               ( PC                               )
-    LZ            = self . CombineRotate10x6x5IntoLists   ( PC               )
+    ## PC            = TBLs . RandomBalls    ( 10 , BALLS , AP , [ ]            )
+    ## random        . shuffle               ( PC                               )
+    ## LZ            = self . CombineRotate10x6x5IntoLists   ( PC               )
     ##########################################################################
     PC            = TBLs . RandomBalls    ( 12 , BALLS , AP , [ ]            )
     random        . shuffle               ( PC                               )
     LL            = self . CombinePosition12x6x5IntoLists ( PC               )
     ##########################################################################
-    LW            = LZ
+    ## LW            = LZ
+    LW = LL
     ##########################################################################
-    for L in LL                                                              :
+    ## for L in LL                                                              :
       ########################################################################
-      MATCHED     = False
+    ##   MATCHED     = False
       ########################################################################
-      for Z in LZ                                                            :
-        RX        = TBLs . CompareTwoSets ( L , Z                            )
-        if                                ( RX == 6                        ) :
-          MATCHED = True
+    ##   for Z in LZ                                                            :
+    ##     RX        = TBLs . CompareTwoSets ( L , Z                            )
+    ##     if                                ( RX == 6                        ) :
+    ##       MATCHED = True
       ########################################################################
-      if                                  ( not MATCHED                    ) :
-        LW        . append                ( L                                )
+    ##   if                                  ( not MATCHED                    ) :
+    ##     LW        . append                ( L                                )
     ##########################################################################
     return LW
   ############################################################################
