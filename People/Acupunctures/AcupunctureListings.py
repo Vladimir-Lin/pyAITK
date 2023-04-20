@@ -70,8 +70,8 @@ class AcupunctureListings  ( TreeDock                                      ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . ClassTag           = "HairColorListings"
-    self . FetchTableKey      = "HairColorListings"
+    self . ClassTag           = "AcupunctureListings"
+    self . FetchTableKey      = "AcupunctureListings"
     self . GType              = 20
     self . SortOrder          = "asc"
     ##########################################################################
@@ -179,10 +179,10 @@ class AcupunctureListings  ( TreeDock                                      ) :
   ############################################################################
   def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
-    HAIRTAB = self . Tables [ "Hairs"                                         ]
+    ACUPTAB = self . Tables [ "Acupunctures"                                 ]
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"select `uuid` from {HAIRTAB} order by `id` {ORDER} ;"
+    QQ      = f"select `uuid` from {ACUPTAB} order by `id` {ORDER} ;"
     ##########################################################################
     return QQ
   ############################################################################

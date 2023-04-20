@@ -70,8 +70,8 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . ClassTag           = "HairColorListings"
-    self . FetchTableKey      = "HairColorListings"
+    self . ClassTag           = "MeridianListings"
+    self . FetchTableKey      = "MeridianListings"
     self . GType              = 20
     self . SortOrder          = "asc"
     ##########################################################################
@@ -179,10 +179,10 @@ class MeridianListings     ( TreeDock                                      ) :
   ############################################################################
   def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
-    HAIRTAB = self . Tables [ "Hairs"                                         ]
+    MERITAB = self . Tables [ "Meridians"                                    ]
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"select `uuid` from {HAIRTAB} order by `id` {ORDER} ;"
+    QQ      = f"select `uuid` from {MERITAB} order by `id` {ORDER} ;"
     ##########################################################################
     return QQ
   ############################################################################
