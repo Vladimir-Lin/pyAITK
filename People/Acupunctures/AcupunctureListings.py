@@ -533,7 +533,10 @@ class AcupunctureListings  ( TreeDock                                      ) :
   ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
-    self . defaultOpenItemNamesEditor ( item , 0 , "Hairs" , "NamesEditing"  )
+    self . defaultOpenItemNamesEditor ( item                                 ,
+                                        0                                    ,
+                                        "Acupunctures"                       ,
+                                        "NamesEditing"                       )
     ##########################################################################
     return
   ############################################################################

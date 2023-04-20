@@ -533,7 +533,10 @@ class MeridianListings     ( TreeDock                                      ) :
   ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
-    self . defaultOpenItemNamesEditor ( item , 0 , "Hairs" , "NamesEditing"  )
+    self . defaultOpenItemNamesEditor ( item                                 ,
+                                        0                                    ,
+                                        "Meridians"                          ,
+                                        "NamesEditing"                       )
     ##########################################################################
     return
   ############################################################################
