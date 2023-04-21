@@ -57,10 +57,10 @@ class MeridianListings     ( TreeDock                                      ) :
   HavingMenu        = 1371434312
   ############################################################################
   emitNamesShow       = pyqtSignal (                                         )
-  emitAllNames        = pyqtSignal ( dict                                    )
+  emitAllNames        = pyqtSignal ( list                                    )
   emitAssignAmounts   = pyqtSignal ( str , int , int                         )
-  PeopleGroup         = pyqtSignal ( str , int , str                         )
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
+  ShowAcupunctures    = pyqtSignal ( str                                     )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   OpenLogHistory      = pyqtSignal ( str , str , str                         )
   ############################################################################
@@ -72,7 +72,7 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     self . ClassTag           = "MeridianListings"
     self . FetchTableKey      = "MeridianListings"
-    self . GType              = 20
+    self . GType              = 21
     self . SortOrder          = "asc"
     ##########################################################################
     self . dockingOrientation = 0
@@ -83,11 +83,11 @@ class MeridianListings     ( TreeDock                                      ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Organization"                          )
+    self . Relation . setT1        ( "Meridian"                              )
+    self . Relation . setT2        ( "Acupuncture"                           )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 1 , True                                )
     self . setColumnHidden         ( 2 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
@@ -99,7 +99,6 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
-    self . emitAssignAmounts . connect ( self . AssignAmounts                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
@@ -111,7 +110,7 @@ class MeridianListings     ( TreeDock                                      ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 240 , 360 )                       )
+    return self . SizeSuggestion ( QSize ( 360 , 640 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
@@ -119,18 +118,11 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
-    msg  = self . getMenuItem     ( "HairGallery"                            )
+    msg  = self . getMenuItem     ( "MeridianGallery"                        )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
     A    . setToolTip             ( msg                                      )
     A    . triggered . connect    ( self . GotoItemGallery                   )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
-    msg  = self . getMenuItem     ( "Crowds"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . GotoItemCrowd                     )
     self . WindowActions . append ( A                                        )
     ##########################################################################
     return
@@ -177,14 +169,41 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery     ( self                                          ) :
+  def ObtainsMeridians                ( self , DB                          ) :
     ##########################################################################
-    MERITAB = self . Tables [ "Meridians"                                    ]
+    MERITAB = self . Tables           [ "Meridians"                          ]
     ORDER   = self . SortOrder
     ##########################################################################
-    QQ      = f"select `uuid` from {MERITAB} order by `id` {ORDER} ;"
+    QQ      = f"select `uuid`,`type` from {MERITAB} order by `id` {ORDER} ;"
+    DB      . Query                   ( QQ                                   )
+    ALL     = DB . FetchAll           (                                      )
     ##########################################################################
-    return QQ
+    ITEMs   =                         [                                      ]
+    UUIDs   =                         [                                      ]
+    TYPEs   =                         {                                      }
+    ##########################################################################
+    for ITEM in ALL                                                          :
+      ########################################################################
+      U     = ITEM                    [ 0                                    ]
+      T     = ITEM                    [ 1                                    ]
+      ########################################################################
+      UUIDs . append                  ( U                                    )
+      TYPEs [ U ] = T
+    ##########################################################################
+    NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
+    ##########################################################################
+    for U in UUIDs                                                           :
+      ########################################################################
+      T     = TYPEs                   [ U                                    ]
+      N     = NAMEs                   [ U                                    ]
+      ########################################################################
+      J     =                         { "Uuid" : U                         , \
+                                        "Type" : T                         , \
+                                        "Name" : N                           }
+      ########################################################################
+      ITEMs . append                  ( J                                    )
+    ##########################################################################
+    return ITEMs
   ############################################################################
   def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################
@@ -192,68 +211,34 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem               ( self , UUID , NAME                       ) :
+  def PrepareItem                 ( self , JSOX                            ) :
     ##########################################################################
-    IT = self . PrepareUuidItem ( 0    , UUID , NAME                         )
-    IT . setTextAlignment       ( 1    , Qt . AlignRight                     )
+    TRX  = self . Translations    [ self . ClassTag                          ]
+    MTS  = TRX                    [ "MeridianTypes"                          ]
+    ##########################################################################
+    UUID = JSOX                   [ "Uuid"                                   ]
+    TYPE = JSOX                   [ "Type"                                   ]
+    NAME = JSOX                   [ "Name"                                   ]
+    TNAM = MTS                    [ str ( TYPE )                             ]
+    ##########################################################################
+    IT   = self . PrepareUuidItem ( 0 , UUID , NAME                          )
+    ##########################################################################
+    IT   . setText                ( 1 , TNAM                                 )
+    IT   . setData                ( 1 , Qt . UserRole , TYPE                 )
+    ##########################################################################
+    IT   . setTextAlignment       ( 2 , Qt . AlignRight                      )
     ##########################################################################
     return IT
   ############################################################################
-  @pyqtSlot                (        str  , int     , int                     )
-  def AssignAmounts        ( self , UUID , Amounts , Column                ) :
-    ##########################################################################
-    IT = self . uuidAtItem ( UUID , 0                                        )
-    if                     ( IT in [ False , None ]                        ) :
-      return
-    ##########################################################################
-    IT . setText           ( Column , str ( Amounts )                        )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportBelongings                ( self , UUIDs                       ) :
-    ##########################################################################
-    time   . sleep                    ( 1.0                                  )
-    ##########################################################################
-    RELTAB = self . Tables            [ "RelationPeople"                     ]
-    REL    = Relation                 (                                      )
-    REL    . setT1                    ( "Hairs"                              )
-    REL    . setT2                    ( "People"                             )
-    REL    . setRelation              ( "Subordination"                      )
-    ##########################################################################
-    DB     = self . ConnectDB         (                                      )
-    ##########################################################################
-    if                                ( self . NotOkay ( DB )              ) :
-      return
-    ##########################################################################
-    self    . OnBusy  . emit          (                                      )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      if                              ( not self . StayAlive               ) :
-        continue
-      ########################################################################
-      REL  . set                      ( "first" , UUID                       )
-      CNT  = REL . CountSecond        ( DB , RELTAB                          )
-      ########################################################################
-      self . emitAssignAmounts . emit ( str ( UUID ) , CNT , 1               )
-    ##########################################################################
-    self   . GoRelax . emit           (                                      )
-    DB     . Close                    (                                      )
-    ##########################################################################
-    return
-  ############################################################################
-  @pyqtSlot                       (        dict                              )
-  def refresh                     ( self , JSON                            ) :
+  @pyqtSlot                       (        list                              )
+  def refresh                     ( self , ITEMs                           ) :
     ##########################################################################
     self   . clear                (                                          )
     self   . setEnabled           ( False                                    )
     ##########################################################################
-    UUIDs  = JSON                 [ "UUIDs"                                  ]
-    NAMEs  = JSON                 [ "NAMEs"                                  ]
-    ##########################################################################
-    for U in UUIDs                                                           :
+    for U in ITEMs                                                           :
       ########################################################################
-      IT   = self . PrepareItem   ( U , NAMEs [ U ]                          )
+      IT   = self . PrepareItem   ( U                                        )
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     self   . setEnabled           ( True                                     )
@@ -277,29 +262,18 @@ class MeridianListings     ( TreeDock                                      ) :
     self    . ShowStatus              ( MSG                                  )
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    ##########################################################################
-    if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+    ITEMs   = self . ObtainsMeridians ( DB                                   )
     ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax . emit          (                                      )
     self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
+    if                                ( len ( ITEMs ) <= 0                 ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
-    JSON             =                {                                      }
-    JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
-    ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
-    ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      VAL  =                          ( UUIDs ,                              )
-      self . Go                       ( self . ReportBelongings , VAL        )
+    self   . emitAllNames . emit      ( ITEMs                                )
     ##########################################################################
     self   . Notify                   ( 5                                    )
     ##########################################################################
@@ -510,27 +484,6 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def OpenItemCrowd           ( self , item                                ) :
-    ##########################################################################
-    uuid = item . data        ( 0 , Qt . UserRole                            )
-    uuid = int                ( uuid                                         )
-    xsid = str                ( uuid                                         )
-    text = item . text        ( 0                                            )
-    ##########################################################################
-    self . PeopleGroup . emit ( text , self . GType , str ( uuid )           )
-    ##########################################################################
-    return
-  ############################################################################
-  def GotoItemCrowd             ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    if                          ( self . NotOkay ( atItem )                ) :
-      return
-    ##########################################################################
-    self   . OpenItemCrowd      ( atItem                                     )
-    ##########################################################################
-    return
-  ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
     self . defaultOpenItemNamesEditor ( item                                 ,
@@ -628,13 +581,11 @@ class MeridianListings     ( TreeDock                                      ) :
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
     if                             ( at >= 9001 ) and ( at <= 9002 )         :
+      ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at in [ 9001 ] ) and ( hid )        ) :
-        ######################################################################
-        self . restart             (                                         )
-        ######################################################################
+      ########################################################################
       return True
     ##########################################################################
     return False
@@ -650,30 +601,27 @@ class MeridianListings     ( TreeDock                                      ) :
     MSG  = FMT . format              ( NAME                                  )
     COL  = mm . addMenu              ( MSG                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "CopyHairUuid"                        )
-    mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
+    msg  = self . getMenuItem        ( "CopyMeridianUuid"                    )
+    mm   . addActionFromMenu         ( COL , 38531001 , msg                  )
     ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "HairGallery"                         )
+    msg  = self . getMenuItem        ( "Acupunctures"                        )
     ICON = QIcon                     ( ":/images/gallery.png"                )
-    mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
+    mm   . addActionFromMenuWithIcon ( COL , 38531002 , ICON , msg           )
     ##########################################################################
-    msg  = self . getMenuItem        ( "Crowds"                              )
-    ICON = QIcon                     ( ":/images/viewpeople.png"             )
-    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "ColorGroup"                          )
-    mm   . addActionFromMenu         ( COL , 38521004        , msg           )
+    msg  = self . getMenuItem        ( "MeridianGallery"                     )
+    ICON = QIcon                     ( ":/images/gallery.png"                )
+    mm   . addActionFromMenuWithIcon ( COL , 38531003 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
-    mm   . addActionFromMenu         ( COL , 38522001        , msg           )
+    mm   . addActionFromMenu         ( COL , 38532001        , msg           )
     ##########################################################################
     return mm
   ############################################################################
   def RunGroupsMenu                 ( self , at , item                     ) :
     ##########################################################################
-    if                              ( at == 38521001                       ) :
+    if                              ( at == 38531001                       ) :
       ########################################################################
       uuid = item . data            ( 0 , Qt . UserRole                      )
       uuid = int                    ( uuid                                   )
@@ -682,24 +630,19 @@ class MeridianListings     ( TreeDock                                      ) :
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 38521002                       ) :
+    if                              ( at == 38531002                       ) :
+      ########################################################################
+      ## self . OpenItemGallery        ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38531003                       ) :
       ########################################################################
       self . OpenItemGallery        ( item                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 38521003                       ) :
-      ########################################################################
-      self . OpenItemCrowd          ( item                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38521004                       ) :
-      ########################################################################
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38522001                       ) :
+    if                              ( at == 38532001                       ) :
       ########################################################################
       uuid = item . data            ( 0 , Qt . UserRole                      )
       uuid = int                    ( uuid                                   )

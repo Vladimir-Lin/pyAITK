@@ -72,7 +72,7 @@ class AcupunctureListings  ( TreeDock                                      ) :
     ##########################################################################
     self . ClassTag           = "AcupunctureListings"
     self . FetchTableKey      = "AcupunctureListings"
-    self . GType              = 20
+    self . GType              = 17
     self . SortOrder          = "asc"
     ##########################################################################
     self . dockingOrientation = 0
