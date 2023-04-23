@@ -228,6 +228,7 @@ class tblPredictListings            ( TreeDock                             ) :
     self . Optimizing         = False
     self . MinBalls           = -1
     self . MaxBalls           = -1
+    self . WheelBalls         = 11
     self . SelectBalls        = 20
     self . Periods            = 100
     self . tblHost            = "http://insider.actions.com.tw:8364"
