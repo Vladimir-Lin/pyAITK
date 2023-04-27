@@ -52,6 +52,8 @@ from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . People     . People    import People
 ##############################################################################
+from   opencc                         import OpenCC
+##############################################################################
 class AcupunctureListings  ( TreeDock                                      ) :
   ############################################################################
   HavingMenu        = 1371434312
@@ -83,7 +85,7 @@ class AcupunctureListings  ( TreeDock                                      ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Organization"                          )
+    self . Relation . setT2        ( "Acupuncture"                           )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 3                                       )
@@ -119,29 +121,23 @@ class AcupunctureListings  ( TreeDock                                      ) :
     ##########################################################################
     self . AppendWindowToolSeparatorAction (                                 )
     ##########################################################################
-    msg  = self . getMenuItem     ( "HairGallery"                            )
+    msg  = self . getMenuItem     ( "AcupunctureGallery"                     )
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/gallery.png" )         )
     A    . setToolTip             ( msg                                      )
     A    . triggered . connect    ( self . GotoItemGallery                   )
     self . WindowActions . append ( A                                        )
     ##########################################################################
-    msg  = self . getMenuItem     ( "Crowds"                                 )
-    A    = QAction                (                                          )
-    A    . setIcon                ( QIcon ( ":/images/viewpeople.png" )      )
-    A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . GotoItemCrowd                     )
-    self . WindowActions . append ( A                                        )
-    ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self         ,                          Enabled    ) :
+  def AttachActions   ( self         ,                            Enabled  ) :
     ##########################################################################
-    self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
-    self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
-    self . LinkAction ( "Select"     , self . SelectOne       , Enabled      )
-    self . LinkAction ( "SelectAll"  , self . SelectAll       , Enabled      )
-    self . LinkAction ( "SelectNone" , self . SelectNone      , Enabled      )
+    self . LinkAction ( "Refresh"    , self . startup           , Enabled    )
+    self . LinkAction ( "Copy"       , self . CopyToClipboard   , Enabled    )
+    self . LinkAction ( "Paste"      , self . PasteAcupunctures , Enabled    )
+    self . LinkAction ( "Select"     , self . SelectOne         , Enabled    )
+    self . LinkAction ( "SelectAll"  , self . SelectAll         , Enabled    )
+    self . LinkAction ( "SelectNone" , self . SelectNone        , Enabled    )
     ##########################################################################
     return
   ############################################################################
@@ -179,10 +175,10 @@ class AcupunctureListings  ( TreeDock                                      ) :
   ############################################################################
   def ObtainUuidsQuery     ( self                                          ) :
     ##########################################################################
-    ACUPTAB = self . Tables [ "Acupunctures"                                 ]
-    ORDER   = self . SortOrder
+    ACUTAB = self . Tables [ "Acupunctures"                                  ]
+    ORDER  = self . SortOrder
     ##########################################################################
-    QQ      = f"select `uuid` from {ACUPTAB} order by `id` {ORDER} ;"
+    QQ     = f"select `uuid` from {ACUTAB} order by `id` {ORDER} ;"
     ##########################################################################
     return QQ
   ############################################################################
@@ -296,10 +292,6 @@ class AcupunctureListings  ( TreeDock                                      ) :
     JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
-    ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      VAL  =                          ( UUIDs ,                              )
-      self . Go                       ( self . ReportBelongings , VAL        )
     ##########################################################################
     self   . Notify                   ( 5                                    )
     ##########################################################################
@@ -481,7 +473,7 @@ class AcupunctureListings  ( TreeDock                                      ) :
   ############################################################################
   def PicturesAppending      ( self , atUuid , NAME , JSON                 ) :
     ##########################################################################
-    T1   = "Hairs"
+    T1   = "Acupuncture"
     TAB  = "RelationPictures"
     ##########################################################################
     self . AppendingPictures (        atUuid , NAME , JSON , TAB , T1        )
@@ -546,9 +538,117 @@ class AcupunctureListings  ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
+  def PasteAcupunctures ( self                                             ) :
+    ##########################################################################
+    self . defaultPaste ( self . ImportAcupuncturesFromText                  )
+    ##########################################################################
+    return
+  ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( self . ClassTag , 2                              )
+    ##########################################################################
+    return
+  ############################################################################
+  def FindAcupuncture           ( self , DB , NAME                         ) :
+    ##########################################################################
+    LOC    = self . getLocality (                                            )
+    ACUTAB = self . Tables      [ "Acupunctures"                             ]
+    NAMTAB = self . Tables      [ "Names"                                    ]
+    ##########################################################################
+    QA     = f"select `uuid` from {ACUTAB}"
+    QQ     = f"""select `uuid` from {NAMTAB}
+                    where ( `locality` = {LOC} )
+                    and ( `uuid` in ( {QA} ) )
+                    and ( `name` = %s )
+                    order by `priority` asc
+                    limit 0 , 1 ;"""
+    QQ     = " " . join         ( QQ . split ( )                             )
+    DB     . QueryValues        ( QQ , ( NAME , )                            )
+    RR     = DB . FetchOne      (                                            )
+    ##########################################################################
+    if                          ( RR in [ False , None ]                   ) :
+      return 0
+    ##########################################################################
+    if                          ( len ( RR ) != 1                          ) :
+      return 0
+    ##########################################################################
+    return int                  ( RR [ 0 ]                                   )
+  ############################################################################
+  def AssureAcupunctures             ( self , DB , NAME                    ) :
+    ##########################################################################
+    UUID    = self . FindAcupuncture (        DB , NAME                      )
+    ##########################################################################
+    if                               ( UUID > 0                            ) :
+      return UUID
+    ##########################################################################
+    LOC     = self . getLocality     (                                       )
+    ACUTAB  = self . Tables          [ "Acupunctures"                        ]
+    NAMTAB  = self . Tables          [ "NamesEditing"                        ]
+    ##########################################################################
+    Heading = 5433123000000040000
+    UUID    = DB . LastUuid          ( ACUTAB , "uuid" , Heading             )
+    ##########################################################################
+    QQ      = f"""insert into {ACUTAB}
+                  ( `uuid` , `type` )
+                  values
+                  ( {UUID} , 1 ) ;"""
+    QQ      = " " . join             ( QQ . split ( )                        )
+    DB      . Query                  ( QQ                                    )
+    ##########################################################################
+    self    . AssureUuidName         ( DB , NAMTAB , UUID , NAME             )
+    ##########################################################################
+    return UUID
+  ############################################################################
+  def ImportAcupunctures               ( self , LINES                      ) :
+    ##########################################################################
+    DB      = self . ConnectDB         (                                     )
+    if                                 ( DB == None                        ) :
+      return
+    ##########################################################################
+    self    . Notify                   ( 3                                   )
+    self    . OnBusy  . emit           (                                     )
+    self    . setBustle                (                                     )
+    ##########################################################################
+    FMT     = self . Translations      [ "UI::StartLoading"                  ]
+    MSG     = FMT . format             ( self . windowTitle ( )              )
+    self    . ShowStatus               ( MSG                                 )
+    ##########################################################################
+    UUIDs   =                          [                                     ]
+    ##########################################################################
+    for NAME in LINES                                                        :
+      ########################################################################
+      UUID = self . AssureAcupunctures ( DB , NAME                           )
+      ########################################################################
+      if                               ( UUID not in UUIDs                 ) :
+        UUIDs . append                 ( UUID                                )
+    ##########################################################################
+    self    . setVacancy               (                                     )
+    self    . GoRelax . emit           (                                     )
+    self    . ShowStatus               ( ""                                  )
+    DB      . Close                    (                                     )
+    ##########################################################################
+    self    . loading                  (                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def ImportAcupuncturesFromText   ( self , TEXT                           ) :
+    ##########################################################################
+    LINEX     = TEXT . splitlines  (                                         )
+    if                             ( len ( LINEX ) <= 0                    ) :
+      return
+    ##########################################################################
+    LINES     =                    [                                         ]
+    ##########################################################################
+    for L in LINEX                                                           :
+      ########################################################################
+      S       = L .  strip         (                                         )
+      K       = S . rstrip         (                                         )
+      ########################################################################
+      if                           ( len ( K ) > 0                         ) :
+        LINES . append             ( K                                       )
+    ##########################################################################
+    self      . ImportAcupunctures ( LINES                                   )
     ##########################################################################
     return
   ############################################################################
@@ -650,21 +750,14 @@ class AcupunctureListings  ( TreeDock                                      ) :
     MSG  = FMT . format              ( NAME                                  )
     COL  = mm . addMenu              ( MSG                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "CopyHairUuid"                        )
+    msg  = self . getMenuItem        ( "CopyAcupunctureUuid"                 )
     mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
     ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "HairGallery"                         )
+    msg  = self . getMenuItem        ( "AcupunctureGallery"                  )
     ICON = QIcon                     ( ":/images/gallery.png"                )
     mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "Crowds"                              )
-    ICON = QIcon                     ( ":/images/viewpeople.png"             )
-    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "ColorGroup"                          )
-    mm   . addActionFromMenu         ( COL , 38521004        , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
     mm   . addActionFromMenu         ( COL , 38522001        , msg           )
@@ -685,17 +778,6 @@ class AcupunctureListings  ( TreeDock                                      ) :
     if                              ( at == 38521002                       ) :
       ########################################################################
       self . OpenItemGallery        ( item                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38521003                       ) :
-      ########################################################################
-      self . OpenItemCrowd          ( item                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38521004                       ) :
-      ########################################################################
       ########################################################################
       return True
     ##########################################################################
