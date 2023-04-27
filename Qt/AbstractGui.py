@@ -188,7 +188,13 @@ class AbstractGui        (                                                 ) :
                                  "Drop"     : "dropPositions"              } ,
                                { "Mime"     : "nation/uuids"                 ,
                                  "Function" : "acceptNationsDrop"            ,
-                                 "Drop"     : "dropNations"                } ]
+                                 "Drop"     : "dropNations"                } ,
+                               { "Mime"     : "meridian/uuids"               ,
+                                 "Function" : "acceptMeridiansDrop"          ,
+                                 "Drop"     : "dropMeridians"              } ,
+                               { "Mime"     : "acupuncture/uuids"            ,
+                                 "Function" : "acceptAcupuncturesDrop"       ,
+                                 "Drop"     : "dropAcupunctures"           } ]
     ##########################################################################
     return
   ############################################################################

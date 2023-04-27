@@ -60,7 +60,7 @@ class MeridianListings     ( TreeDock                                      ) :
   emitAllNames        = pyqtSignal ( list                                    )
   emitAssignAmounts   = pyqtSignal ( str , int , int                         )
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
-  ShowAcupunctures    = pyqtSignal ( str                                     )
+  ShowAcupunctures    = pyqtSignal ( str , int , str , QIcon                 )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   OpenLogHistory      = pyqtSignal ( str , str , str                         )
   ############################################################################
@@ -87,8 +87,8 @@ class MeridianListings     ( TreeDock                                      ) :
     self . Relation . setT2        ( "Acupuncture"                           )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 3                                       )
-    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnCount          ( 4                                       )
+    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -97,20 +97,20 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     self . assignSelectionMode     ( "ExtendedSelection"                     )
     ##########################################################################
-    self . emitNamesShow     . connect ( self . show                         )
-    self . emitAllNames      . connect ( self . refresh                      )
+    self . emitNamesShow . connect ( self . show                             )
+    self . emitAllNames  . connect ( self . refresh                          )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
     self . setAcceptDrops          ( True                                    )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setDragEnabled          ( False                                   )
+    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 360 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 400 , 640 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
@@ -289,22 +289,9 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     return
   ############################################################################
-  def dragMime                   ( self                                    ) :
-    ##########################################################################
-    mtype   = "hairs/uuids"
-    message = self . getMenuItem ( "TotalPicked"                             )
-    ##########################################################################
-    return self . CreateDragMime ( self , 0 , mtype , message                )
-  ############################################################################
-  def startDrag         ( self , dropActions                               ) :
-    ##########################################################################
-    self . StartingDrag (                                                    )
-    ##########################################################################
-    return
-  ############################################################################
   def allowedMimeTypes     ( self , mime                                   ) :
     ##########################################################################
-    formats = "people/uuids;picture/uuids"
+    formats = "acupuncture/uuids;picture/uuids"
     ##########################################################################
     return self . MimeType ( mime , formats                                  )
   ############################################################################
@@ -322,7 +309,7 @@ class MeridianListings     ( TreeDock                                      ) :
                                            HUID                            , \
                                            NAME                            ) :
     ##########################################################################
-    if                                   ( mtype in [ "people/uuids" ]     ) :
+    if                                   ( mtype in [ "acupuncture/uuids" ] ) :
       ########################################################################
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                        ( UUIDs                             )
@@ -389,10 +376,10 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     return self . HandleDropIn ( sourceWidget , mimeData , mousePos , False  )
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
+  def acceptAcupuncturesDrop ( self                                        ) :
     return True
   ############################################################################
-  def dropPeople                   ( self , source , pos , JSOX            ) :
+  def dropAcupunctures             ( self , source , pos , JSOX            ) :
     ##########################################################################
     HUID , NAME = self . itemAtPos ( pos , 0 , 0                             )
     if                             ( HUID <= 0                             ) :
@@ -401,7 +388,7 @@ class MeridianListings     ( TreeDock                                      ) :
     ## 從外部加入
     ##########################################################################
     VAL         =                  ( HUID , NAME , JSOX ,                    )
-    self        . Go               ( self . PeopleAppending , VAL            )
+    self        . Go               ( self . AcupunctureAppending , VAL       )
     ##########################################################################
     return True
   ############################################################################
@@ -418,7 +405,7 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     return True
   ############################################################################
-  def PeopleAppending           ( self , atUuid , NAME , JSON              ) :
+  def AcupunctureAppending      ( self , atUuid , NAME , JSON              ) :
     ##########################################################################
     UUIDs  = JSON               [ "UUIDs"                                    ]
     if                          ( len ( UUIDs ) <= 0                       ) :
@@ -435,8 +422,8 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     REL    = Relation           (                                            )
     REL    . set                ( "first" , atUuid                           )
-    REL    . setT1              ( "Hairs"                                    )
-    REL    . setT2              ( "People"                                   )
+    REL    . setT1              ( "Meridian"                                 )
+    REL    . setT2              ( "Acupuncture"                              )
     REL    . setRelation        ( "Subordination"                            )
     ##########################################################################
     DB     . LockWrites         ( [ RELTAB                                 ] )
@@ -447,18 +434,26 @@ class MeridianListings     ( TreeDock                                      ) :
     self   . GoRelax . emit     (                                            )
     DB     . Close              (                                            )
     ##########################################################################
-    if                          ( not self . isColumnHidden ( 1 )          ) :
-      ########################################################################
-      self . emitRestart . emit (                                            )
-    ##########################################################################
     return
   ############################################################################
   def PicturesAppending      ( self , atUuid , NAME , JSON                 ) :
     ##########################################################################
-    T1   = "Hairs"
+    T1   = "Meridian"
     TAB  = "RelationPictures"
     ##########################################################################
     self . AppendingPictures (        atUuid , NAME , JSON , TAB , T1        )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenAcupunctures             ( self , item                           ) :
+    ##########################################################################
+    uuid = item . data             ( 0 , Qt . UserRole                       )
+    uuid = int                     ( uuid                                    )
+    text = item . text             ( 0                                       )
+    icon = self . windowIcon       (                                         )
+    xsid = str                     ( uuid                                    )
+    ##########################################################################
+    self . ShowAcupunctures . emit ( text , 20 , xsid , icon                 )
     ##########################################################################
     return
   ############################################################################
@@ -501,7 +496,7 @@ class MeridianListings     ( TreeDock                                      ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . ClassTag , 2                              )
+    self . defaultPrepare ( self . ClassTag , self . columnCount ( ) - 1     )
     ##########################################################################
     return
   ############################################################################
@@ -580,7 +575,7 @@ class MeridianListings     ( TreeDock                                      ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
+    if                             ( at >= 9001 ) and ( at <= 9003 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -607,7 +602,7 @@ class MeridianListings     ( TreeDock                                      ) :
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
     msg  = self . getMenuItem        ( "Acupunctures"                        )
-    ICON = QIcon                     ( ":/images/gallery.png"                )
+    ICON = QIcon                     ( ":/images/grayscale.png"              )
     mm   . addActionFromMenuWithIcon ( COL , 38531002 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "MeridianGallery"                     )
@@ -632,7 +627,7 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     if                              ( at == 38531002                       ) :
       ########################################################################
-      ## self . OpenItemGallery        ( item                                   )
+      self . OpenAcupunctures       ( item                                   )
       ########################################################################
       return True
     ##########################################################################
