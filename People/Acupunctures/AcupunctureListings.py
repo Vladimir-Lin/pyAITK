@@ -85,6 +85,7 @@ class AcupunctureListings  ( TreeDock                                      ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
+    self . Relation . set          ( "first" , 0                             )
     self . Relation . setT2        ( "Acupuncture"                           )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
@@ -182,6 +183,12 @@ class AcupunctureListings  ( TreeDock                                      ) :
     ##########################################################################
     return QQ
   ############################################################################
+  def ObtainUuidsFromGroup ( self , DB                                     ) :
+    ##########################################################################
+    RELTAB = self . Tables [ "RelationPathway"                               ]
+    ##########################################################################
+    return self . Relation . Subordination ( DB , RELTAB                     )
+  ############################################################################
   def ObtainsInformation  ( self , DB                                      ) :
     ##########################################################################
     self . ReloadLocality (        DB                                        )
@@ -273,7 +280,10 @@ class AcupunctureListings  ( TreeDock                                      ) :
     self    . ShowStatus              ( MSG                                  )
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    if                                ( self . Relation . First > 0        ) :
+      UUIDs = self . ObtainUuidsFromGroup ( DB                               )
+    else                                                                     :
+      UUIDs = self . ObtainsItemUuids ( DB                                   )
     ##########################################################################
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
@@ -614,6 +624,7 @@ class AcupunctureListings  ( TreeDock                                      ) :
     MSG     = FMT . format             ( self . windowTitle ( )              )
     self    . ShowStatus               ( MSG                                 )
     ##########################################################################
+    RELTAB  = self . Tables            [ "RelationPathway"                   ]
     UUIDs   =                          [                                     ]
     ##########################################################################
     for NAME in LINES                                                        :
@@ -622,6 +633,12 @@ class AcupunctureListings  ( TreeDock                                      ) :
       ########################################################################
       if                               ( UUID not in UUIDs                 ) :
         UUIDs . append                 ( UUID                                )
+    ##########################################################################
+    if                                 ( self . Relation . First > 0       ) :
+      ########################################################################
+      if                               ( len ( UUIDs ) > 0                 ) :
+        ######################################################################
+        self . Relation . Joins        ( DB , RELTAB , UUIDs                 )
     ##########################################################################
     self    . setVacancy               (                                     )
     self    . GoRelax . emit           (                                     )
