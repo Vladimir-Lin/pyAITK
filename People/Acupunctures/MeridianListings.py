@@ -453,7 +453,7 @@ class MeridianListings     ( TreeDock                                      ) :
     icon = self . windowIcon       (                                         )
     xsid = str                     ( uuid                                    )
     ##########################################################################
-    self . ShowAcupunctures . emit ( text , 20 , xsid , icon                 )
+    self . ShowAcupunctures . emit ( text , 21 , xsid , icon                 )
     ##########################################################################
     return
   ############################################################################

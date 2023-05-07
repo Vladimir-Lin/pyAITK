@@ -427,6 +427,8 @@ class Name               ( Columns                                         ) :
     if                                    ( self . Uuid <= 0               ) :
       return False
     ##########################################################################
+    self . Length   = len                 ( self . Name                      )
+    self . Utf8     = len                 ( self . Name . encode ( "utf-8" ) )
     self . Priority = self . LastPosition ( DB , TABLE                       )
     QQ   = self . InsertSyntax            ( TABLE                            )
     ##########################################################################
@@ -508,7 +510,7 @@ class Name               ( Columns                                         ) :
     RX = self . Relevance
     QQ = f"""select `id` from {Table}
              where `uuid` = {UX} and `relevance` = {RX}
-             order by `priority`,`locality` asc ;"""
+             order by `priority` asc,`locality` asc ;"""
     QQ = QQ   . replace     ( "\n" , ""                                      )
     QQ = " "  . join        ( QQ . split ( )                                 )
     ##########################################################################
