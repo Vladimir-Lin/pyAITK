@@ -418,7 +418,7 @@ class MeridianListings     ( TreeDock                                      ) :
     self   . OnBusy  . emit     (                                            )
     self   . setBustle          (                                            )
     ##########################################################################
-    RELTAB = self . Tables      [ "RelationPeople"                           ]
+    RELTAB = self . Tables      [ "RelationPathway"                          ]
     ##########################################################################
     REL    = Relation           (                                            )
     REL    . set                ( "first" , atUuid                           )

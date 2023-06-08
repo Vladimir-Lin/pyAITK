@@ -319,7 +319,7 @@ class AcupunctureListings  ( TreeDock                                      ) :
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "hairs/uuids"
+    mtype   = "acupuncture/uuids"
     message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , 0 , mtype , message                )
@@ -332,7 +332,7 @@ class AcupunctureListings  ( TreeDock                                      ) :
   ############################################################################
   def allowedMimeTypes     ( self , mime                                   ) :
     ##########################################################################
-    formats = "people/uuids;picture/uuids"
+    formats = "picture/uuids"
     ##########################################################################
     return self . MimeType ( mime , formats                                  )
   ############################################################################
@@ -350,16 +350,7 @@ class AcupunctureListings  ( TreeDock                                      ) :
                                            HUID                            , \
                                            NAME                            ) :
     ##########################################################################
-    if                                   ( mtype in [ "people/uuids" ]     ) :
-      ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                        ( UUIDs                             )
-      FMT   = self . getMenuItem         ( "Copying"                         )
-      MSG   = FMT  . format              ( title , CNT , NAME                )
-      ########################################################################
-      self  . ShowStatus                 ( MSG                               )
-    ##########################################################################
-    elif                                 ( mtype in [ "picture/uuids" ]    ) :
+    if                                   ( mtype in [ "picture/uuids" ]    ) :
       ########################################################################
       title = sourceWidget . windowTitle (                                   )
       CNT   = len                        ( UUIDs                             )
@@ -417,22 +408,6 @@ class AcupunctureListings  ( TreeDock                                      ) :
     ##########################################################################
     return self . HandleDropIn ( sourceWidget , mimeData , mousePos , False  )
   ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople                   ( self , source , pos , JSOX            ) :
-    ##########################################################################
-    HUID , NAME = self . itemAtPos ( pos , 0 , 0                             )
-    if                             ( HUID <= 0                             ) :
-      return True
-    ##########################################################################
-    ## 從外部加入
-    ##########################################################################
-    VAL         =                  ( HUID , NAME , JSOX ,                    )
-    self        . Go               ( self . PeopleAppending , VAL            )
-    ##########################################################################
-    return True
-  ############################################################################
   def acceptPictureDrop        ( self                                      ) :
     return True
   ############################################################################
@@ -445,41 +420,6 @@ class AcupunctureListings  ( TreeDock                                      ) :
     self . Go ( self . PicturesAppending , ( HUID , NAME , JSON , )          )
     ##########################################################################
     return True
-  ############################################################################
-  def PeopleAppending           ( self , atUuid , NAME , JSON              ) :
-    ##########################################################################
-    UUIDs  = JSON               [ "UUIDs"                                    ]
-    if                          ( len ( UUIDs ) <= 0                       ) :
-      return
-    ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( self . NotOkay ( DB )                    ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit     (                                            )
-    self   . setBustle          (                                            )
-    ##########################################################################
-    RELTAB = self . Tables      [ "RelationPeople"                           ]
-    ##########################################################################
-    REL    = Relation           (                                            )
-    REL    . set                ( "first" , atUuid                           )
-    REL    . setT1              ( "Hairs"                                    )
-    REL    . setT2              ( "People"                                   )
-    REL    . setRelation        ( "Subordination"                            )
-    ##########################################################################
-    DB     . LockWrites         ( [ RELTAB                                 ] )
-    REL    . Joins              ( DB , RELTAB , UUIDs                        )
-    ##########################################################################
-    DB     . UnlockTables       (                                            )
-    self   . setVacancy         (                                            )
-    self   . GoRelax . emit     (                                            )
-    DB     . Close              (                                            )
-    ##########################################################################
-    if                          ( not self . isColumnHidden ( 1 )          ) :
-      ########################################################################
-      self . emitRestart . emit (                                            )
-    ##########################################################################
-    return
   ############################################################################
   def PicturesAppending      ( self , atUuid , NAME , JSON                 ) :
     ##########################################################################
