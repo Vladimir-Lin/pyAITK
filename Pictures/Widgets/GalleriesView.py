@@ -72,6 +72,7 @@ class GalleriesView                ( IconDock                              ) :
   ShowWebPages        = pyqtSignal ( str , int , str , str , QIcon           )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   emitOpenSmartNote   = pyqtSignal ( str                                     )
+  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -754,11 +755,16 @@ class GalleriesView                ( IconDock                              ) :
     MSG   = self . getMenuItem   ( "IdentWebPage"                            )
     mm    . addActionFromMenu    ( COL , 62231322 , MSG                      )
     ##########################################################################
+    mm    . addSeparatorFromMenu ( COL                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "GalleryDescription"                      )
+    mm    . addActionFromMenu    ( COL , 62231331 , MSG                      )
+    ##########################################################################
     return mm
   ############################################################################
-  def RunPropertiesMenu ( self , at , item                                 ) :
+  def RunPropertiesMenu            ( self , at , item                      ) :
     ##########################################################################
-    if                  ( at == 1301                                       ) :
+    if                             ( at == 1301                            ) :
       ########################################################################
       TITLE = self . windowTitle       (                                     )
       UUID  = self . Relation  . get   ( "first"                             )
@@ -772,25 +778,44 @@ class GalleriesView                ( IconDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                  ( at == 1302                                       ) :
+    if                             ( at == 1302                            ) :
       ########################################################################
-      if                ( self . SortByName                                ) :
+      if                           ( self . SortByName                     ) :
         self . SortByName = False
       else                                                                   :
         self . SortByName = True
       ########################################################################
-      self   . clear    (                                                    )
-      self   . startup  (                                                    )
+      self   . clear               (                                         )
+      self   . startup             (                                         )
     ##########################################################################
-    if                           ( at == 62231321                          ) :
+    if                             ( at == 62231321                        ) :
       ########################################################################
-      self . OpenWebPageListings ( item , "Subordination"                    )
+      self . OpenWebPageListings   ( item , "Subordination"                  )
       ########################################################################
       return True
     ##########################################################################
-    if                           ( at == 62231322                          ) :
+    if                             ( at == 62231322                        ) :
       ########################################################################
-      self . OpenWebPageListings ( item , "Equivalent"                       )
+      self . OpenWebPageListings   ( item , "Equivalent"                     )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 62231331                        ) :
+      ########################################################################
+      name = item . text           (                                         )
+      uuid = item . data           ( Qt . UserRole                           )
+      uuid = int                   ( uuid                                    )
+      LOC  = self . getLocality    (                                         )
+      nx   = ""
+      ########################################################################
+      if                           ( "Notes" in self . Tables              ) :
+        nx = self . Tables         [ "Notes"                                 ]
+      ########################################################################
+      self . OpenLogHistory . emit ( name                                    ,
+                                     str ( uuid )                            ,
+                                     "Description"                           ,
+                                     nx                                      ,
+                                     str ( LOC  )                            )
       ########################################################################
       return True
     ##########################################################################
