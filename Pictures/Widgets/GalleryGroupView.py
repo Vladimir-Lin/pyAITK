@@ -63,6 +63,7 @@ class GalleryGroupView             ( IconDock                              ) :
   GallerySubgroup   = pyqtSignal   ( str , int , str                         )
   GalleryGroup      = pyqtSignal   ( str , int , str                         )
   OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
+  OpenLogHistory    = pyqtSignal   ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -671,6 +672,9 @@ class GalleryGroupView             ( IconDock                              ) :
     msg = self . getMenuItem ( "AssignTables"                                )
     mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
     ##########################################################################
+    msg = self . getMenuItem ( "Description"                                 )
+    mm  . addActionFromMenu  ( LOM , 25351311 , msg                          )
+    ##########################################################################
     return mm
   ############################################################################
   def RunFunctionsMenu                 ( self , at , uuid , item           ) :
@@ -702,6 +706,23 @@ class GalleryGroupView             ( IconDock                              ) :
                                          TYPE                              , \
                                          self . FetchTableKey              , \
                                          self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                 ( at == 25351311                    ) :
+      ########################################################################
+      name = item . text               (                                     )
+      LOC  = self . getLocality        (                                     )
+      nx   = ""
+      ########################################################################
+      if                               ( "Notes" in self . Tables          ) :
+        nx = self . Tables             [ "Notes"                             ]
+      ########################################################################
+      self . OpenLogHistory . emit     ( name                                ,
+                                         str ( uuid )                        ,
+                                         "Description"                       ,
+                                         nx                                  ,
+                                         str ( LOC  )                        )
       ########################################################################
       return True
     ##########################################################################

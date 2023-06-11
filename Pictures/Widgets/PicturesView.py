@@ -64,6 +64,7 @@ class PicturesView                 ( IconDock                              ) :
   ShowPicture       = pyqtSignal   ( str                                     )
   OpenPictureEditor = pyqtSignal   ( str , dict                              )
   OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
+  OpenLogHistory    = pyqtSignal   ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -978,6 +979,18 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     if                                  ( at == 24231202                   ) :
       ########################################################################
+      name = item . text                (                                    )
+      LOC  = self . getLocality         (                                    )
+      nx   = ""
+      ########################################################################
+      if                                ( "Notes" in self . Tables         ) :
+        nx = self . Tables              [ "Notes"                            ]
+      ########################################################################
+      self . OpenLogHistory . emit      ( name                               ,
+                                          str ( uuid )                       ,
+                                          "Description"                      ,
+                                          nx                                 ,
+                                          str ( LOC  )                       )
       ########################################################################
       return True
     ##########################################################################
