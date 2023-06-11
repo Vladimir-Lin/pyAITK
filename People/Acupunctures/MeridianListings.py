@@ -172,6 +172,7 @@ class MeridianListings     ( TreeDock                                      ) :
   def ObtainsMeridians                ( self , DB                          ) :
     ##########################################################################
     MERITAB = self . Tables           [ "Meridians"                          ]
+    PATHTAB = self . Tables           [ "RelationPathway"                    ]
     ORDER   = self . SortOrder
     ##########################################################################
     QQ      = f"select `uuid`,`type` from {MERITAB} order by `id` {ORDER} ;"
@@ -192,14 +193,23 @@ class MeridianListings     ( TreeDock                                      ) :
     ##########################################################################
     NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
+    REL     = Relation                (                                      )
+    REL     . setT1                   ( "Meridian"                           )
+    REL     . setT2                   ( "Acupuncture"                        )
+    REL     . setRelation             ( "Subordination"                      )
+    ##########################################################################
     for U in UUIDs                                                           :
       ########################################################################
       T     = TYPEs                   [ U                                    ]
       N     = NAMEs                   [ U                                    ]
       ########################################################################
-      J     =                         { "Uuid" : U                         , \
-                                        "Type" : T                         , \
-                                        "Name" : N                           }
+      REL   . set                     ( "first" , U                          )
+      C     = REL . CountSecond       ( DB , PATHTAB                         )
+      ########################################################################
+      J     =                         { "Uuid"         : U                 , \
+                                        "Type"         : T                 , \
+                                        "Name"         : N                 , \
+                                        "Acupunctures" : C                   }
       ########################################################################
       ITEMs . append                  ( J                                    )
     ##########################################################################
@@ -219,13 +229,16 @@ class MeridianListings     ( TreeDock                                      ) :
     UUID = JSOX                   [ "Uuid"                                   ]
     TYPE = JSOX                   [ "Type"                                   ]
     NAME = JSOX                   [ "Name"                                   ]
+    ACUP = JSOX                   [ "Acupunctures"                           ]
     TNAM = MTS                    [ str ( TYPE )                             ]
+    ACUX = str                    ( ACUP                                     )
     ##########################################################################
     IT   = self . PrepareUuidItem ( 0 , UUID , NAME                          )
     ##########################################################################
     IT   . setText                ( 1 , TNAM                                 )
     IT   . setData                ( 1 , Qt . UserRole , TYPE                 )
     ##########################################################################
+    IT   . setText                ( 2 , ACUX                                 )
     IT   . setTextAlignment       ( 2 , Qt . AlignRight                      )
     ##########################################################################
     return IT
