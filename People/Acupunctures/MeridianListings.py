@@ -612,6 +612,9 @@ class MeridianListings     ( TreeDock                                      ) :
     msg  = self . getMenuItem        ( "Description"                         )
     mm   . addActionFromMenu         ( COL , 38532001        , msg           )
     ##########################################################################
+    msg  = self . getMenuItem        ( "Pathway"                             )
+    mm   . addActionFromMenu         ( COL , 38532002        , msg           )
+    ##########################################################################
     return mm
   ############################################################################
   def RunGroupsMenu                 ( self , at , item                     ) :
@@ -651,6 +654,25 @@ class MeridianListings     ( TreeDock                                      ) :
       self . OpenLogHistory . emit  ( head                                   ,
                                       str ( uuid )                           ,
                                       "Description"                          ,
+                                      nx                                     ,
+                                      str ( LOC  )                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38532002                       ) :
+      ########################################################################
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      LOC  = self . getLocality     (                                        )
+      nx   = ""
+      ########################################################################
+      if                            ( "Notes" in self . Tables             ) :
+        nx = self . Tables          [ "Notes"                                ]
+      ########################################################################
+      self . OpenLogHistory . emit  ( head                                   ,
+                                      str ( uuid )                           ,
+                                      "Pathway"                              ,
                                       nx                                     ,
                                       str ( LOC  )                           )
       ########################################################################

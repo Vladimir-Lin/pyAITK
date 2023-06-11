@@ -719,6 +719,9 @@ class AcupunctureListings  ( TreeDock                                      ) :
     msg  = self . getMenuItem        ( "Description"                         )
     mm   . addActionFromMenu         ( COL , 38522001        , msg           )
     ##########################################################################
+    msg  = self . getMenuItem        ( "Position"                            )
+    mm   . addActionFromMenu         ( COL , 38522002        , msg           )
+    ##########################################################################
     return mm
   ############################################################################
   def RunGroupsMenu                 ( self , at , item                     ) :
@@ -752,6 +755,25 @@ class AcupunctureListings  ( TreeDock                                      ) :
       self . OpenLogHistory . emit  ( head                                   ,
                                       str ( uuid )                           ,
                                       "Description"                          ,
+                                      nx                                     ,
+                                      str ( LOC  )                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38522002                       ) :
+      ########################################################################
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      LOC  = self . getLocality     (                                        )
+      nx   = ""
+      ########################################################################
+      if                            ( "Notes" in self . Tables             ) :
+        nx = self . Tables          [ "Notes"                                ]
+      ########################################################################
+      self . OpenLogHistory . emit  ( head                                   ,
+                                      str ( uuid )                           ,
+                                      "Position"                             ,
                                       nx                                     ,
                                       str ( LOC  )                           )
       ########################################################################
