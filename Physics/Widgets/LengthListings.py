@@ -56,7 +56,7 @@ class LengthListings               ( TreeDock                              ) :
   ############################################################################
   emitNamesShow  = pyqtSignal      (                                         )
   emitAllNames   = pyqtSignal      (                                         )
-  OpenLogHistory = pyqtSignal      ( str , str , str                         )
+  OpenLogHistory = pyqtSignal      ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -523,7 +523,16 @@ class LengthListings               ( TreeDock                              ) :
       uuid = atItem . data             ( 0 , Qt . UserRole                   )
       uuid = int                       ( uuid                                )
       head = atItem . text             ( 0                                   )
-      self . OpenLogHistory . emit     ( head , str ( uuid ) , "Description" )
+      nx   = ""
+      ########################################################################
+      if                               ( "Notes" in self . Tables          ) :
+        nx = self . Tables             [ "Notes"                             ]
+      ########################################################################
+      self . OpenLogHistory . emit     ( head                                ,
+                                         str ( uuid )                        ,
+                                         "Description"                       ,
+                                         nx                                  ,
+                                         ""                                  )
       ########################################################################
       return True
     ##########################################################################

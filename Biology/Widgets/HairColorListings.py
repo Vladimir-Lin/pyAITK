@@ -62,7 +62,7 @@ class HairColorListings            ( TreeDock                              ) :
   PeopleGroup         = pyqtSignal ( str , int , str                         )
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
-  OpenLogHistory      = pyqtSignal ( str , str , str                         )
+  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -745,7 +745,16 @@ class HairColorListings            ( TreeDock                              ) :
       uuid = item . data            ( 0 , Qt . UserRole                      )
       uuid = int                    ( uuid                                   )
       head = item . text            ( 0                                      )
-      self . OpenLogHistory . emit  ( head , str ( uuid ) , "Description"    )
+      nx   = ""
+      ########################################################################
+      if                            ( "Notes" in self . Tables             ) :
+        nx = self . Tables          [ "Notes"                                ]
+      ########################################################################
+      self . OpenLogHistory . emit  ( head                                   ,
+                                      str ( uuid )                           ,
+                                      "Description"                          ,
+                                      nx                                     ,
+                                      ""                                     )
       ########################################################################
       return True
     ##########################################################################

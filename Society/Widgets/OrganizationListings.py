@@ -64,7 +64,7 @@ class OrganizationListings         ( TreeDock                              ) :
   AlbumGroup        = pyqtSignal   ( str , int , str                         )
   ShowWebPages      = pyqtSignal   ( str , int , str , str , QIcon           )
   OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
-  OpenLogHistory    = pyqtSignal   ( str , str , str                         )
+  OpenLogHistory    = pyqtSignal   ( str , str , str , str , str             )
   OpenIdentifiers   = pyqtSignal   ( str , str , int                         )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
@@ -1489,7 +1489,16 @@ class OrganizationListings         ( TreeDock                              ) :
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
       head = item . text           ( 0                                       )
-      self . OpenLogHistory . emit ( head , str ( uuid ) , "Description"     )
+      nx   = ""
+      ########################################################################
+      if                           ( "Notes" in self . Tables              ) :
+        nx = self . Tables         [ "Notes"                                 ]
+      ########################################################################
+      self . OpenLogHistory . emit ( head                                    ,
+                                     str ( uuid )                            ,
+                                     "Description"                           ,
+                                     nx                                      ,
+                                     ""                                      )
       ########################################################################
       return True
     ##########################################################################
@@ -1498,7 +1507,16 @@ class OrganizationListings         ( TreeDock                              ) :
       uuid = item . data           ( 0 , Qt . UserRole                       )
       uuid = int                   ( uuid                                    )
       head = item . text           ( 0                                       )
-      self . OpenLogHistory . emit ( head , str ( uuid ) , "Address"         )
+      nx   = ""
+      ########################################################################
+      if                           ( "Notes" in self . Tables              ) :
+        nx = self . Tables         [ "Notes"                                 ]
+      ########################################################################
+      self . OpenLogHistory . emit ( head                                    ,
+                                     str ( uuid )                            ,
+                                     "Address"                               ,
+                                     nx                                      ,
+                                     ""                                      )
       ########################################################################
       return True
     ##########################################################################

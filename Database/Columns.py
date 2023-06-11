@@ -192,12 +192,12 @@ class Columns        (                                                     ) :
     ITEMS = self . valueItems  (                                             )
     return  self . UpdateItems ( DB , Table , ITEMS                          )
   ############################################################################
-  def assureItemString   ( self , pb                                       ) :
+  def assureItemString ( self , pb                                         ) :
     ##########################################################################
     BB   = pb
     ##########################################################################
     try                                                                      :
-      BB = BB . decode   ( "utf-8"                                           )
+      BB = BB . decode ( "utf-8"                                             )
     except                                                                   :
       pass
     ##########################################################################

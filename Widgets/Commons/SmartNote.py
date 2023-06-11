@@ -83,6 +83,7 @@ class SmartNote                     ( TextEdit                             ) :
     ##########################################################################
     self . Method       = "None"
     self . Uuid         = 0
+    self . NOXTAB       = ""
     self . Key          = ""
     self . Prefer       = -1
     self . Filename     = ""
@@ -241,23 +242,27 @@ class SmartNote                     ( TextEdit                             ) :
     ##########################################################################
     return
   ############################################################################
-  def LoadFromNotes                ( self                                  ) :
+  def LoadFromNotes                  ( self                                ) :
     ##########################################################################
-    DB     = self . ConnectDB      (                                         )
-    if                             ( DB == None                            ) :
+    DB       = self . ConnectDB      (                                       )
+    if                               ( DB == None                          ) :
       return
     ##########################################################################
-    NOXTAB = self . Tables         [ "Notes"                                 ]
-    NOX    = Notes                 (                                         )
-    NOX    . Uuid = self . Uuid
-    NOX    . Name = self . Key
-    NOX    . Obtains               ( DB , NOXTAB , self . Prefer             )
-    BODY   = NOX . Note
+    NOXTAB   = self . Tables         [ "Notes"                               ]
     ##########################################################################
-    DB     . Close                 (                                         )
+    if                               ( len ( self . NOXTAB ) > 0           ) :
+      NOXTAB = self . NOXTAB
     ##########################################################################
-    self   . emitInsertText . emit ( BODY                                    )
-    self   . Notify                ( 5                                       )
+    NOX      = Notes                 (                                       )
+    NOX      . Uuid = self . Uuid
+    NOX      . Name = self . Key
+    NOX      . Obtains               ( DB , NOXTAB , self . Prefer           )
+    BODY     = NOX . Note
+    ##########################################################################
+    DB       . Close                 (                                       )
+    ##########################################################################
+    self     . emitInsertText . emit ( BODY                                  )
+    self     . Notify                ( 5                                     )
     ##########################################################################
     return
   ############################################################################
@@ -268,6 +273,10 @@ class SmartNote                     ( TextEdit                             ) :
       return
     ##########################################################################
     NOXTAB = self . Tables               [ "Notes"                           ]
+    ##########################################################################
+    if                                   ( len ( self . NOXTAB ) > 0       ) :
+      NOXTAB = self . NOXTAB
+    ##########################################################################
     NOX    = Notes                       (                                   )
     NOX    . Uuid   = self . Uuid
     NOX    . Name   = self . Key

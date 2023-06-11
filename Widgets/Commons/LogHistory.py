@@ -61,7 +61,7 @@ class LogHistory                   ( TreeDock                              ) :
   ############################################################################
   emitNamesShow  = pyqtSignal      (                                         )
   emitAllNames   = pyqtSignal      ( list                                    )
-  OpenSmartNote  = pyqtSignal      ( str , str , str , int                   )
+  OpenSmartNote  = pyqtSignal      ( str , str , str , str , int , str       )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -69,7 +69,9 @@ class LogHistory                   ( TreeDock                              ) :
     ##########################################################################
     self . ClassTag           = "LogHistory"
     self . Uuid               = 0
+    self . NOXTAB             = ""
     self . Key                = ""
+    self . Extra              = ""
     self . SortOrder          = "desc"
     ##########################################################################
     self . dockingOrientation = 0
@@ -250,6 +252,10 @@ class LogHistory                   ( TreeDock                              ) :
     ##########################################################################
     NOW     = StarDate                (                                      )
     NOXTAB  = self . Tables           [ "Notes"                              ]
+    ##########################################################################
+    if                                ( len ( self . NOXTAB ) > 0          ) :
+      NOXTAB = self . NOXTAB
+    ##########################################################################
     KEY     = self . Key
     UUID    = self . Uuid
     ORDER   = self . SortOrder
@@ -299,9 +305,14 @@ class LogHistory                   ( TreeDock                              ) :
     self   . setBustle        (                                              )
     ##########################################################################
     NOXTAB = self . Tables    [ "Notes"                                      ]
+    ##########################################################################
+    if                        ( len ( self . NOXTAB ) > 0                  ) :
+      NOXTAB = self . NOXTAB
+    ##########################################################################
     NOX    = Notes            (                                              )
-    NOX    . Uuid = self . Uuid
-    NOX    . Name = self . Key
+    NOX    . Uuid  = self . Uuid
+    NOX    . Name  = self . Key
+    NOX    . Extra = self . Extra
     ##########################################################################
     DB     . LockWrites       ( [ NOXTAB                                   ] )
     NOX    . appendNote       ( DB , NOXTAB                                  )
@@ -325,9 +336,14 @@ class LogHistory                   ( TreeDock                              ) :
     self   . setBustle        (                                              )
     ##########################################################################
     NOXTAB = self . Tables    [ "Notes"                                      ]
+    ##########################################################################
+    if                        ( len ( self . NOXTAB ) > 0                  ) :
+      NOXTAB = self . NOXTAB
+    ##########################################################################
     NOX    = Notes            (                                              )
-    NOX    . Uuid = self . Uuid
-    NOX    . Name = self . Key
+    NOX    . Uuid  = self . Uuid
+    NOX    . Name  = self . Key
+    NOX    . Extra = self . Extra
     ##########################################################################
     NOX    . Obtains          ( DB , NOXTAB , AT                             )
     ##########################################################################
@@ -361,6 +377,10 @@ class LogHistory                   ( TreeDock                              ) :
       IDZs . append           ( str ( ID )                                   )
     ##########################################################################
     NOXTAB = self . Tables    [ "Notes"                                      ]
+    ##########################################################################
+    if                        ( len ( self . NOXTAB ) > 0                  ) :
+      NOXTAB = self . NOXTAB
+    ##########################################################################
     NOX    = Notes            (                                              )
     NOX    . Uuid = self . Uuid
     NOX    . Name = self . Key
@@ -387,6 +407,10 @@ class LogHistory                   ( TreeDock                              ) :
     self   . setBustle        (                                              )
     ##########################################################################
     NOXTAB = self . Tables    [ "Notes"                                      ]
+    ##########################################################################
+    if                        ( len ( self . NOXTAB ) > 0                  ) :
+      NOXTAB = self . NOXTAB
+    ##########################################################################
     NOX    = Notes            (                                              )
     NOX    . Uuid = self . Uuid
     NOX    . Name = self . Key
@@ -530,7 +554,12 @@ class LogHistory                   ( TreeDock                              ) :
       TEXT = self . windowTitle    (                                         )
       UXID = str                   ( self . Uuid                             )
       KEY  = str                   ( self . Key                              )
-      self . OpenSmartNote . emit  ( TEXT , UXID , KEY , int ( uuid )        )
+      self . OpenSmartNote . emit  ( TEXT                                    ,
+                                     self . NOXTAB                           ,
+                                     UXID                                    ,
+                                     KEY                                     ,
+                                     int ( uuid )                            ,
+                                     self . Extra                            )
       ########################################################################
       return True
     ##########################################################################

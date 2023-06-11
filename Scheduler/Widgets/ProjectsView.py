@@ -82,7 +82,7 @@ class ProjectsView            ( IconDock                                   ) :
   ############################################################################
   ProjectTasks   = pyqtSignal ( str , int , str , QIcon                      )
   NodeDependency = pyqtSignal ( str , int , str , int                        )
-  OpenLogHistory = pyqtSignal ( str , str , str                              )
+  OpenLogHistory = pyqtSignal ( str , str , str , str , str                  )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
@@ -541,7 +541,16 @@ class ProjectsView            ( IconDock                                   ) :
       name = atItem . text         (                                         )
       uuid = atItem . data         ( Qt . UserRole                           )
       uuid = int                   ( uuid                                    )
-      self . OpenLogHistory . emit ( name , str ( uuid ) , "Description"     )
+      nx   = ""
+      ########################################################################
+      if                           ( "Notes" in self . Tables              ) :
+        nx = self . Tables         [ "Notes"                                 ]
+      ########################################################################
+      self . OpenLogHistory . emit ( name                                    ,
+                                     str ( uuid )                            ,
+                                     "Description"                           ,
+                                     nx                                      ,
+                                     ""                                      )
       ########################################################################
       return True
     ##########################################################################

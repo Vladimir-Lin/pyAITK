@@ -63,7 +63,7 @@ class PeriodeListings              ( TreeDock                              ) :
   emitAllNames   = pyqtSignal      ( list                                    )
   PeriodDetails  = pyqtSignal      ( str , str                               )
   NodeDependency = pyqtSignal      ( str , int , str , int                   )
-  OpenLogHistory = pyqtSignal      ( str , str , str                         )
+  OpenLogHistory = pyqtSignal      ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -946,7 +946,16 @@ class PeriodeListings              ( TreeDock                              ) :
       ########################################################################
       uuid = self . itemUuid       ( item , 0                                )
       name = item . text           ( 1                                       )
-      self . OpenLogHistory . emit ( name , str ( uuid ) , "Description"     )
+      nx   = ""
+      ########################################################################
+      if                           ( "Notes" in self . Tables              ) :
+        nx = self . Tables         [ "Notes"                                 ]
+      ########################################################################
+      self . OpenLogHistory . emit ( name                                    ,
+                                     str ( uuid )                            ,
+                                     "Description"                           ,
+                                     nx                                      ,
+                                     ""                                      )
       ########################################################################
       return True
     ##########################################################################

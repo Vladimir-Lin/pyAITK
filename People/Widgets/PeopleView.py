@@ -76,7 +76,7 @@ class PeopleView                     ( IconDock                            ) :
   ShowWebPages          = pyqtSignal ( str , int , str  , str , QIcon        )
   OwnedOccupation       = pyqtSignal ( str , int , str  , str , QIcon        )
   OpenVariantTables     = pyqtSignal ( str , str , int  , str , dict         )
-  OpenLogHistory        = pyqtSignal ( str , str , str                       )
+  OpenLogHistory        = pyqtSignal ( str , str , str  , str , str          )
   OpenBodyShape         = pyqtSignal ( str , str , dict                      )
   emitOpenSmartNote     = pyqtSignal ( str                                   )
   ############################################################################
@@ -1316,7 +1316,16 @@ class PeopleView                     ( IconDock                            ) :
     if                                  ( at == 24231102                   ) :
       ########################################################################
       t    = item . text                (                                    )
-      self . OpenLogHistory . emit      ( t , str ( uuid ) , "Description"   )
+      nx   = ""
+      ########################################################################
+      if                                ( "Notes" in self . Tables         ) :
+        nx = self . Tables              [ "Notes"                            ]
+      ########################################################################
+      self . OpenLogHistory . emit      ( t                                  ,
+                                          str ( uuid )                       ,
+                                          "Description"                      ,
+                                          nx                                 ,
+                                          ""                                 )
       ########################################################################
       return True
     ##########################################################################
