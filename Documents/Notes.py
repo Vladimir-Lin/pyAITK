@@ -412,7 +412,7 @@ class Notes  ( Columns                                                     ) :
     KEY   = self . Name
     ##########################################################################
     QQ    = f"""delete from {TABLE}
-                where ( `uuid` = '{UUID}' )
+                where ( `uuid` = {UUID} )
                   and ( `name` = '{KEY}' )
                   and ( `prefer` in ( {LISTS} ) ) ;"""
     ##########################################################################
