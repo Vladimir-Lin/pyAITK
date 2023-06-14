@@ -656,6 +656,7 @@ class GalleriesView                ( IconDock                              ) :
       TYPE  = self . Relation . get ( "t2"                                   )
       UUID  = self . Relation . get ( "second"                               )
     ##########################################################################
+    SCOPE   = self . Grouping
     SCOPE   = f"GalleriesView-{SCOPE}"
     self    . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
     ##########################################################################
