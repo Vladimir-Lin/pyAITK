@@ -8,7 +8,6 @@ import getopt
 import time
 import requests
 import threading
-import gettext
 import json
 ##############################################################################
 from   PyQt5                          import QtCore
