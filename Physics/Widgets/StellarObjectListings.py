@@ -52,10 +52,11 @@ from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class StellarObjectListings        ( TreeDock                              ) :
   ############################################################################
-  HavingMenu    = 1371434312
+  HavingMenu     = 1371434312
   ############################################################################
-  emitNamesShow = pyqtSignal       (                                         )
-  emitAllNames  = pyqtSignal       ( list                                    )
+  emitNamesShow  = pyqtSignal      (                                         )
+  emitAllNames   = pyqtSignal      ( list                                    )
+  OpenLogHistory = pyqtSignal      ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
