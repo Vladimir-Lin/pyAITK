@@ -53,12 +53,10 @@ from   AITK  . People     . People    import People
 ##############################################################################
 class RealityListings              ( TreeDock                              ) :
   ############################################################################
-  HavingMenu        = 1371434312
+  HavingMenu    = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( dict                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
-  PeopleGroup       = pyqtSignal   ( str , int , str                         )
+  emitNamesShow = pyqtSignal       (                                         )
+  emitAllNames  = pyqtSignal       ( dict                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -91,14 +89,13 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     self . emitNamesShow     . connect ( self . show                         )
     self . emitAllNames      . connect ( self . refresh                      )
-    self . emitAssignAmounts . connect ( self . AssignAmounts                )
     ##########################################################################
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setAcceptDrops          ( False                                   )
+    self . setDragEnabled          ( False                                   )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
     return
   ############################################################################
@@ -250,40 +247,6 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  @pyqtSlot                (        str  , int                               )
-  def AssignAmounts        ( self , UUID , Amounts                         ) :
-    ##########################################################################
-    IT = self . uuidAtItem ( UUID , 0                                        )
-    if                     ( IT in [ False , None ]                        ) :
-      return
-    ##########################################################################
-    IT . setText           ( 1 , str ( Amounts )                             )
-    ##########################################################################
-    return
-  ############################################################################
-  def ReportBelongings                 ( self , UUIDs                      ) :
-    ##########################################################################
-    time    . sleep                    ( 1.0                                 )
-    ##########################################################################
-    RELTAB  = self . Tables            [ "RelationPeople"                    ]
-    REL     = Relation                 (                                     )
-    REL     . setT1                    ( "People"                            )
-    REL     . setT2                    ( "Role"                              )
-    REL     . setRelation              ( "Acting"                            )
-    ##########################################################################
-    DB      = self . ConnectDB         (                                     )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      REL   . set                      ( "second" , UUID                     )
-      CNT   = REL . CountFirst         ( DB , RELTAB                         )
-      ########################################################################
-      self  . emitAssignAmounts . emit ( str ( UUID ) , CNT                  )
-    ##########################################################################
-    DB      . Close                    (                                     )
-    ##########################################################################
-    return
-  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -320,10 +283,6 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     self   . emitAllNames . emit      ( JSON                                 )
     ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
-    ##########################################################################
     return
   ############################################################################
   @pyqtSlot          (                                                       )
@@ -358,7 +317,7 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     self   . Total = 0
     ##########################################################################
-    RLETAB = self . Tables [ "Roles"                                         ]
+    RLETAB = self . Tables [ "Reality"                                       ]
     ##########################################################################
     QQ     = f"select count(*) from {RLETAB} where ( `used` = 1 ) ;"
     DB     . Query         ( QQ                                              )
@@ -373,7 +332,7 @@ class RealityListings              ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery               ( self                                ) :
     ##########################################################################
-    RLETAB  = self . Tables          [ "Roles"                               ]
+    RLETAB  = self . Tables          [ "Reality"                             ]
     STID    = self . StartId
     AMOUNT  = self . Amount
     ORDER   = self . getSortingOrder (                                       )
@@ -385,155 +344,11 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     return " " . join                ( QQ . split ( )                        )
   ############################################################################
-  def dragMime                   ( self                                    ) :
-    ##########################################################################
-    mtype   = "role/uuids"
-    message = self . getMenuItem ( "TotalPicked"                             )
-    ##########################################################################
-    return self . CreateDragMime ( self , 0 , mtype , message                )
-  ############################################################################
-  def startDrag         ( self , dropActions                               ) :
-    ##########################################################################
-    self . StartingDrag (                                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
-  ############################################################################
-  def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
-    return self . dropHandler ( sourceWidget , self , mimeData               )
-  ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
-    ##########################################################################
-    if                              ( self == sourceWidget                 ) :
-      return False
-    ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
-      return False
-    ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
-    ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
-      ########################################################################
-      title = sourceWidget . windowTitle (                                   )
-      CNT   = len                   ( UUIDs                                  )
-      FMT   = self . getMenuItem    ( "CopyFrom"                             )
-      MSG   = FMT . format          ( title , CNT                            )
-      self  . ShowStatus            ( MSG                                    )
-    ##########################################################################
-    return RDN
-  ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    ##########################################################################
-    return True
-  ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople           ( self , source , pos , JSOX                    ) :
-    ##########################################################################
-    if                     ( "UUIDs" not in JSOX                           ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX          [ "UUIDs"                                         ]
-    if                     ( len ( UUIDs ) <= 0                            ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt ( pos                                             )
-    if                     ( atItem is None                                ) :
-      return True
-    ##########################################################################
-    UUID   = atItem . data ( 0 , Qt . UserRole                               )
-    UUID   = int           ( UUID                                            )
-    ##########################################################################
-    if                     ( UUID <= 0                                     ) :
-      return True
-    ##########################################################################
-    self . Go              ( self . PeopleJoinRole                         , \
-                             ( UUID , UUIDs , )                              )
-    ##########################################################################
-    return True
-  ############################################################################
-  def PeopleJoinRole                ( self , UUID , UUIDs                  ) :
-    ##########################################################################
-    if                              ( UUID <= 0                            ) :
-      return
-    ##########################################################################
-    COUNT   = len                   ( UUIDs                                  )
-    if                              ( COUNT <= 0                           ) :
-      return
-    ##########################################################################
-    Hide    = self . isColumnHidden ( 1                                      )
-    ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return
-    ##########################################################################
-    FMT     = self . getMenuItem    ( "JoinPeople"                           )
-    MSG     = FMT  . format         ( COUNT                                  )
-    self    . ShowStatus            ( MSG                                    )
-    self    . TtsTalk               ( MSG , 1002                             )
-    ##########################################################################
-    TYPE    = "Role"
-    RELATED = "Acting"
-    PER     = People                (                                        )
-    RELTAB  = self . Tables         [ "RelationPeople"                       ]
-    DB      . LockWrites            ( [ RELTAB ]                             )
-    PER     . RelateWithPeople      ( DB                                   , \
-                                      RELTAB                               , \
-                                      RELATED                              , \
-                                      UUID                                 , \
-                                      TYPE                                 , \
-                                      UUIDs                                  )
-    DB      . UnlockTables          (                                        )
-    ##########################################################################
-    if                              ( not Hide                             ) :
-      TOTAL = PER . CountOwners     ( DB , RELTAB , RELATED , UUID , TYPE    )
-    ##########################################################################
-    DB      . Close                 (                                        )
-    ##########################################################################
-    self    . ShowStatus            ( ""                                     )
-    ##########################################################################
-    if                              ( Hide                                 ) :
-      return
-    ##########################################################################
-    IT      = self . uuidAtItem     ( UUID , 0                               )
-    if                              ( IT is None                           ) :
-      return
-    ##########################################################################
-    self    . emitAssignAmounts . emit ( str ( UUID ) , int ( TOTAL )        )
-    ##########################################################################
-    return
-  ############################################################################
   def Prepare                    ( self                                    ) :
     ##########################################################################
     self   . setColumnWidth      ( 2 , 3                                     )
     ##########################################################################
-    LABELs = self . Translations [ "RoleListings" ] [ "Labels"               ]
+    LABELs = self . Translations [ "RealityListings" ] [ "Labels"            ]
     self   . setCentralLabels    ( LABELs                                    )
     ##########################################################################
     self   . setPrepared         ( True                                      )
@@ -546,7 +361,7 @@ class RealityListings              ( TreeDock                              ) :
     if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    RLETAB = self . Tables    [ "Roles"                                      ]
+    RLETAB = self . Tables    [ "Reality"                                    ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
     DB     . LockWrites       ( [ RLETAB , NAMTAB                          ] )
@@ -622,10 +437,6 @@ class RealityListings              ( TreeDock                              ) :
       ########################################################################
       if                            ( self . EditAllNames != None          ) :
         mm . addAction              ( 1601 ,  TRX [ "UI::EditNames" ]        )
-      ########################################################################
-      FMT  = TRX                    [ "UI::AttachCrowds"                     ]
-      MSG  = FMT . format           ( atItem . text ( 0 )                    )
-      mm   . addAction              ( 1201 ,  MSG                            )
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
@@ -666,15 +477,10 @@ class RealityListings              ( TreeDock                              ) :
       self . InsertItem             (                                        )
       return True
     ##########################################################################
-    if                              ( at == 1201                           ) :
-      head = atItem . text          ( 0                                      )
-      self . PeopleGroup   . emit   ( head , 186 , str ( uuid )              )
-      return True
-    ##########################################################################
     if                              ( at == 1601                           ) :
       uuid = self . itemUuid        ( items [ 0 ] , 0                        )
       NAM  = self . Tables          [ "NamesEditing"                         ]
-      self . EditAllNames           ( self , "Roles" , uuid , NAM            )
+      self . EditAllNames           ( self , "Reality" , uuid , NAM          )
       return True
     ##########################################################################
     return True
