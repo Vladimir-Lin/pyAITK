@@ -56,7 +56,7 @@ class RealityListings              ( TreeDock                              ) :
   HavingMenu    = 1371434312
   ############################################################################
   emitNamesShow = pyqtSignal       (                                         )
-  emitAllNames  = pyqtSignal       ( dict                                    )
+  emitAllNames  = pyqtSignal       ( list                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -137,27 +137,115 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def doubleClicked              ( self , item , column                    ) :
     ##########################################################################
-    if                        ( column not in [ 0 ]                        ) :
+    if                           ( column in [ 0 ]                         ) :
+      ########################################################################
+      line = self . setLineEdit  ( item                                    , \
+                                   0                                       , \
+                                   "editingFinished"                       , \
+                                   self . nameChanged                        )
+      line . setFocus            ( Qt . TabFocusReason                       )
+      ########################################################################
       return
     ##########################################################################
-    line = self . setLineEdit ( item                                       , \
-                                0                                          , \
-                                "editingFinished"                          , \
-                                self . nameChanged                           )
-    line . setFocus           ( Qt . TabFocusReason                          )
+    if                          ( column in [ 1 ]                          ) :
+      ########################################################################
+      LL   = self . Translations [ "RealityListings" ] [ "Types"             ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . rtypeChanged                       )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
+      cb   . showPopup           (                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( column in [ 2 ]                         ) :
+      ########################################################################
+      LL   = self . Translations [ "RealityListings" ] [ "Useds"             ]
+      val  = item . data         ( column , Qt . UserRole                    )
+      val  = int                 ( val                                       )
+      cb   = self . setComboBox  ( item                                      ,
+                                   column                                    ,
+                                   "activated"                               ,
+                                   self . usedChanged                        )
+      cb   . addJson             ( LL , val                                  )
+      cb   . setMaxVisibleItems  ( 20                                        )
+      cb   . showPopup           (                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( column in [ 3 ]                         ) :
+      ########################################################################
+      line = self . setLineEdit  ( item                                    , \
+                                   0                                       , \
+                                   "editingFinished"                       , \
+                                   self . statesChanged                      )
+      line . setFocus            ( Qt . TabFocusReason                       )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( column in [ 4 ]                         ) :
+      ########################################################################
+      line = self . setLineEdit  ( item                                    , \
+                                   0                                       , \
+                                   "editingFinished"                       , \
+                                   self . tagChanged                         )
+      line . setFocus            ( Qt . TabFocusReason                       )
+      ########################################################################
+      return
+    ##########################################################################
+    if                           ( column in [ 5 ]                         ) :
+      ########################################################################
+      line = self . setLineEdit  ( item                                    , \
+                                   0                                       , \
+                                   "editingFinished"                       , \
+                                   self . wikiChanged                        )
+      line . setFocus            ( Qt . TabFocusReason                       )
+      ########################################################################
+      return
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
+  def PrepareItem                ( self , JSOX                             ) :
+    ##########################################################################
+    TL    = self . Translations  [ "RealityListings" ] [ "Types"             ]
+    UL    = self . Translations  [ "RealityListings" ] [ "Useds"             ]
+    ##########################################################################
+    UUID  = JSOX                 [ "Uuid"                                    ]
+    NAME  = JSOX                 [ "Name"                                    ]
+    RTYPE = JSOX                 [ "Type"                                    ]
+    USED  = JSOX                 [ "Used"                                    ]
+    STATE = JSOX                 [ "States"                                  ]
+    TAG   = JSOX                 [ "Tag"                                     ]
+    WIKI  = JSOX                 [ "Wiki"                                    ]
+    ##########################################################################
+    STYPE = TL                   [ str ( RTYPE )                             ]
+    SUSED = UL                   [ str ( USED  )                             ]
     ##########################################################################
     UXID = str                   ( UUID                                      )
+    ##########################################################################
     IT   = QTreeWidgetItem       (                                           )
+    ##########################################################################
     IT   . setText               ( 0 , NAME                                  )
     IT   . setToolTip            ( 0 , UXID                                  )
     IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    ##########################################################################
+    IT   . setText               ( 1 , STYPE                                 )
+    IT   . setData               ( 0 , Qt . UserRole , RTYPE                 )
+    ##########################################################################
+    IT   . setText               ( 2 , SUSED                                 )
+    IT   . setData               ( 0 , Qt . UserRole , USED                  )
+    ##########################################################################
+    IT   . setText               ( 3 , str ( STATE )                         )
+    IT   . setData               ( 0 , Qt . UserRole , STATE                 )
+    ##########################################################################
+    IT   . setText               ( 4 , TAG                                   )
+    IT   . setText               ( 5 , WIKI                                  )
     ##########################################################################
     return IT
   ############################################################################
@@ -207,21 +295,160 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                        (        dict                             )
-  def refresh                      ( self , JSON                           ) :
+  def rtypeChanged               ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      pid  = int                 ( item . text ( 0 )                         )
+      LL   = self . Translations [ "RealityListings" ] [ "Types"             ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      self . Go                  ( self . UpdateUuidColumn                 , \
+                                   ( "type" , pid , value , )                )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def usedChanged                ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    cb     = self . CurrentItem  [ "Widget"                                  ]
+    cbv    = self . CurrentItem  [ "Value"                                   ]
+    index  = cb   . currentIndex (                                           )
+    value  = cb   . itemData     ( index                                     )
+    ##########################################################################
+    if                           ( value != cbv                            ) :
+      ########################################################################
+      pid  = int                 ( item . text ( 0 )                         )
+      LL   = self . Translations [ "RealityListings" ] [ "Useds"             ]
+      msg  = LL                  [ str ( value )                             ]
+      ########################################################################
+      item . setText             ( column ,  msg                             )
+      item . setData             ( column , Qt . UserRole , value            )
+      ########################################################################
+      self . Go                  ( self . UpdateUuidColumn                 , \
+                                   ( "used" , pid , value , )                )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      (                                           )
+  def statesChanged              ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    line   = self . CurrentItem  [ "Widget"                                  ]
+    text   = self . CurrentItem  [ "Text"                                    ]
+    msg    = line . text         (                                           )
+    uuid   = self . itemUuid     ( item , 0                                  )
+    ##########################################################################
+    if                           ( len ( msg ) <= 0                        ) :
+      self . removeTopLevelItem  ( item                                      )
+      return
+    ##########################################################################
+    STATES = 0
+    try                                                                      :
+      STATES = int               ( msg                                       )
+    except                                                                   :
+      pass
+    ##########################################################################
+    msg    = f"{STATES}"
+    ##########################################################################
+    item   . setText             ( column ,              msg                 )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    self   . Go                  ( self . UpdateUuidColumn                 , \
+                                   ( "states" , uuid , msg , )               )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      (                                           )
+  def tagChanged                 ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    line   = self . CurrentItem  [ "Widget"                                  ]
+    text   = self . CurrentItem  [ "Text"                                    ]
+    msg    = line . text         (                                           )
+    uuid   = self . itemUuid     ( item , 0                                  )
+    ##########################################################################
+    if                           ( len ( msg ) <= 0                        ) :
+      self . removeTopLevelItem  ( item                                      )
+      return
+    ##########################################################################
+    item   . setText             ( column ,              msg                 )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    self   . Go                  ( self . UpdateUuidColumn                 , \
+                                   ( "name" , uuid , msg , )                 )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                      (                                           )
+  def wikiChanged                ( self                                    ) :
+    ##########################################################################
+    if                           ( not self . isItemPicked ( )             ) :
+      return False
+    ##########################################################################
+    item   = self . CurrentItem  [ "Item"                                    ]
+    column = self . CurrentItem  [ "Column"                                  ]
+    line   = self . CurrentItem  [ "Widget"                                  ]
+    text   = self . CurrentItem  [ "Text"                                    ]
+    msg    = line . text         (                                           )
+    uuid   = self . itemUuid     ( item , 0                                  )
+    ##########################################################################
+    if                           ( len ( msg ) <= 0                        ) :
+      self . removeTopLevelItem  ( item                                      )
+      return
+    ##########################################################################
+    item   . setText             ( column ,              msg                 )
+    ##########################################################################
+    self   . removeParked        (                                           )
+    self   . Go                  ( self . UpdateUuidColumn                 , \
+                                   ( "wiki" , uuid , msg , )                 )
+    ##########################################################################
+    return
+  ############################################################################
+  @pyqtSlot                        (        list                             )
+  def refresh                      ( self , JSONs                          ) :
     ##########################################################################
     self    . clear                (                                         )
     ##########################################################################
     UUIDs   = JSON                 [ "UUIDs"                                 ]
     NAMEs   = JSON                 [ "NAMEs"                                 ]
     ##########################################################################
-    for U in UUIDs                                                           :
+    for J in JSONs                                                           :
       ########################################################################
-      IT    = self . PrepareItem   ( U , NAMEs [ U ]                         )
+      IT    = self . PrepareItem   ( J                                       )
       self  . addTopLevelItem      ( IT                                      )
     ##########################################################################
     FMT     = self . getMenuItem   ( "DisplayTotal"                          )
-    MSG     = FMT  . format        ( len ( UUIDs )                           )
+    MSG     = FMT  . format        ( len ( JSONs )                           )
     self    . setToolTip           ( MSG                                     )
     ##########################################################################
     self    . emitNamesShow . emit (                                         )
@@ -264,16 +491,54 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
+    JSOX    =                         [                                      ]
+    RLETAB  = self . Tables           [ self . Major                         ]
+    ##########################################################################
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
     if                                ( len ( UUIDs ) > 0                  ) :
       NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      NAME  = NAMEs                   [ UUID                                 ]
+      ########################################################################
+      QQ    = f"""select `type`,`used`,`states`,`name`,`wiki` from {RLETAB}
+                  where ( `uuid` = {UUID} ) ;"""
+      QQ    = " " . join              ( QQ . split ( )                       )
+      ########################################################################
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      ########################################################################
+      RTYPE = 1
+      USED  = 1
+      STATE = 0
+      TAG   = ""
+      WIKI  = ""
+      ########################################################################
+      if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 5 ) )          :
+        ######################################################################
+        RTYPE = int                   ( RR [ 0 ]                             )
+        USED  = int                   ( RR [ 1 ]                             )
+        STATE = int                   ( RR [ 2 ]                             )
+        TAG   = self . assureString   ( RR [ 3 ]                             )
+        WIKI  = self . assureString   ( RR [ 4 ]                             )
+      ########################################################################
+      J     =                         { "Uuid"   : UUID                    , \
+                                        "Name"   : NAME                    , \
+                                        "Type"   : RTYPE                   , \
+                                        "Used"   : USED                    , \
+                                        "States" : STATE                   , \
+                                        "Tag"    : TAG                     , \
+                                        "Wiki"   : WIKI                      }
+      ########################################################################
+      JSOX  . append                  ( J                                    )
     ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax . emit          (                                      )
     self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
+    if                                ( len ( JSOX ) <= 0                  ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
@@ -281,7 +546,7 @@ class RealityListings              ( TreeDock                              ) :
     JSON [ "UUIDs" ] = UUIDs
     JSON [ "NAMEs" ] = NAMEs
     ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
+    self   . emitAllNames . emit      ( JSOX                                 )
     ##########################################################################
     return
   ############################################################################
@@ -377,6 +642,29 @@ class RealityListings              ( TreeDock                              ) :
     DB     . Close            (                                              )
     ##########################################################################
     item   . setData          ( 0 , Qt . UserRole , uuid                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def UpdateUuidColumn        ( self , item , uuid , name                  ) :
+    ##########################################################################
+    DB     = self . ConnectDB (                                              )
+    if                        ( DB == None                                 ) :
+      return
+    ##########################################################################
+    RLETAB = self . Tables    [ self . Major                                 ]
+    ##########################################################################
+    DB     . LockWrites       ( [ RLETAB                                   ] )
+    ##########################################################################
+    uuid   = int              ( uuid                                         )
+    ##########################################################################
+    QQ     = f"""update {RLETAB}
+                 set `{item}` = %s
+                 where ( `uuid` = {uuid} ) ;"""
+    QQ     = " " . join       ( QQ . split ( )                               )
+    ##########################################################################
+    DB     . QueryValues      ( QQ , ( name , )                              )
+    ##########################################################################
+    DB     . Close            (                                              )
     ##########################################################################
     return
   ############################################################################
