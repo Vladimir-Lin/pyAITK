@@ -434,24 +434,21 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                        (        list                             )
-  def refresh                      ( self , JSONs                          ) :
+  @pyqtSlot                       (        list                              )
+  def refresh                     ( self , JSONs                           ) :
     ##########################################################################
-    self    . clear                (                                         )
-    ##########################################################################
-    UUIDs   = JSON                 [ "UUIDs"                                 ]
-    NAMEs   = JSON                 [ "NAMEs"                                 ]
+    self   . clear                (                                          )
     ##########################################################################
     for J in JSONs                                                           :
       ########################################################################
-      IT    = self . PrepareItem   ( J                                       )
-      self  . addTopLevelItem      ( IT                                      )
+      IT   = self . PrepareItem   ( J                                        )
+      self . addTopLevelItem      ( IT                                       )
     ##########################################################################
-    FMT     = self . getMenuItem   ( "DisplayTotal"                          )
-    MSG     = FMT  . format        ( len ( JSONs )                           )
-    self    . setToolTip           ( MSG                                     )
+    FMT    = self . getMenuItem   ( "DisplayTotal"                           )
+    MSG    = FMT  . format        ( len ( JSONs )                            )
+    self   . setToolTip           ( MSG                                      )
     ##########################################################################
-    self    . emitNamesShow . emit (                                         )
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
