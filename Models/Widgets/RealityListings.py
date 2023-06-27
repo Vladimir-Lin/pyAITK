@@ -66,7 +66,7 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 28
+    self . Amount             = 100
     self . SortOrder          = "asc"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
