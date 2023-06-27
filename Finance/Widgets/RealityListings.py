@@ -142,7 +142,7 @@ class RealityListings              ( TreeDock                              ) :
     if                           ( column in [ 0 ]                         ) :
       ########################################################################
       line = self . setLineEdit  ( item                                    , \
-                                   0                                       , \
+                                   column                                  , \
                                    "editingFinished"                       , \
                                    self . nameChanged                        )
       line . setFocus            ( Qt . TabFocusReason                       )
@@ -182,7 +182,7 @@ class RealityListings              ( TreeDock                              ) :
     if                           ( column in [ 3 ]                         ) :
       ########################################################################
       line = self . setLineEdit  ( item                                    , \
-                                   0                                       , \
+                                   column                                  , \
                                    "editingFinished"                       , \
                                    self . statesChanged                      )
       line . setFocus            ( Qt . TabFocusReason                       )
@@ -192,7 +192,7 @@ class RealityListings              ( TreeDock                              ) :
     if                           ( column in [ 4 ]                         ) :
       ########################################################################
       line = self . setLineEdit  ( item                                    , \
-                                   0                                       , \
+                                   column                                  , \
                                    "editingFinished"                       , \
                                    self . tagChanged                         )
       line . setFocus            ( Qt . TabFocusReason                       )
@@ -202,7 +202,7 @@ class RealityListings              ( TreeDock                              ) :
     if                           ( column in [ 5 ]                         ) :
       ########################################################################
       line = self . setLineEdit  ( item                                    , \
-                                   0                                       , \
+                                   column                                  , \
                                    "editingFinished"                       , \
                                    self . wikiChanged                        )
       line . setFocus            ( Qt . TabFocusReason                       )
@@ -236,13 +236,13 @@ class RealityListings              ( TreeDock                              ) :
     IT   . setData               ( 0 , Qt . UserRole , UUID                  )
     ##########################################################################
     IT   . setText               ( 1 , STYPE                                 )
-    IT   . setData               ( 0 , Qt . UserRole , RTYPE                 )
+    IT   . setData               ( 1 , Qt . UserRole , RTYPE                 )
     ##########################################################################
     IT   . setText               ( 2 , SUSED                                 )
-    IT   . setData               ( 0 , Qt . UserRole , USED                  )
+    IT   . setData               ( 2 , Qt . UserRole , USED                  )
     ##########################################################################
     IT   . setText               ( 3 , str ( STATE )                         )
-    IT   . setData               ( 0 , Qt . UserRole , STATE                 )
+    IT   . setData               ( 3 , Qt . UserRole , STATE                 )
     ##########################################################################
     IT   . setText               ( 4 , TAG                                   )
     IT   . setText               ( 5 , WIKI                                  )
@@ -270,28 +270,30 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                      (                                           )
-  def nameChanged                ( self                                    ) :
+  @pyqtSlot                       (                                          )
+  def nameChanged                 ( self                                   ) :
     ##########################################################################
-    if                           ( not self . isItemPicked ( )             ) :
+    if                            ( not self . isItemPicked ( )            ) :
       return False
     ##########################################################################
-    item   = self . CurrentItem  [ "Item"                                    ]
-    column = self . CurrentItem  [ "Column"                                  ]
-    line   = self . CurrentItem  [ "Widget"                                  ]
-    text   = self . CurrentItem  [ "Text"                                    ]
-    msg    = line . text         (                                           )
-    uuid   = self . itemUuid     ( item , 0                                  )
+    item   = self . CurrentItem   [ "Item"                                   ]
+    column = self . CurrentItem   [ "Column"                                 ]
+    line   = self . CurrentItem   [ "Widget"                                 ]
+    text   = self . CurrentItem   [ "Text"                                   ]
+    msg    = line . text          (                                          )
+    uuid   = self . itemUuid      ( item , 0                                 )
     ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
+    if                            ( len ( msg ) <= 0                       ) :
+      ########################################################################
+      if                          ( uuid <= 0                              ) :
+        self . removeTopLevelItem ( item                                     )
+        return
     ##########################################################################
-    item   . setText             ( column ,              msg                 )
+    item   . setText              ( column ,              msg                )
     ##########################################################################
-    self   . removeParked        (                                           )
-    self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
+    self   . removeParked         (                                          )
+    self   . Go                   ( self . AssureUuidItem                  , \
+                                    ( item , uuid , msg , )                  )
     ##########################################################################
     return
   ############################################################################
@@ -306,10 +308,10 @@ class RealityListings              ( TreeDock                              ) :
     cbv    = self . CurrentItem  [ "Value"                                   ]
     index  = cb   . currentIndex (                                           )
     value  = cb   . itemData     ( index                                     )
+    uuid   = self . itemUuid     ( item , 0                                  )
     ##########################################################################
     if                           ( value != cbv                            ) :
       ########################################################################
-      pid  = int                 ( item . text ( 0 )                         )
       LL   = self . Translations [ "RealityListings" ] [ "Types"             ]
       msg  = LL                  [ str ( value )                             ]
       ########################################################################
@@ -317,7 +319,7 @@ class RealityListings              ( TreeDock                              ) :
       item . setData             ( column , Qt . UserRole , value            )
       ########################################################################
       self . Go                  ( self . UpdateUuidColumn                 , \
-                                   ( "type" , pid , value , )                )
+                                   ( "type" , uuid , str ( value ) , )       )
     ##########################################################################
     self   . removeParked        (                                           )
     ##########################################################################
@@ -334,10 +336,10 @@ class RealityListings              ( TreeDock                              ) :
     cbv    = self . CurrentItem  [ "Value"                                   ]
     index  = cb   . currentIndex (                                           )
     value  = cb   . itemData     ( index                                     )
+    uuid   = self . itemUuid     ( item , 0                                  )
     ##########################################################################
     if                           ( value != cbv                            ) :
       ########################################################################
-      pid  = int                 ( item . text ( 0 )                         )
       LL   = self . Translations [ "RealityListings" ] [ "Useds"             ]
       msg  = LL                  [ str ( value )                             ]
       ########################################################################
@@ -345,7 +347,7 @@ class RealityListings              ( TreeDock                              ) :
       item . setData             ( column , Qt . UserRole , value            )
       ########################################################################
       self . Go                  ( self . UpdateUuidColumn                 , \
-                                   ( "used" , pid , value , )                )
+                                   ( "used" , uuid , str ( value ) , )       )
     ##########################################################################
     self   . removeParked        (                                           )
     ##########################################################################
@@ -363,10 +365,6 @@ class RealityListings              ( TreeDock                              ) :
     text   = self . CurrentItem  [ "Text"                                    ]
     msg    = line . text         (                                           )
     uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
     ##########################################################################
     STATES = 0
     try                                                                      :
@@ -396,11 +394,6 @@ class RealityListings              ( TreeDock                              ) :
     text   = self . CurrentItem  [ "Text"                                    ]
     msg    = line . text         (                                           )
     uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
-    ##########################################################################
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
@@ -421,11 +414,6 @@ class RealityListings              ( TreeDock                              ) :
     text   = self . CurrentItem  [ "Text"                                    ]
     msg    = line . text         (                                           )
     uuid   = self . itemUuid     ( item , 0                                  )
-    ##########################################################################
-    if                           ( len ( msg ) <= 0                        ) :
-      self . removeTopLevelItem  ( item                                      )
-      return
-    ##########################################################################
     item   . setText             ( column ,              msg                 )
     ##########################################################################
     self   . removeParked        (                                           )
