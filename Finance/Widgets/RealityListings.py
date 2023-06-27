@@ -100,7 +100,7 @@ class RealityListings              ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 800 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 840 , 640 )                       )
   ############################################################################
   def FocusIn             ( self                                           ) :
     ##########################################################################
