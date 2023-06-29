@@ -53,10 +53,16 @@ from   AITK  . People     . People    import People
 ##############################################################################
 class RealityListings              ( TreeDock                              ) :
   ############################################################################
-  HavingMenu    = 1371434312
+  HavingMenu            = 1371434312
   ############################################################################
-  emitNamesShow = pyqtSignal       (                                         )
-  emitAllNames  = pyqtSignal       ( list                                    )
+  emitNamesShow         = pyqtSignal (                                       )
+  emitAllNames          = pyqtSignal ( list                                  )
+  ShowPersonalGallery   = pyqtSignal ( str , int , str  ,       QIcon        )
+  ShowPersonalIcons     = pyqtSignal ( str , int , str  , str , QIcon        )
+  ShowGalleries         = pyqtSignal ( str , int , str  ,       QIcon        )
+  ShowGalleriesRelation = pyqtSignal ( str , int , str  , str , QIcon        )
+  ShowVideoAlbums       = pyqtSignal ( str , int , str  ,       QIcon        )
+  OpenLogHistory        = pyqtSignal ( str , str , str , str , str           )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -67,6 +73,7 @@ class RealityListings              ( TreeDock                              ) :
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 40
+    self . GType              = 178
     self . SortOrder          = "asc"
     self . Major              = "Reality"
     ##########################################################################
@@ -659,6 +666,47 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemGallery                 ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( 0 , Qt . UserRole                    )
+    uuid = int                        ( uuid                                 )
+    text = item . text                ( 0                                    )
+    icon = self . windowIcon          (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenItemIcon                  ( self , item                          ) :
+    ##########################################################################
+    uuid = item . data              ( 0 , Qt . UserRole                      )
+    uuid = int                      ( uuid                                   )
+    text = item . text              ( 0                                      )
+    icon = self . windowIcon        (                                        )
+    xsid = str                      ( uuid                                   )
+    relz = "Using"
+    ##########################################################################
+    self . ShowPersonalIcons . emit ( text                                 , \
+                                      self . GType                         , \
+                                      relz                                 , \
+                                      xsid                                 , \
+                                      icon                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenItemGalleries         ( self , item                              ) :
+    ##########################################################################
+    uuid = item . data          ( 0 , Qt . UserRole                          )
+    uuid = int                  ( uuid                                       )
+    text = item . text          ( 0                                          )
+    icon = self . windowIcon    (                                            )
+    xsid = str                  ( uuid                                       )
+    ##########################################################################
+    self . ShowGalleries . emit ( text , self . GType , xsid , icon          )
+    ##########################################################################
+    return
+  ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
@@ -669,6 +717,75 @@ class RealityListings              ( TreeDock                              ) :
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
       self . setColumnHidden       ( col , not hid                           )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
+  def GroupsMenu                     ( self , mm , item                    ) :
+    ##########################################################################
+    if                               ( self . NotOkay ( item )             ) :
+      return mm
+    ##########################################################################
+    TRX  = self . Translations
+    NAME = item . text               ( 0                                     )
+    FMT  = TRX                       [ "UI::Belongs"                         ]
+    MSG  = FMT . format              ( NAME                                  )
+    COL  = mm . addMenu              ( MSG                                   )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "RealityIcon"                         )
+    ICON = QIcon                     ( ":/images/pictures.png"               )
+    mm   . addActionFromMenuWithIcon ( COL , 38521001 , ICON , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "RealityGallery"                      )
+    ICON = QIcon                     ( ":/images/gallery.png"                )
+    mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "RealityGalleries"                    )
+    ICON = QIcon                     ( ":/images/galleries.png"              )
+    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "Description"                         )
+    mm   . addActionFromMenu         ( COL , 38522001        , msg           )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunGroupsMenu                 ( self , at , item                     ) :
+    ##########################################################################
+    if                              ( at == 38521001                       ) :
+      ########################################################################
+      self . OpenItemIcon           ( item                                   )
+
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38521002                       ) :
+      ########################################################################
+      self . OpenItemGallery        ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38521003                       ) :
+      ########################################################################
+      self . OpenItemGalleries      ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38522001                       ) :
+      ########################################################################
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      nx   = ""
+      ########################################################################
+      if                            ( "Notes" in self . Tables             ) :
+        nx = self . Tables          [ "Notes"                                ]
+      ########################################################################
+      self . OpenLogHistory . emit  ( head                                   ,
+                                      str ( uuid )                           ,
+                                      "Description"                          ,
+                                      nx                                     ,
+                                      str ( self . getLocality ( ) )         )
       ########################################################################
       return True
     ##########################################################################
@@ -793,6 +910,7 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     mm     . addSeparator           (                                        )
     ##########################################################################
+    self   . GroupsMenu             ( mm ,        atItem                     )
     self   . PartitionMenu          ( mm                                     )
     ##########################################################################
     mm     . addSeparator           (                                        )
@@ -831,6 +949,11 @@ class RealityListings              ( TreeDock                              ) :
       self . clear                  (                                        )
       self . startup                (                                        )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunGroupsMenu   ( at , atItem                            )
+    ##########################################################################
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
     if                              ( self . RunPartitionMenu ( at )       ) :
