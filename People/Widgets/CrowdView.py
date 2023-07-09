@@ -63,6 +63,7 @@ class CrowdView                   ( IconDock                               ) :
   CrowdSubgroup     = pyqtSignal  ( str , int , str                          )
   PeopleGroup       = pyqtSignal  ( str , int , str                          )
   OpenVariantTables = pyqtSignal  ( str , str , int , str , dict             )
+  OpenLogHistory    = pyqtSignal  ( str , str , str , str , str              )
   ############################################################################
   def __init__                    ( self , parent = None , plan = None     ) :
     ##########################################################################
@@ -717,6 +718,9 @@ class CrowdView                   ( IconDock                               ) :
     msg = self . getMenuItem ( "AssignTables"                                )
     mm  . addActionFromMenu  ( LOM , 25351301 , msg                          )
     ##########################################################################
+    msg = self . getMenuItem ( "LogHistory"                                  )
+    mm  . addActionFromMenu  ( LOM , 25351302 , msg                          )
+    ##########################################################################
     return mm
   ############################################################################
   def RunFunctionsMenu                 ( self , at , uuid , item           ) :
@@ -748,6 +752,22 @@ class CrowdView                   ( IconDock                               ) :
                                          TYPE                              , \
                                          self . FetchTableKey              , \
                                          self . Tables                       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( atId == 25351302                      ) :
+      ########################################################################
+      name = item . text           (                                         )
+      nx   = ""
+      ########################################################################
+      if                           ( "Notes" in self . Tables              ) :
+        nx = self . Tables         [ "Notes"                                 ]
+      ########################################################################
+      self . OpenLogHistory . emit ( name                                    ,
+                                     str ( uuid )                            ,
+                                     "Description"                           ,
+                                     nx                                      ,
+                                     str ( self . getLocality ( ) )          )
       ########################################################################
       return True
     ##########################################################################
