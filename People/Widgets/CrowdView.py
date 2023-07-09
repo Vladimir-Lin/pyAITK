@@ -755,19 +755,19 @@ class CrowdView                   ( IconDock                               ) :
       ########################################################################
       return True
     ##########################################################################
-    if                             ( atId == 25351302                      ) :
+    if                                 ( at == 25351302                    ) :
       ########################################################################
-      name = item . text           (                                         )
+      name = item . text               (                                     )
       nx   = ""
       ########################################################################
-      if                           ( "Notes" in self . Tables              ) :
-        nx = self . Tables         [ "Notes"                                 ]
+      if                               ( "Notes" in self . Tables          ) :
+        nx = self . Tables             [ "Notes"                             ]
       ########################################################################
-      self . OpenLogHistory . emit ( name                                    ,
-                                     str ( uuid )                            ,
-                                     "Description"                           ,
-                                     nx                                      ,
-                                     str ( self . getLocality ( ) )          )
+      self . OpenLogHistory . emit     ( name                                ,
+                                         str ( uuid )                        ,
+                                         "Description"                       ,
+                                         nx                                  ,
+                                         str ( self . getLocality ( ) )      )
       ########################################################################
       return True
     ##########################################################################
