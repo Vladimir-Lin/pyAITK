@@ -58,8 +58,9 @@ class SexualityListings  ( MajorListings                                   ) :
     super ( ) . __init__   (        parent        , plan                     )
     ##########################################################################
     self . IncludeUndecided = True
+    self . GType            = 77
     self . CreatureUuid     = 5431231000000000001
-    self . UsedOptions      = [ 1 , 2 , 3 , 4 ]
+    self . UsedOptions      = [ 1 , 2 , 3 , 4 , 5                            ]
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -219,6 +220,27 @@ class SexualityListings  ( MajorListings                                   ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemCrowd           ( self , item                                ) :
+    ##########################################################################
+    uuid = item . data        ( 0 , Qt . UserRole                            )
+    uuid = int                ( uuid                                         )
+    xsid = str                ( uuid                                         )
+    text = item . text        ( 0                                            )
+    ##########################################################################
+    self . PeopleGroup . emit ( text , self . GType , str ( uuid )           )
+    ##########################################################################
+    return
+  ############################################################################
+  def GotoItemCrowd             ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenItemCrowd      ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
@@ -252,13 +274,9 @@ class SexualityListings  ( MajorListings                                   ) :
     ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "SexualityGallery"                    )
-    ICON = QIcon                     ( ":/images/gallery.png"                )
-    mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
-    ##########################################################################
     msg  = self . getMenuItem        ( "Crowds"                              )
     ICON = QIcon                     ( ":/images/viewpeople.png"             )
-    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
+    mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
     mm   . addActionFromMenu         ( COL , 38522001        , msg           )
@@ -278,13 +296,7 @@ class SexualityListings  ( MajorListings                                   ) :
     ##########################################################################
     if                              ( at == 38521002                       ) :
       ########################################################################
-      ## self . OpenItemGallery        ( item                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38521003                       ) :
-      ########################################################################
-      ## self . OpenItemCrowd          ( item                                   )
+      self . OpenItemCrowd          ( item                                   )
       ########################################################################
       return True
     ##########################################################################
