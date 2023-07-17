@@ -13,10 +13,4 @@ SOURCES += $${PWD}/*.bat
 SOURCES += $${PWD}/*.ui
 
 include ($${PWD}/documents/documents.pri)
-include ($${PWD}/Widgets/Widgets.pri)
-include ($${PWD}/Acupunctures/Acupunctures.pri)
-include ($${PWD}/Body/Body.pri)
-include ($${PWD}/Bones/Bones.pri)
-include ($${PWD}/Eyes/Eyes.pri)
-include ($${PWD}/Faces/Faces.pri)
-include ($${PWD}/Sex/Sex.pri)
+
