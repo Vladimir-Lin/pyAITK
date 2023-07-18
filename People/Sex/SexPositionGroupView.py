@@ -55,17 +55,17 @@ from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . People     . People    import People
 ##############################################################################
-class SexPositionGroupView          ( IconDock                             ) :
+class SexPositionGroupView         ( IconDock                              ) :
   ############################################################################
-  HavingMenu           = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
-  OrganizationSubgroup = pyqtSignal ( str , int , str                        )
-  OrganizationGroup    = pyqtSignal ( str , int , str , str , QIcon          )
-  OpenVariantTables    = pyqtSignal ( str , str , int , str , dict           )
+  SexPositionSubgroup = pyqtSignal ( str , int , str                         )
+  SexPositionGroup    = pyqtSignal ( str , int , str , str , QIcon           )
+  OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   ############################################################################
-  def __init__                      ( self , parent = None , plan = None   ) :
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    super ( ) . __init__            (        parent        , plan            )
+    super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . GTYPE        = 210
     self . SortOrder    = "asc"
@@ -785,7 +785,7 @@ class SexPositionGroupView          ( IconDock                             ) :
     ##########################################################################
     title = item . text           (                                          )
     tid   = self . Relation . get ( "t2"                                     )
-    self  . OrganizationSubgroup . emit  ( title , tid , str ( uuid )        )
+    self  . SexPositionSubgroup . emit  ( title , tid , str ( uuid )         )
     ##########################################################################
     return True
   ############################################################################
@@ -820,11 +820,11 @@ class SexPositionGroupView          ( IconDock                             ) :
     title   = item . text         (                                          )
     tid     = self . Relation   . get ( "t2"                                 )
     related = "Subordination"
-    self    . OrganizationGroup . emit ( title                             , \
-                                         tid                               , \
-                                         str ( uuid )                      , \
-                                         related                           , \
-                                         icon                                )
+    self    . SexPositionGroup . emit ( title                              , \
+                                        tid                                , \
+                                        str ( uuid )                       , \
+                                        related                            , \
+                                        icon                                 )
     ##########################################################################
     return True
   ############################################################################
