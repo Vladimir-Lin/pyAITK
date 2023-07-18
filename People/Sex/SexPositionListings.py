@@ -690,7 +690,7 @@ class SexPositionListings          ( TreeDock                              ) :
   def PicturesAppending            ( self , atUuid , NAME , JSON           ) :
     ##########################################################################
     T1  = "SexPosition"
-    TAB = "RelationPeople"
+    TAB = "RelationEditing"
     ##########################################################################
     OK  = self . AppendingPictures (        atUuid , NAME , JSON , TAB , T1  )
     if                             ( not OK                                ) :
