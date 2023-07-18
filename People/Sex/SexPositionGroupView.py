@@ -114,7 +114,7 @@ class SexPositionGroupView         ( IconDock                              ) :
       A    = QAction                (                                        )
       A    . setIcon                ( QIcon ( ":/images/lists.png" )         )
       A    . setToolTip             ( msg                                    )
-      A    . triggered . connect    ( self . OpenOrganizationGroup           )
+      A    . triggered . connect    ( self . OpenSexPositionGroup            )
       self . WindowActions . append ( A                                      )
     ##########################################################################
     return
@@ -176,7 +176,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `position` {ORDER}"
-    RELTAB = self . Tables                 [ "Relation"                      ]
+    RELTAB = self . Tables                 [ "RelationEditing"               ]
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
   ############################################################################
@@ -184,7 +184,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `reverse` {ORDER}"
-    RELTAB = self . Tables                 [ "Relation"                      ]
+    RELTAB = self . Tables                 [ "RelationEditing"               ]
     ##########################################################################
     return self . Relation . GetOwners     ( DB , RELTAB , OPTS              )
   ############################################################################
