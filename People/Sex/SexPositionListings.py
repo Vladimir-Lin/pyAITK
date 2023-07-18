@@ -312,7 +312,7 @@ class SexPositionListings          ( TreeDock                              ) :
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder          (                               )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables                   [ "Relation"                    ]
+    RELTAB = self . Tables                   [ "RelationGroups"              ]
     ##########################################################################
     if                                       ( self . isSubordination ( )  ) :
       OPTS = f"order by `position` {ORDER}"
@@ -358,7 +358,7 @@ class SexPositionListings          ( TreeDock                              ) :
     if                                ( DB == None                         ) :
       return
     ##########################################################################
-    RELTAB  = self . Tables           [ "RelationEditing"                    ]
+    RELTAB  = self . Tables           [ "RelationGroups"                     ]
     NAMTAB  = self . Tables           [ "Names"                              ]
     LIC     = self . getLocality      (                                      )
     LIKE    = f"%{name}%"
@@ -507,13 +507,13 @@ class SexPositionListings          ( TreeDock                              ) :
   ############################################################################
   def FetchGroupMembersCount             ( self , DB                       ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
+    RELTAB = self . Tables               [ "RelationGroups"                  ]
     ##########################################################################
     return self . Relation . CountSecond ( DB , RELTAB                       )
   ############################################################################
   def FetchGroupOwnersCount              ( self , DB                       ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
+    RELTAB = self . Tables               [ "RelationGroups"                  ]
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
@@ -717,7 +717,7 @@ class SexPositionListings          ( TreeDock                              ) :
     self   . ShowStatus         ( MSG                                        )
     self   . TtsTalk            ( MSG , 1002                                 )
     ##########################################################################
-    RELTAB = self . Tables      [ "RelationEditing"                          ]
+    RELTAB = self . Tables      [ "RelationGroups"                           ]
     DB     . LockWrites         ( [ RELTAB                                 ] )
     ##########################################################################
     if                          ( self . isSubordination ( )               ) :
@@ -745,7 +745,7 @@ class SexPositionListings          ( TreeDock                              ) :
     if                                ( len ( UUIDs ) <= 0                 ) :
       return
     ##########################################################################
-    RELTAB = self . Tables            [ "RelationEditing"                    ]
+    RELTAB = self . Tables            [ "RelationGroups"                     ]
     SQLs   =                          [                                      ]
     ##########################################################################
     for UUID in UUIDs                                                        :
@@ -780,7 +780,7 @@ class SexPositionListings          ( TreeDock                              ) :
       return
     ##########################################################################
     SEXTAB = self . Tables    [ "SexPosition"                                ]
-    RELTAB = self . Tables    [ "RelationEditing"                            ]
+    RELTAB = self . Tables    [ "RelationGroups"                             ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
     DB     . LockWrites       ( [ SEXTAB , RELTAB , NAMTAB                 ] )

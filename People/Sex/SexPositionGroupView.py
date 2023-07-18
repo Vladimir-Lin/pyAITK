@@ -62,6 +62,7 @@ class SexPositionGroupView         ( IconDock                              ) :
   SexPositionSubgroup = pyqtSignal ( str , int , str                         )
   SexPositionGroup    = pyqtSignal ( str , int , str , str , QIcon           )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
+  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -96,9 +97,9 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     self . setFunction            ( self . HavingMenu      , True            )
     ##########################################################################
-    self . setDragEnabled         ( True                                     )
+    self . setDragEnabled         ( False                                    )
     self . setAcceptDrops         ( True                                     )
-    self . setDragDropMode        ( QAbstractItemView . DragDrop             )
+    self . setDragDropMode        ( QAbstractItemView . DropOnly             )
     ##########################################################################
     return
   ############################################################################
@@ -175,7 +176,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `position` {ORDER}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                 [ "Relation"                      ]
     ##########################################################################
     return self . Relation . Subordination ( DB , RELTAB , OPTS              )
   ############################################################################
@@ -183,7 +184,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     ORDER  = self . getSortingOrder        (                                 )
     OPTS   = f"order by `reverse` {ORDER}"
-    RELTAB = self . Tables [ "Relation" ]
+    RELTAB = self . Tables                 [ "Relation"                      ]
     ##########################################################################
     return self . Relation . GetOwners     ( DB , RELTAB , OPTS              )
   ############################################################################
@@ -197,28 +198,13 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     return self   . ObtainSubgroupUuids     ( DB                             )
   ############################################################################
-  def dragMime                   ( self                                    ) :
-    ##########################################################################
-    mtype   = "organizationgroup/uuids"
-    message = self . getMenuItem ( "TotalPicked"                             )
-    ##########################################################################
-    return self . CreateDragMime ( self , mtype , message                    )
-  ############################################################################
-  def startDrag         ( self , dropActions                               ) :
-    ##########################################################################
-    self . StartingDrag (                                                    )
-    ##########################################################################
-    return
-  ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
     ##########################################################################
     if                        ( self . isTagging ( )                       ) :
-      ########################################################################
-      formats = "picture/uuids;organizationgroup/uuids"
-      ########################################################################
+      return False
     else                                                                     :
       ########################################################################
-      formats = "picture/uuids;organization/uuids;organizationgroup/uuids"
+      formats = "sexposition/uuids"
     ##########################################################################
     if                        ( len ( formats ) <= 0                       ) :
       return False
@@ -243,21 +229,10 @@ class SexPositionGroupView         ( IconDock                              ) :
     CNT     = len                   ( UUIDs                                  )
     title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                              ( mtype in [ "picture/uuids"         ] ) :
-      ########################################################################
-      self  . ShowMenuItemMessage   ( "AssignTagIcon"                        )
-    ##########################################################################
-    elif                            ( mtype in [ "organization/uuids" ]    ) :
+    if                              ( mtype in [ "sexposition/uuids" ]     ) :
       ########################################################################
       if                            ( self . isTagging ( )                 ) :
         return False
-    ##########################################################################
-    elif                            ( mtype in ["organizationgroup/uuids"] ) :
-      ########################################################################
-      if                            ( self == sourceWidget                 ) :
-        self . ShowMenuItemCountStatus ( "MoveCatalogues" ,         CNT      )
-      else                                                                   :
-        self . ShowMenuItemTitleStatus ( "JoinCatalogues" , title , CNT      )
     ##########################################################################
     return RDN
   ############################################################################
@@ -272,7 +247,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     CNT     = len                     ( UUIDs                                )
     title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                                ( mtype in [ "organization/uuids" ]  ) :
+    if                                ( mtype in [ "sexposition/uuids"   ] ) :
       ########################################################################
       if                              ( self . isTagging ( )               ) :
         return False
@@ -280,7 +255,7 @@ class SexPositionGroupView         ( IconDock                              ) :
       if                              ( self . NotOkay ( atItem )          ) :
         return False
       ########################################################################
-      self  . ShowMenuItemTitleStatus ( "JoinOrganization"  , title , CNT    )
+      self  . ShowMenuItemTitleStatus ( "JoinSexPosition" , title , CNT      )
       ########################################################################
       return True
     ##########################################################################
@@ -295,123 +270,23 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def acceptOrganizationGroupsDrop ( self                                  ) :
+  def acceptSexPositionsDrop ( self                                        ) :
     return True
   ############################################################################
-  def acceptOrganizationsDrop      ( self                                  ) :
-    return True
-  ############################################################################
-  def acceptPictureDrop            ( self                                  ) :
-    return True
-  ############################################################################
-  def dropOrganizationGroups        ( self , source , pos , JSON           ) :
-    MF   = self . OrganizationGroupsMoving
-    AF   = self . OrganizationGroupsAppending
-    return self . defaultDropInside (        source , pos , JSON , MF , AF   )
-  ############################################################################
-  def dropOrganizations                 ( self , source , pos , JSON       ) :
-    FUNC = self . OrganizationAppending
+  def dropSexPositions                  ( self , source , pos , JSON       ) :
+    FUNC = self . SexPositionAppending
     return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
-  def dropPictures                      ( self , source , pos , JSON       ) :
-    FUNC = self . AssignTaggingIcon
-    return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
-  ############################################################################
-  def GetLastestPosition                      ( self , DB , LUID           ) :
-    ##########################################################################
-    RELTAB = "Relation"
-    ##########################################################################
-    if                                        ( self . isReverse ( )       ) :
-      return self . GetReverseLastestPosition ( DB , RELTAB , LUID           )
-    return   self . GetNormalLastestPosition  ( DB , RELTAB , LUID           )
-  ############################################################################
-  def GenerateMovingSQL                   ( self   , LAST , UUIDs          ) :
-    ##########################################################################
-    RELTAB = "Relation"
-    R      = self . isReverse             (                                  )
-    ##########################################################################
-    return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
-  ############################################################################
-  def OrganizationGroupsMoving ( self , atUuid , NAME , JSON               ) :
-    ##########################################################################
-    UUIDs  = JSON             [ "UUIDs"                                      ]
-    if                        ( len ( UUIDs ) <= 0                         ) :
-      return
-    ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    if                        ( DB == None                                 ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
-    ##########################################################################
-    RELTAB = self . Tables    [ "Relation"                                   ]
-    DB     . LockWrites       ( [ RELTAB                                   ] )
-    ##########################################################################
-    OPTS   = f"order by `position` asc"
-    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
-    ##########################################################################
-    LUID   = PUIDs            [ -1                                           ]
-    LAST   = self . GetLastestPosition ( DB     , LUID                       )
-    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
-    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    ##########################################################################
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    DB     . Close            (                                              )
-    ##########################################################################
-    self   . loading          (                                              )
-    ##########################################################################
-    return
-  ############################################################################
-  def OrganizationGroupsAppending ( self , atUuid , NAME , JSON            ) :
-    ##########################################################################
-    UUIDs  = JSON              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return
-    ##########################################################################
-    DB     = self . ConnectDB  (                                             )
-    if                         ( DB == None                                ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit    (                                             )
-    self   . setBustle         (                                             )
-    ##########################################################################
-    RELTAB = self . Tables     [ "Relation"                                  ]
-    ##########################################################################
-    DB     . LockWrites        ( [ RELTAB                                  ] )
-    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
-    OPTS   = f"order by `position` asc"
-    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
-    ##########################################################################
-    LUID   = PUIDs             [ -1                                          ]
-    LAST   = self . GetLastestPosition ( DB     , LUID                       )
-    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
-    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
-    ##########################################################################
-    DB     . UnlockTables      (                                             )
-    self   . setVacancy        (                                             )
-    self   . GoRelax . emit    (                                             )
-    DB     . Close             (                                             )
-    ##########################################################################
-    self   . loading           (                                             )
-    ##########################################################################
-    return
-  ############################################################################
-  def OrganizationAppending ( self , atUuid , NAME , JSON                  ) :
+  def SexPositionAppending ( self , atUuid , NAME , JSON                   ) :
     ##########################################################################
     T1   = "Subgroup"
     TAB  = "RelationEditing"
     ##########################################################################
-    OK   = self . AppendingOrganizationIntoT1 ( atUuid                     , \
-                                                NAME                       , \
-                                                JSON                       , \
-                                                TAB                        , \
-                                                T1                           )
+    OK   = self . AppendingSexPositionIntoT1 ( atUuid                      , \
+                                               NAME                        , \
+                                               JSON                        , \
+                                               TAB                         , \
+                                               T1                            )
     if                      ( not OK                                       ) :
       return
     ##########################################################################
@@ -419,12 +294,46 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssignTaggingIcon             ( self , atUuid , NAME , JSON          ) :
+  def AppendingSexPositionIntoT1 ( self                                    , \
+                                   atUuid                                  , \
+                                   NAME                                    , \
+                                   JSON                                    , \
+                                   table                                   , \
+                                   T1                                      ) :
     ##########################################################################
-    TABLE = "RelationPictures"
-    self . catalogAssignTaggingIcon (        atUuid , NAME , JSON , TABLE    )
+    UUIDs  = JSON                [ "UUIDs"                                   ]
+    if                           ( len ( UUIDs ) <= 0                      ) :
+      return False
     ##########################################################################
-    return
+    if                           ( self . PrivateGroup                     ) :
+      DB   = self . ConnectHost  ( self . GroupDB                            )
+    else                                                                     :
+      DB   = self . ConnectDB    (                                           )
+    if                           ( DB == None                              ) :
+      return False
+    ##########################################################################
+    self   . OnBusy  . emit      (                                           )
+    self   . setBustle           (                                           )
+    ##########################################################################
+    RELTAB = self . Tables       [ table                                     ]
+    ##########################################################################
+    DB     . LockWrites          ( [ RELTAB                                ] )
+    ##########################################################################
+    REL    = Relation            (                                           )
+    REL    . set                 ( "first" , atUuid                          )
+    REL    . setT1               ( T1                                        )
+    REL    . setT2               ( "SexPosition"                             )
+    REL    . setRelation         ( "Subordination"                           )
+    REL    . Joins               ( DB , RELTAB , UUIDs                       )
+    ##########################################################################
+    DB     . UnlockTables        (                                           )
+    self   . setVacancy          (                                           )
+    self   . GoRelax . emit      (                                           )
+    DB     . Close               (                                           )
+    ##########################################################################
+    self   . Notify              ( 5                                         )
+    ##########################################################################
+    return True
   ############################################################################
   def RemoveItems             ( self , UUIDs                               ) :
     ##########################################################################
@@ -554,7 +463,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     FMT        = self . getMenuItem    ( "LoadExtras"                        )
     SFMT       = self . getMenuItem    ( "SubgroupCount"                     )
-    GFMT       = self . getMenuItem    ( "OrganizationCount"                 )
+    GFMT       = self . getMenuItem    ( "SexPositionCount"                  )
     ##########################################################################
     DBA        = self . ConnectDB      (                  True               )
     ##########################################################################
@@ -567,7 +476,7 @@ class SexPositionGroupView         ( IconDock                              ) :
       DBA      . Close                 (                                     )
       return
     ##########################################################################
-    RELTAB     = self . Tables         [ "Relation"                          ]
+    RELTAB     = self . Tables         [ "RelationEditing"                   ]
     REL        = Relation              (                                     )
     REL        . setRelation           ( "Subordination"                     )
     T2         = self . Relation . get ( "t2"                                )
@@ -757,7 +666,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     if                                ( at == 1601                         ) :
       ########################################################################
       NAM  = self . Tables            [ "NamesEditing"                       ]
-      self . EditAllNames             ( self , "Organizations" , uuid , NAM  )
+      self . EditAllNames             ( self , "SexPosition" , uuid , NAM    )
       ########################################################################
       return True
     ##########################################################################
@@ -769,7 +678,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     if                                ( at == 2002                         ) :
       ########################################################################
-      self . OpenItemOrganizationGroup ( atItem                              )
+      self . OpenItemSexPositionGroup ( atItem                              )
       ########################################################################
       return True
     ##########################################################################
@@ -798,27 +707,27 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     return self . OpenItemSubgroup ( atItem                                  )
   ############################################################################
-  def OpenOrganizationGroup          ( self                                ) :
+  def OpenSexPositionGroup          ( self                                 ) :
     ##########################################################################
-    atItem = self . currentItem      (                                       )
-    if                               ( self . NotOkay ( atItem )           ) :
+    atItem = self . currentItem     (                                        )
+    if                              ( self . NotOkay ( atItem )            ) :
       return
     ##########################################################################
-    self . OpenItemOrganizationGroup ( atItem                                )
+    self . OpenItemSexPositionGroup ( atItem                                 )
     ##########################################################################
     return
   ############################################################################
-  def OpenItemOrganizationGroup   ( self , item                            ) :
+  def OpenItemSexPositionGroup ( self , item                               ) :
     ##########################################################################
-    uuid  = item . data           ( Qt . UserRole                            )
-    uuid  = int                   ( uuid                                     )
+    uuid  = item . data        ( Qt . UserRole                               )
+    uuid  = int                ( uuid                                        )
     ##########################################################################
-    if                            ( uuid <= 0                              ) :
+    if                         ( uuid <= 0                                 ) :
       return False
     ##########################################################################
-    icon    = item . icon         (                                          )
-    title   = item . text         (                                          )
-    tid     = self . Relation   . get ( "t2"                                 )
+    icon    = item . icon      (                                             )
+    title   = item . text      (                                             )
+    tid     = self . Relation  . get ( "t2"                                  )
     related = "Subordination"
     self    . SexPositionGroup . emit ( title                              , \
                                         tid                                , \
@@ -828,14 +737,14 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def OpenCurrentOrganizationGroup          ( self                         ) :
+  def OpenCurrentSexPositionGroup          ( self                          ) :
     ##########################################################################
-    atItem = self . currentItem             (                                )
+    atItem = self . currentItem            (                                 )
     ##########################################################################
-    if                                      ( atItem == None               ) :
+    if                                     ( atItem == None                ) :
       return False
     ##########################################################################
-    return self . OpenItemOrganizationGroup ( atItem                         )
+    return self . OpenItemSexPositionGroup ( atItem                          )
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
