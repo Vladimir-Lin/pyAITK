@@ -996,20 +996,20 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
+    MSG  = self . getMenuItem        ( "Icons"                               )
+    mm   . addActionFromMenu         ( COL , 38522001 , MSG                  )
+    ##########################################################################
     MSG  = self . getMenuItem        ( "PersonalGallery"                     )
     icon = QIcon                     ( ":/images/gallery.png"                )
-    mm   . addActionFromMenuWithIcon ( COL , 38522001 , icon , MSG           )
+    mm   . addActionFromMenuWithIcon ( COL , 38522002 , icon , MSG           )
     ##########################################################################
-    MSG  = self . getMenuItem        ( "Icons"                               )
-    mm   . addActionFromMenu         ( COL , 38522002 , MSG                  )
+    MSG  = self . getMenuItem        ( "Galleries"                           )
+    ICO  = QIcon                     ( ":/images/galleries.png"              )
+    mm   . addActionFromMenuWithIcon ( COL , 38522003 , ICO , MSG            )
     ##########################################################################
-    MSG = self . getMenuItem         ( "Galleries"                           )
-    ICO = QIcon                      ( ":/images/galleries.png"              )
-    mm  . addActionFromMenuWithIcon  ( COL , 38522003 , ICO , MSG            )
-    ##########################################################################
-    MSG = self . getMenuItem         ( "Videos"                              )
-    ICO = QIcon                      ( ":/images/video.png"                  )
-    mm  . addActionFromMenuWithIcon  ( COL , 38522004 , ICO , MSG            )
+    MSG  = self . getMenuItem        ( "Videos"                              )
+    ICO  = QIcon                     ( ":/images/video.png"                  )
+    mm   . addActionFromMenuWithIcon ( COL , 38522004 , ICO , MSG            )
     ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
     mm   . addActionFromMenu         ( COL , 38523001 , msg                  )
@@ -1028,12 +1028,8 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     if                                ( at == 38522001                     ) :
       ########################################################################
-      self . OpenGalleryItem          ( item                                 )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                ( at == 38522002                     ) :
-      ########################################################################
+      uuid = item . data              ( 0 , Qt . UserRole                    )
+      uuid = int                      ( uuid                                 )
       text = item . text              ( 0                                    )
       icon = self . windowIcon        (                                      )
       ########################################################################
@@ -1045,6 +1041,12 @@ class SexPositionListings          ( TreeDock                              ) :
       ########################################################################
       return True
     ##########################################################################
+    if                                ( at == 38522002                     ) :
+      ########################################################################
+      self . OpenGalleryItem          ( item                                 )
+      ########################################################################
+      return True
+    ##########################################################################
     if                                ( at == 38522003                     ) :
       ########################################################################
       self . OpenItemGalleries        ( item                                 )
@@ -1053,6 +1055,8 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     if                                ( at == 38522004                     ) :
       ########################################################################
+      uuid = item . data              ( 0 , Qt . UserRole                    )
+      uuid = int                      ( uuid                                 )
       text = item . text              ( 0                                    )
       icon = self . windowIcon        (                                      )
       xsid = str                      ( uuid                                 )
