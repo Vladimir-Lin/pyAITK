@@ -55,11 +55,15 @@ from   AITK  . People     . People    import People
 ##############################################################################
 class SexPositionListings          ( TreeDock                              ) :
   ############################################################################
-  HavingMenu        = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( dict                                    )
-  OpenLogHistory    = pyqtSignal   ( str , str , str , str , str             )
+  emitNamesShow       = pyqtSignal (                                         )
+  emitAllNames        = pyqtSignal ( dict                                    )
+  ShowPersonalGallery = pyqtSignal ( str , int , str  ,       QIcon          )
+  ShowPersonalIcons   = pyqtSignal ( str , int , str  , str , QIcon          )
+  ShowGalleries       = pyqtSignal ( str , int , str  ,       QIcon          )
+  ShowVideoAlbums     = pyqtSignal ( str , int , str  ,       QIcon          )
+  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -587,7 +591,7 @@ class SexPositionListings          ( TreeDock                              ) :
     return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
-    formats = "picture/uuids;sexposition/uuids"
+    formats = "sexposition/uuids"
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
@@ -615,13 +619,7 @@ class SexPositionListings          ( TreeDock                              ) :
     title  = source . windowTitle    (                                       )
     CNT    = len                     ( UUIDs                                 )
     ##########################################################################
-    if                               ( mtype in [ "picture/uuids"        ] ) :
-      ########################################################################
-      if                             ( atItem in [ False , None ]          ) :
-        return False
-      ########################################################################
-      self . ShowMenuItemTitleStatus ( "CopyFrom" , title , CNT              )
-    elif                             ( mtype in [ "sexposition/uuids"    ] ) :
+    if                               ( mtype in [ "sexposition/uuids"    ] ) :
       self . ShowMenuItemTitleStatus ( "SexPositionFrom" , title , CNT       )
     ##########################################################################
     return RDN
@@ -634,44 +632,12 @@ class SexPositionListings          ( TreeDock                              ) :
     if                         ( source == self                            ) :
       return False
     ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    mtype  = self . DropInJSON [ "Mime"                                      ]
+    ## atItem = self . itemAt     ( mousePos                                    )
+    ## mtype  = self . DropInJSON [ "Mime"                                      ]
     ##########################################################################
-    if                         ( mtype  in [ "picture/uuids"             ] ) :
-      ########################################################################
-      if                       ( atItem in [ False , None ]                ) :
-        return False
-    ##########################################################################
-    return True
-  ############################################################################
-  def acceptPictureDrop ( self                                             ) :
     return True
   ############################################################################
   def acceptSexPositionsDrop ( self                                        ) :
-    return True
-  ############################################################################
-  def dropPictures             ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    if                         ( "UUIDs" not in JSOX                       ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( pos                                         )
-    if                         ( atItem in [ False , None ]                ) :
-      return True
-    ##########################################################################
-    NAME   = atItem . text     ( 0                                           )
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
-    ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
-    ##########################################################################
-    self . Go ( self . PicturesAppending , ( UUID , NAME , JSOX , )          )
-    ##########################################################################
     return True
   ############################################################################
   def dropSexPositions ( self , source , pos , JSOX                        ) :
@@ -686,19 +652,6 @@ class SexPositionListings          ( TreeDock                              ) :
     self . Go          ( self . AppendingSexPositions , ( UUIDs , )          )
     ##########################################################################
     return True
-  ############################################################################
-  def PicturesAppending            ( self , atUuid , NAME , JSON           ) :
-    ##########################################################################
-    T1  = "SexPosition"
-    TAB = "RelationEditing"
-    ##########################################################################
-    OK  = self . AppendingPictures (        atUuid , NAME , JSON , TAB , T1  )
-    if                             ( not OK                                ) :
-      return
-    ##########################################################################
-    self   . loading               (                                         )
-    ##########################################################################
-    return
   ############################################################################
   def AppendingSexPositions     ( self , UUIDs                             ) :
     ##########################################################################
@@ -947,6 +900,52 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemGalleries         ( self , item                              ) :
+    ##########################################################################
+    uuid = item . data          ( 0 , Qt . UserRole                          )
+    uuid = int                  ( uuid                                       )
+    text = item . text          ( 0                                          )
+    icon = self . windowIcon    (                                            )
+    xsid = str                  ( uuid                                       )
+    ##########################################################################
+    self . ShowGalleries . emit ( text , self . GType , xsid , icon          )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPersonalGalleries     ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self . OpenItemGalleries    ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenGalleryItem                 ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( 0 , Qt . UserRole                    )
+    uuid = int                        ( uuid                                 )
+    text = item . text                ( 0                                    )
+    icon = self . windowIcon          (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
+    ##########################################################################
+    return
+  ############################################################################
+  def OpenPersonalGallery       ( self                                     ) :
+    ##########################################################################
+    atItem = self . currentItem (                                            )
+    ##########################################################################
+    if                          ( self . NotOkay ( atItem )                ) :
+      return
+    ##########################################################################
+    self   . OpenGalleryItem    ( atItem                                     )
+    ##########################################################################
+    return
+  ############################################################################
   def FunctionsMenu                  ( self , mm , uuid , item             ) :
     ##########################################################################
     msg  = self . getMenuItem        ( "Functions"                           )
@@ -981,52 +980,102 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     return False
   ############################################################################
-  def GroupsMenu                ( self , mm , item                         ) :
+  def GroupsMenu                     ( self , mm , item                    ) :
     ##########################################################################
-    if                          ( self . NotOkay ( item )                  ) :
+    if                               ( self . NotOkay ( item )             ) :
       return mm
     ##########################################################################
     TRX  = self . Translations
-    NAME = item . text          ( 0                                          )
-    FMT  = TRX                  [ "UI::Belongs"                              ]
-    MSG  = FMT . format         ( NAME                                       )
-    COL  = mm . addMenu         ( MSG                                        )
+    NAME = item . text               ( 0                                     )
+    FMT  = TRX                       [ "UI::Belongs"                         ]
+    MSG  = FMT . format              ( NAME                                  )
+    COL  = mm . addMenu              ( MSG                                   )
     ##########################################################################
-    msg  = self . getMenuItem   ( "CopySexPositionUuid"                      )
-    mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
+    msg  = self . getMenuItem        ( "CopySexPositionUuid"                 )
+    mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
     ##########################################################################
-    mm   . addSeparatorFromMenu ( COL                                        )
+    mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
-    msg  = self . getMenuItem   ( "Description"                              )
-    mm   . addActionFromMenu    ( COL , 38522001 , msg                       )
+    MSG  = self . getMenuItem        ( "PersonalGallery"                     )
+    icon = QIcon                     ( ":/images/gallery.png"                )
+    mm   . addActionFromMenuWithIcon ( COL , 38522001 , icon , MSG           )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "Icons"                               )
+    mm   . addActionFromMenu         ( COL , 38522002 , MSG                  )
+    ##########################################################################
+    MSG = self . getMenuItem         ( "Galleries"                           )
+    ICO = QIcon                      ( ":/images/galleries.png"              )
+    mm  . addActionFromMenuWithIcon  ( COL , 38522003 , ICO , MSG            )
+    ##########################################################################
+    MSG = self . getMenuItem         ( "Videos"                              )
+    ICO = QIcon                      ( ":/images/video.png"                  )
+    mm  . addActionFromMenuWithIcon  ( COL , 38522004 , ICO , MSG            )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "Description"                         )
+    mm   . addActionFromMenu         ( COL , 38523001 , msg                  )
     ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu                ( self , at , item                      ) :
+  def RunGroupsMenu                   ( self , at , item                   ) :
     ##########################################################################
-    if                             ( at == 38521001                        ) :
+    if                                ( at == 38521001                     ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      qApp . clipboard ( ). setText ( f"{uuid}"                              )
+      uuid = item . data              ( 0 , Qt . UserRole                    )
+      uuid = int                      ( uuid                                 )
+      qApp . clipboard ( ). setText   ( f"{uuid}"                            )
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 38522001                        ) :
+    if                                ( at == 38522001                     ) :
       ########################################################################
-      uuid = item . data           ( 0 , Qt . UserRole                       )
-      uuid = int                   ( uuid                                    )
-      head = item . text           ( 0                                       )
+      self . OpenGalleryItem          ( item                                 )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 38522002                     ) :
+      ########################################################################
+      text = item . text              ( 0                                    )
+      icon = self . windowIcon        (                                      )
+      ########################################################################
+      self . ShowPersonalIcons . emit ( text                                 ,
+                                        self . GType                         ,
+                                        "Using"                              ,
+                                        str ( uuid )                         ,
+                                        icon                                 )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 38522003                     ) :
+      ########################################################################
+      self . OpenItemGalleries        ( item                                 )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 38522004                     ) :
+      ########################################################################
+      text = item . text              ( 0                                    )
+      icon = self . windowIcon        (                                      )
+      xsid = str                      ( uuid                                 )
+      ########################################################################
+      self . ShowVideoAlbums . emit   ( text , self . GType , xsid , icon    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                ( at == 38523001                     ) :
+      ########################################################################
+      uuid = item . data              ( 0 , Qt . UserRole                    )
+      uuid = int                      ( uuid                                 )
+      head = item . text              ( 0                                    )
       nx   = ""
       ########################################################################
-      if                           ( "Notes" in self . Tables              ) :
-        nx = self . Tables         [ "Notes"                                 ]
+      if                              ( "Notes" in self . Tables           ) :
+        nx = self . Tables            [ "Notes"                              ]
       ########################################################################
-      self . OpenLogHistory . emit ( head                                    ,
-                                     str ( uuid )                            ,
-                                     "Description"                           ,
-                                     nx                                      ,
-                                     str ( self . getLocality ( ) )          )
+      self . OpenLogHistory . emit    ( head                                 ,
+                                        str ( uuid )                         ,
+                                        "Description"                        ,
+                                        nx                                   ,
+                                        str ( self . getLocality ( ) )       )
       ########################################################################
       return True
     ##########################################################################
