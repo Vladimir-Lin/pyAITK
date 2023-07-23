@@ -73,6 +73,7 @@ from   AITK  . Pictures   . Picture    import Picture     as PictureItem
 from   AITK  . Pictures   . Gallery    import Gallery     as GalleryItem
 from   AITK  . People     . People     import People      as PeopleItem
 from   AITK  . Videos     . Album      import Album       as AlbumItem
+from   AITK  . Videos     . Film       import Film        as FilmItem
 ##############################################################################
 class VideoAlbumsView              ( IconDock                              ) :
   ############################################################################
@@ -826,20 +827,16 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return LISTS
   ############################################################################
-  def InvestigateFilms                ( self , DB , path , FILEs           ) :
+  def InvestigateFilms                ( self , DB , name , path , FILEs    ) :
     ##########################################################################
     FILMs            =                {                                      }
+    CNT              = 1
     ##########################################################################
     for FILE in FILEs                                                        :
       ########################################################################
-      DETAILs        =                {                                      }
+      FVM            = FilmItem       (                                      )
       VFILE          = f"{path}/videos/{FILE}"
-      ########################################################################
-      try                                                                    :
-        VCONF        = ffmpeg . probe ( VFILE                                )
-        DETAILs      = VCONF
-      except                                                                 :
-        pass
+      DETAILs        = FVM . Probe    ( VFILE                                )
       ########################################################################
       try                                                                    :
         ######################################################################
@@ -878,7 +875,12 @@ class VideoAlbumsView              ( IconDock                              ) :
       except                                                                 :
         pass
       ########################################################################
-      FILMs [ FILE ] = DETAILs
+      NN  = f"{name} #{CNT}"
+      FVM . Parse                     ( NN , DETAILs                         )
+      ########################################################################
+      FILMs [ FILE ] = FVM . Details
+      ########################################################################
+      CNT = CNT + 1
     ##########################################################################
     return FILMs
   ############################################################################
@@ -1113,7 +1115,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateAlbumInformation              ( self , DB , uuid , path        ) :
+  def UpdateAlbumInformation              ( self , DB , uuid , name , path ) :
     ##########################################################################
     FILEs   = self . ExportAlbumM3U       (                    path          )
     NAMEs   = self . GetAlbumNames        (        DB , uuid                 )
@@ -1129,7 +1131,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     COVERS  = self . ExportAlbumCovers    ( DB   , uuid , path               )
     CROWDS  = self . ExportAlbumActors    ( DB   , uuid , path               )
     JGALM   = self . ExportAlbumGalleries ( DB   , uuid , path               )
-    FILMs   = self . InvestigateFilms     ( DB          , path , FILEs       )
+    FILMs   = self . InvestigateFilms     ( DB   , name , path , FILEs       )
     ##########################################################################
     CONF    = f"{path}/Album.json"
     JSON    =                             { "Uuid"        : uuid           , \
@@ -1146,7 +1148,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def GenerateVideoAlbum           ( self , uuid , path                    ) :
+  def GenerateVideoAlbum           ( self , uuid , name , path             ) :
     ##########################################################################
     CONFs = self . Settings        [ "Albums"                                ]
     DIR   = CONFs                  [ "Template"                              ]
@@ -1164,7 +1166,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     self  . OnBusy  . emit         (                                         )
     ##########################################################################
-    self  . UpdateAlbumInformation ( DB , uuid , path                        )
+    self  . UpdateAlbumInformation ( DB , uuid , name , path                 )
     ##########################################################################
     self  . GoRelax . emit         (                                         )
     DB    . Close                  (                                         )
@@ -1173,7 +1175,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def CreateAlbum               ( self , VIDEO                             ) :
+  def CreateAlbum               ( self , VIDEO , NAME                      ) :
     ##########################################################################
     MSG    = self . getMenuItem ( "CreateAlbum"                              )
     path   = QFileDialog . getExistingDirectory                            ( \
@@ -1185,12 +1187,12 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                          ( not path                                 ) :
       return
     ##########################################################################
-    PARAMs =                    ( VIDEO , path ,                             )
+    PARAMs =                    ( VIDEO , NAME , path ,                      )
     self . Go                   ( self . GenerateVideoAlbum , PARAMs         )
     ##########################################################################
     return
   ############################################################################
-  def UpdateVideoAlbum             ( self , uuid , path                    ) :
+  def UpdateVideoAlbum             ( self , uuid , name , path             ) :
     ##########################################################################
     CONFs = self . Settings        [ "Albums"                                ]
     DIR   = CONFs                  [ "Template"                              ]
@@ -1206,7 +1208,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     self  . OnBusy  . emit         (                                         )
     ##########################################################################
-    self  . UpdateAlbumInformation ( DB , uuid , path                        )
+    self  . UpdateAlbumInformation ( DB , uuid , name , path                 )
     ##########################################################################
     self  . GoRelax . emit         (                                         )
     DB    . Close                  (                                         )
@@ -1215,7 +1217,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateAlbum               ( self , VIDEO                             ) :
+  def UpdateAlbum               ( self , VIDEO , NAME                      ) :
     ##########################################################################
     MSG    = self . getMenuItem ( "UpdateAlbum"                              )
     path   = QFileDialog . getExistingDirectory                            ( \
@@ -1227,7 +1229,7 @@ class VideoAlbumsView              ( IconDock                              ) :
     if                          ( not path                                 ) :
       return
     ##########################################################################
-    PARAMs =                    ( VIDEO , path ,                             )
+    PARAMs =                    ( VIDEO , NAME , path ,                      )
     self . Go                   ( self . UpdateVideoAlbum , PARAMs           )
     ##########################################################################
     return
@@ -1720,13 +1722,13 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     if                             ( at == 34635101                        ) :
       ########################################################################
-      self . CreateAlbum           ( uuid                                    )
+      self . CreateAlbum           ( uuid , item . text ( )                  )
       ########################################################################
       return True
     ##########################################################################
     if                             ( at == 34635102                        ) :
       ########################################################################
-      self . UpdateAlbum           ( uuid                                    )
+      self . UpdateAlbum           ( uuid , item . text ( )                  )
       ########################################################################
       return True
     ##########################################################################
