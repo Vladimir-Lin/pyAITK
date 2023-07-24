@@ -16,17 +16,22 @@ import base64
 import pathlib
 import ffmpeg
 ##############################################################################
-from   AITK  . Database   . Connection     import Connection     as Connection
+import AITK
 ##############################################################################
-from   AITK  . Documents  . Name           import Name           as NameItem
-from   AITK  . Documents  . Name           import Naming         as Naming
-from   AITK  . Documents  . Notes          import Notes          as NoteItem
-from   AITK  . Documents  . Variables      import Variables      as VariableItem
-from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
+from   AITK . Database   . Query          import Query
+from   AITK . Database   . Connection     import Connection
+from   AITK . Database   . Pair           import Pair
+from   AITK . Database   . Columns        import Columns
 ##############################################################################
-from   AITK  . Calendars  . StarDate       import StarDate       as StarDate
-from   AITK  . Calendars  . Periode        import Periode        as Periode
-from   AITK  . Essentials . Relation       import Relation       as Relation
+from   AITK . Documents  . Name           import Name           as NameItem
+from   AITK . Documents  . Name           import Naming         as Naming
+from   AITK . Documents  . Notes          import Notes          as NoteItem
+from   AITK . Documents  . Variables      import Variables      as VariableItem
+from   AITK . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
+##############################################################################
+from   AITK . Calendars  . StarDate       import StarDate       as StarDate
+from   AITK . Calendars  . Periode        import Periode        as Periode
+from   AITK . Essentials . Relation       import Relation       as Relation
 ##############################################################################
 class Film               ( Columns                                         ) :
   ############################################################################
