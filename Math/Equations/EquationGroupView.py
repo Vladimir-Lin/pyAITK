@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## SexPositionGroupView
+## EquationGroupView
 ##############################################################################
 import os
 import sys
@@ -55,12 +55,12 @@ from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . People     . People    import People
 ##############################################################################
-class SexPositionGroupView         ( IconDock                              ) :
+class EquationGroupView            ( IconDock                              ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
-  SexPositionSubgroup = pyqtSignal ( str , int , str                         )
-  SexPositionGroup    = pyqtSignal ( str , int , str , str , QIcon           )
+  EquationSubgroup = pyqtSignal ( str , int , str                         )
+  EquationGroup    = pyqtSignal ( str , int , str , str , QIcon           )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
@@ -68,7 +68,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . GTYPE        = 210
+    self . GTYPE        = 128
     self . SortOrder    = "asc"
     self . PrivateIcon  = True
     self . PrivateGroup = True
@@ -81,7 +81,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ## self . Grouping = "Subgroup"
     ## self . Grouping = "Reverse"
     ##########################################################################
-    self . FetchTableKey = "SexPositionGroupView"
+    self . FetchTableKey = "EquationGroupView"
     ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . set         ( "first" , 0                              )
@@ -114,7 +114,7 @@ class SexPositionGroupView         ( IconDock                              ) :
       A    = QAction                (                                        )
       A    . setIcon                ( QIcon ( ":/images/lists.png" )         )
       A    . setToolTip             ( msg                                    )
-      A    . triggered . connect    ( self . OpenSexPositionGroup            )
+      A    . triggered . connect    ( self . OpenEquationGroup            )
       self . WindowActions . append ( A                                      )
     ##########################################################################
     return
@@ -696,7 +696,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     if                                ( at == 2002                         ) :
       ########################################################################
-      self . OpenItemSexPositionGroup ( atItem                              )
+      self . OpenItemEquationGroup ( atItem                              )
       ########################################################################
       return True
     ##########################################################################
@@ -712,7 +712,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     title = item . text           (                                          )
     tid   = self . Relation . get ( "t2"                                     )
-    self  . SexPositionSubgroup . emit  ( title , tid , str ( uuid )         )
+    self  . EquationSubgroup . emit  ( title , tid , str ( uuid )            )
     ##########################################################################
     return True
   ############################################################################
@@ -725,17 +725,17 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     return self . OpenItemSubgroup ( atItem                                  )
   ############################################################################
-  def OpenSexPositionGroup          ( self                                 ) :
+  def OpenEquationGroup          ( self                                 ) :
     ##########################################################################
     atItem = self . currentItem     (                                        )
     if                              ( self . NotOkay ( atItem )            ) :
       return
     ##########################################################################
-    self . OpenItemSexPositionGroup ( atItem                                 )
+    self . OpenItemEquationGroup ( atItem                                 )
     ##########################################################################
     return
   ############################################################################
-  def OpenItemSexPositionGroup ( self , item                               ) :
+  def OpenItemEquationGroup ( self , item                               ) :
     ##########################################################################
     uuid  = item . data        ( Qt . UserRole                               )
     uuid  = int                ( uuid                                        )
@@ -747,7 +747,7 @@ class SexPositionGroupView         ( IconDock                              ) :
     title   = item . text      (                                             )
     tid     = self . Relation  . get ( "t2"                                  )
     related = "Subordination"
-    self    . SexPositionGroup . emit ( title                              , \
+    self    . EquationGroup . emit ( title                              , \
                                         tid                                , \
                                         str ( uuid )                       , \
                                         related                            , \
@@ -755,14 +755,14 @@ class SexPositionGroupView         ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def OpenCurrentSexPositionGroup          ( self                          ) :
+  def OpenCurrentEquationGroup          ( self                          ) :
     ##########################################################################
     atItem = self . currentItem            (                                 )
     ##########################################################################
     if                                     ( atItem == None                ) :
       return False
     ##########################################################################
-    return self . OpenItemSexPositionGroup ( atItem                          )
+    return self . OpenItemEquationGroup ( atItem                          )
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## SexPositionListings
-## 性愛姿勢列表
+## EquationListings
+## 數學公式列表
 ##############################################################################
 import os
 import sys
@@ -53,17 +53,13 @@ from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 from   AITK  . People     . People    import People
 ##############################################################################
-class SexPositionListings          ( TreeDock                              ) :
+class EquationListings             ( TreeDock                              ) :
   ############################################################################
-  HavingMenu          = 1371434312
+  HavingMenu     = 1371434312
   ############################################################################
-  emitNamesShow       = pyqtSignal (                                         )
-  emitAllNames        = pyqtSignal ( dict                                    )
-  ShowPersonalGallery = pyqtSignal ( str , int , str  ,       QIcon          )
-  ShowPersonalIcons   = pyqtSignal ( str , int , str  , str , QIcon          )
-  ShowGalleries       = pyqtSignal ( str , int , str  ,       QIcon          )
-  ShowVideoAlbums     = pyqtSignal ( str , int , str  ,       QIcon          )
-  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
+  emitNamesShow  = pyqtSignal      (                                         )
+  emitAllNames   = pyqtSignal      ( dict                                    )
+  OpenLogHistory = pyqtSignal      ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -71,7 +67,7 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . GType              = 210
+    self . GType              = 128
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 40
@@ -85,7 +81,7 @@ class SexPositionListings          ( TreeDock                              ) :
     ## self . Grouping           = "Subordination"
     ## self . Grouping           = "Reverse"
     ##########################################################################
-    self . FetchTableKey      = "SexPositionListings"
+    self . FetchTableKey      = "EquationListings"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -95,13 +91,11 @@ class SexPositionListings          ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Organization"                          )
+    self . Relation . setT2        ( "Equation"                              )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
+    self . setColumnCount          ( 2                                       )
     self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
-    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -132,7 +126,7 @@ class SexPositionListings          ( TreeDock                              ) :
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/names.png" )           )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenSexPositionNames              )
+    A    . triggered . connect    ( self . OpenEquationNames                 )
     self . WindowActions . append ( A                                        )
     ##########################################################################
     msg  = self . getMenuItem     ( "Search"                                 )
@@ -209,7 +203,7 @@ class SexPositionListings          ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( "SexPositionListings" , 1                        )
+    self . defaultPrepare ( "EquationListings" , 1                           )
     ##########################################################################
     return
   ############################################################################
@@ -351,7 +345,7 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     if                                ( self . isOriginal ( )              ) :
       self . SearchingForT2           ( name                                 ,
-                                        "SexPosition"                        ,
+                                        "Equation"                           ,
                                         "Names"                              )
       return
     ##########################################################################
@@ -480,7 +474,7 @@ class SexPositionListings          ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids                ( self , DB                            ) :
     ##########################################################################
-    TABLE  = self . Tables          [ "SexPosition"                          ]
+    TABLE  = self . Tables          [ "Equations"                            ]
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
@@ -496,8 +490,8 @@ class SexPositionListings          ( TreeDock                              ) :
   ############################################################################
   def FetchRegularDepotCount ( self , DB                                   ) :
     ##########################################################################
-    SEXTAB = self . Tables   [ "SexPosition"                                 ]
-    QQ     = f"select count(*) from {SEXTAB} where ( `used` > 0 ) ;"
+    EQUTAB = self . Tables   [ "Equations"                                   ]
+    QQ     = f"select count(*) from {EQUTAB} where ( `used` > 0 ) ;"
     DB     . Query           ( QQ                                            )
     ONE    = DB . FetchOne   (                                               )
     ##########################################################################
@@ -523,12 +517,12 @@ class SexPositionListings          ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    SEXTAB = self . Tables          [ "SexPosition"                          ]
+    EQUTAB = self . Tables          [ "Equations"                            ]
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ     = f"""select `uuid` from {SEXTAB}
+    QQ     = f"""select `uuid` from {EQUTAB}
                   where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
@@ -579,7 +573,7 @@ class SexPositionListings          ( TreeDock                              ) :
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "sexposition/uuids"
+    mtype   = "equation/uuids"
     message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , 0 , mtype , message                )
@@ -591,7 +585,7 @@ class SexPositionListings          ( TreeDock                              ) :
     return
   ############################################################################
   def allowedMimeTypes        ( self , mime                                ) :
-    formats = "sexposition/uuids"
+    formats = "equation/uuids"
     return self . MimeType    ( mime , formats                               )
   ############################################################################
   def acceptDrop              ( self , sourceWidget , mimeData             ) :
@@ -619,8 +613,8 @@ class SexPositionListings          ( TreeDock                              ) :
     title  = source . windowTitle    (                                       )
     CNT    = len                     ( UUIDs                                 )
     ##########################################################################
-    if                               ( mtype in [ "sexposition/uuids"    ] ) :
-      self . ShowMenuItemTitleStatus ( "SexPositionFrom" , title , CNT       )
+    if                               ( mtype in [ "equation/uuids"       ] ) :
+      self . ShowMenuItemTitleStatus ( "EquationFrom" , title , CNT          )
     ##########################################################################
     return RDN
   ############################################################################
@@ -637,10 +631,10 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def acceptSexPositionsDrop ( self                                        ) :
+  def acceptEquationsDrop ( self                                           ) :
     return True
   ############################################################################
-  def dropSexPositions ( self , source , pos , JSOX                        ) :
+  def dropEquations    ( self , source , pos , JSOX                        ) :
     ##########################################################################
     if                 ( "UUIDs" not in JSOX                               ) :
       return True
@@ -649,11 +643,11 @@ class SexPositionListings          ( TreeDock                              ) :
     if                 ( len ( UUIDs ) <= 0                                ) :
       return True
     ##########################################################################
-    self . Go          ( self . AppendingSexPositions , ( UUIDs , )          )
+    self . Go          ( self . AppendingEquations , ( UUIDs , )             )
     ##########################################################################
     return True
   ############################################################################
-  def AppendingSexPositions     ( self , UUIDs                             ) :
+  def AppendingEquations        ( self , UUIDs                             ) :
     ##########################################################################
     COUNT  = len                ( UUIDs                                      )
     if                          ( COUNT <= 0                               ) :
@@ -665,7 +659,7 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     self   . OnBusy  . emit     (                                            )
     self   . setBustle          (                                            )
-    FMT    = self . getMenuItem ( "JoinSexPosition"                          )
+    FMT    = self . getMenuItem ( "EquationFrom"                             )
     MSG    = FMT  . format      ( COUNT                                      )
     self   . ShowStatus         ( MSG                                        )
     self   . TtsTalk            ( MSG , 1002                                 )
@@ -715,7 +709,7 @@ class SexPositionListings          ( TreeDock                              ) :
     self   . setBustle                (                                      )
     DB     . LockWrites               ( [ RELTAB                           ] )
     ##########################################################################
-    TITLE  = "RemoveSexPositionItems"
+    TITLE  = "RemoveEquationItems"
     self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
     ##########################################################################
     DB     . UnlockTables             (                                      )
@@ -732,17 +726,17 @@ class SexPositionListings          ( TreeDock                              ) :
     if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    SEXTAB = self . Tables    [ "SexPosition"                                ]
+    EQUTAB = self . Tables    [ "Equations"                                  ]
     RELTAB = self . Tables    [ "RelationGroups"                             ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ SEXTAB , RELTAB , NAMTAB                 ] )
+    DB     . LockWrites       ( [ EQUTAB , RELTAB , NAMTAB                 ] )
     ##########################################################################
     uuid   = int              ( uuid                                         )
     if                        ( uuid <= 0                                  ) :
       ########################################################################
-      uuid = DB . LastUuid    ( SEXTAB , "uuid" , 5431236238719400000        )
-      DB   . AppendUuid       ( SEXTAB , uuid                                )
+      uuid = DB . LastUuid    ( EQUTAB , "uuid" , 5010000000000000000        )
+      DB   . AppendUuid       ( EQUTAB , uuid                                )
     ##########################################################################
     self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
@@ -772,10 +766,10 @@ class SexPositionListings          ( TreeDock                              ) :
     if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    SEXTAB = self . Tables    [ "SexPosition"                                ]
+    EQUTAB = self . Tables    [ "Equations"                                  ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ SEXTAB , NAMTAB                          ] )
+    DB     . LockWrites       ( [ EQUTAB , NAMTAB                          ] )
     ##########################################################################
     for N in L                                                               :
       ########################################################################
@@ -786,8 +780,8 @@ class SexPositionListings          ( TreeDock                              ) :
       if                      ( len ( name ) <= 0                          ) :
         continue
       ########################################################################
-      uuid = DB . LastUuid    ( SEXTAB , "uuid" , 5431236238719400000        )
-      DB   . AppendUuid       ( SEXTAB , uuid                                )
+      uuid = DB . LastUuid    ( EQUTAB , "uuid" , 5010000000000000000        )
+      DB   . AppendUuid       ( EQUTAB , uuid                                )
       self . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
     DB     . Close            (                                              )
@@ -837,7 +831,7 @@ class SexPositionListings          ( TreeDock                              ) :
     if                              ( CUD                                  ) :
       ########################################################################
       SCOPE = self . Grouping
-      SCOPE = f"SexPositionListings-{SCOPE}"
+      SCOPE = f"EquationListings-{SCOPE}"
       self  . SetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE      )
     ##########################################################################
     DB      . UnlockTables          (                                        )
@@ -869,7 +863,7 @@ class SexPositionListings          ( TreeDock                              ) :
       return
     ##########################################################################
     SCOPE  = self . Grouping
-    SCOPE  = f"SexPositionListings-{SCOPE}"
+    SCOPE  = f"EquationListings-{SCOPE}"
     self   . GetLocalityByUuid     ( DB , PAMTAB , UUID , TYPE , SCOPE       )
     ##########################################################################
     return
@@ -886,7 +880,7 @@ class SexPositionListings          ( TreeDock                              ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def OpenSexPositionNames      ( self                                     ) :
+  def OpenEquationNames         ( self                                     ) :
     ##########################################################################
     atItem = self . currentItem (                                            )
     if                          ( self . NotOkay ( atItem )                ) :
@@ -896,53 +890,7 @@ class SexPositionListings          ( TreeDock                              ) :
     uuid   = int                ( uuid                                       )
     head   = atItem . text      ( 0                                          )
     NAM    = self . Tables      [ "NamesEditing"                             ]
-    self   . EditAllNames       ( self , "SexPosition" , uuid , NAM          )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenItemGalleries         ( self , item                              ) :
-    ##########################################################################
-    uuid = item . data          ( 0 , Qt . UserRole                          )
-    uuid = int                  ( uuid                                       )
-    text = item . text          ( 0                                          )
-    icon = self . windowIcon    (                                            )
-    xsid = str                  ( uuid                                       )
-    ##########################################################################
-    self . ShowGalleries . emit ( text , self . GType , xsid , icon          )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenPersonalGalleries     ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    ##########################################################################
-    if                          ( self . NotOkay ( atItem )                ) :
-      return
-    ##########################################################################
-    self . OpenItemGalleries    ( atItem                                     )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenGalleryItem                 ( self , item                        ) :
-    ##########################################################################
-    uuid = item . data                ( 0 , Qt . UserRole                    )
-    uuid = int                        ( uuid                                 )
-    text = item . text                ( 0                                    )
-    icon = self . windowIcon          (                                      )
-    xsid = str                        ( uuid                                 )
-    ##########################################################################
-    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
-    ##########################################################################
-    return
-  ############################################################################
-  def OpenPersonalGallery       ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    ##########################################################################
-    if                          ( self . NotOkay ( atItem )                ) :
-      return
-    ##########################################################################
-    self   . OpenGalleryItem    ( atItem                                     )
+    self   . EditAllNames       ( self , "Equation" , uuid , NAM             )
     ##########################################################################
     return
   ############################################################################
@@ -970,7 +918,7 @@ class SexPositionListings          ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9003 )         :
+    if                             ( at >= 9001 ) and ( at <= 9001 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -991,27 +939,12 @@ class SexPositionListings          ( TreeDock                              ) :
     MSG  = FMT . format              ( NAME                                  )
     COL  = mm . addMenu              ( MSG                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "CopySexPositionUuid"                 )
+    msg  = self . getMenuItem        ( "CopyEquationUuid"                    )
     mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
     ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
-    MSG  = self . getMenuItem        ( "Icons"                               )
-    mm   . addActionFromMenu         ( COL , 38522001 , MSG                  )
-    ##########################################################################
-    MSG  = self . getMenuItem        ( "PersonalGallery"                     )
-    icon = QIcon                     ( ":/images/gallery.png"                )
-    mm   . addActionFromMenuWithIcon ( COL , 38522002 , icon , MSG           )
-    ##########################################################################
-    MSG  = self . getMenuItem        ( "Galleries"                           )
-    ICO  = QIcon                     ( ":/images/galleries.png"              )
-    mm   . addActionFromMenuWithIcon ( COL , 38522003 , ICO , MSG            )
-    ##########################################################################
-    MSG  = self . getMenuItem        ( "Videos"                              )
-    ICO  = QIcon                     ( ":/images/video.png"                  )
-    mm   . addActionFromMenuWithIcon ( COL , 38522004 , ICO , MSG            )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "Description"                         )
+    msg  = self . getMenuItem        ( "Equation"                            )
     mm   . addActionFromMenu         ( COL , 38523001 , msg                  )
     ##########################################################################
     return mm
@@ -1023,45 +956,6 @@ class SexPositionListings          ( TreeDock                              ) :
       uuid = item . data              ( 0 , Qt . UserRole                    )
       uuid = int                      ( uuid                                 )
       qApp . clipboard ( ). setText   ( f"{uuid}"                            )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                ( at == 38522001                     ) :
-      ########################################################################
-      uuid = item . data              ( 0 , Qt . UserRole                    )
-      uuid = int                      ( uuid                                 )
-      text = item . text              ( 0                                    )
-      icon = self . windowIcon        (                                      )
-      ########################################################################
-      self . ShowPersonalIcons . emit ( text                                 ,
-                                        self . GType                         ,
-                                        "Using"                              ,
-                                        str ( uuid )                         ,
-                                        icon                                 )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                ( at == 38522002                     ) :
-      ########################################################################
-      self . OpenGalleryItem          ( item                                 )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                ( at == 38522003                     ) :
-      ########################################################################
-      self . OpenItemGalleries        ( item                                 )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                                ( at == 38522004                     ) :
-      ########################################################################
-      uuid = item . data              ( 0 , Qt . UserRole                    )
-      uuid = int                      ( uuid                                 )
-      text = item . text              ( 0                                    )
-      icon = self . windowIcon        (                                      )
-      xsid = str                      ( uuid                                 )
-      ########################################################################
-      self . ShowVideoAlbums . emit   ( text , self . GType , xsid , icon    )
       ########################################################################
       return True
     ##########################################################################
@@ -1077,7 +971,7 @@ class SexPositionListings          ( TreeDock                              ) :
       ########################################################################
       self . OpenLogHistory . emit    ( head                                 ,
                                         str ( uuid )                         ,
-                                        "Description"                        ,
+                                        "Equation"                           ,
                                         nx                                   ,
                                         str ( self . getLocality ( ) )       )
       ########################################################################
@@ -1188,7 +1082,7 @@ class SexPositionListings          ( TreeDock                              ) :
       ########################################################################
       uuid = self . itemUuid       ( atItem , 0                              )
       NAM  = self . Tables         [ "NamesEditing"                          ]
-      self . EditAllNames          ( self , "SexPosition" , uuid , NAM       )
+      self . EditAllNames          ( self , "Equation" , uuid , NAM          )
       ########################################################################
       return True
     ##########################################################################

@@ -95,13 +95,11 @@ class SexPositionListings          ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Organization"                          )
+    self . Relation . setT2        ( "SexPosition"                           )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 4                                       )
+    self . setColumnCount          ( 2                                       )
     self . setColumnHidden         ( 1 , True                                )
-    self . setColumnHidden         ( 2 , True                                )
-    self . setColumnHidden         ( 3 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
