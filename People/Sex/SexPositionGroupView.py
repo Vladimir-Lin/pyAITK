@@ -509,7 +509,7 @@ class SexPositionGroupView         ( IconDock                              ) :
       SMSG     = SFMT . format         ( SCNT                                )
       ########################################################################
       REL      . set                   ( "t1"    , T2                        )
-      REL      . setT2                 ( "Organization"                      )
+      REL      . setT2                 ( "SexPosition"                       )
       GCNT     = REL  . CountSecond    ( DBG     , RELTAB                    )
       GMSG     = GFMT . format         ( GCNT                                )
       ########################################################################

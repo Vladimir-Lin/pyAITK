@@ -57,12 +57,12 @@ from   AITK  . People     . People    import People
 ##############################################################################
 class EquationGroupView            ( IconDock                              ) :
   ############################################################################
-  HavingMenu          = 1371434312
+  HavingMenu        = 1371434312
   ############################################################################
-  EquationSubgroup = pyqtSignal ( str , int , str                         )
-  EquationGroup    = pyqtSignal ( str , int , str , str , QIcon           )
-  OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
-  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
+  EquationSubgroup  = pyqtSignal   ( str , int , str                         )
+  EquationGroup     = pyqtSignal   ( str , int , str , str , QIcon           )
+  OpenVariantTables = pyqtSignal   ( str , str , int , str , dict            )
+  OpenLogHistory    = pyqtSignal   ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -204,7 +204,7 @@ class EquationGroupView            ( IconDock                              ) :
       return False
     else                                                                     :
       ########################################################################
-      formats = "sexposition/uuids"
+      formats = "equation/uuids"
     ##########################################################################
     if                        ( len ( formats ) <= 0                       ) :
       return False
@@ -229,7 +229,7 @@ class EquationGroupView            ( IconDock                              ) :
     CNT     = len                   ( UUIDs                                  )
     title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                              ( mtype in [ "sexposition/uuids" ]     ) :
+    if                              ( mtype in [ "equation/uuids" ]        ) :
       ########################################################################
       if                            ( self . isTagging ( )                 ) :
         return False
@@ -247,7 +247,7 @@ class EquationGroupView            ( IconDock                              ) :
     CNT     = len                     ( UUIDs                                )
     title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                                ( mtype in [ "sexposition/uuids"   ] ) :
+    if                                ( mtype in [ "equation/uuids"      ] ) :
       ########################################################################
       if                              ( self . isTagging ( )               ) :
         return False
@@ -255,7 +255,7 @@ class EquationGroupView            ( IconDock                              ) :
       if                              ( self . NotOkay ( atItem )          ) :
         return False
       ########################################################################
-      self  . ShowMenuItemTitleStatus ( "JoinSexPosition" , title , CNT      )
+      self  . ShowMenuItemTitleStatus ( "JoinEquation" , title , CNT         )
       ########################################################################
       return True
     ##########################################################################
@@ -270,23 +270,23 @@ class EquationGroupView            ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def acceptSexPositionsDrop ( self                                        ) :
+  def acceptEquationsDrop ( self                                           ) :
     return True
   ############################################################################
-  def dropSexPositions                  ( self , source , pos , JSON       ) :
-    FUNC = self . SexPositionAppending
+  def dropEquations                     ( self , source , pos , JSON       ) :
+    FUNC = self . EquationAppending
     return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
-  def SexPositionAppending ( self , atUuid , NAME , JSON                   ) :
+  def EquationAppending ( self , atUuid , NAME , JSON                      ) :
     ##########################################################################
     T1   = "Subgroup"
     TAB  = "RelationEditing"
     ##########################################################################
-    OK   = self . AppendingSexPositionIntoT1 ( atUuid                      , \
-                                               NAME                        , \
-                                               JSON                        , \
-                                               TAB                         , \
-                                               T1                            )
+    OK   = self . AppendingEquationIntoT1 ( atUuid                         , \
+                                            NAME                           , \
+                                            JSON                           , \
+                                            TAB                            , \
+                                            T1                               )
     if                      ( not OK                                       ) :
       return
     ##########################################################################
@@ -294,7 +294,7 @@ class EquationGroupView            ( IconDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AppendingSexPositionIntoT1 ( self                                    , \
+  def AppendingEquationIntoT1    ( self                                    , \
                                    atUuid                                  , \
                                    NAME                                    , \
                                    JSON                                    , \
@@ -322,7 +322,7 @@ class EquationGroupView            ( IconDock                              ) :
     REL    = Relation            (                                           )
     REL    . set                 ( "first" , atUuid                          )
     REL    . setT1               ( T1                                        )
-    REL    . setT2               ( "SexPosition"                             )
+    REL    . setT2               ( "Equation"                                )
     REL    . setRelation         ( "Subordination"                           )
     REL    . Joins               ( DB , RELTAB , UUIDs                       )
     ##########################################################################
@@ -509,7 +509,7 @@ class EquationGroupView            ( IconDock                              ) :
       SMSG     = SFMT . format         ( SCNT                                )
       ########################################################################
       REL      . set                   ( "t1"    , T2                        )
-      REL      . setT2                 ( "Organization"                      )
+      REL      . setT2                 ( "Equation"                          )
       GCNT     = REL  . CountSecond    ( DBG     , RELTAB                    )
       GMSG     = GFMT . format         ( GCNT                                )
       ########################################################################
@@ -731,11 +731,11 @@ class EquationGroupView            ( IconDock                              ) :
     if                              ( self . NotOkay ( atItem )            ) :
       return
     ##########################################################################
-    self . OpenItemEquationGroup ( atItem                                 )
+    self . OpenItemEquationGroup ( atItem                                    )
     ##########################################################################
     return
   ############################################################################
-  def OpenItemEquationGroup ( self , item                               ) :
+  def OpenItemEquationGroup    ( self , item                               ) :
     ##########################################################################
     uuid  = item . data        ( Qt . UserRole                               )
     uuid  = int                ( uuid                                        )
@@ -755,14 +755,14 @@ class EquationGroupView            ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
-  def OpenCurrentEquationGroup          ( self                          ) :
+  def OpenCurrentEquationGroup          ( self                             ) :
     ##########################################################################
-    atItem = self . currentItem            (                                 )
+    atItem = self . currentItem         (                                    )
     ##########################################################################
-    if                                     ( atItem == None                ) :
+    if                                  ( atItem == None                   ) :
       return False
     ##########################################################################
-    return self . OpenItemEquationGroup ( atItem                          )
+    return self . OpenItemEquationGroup ( atItem                             )
   ############################################################################
   def CommandParser ( self , language , message , timestamp                ) :
     ##########################################################################
