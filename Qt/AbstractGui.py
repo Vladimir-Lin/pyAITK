@@ -95,7 +95,7 @@ class AbstractGui        (                                                 ) :
     self . LimitValues     = {                                               }
     self . AllowDrops      = {                                               }
     self . Functionalities = {                                               }
-    self . GuiMutex        = threading . Lock ( )
+    self . GuiMutex        = threading . Lock (                              )
     self . RunningThreads  = [                                               ]
     self . WindowActions   = [                                               ]
     self . DropInJSON      = {                                               }
