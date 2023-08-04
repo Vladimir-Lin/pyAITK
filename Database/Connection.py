@@ -99,6 +99,9 @@ class Connection ( )                                                         :
     if ( "port" in DB )                                                      :
       port = DB [ "port" ]
     ##########################################################################
+    if ( "pure" in DB )                                                      :
+      ForcePure = DB [ "pure" ]
+    ##########################################################################
     try                                                                      :
       if ( ForcePure )                                                       :
         self . db = mysql . connector . connect                            ( \
