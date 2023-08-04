@@ -48,8 +48,8 @@ from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
 ##############################################################################
 from   AITK  . Essentials . Relation  import Relation
 ##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
+from   AITK  . Calendars  . StarDate  import StarDate
+from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class PeopleListings               ( TreeDock                              ) :
   ############################################################################
