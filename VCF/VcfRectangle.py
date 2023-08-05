@@ -895,7 +895,7 @@ class VcfRectangle              ( VcfItem                                  ) :
     self . Painter . addBrush ( 34621147 , QColor ( 255 ,   0 ,   0 , 192 )  )
     ##########################################################################
     FNT  = QFont              (                                              )
-    FNT  . setPixelSize       ( 60.0                                         )
+    FNT  . setPixelSize       ( 60                                           )
     self . Painter . fonts [ 34621148 ] = FNT
     ##########################################################################
     return

@@ -302,7 +302,7 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
     ##########################################################################
     WW     = ( wm . width  ( ) * ( randint ( 0 , 200 ) % 16 ) / 16           )
     HH     = ( wm . height ( ) * ( randint ( 0 , 200 ) % 16 ) / 16           )
-    ds     = QSize               ( WW , HH                                   )
+    ds     = QSize               ( int ( WW ) , int ( HH )                   )
     ##########################################################################
     if                           ( ds . width  ( ) < 0                     ) :
       ds   . setWidth            ( 0                                         )
