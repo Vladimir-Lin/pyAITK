@@ -374,7 +374,7 @@ class Film               ( Columns                                         ) :
                  and ( `height` = {VH} )
                  and ( `frames` = {FRS} )
                  and ( `format` = '{FMT}' )
-                 and ( `fps` = {FPS} )
+                 and ( `fps` = '{FPS}' )
                  and ( `vcodec` = '{VCO}' )
                  and ( `vbitrate` = {VBR} )
                  and ( `acodec` = '{ACO}' )
@@ -421,8 +421,8 @@ class Film               ( Columns                                         ) :
                  `vcodec` , `vbitrate` , `acodec` , `samplerate` , `abitrate` )
                values
                ( {UUID} , 1 , 1 , {VFS} , {DUR} ,
-                 {VW} , {VH} , {FRS} , '{FMT}' , {FPS} ,
-                 '{VCO}' , {VBR} , {ACO} , {ASR} , {ABR} ) ;"""
+                 {VW} , {VH} , {FRS} , '{FMT}' , '{FPS}' ,
+                 '{VCO}' , {VBR} , '{ACO}' , {ASR} , {ABR} ) ;"""
     ##########################################################################
     QQ   =  " " . join   ( QQ . split ( )                                    )
     DB   . Query         ( QQ                                                )
