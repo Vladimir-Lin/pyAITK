@@ -348,5 +348,91 @@ class Film               ( Columns                                         ) :
     ##########################################################################
     return True
   ############################################################################
+  def Locate                 ( self , DB , VIDTAB                          ) :
+    ##########################################################################
+    if                       ( self . FileSize <= 0                        ) :
+      return False
+    ##########################################################################
+    FMT  = self . Format
+    DUR  = self . Duration
+    VFS  = self . FileSize
+    VW   = self . Width
+    VH   = self . Height
+    VCO  = self . vCodec
+    FPS  = self . FPS
+    FRS  = self . Frames
+    VBR  = self . vBitRate
+    ACO  = self . aCodec
+    ASR  = self . SampleRate
+    ABR  = self . aBitRate
+    ##########################################################################
+    QQ   = f"""select `uuid` from {VIDTAB}
+               where ( `used` > 0 )
+                 and ( `filesize` = {VFS} )
+                 and ( `duration` = {DUR} )
+                 and ( `width` = {VW} )
+                 and ( `height` = {VH} )
+                 and ( `frames` = {FRS} )
+                 and ( `format` = '{FMT}' )
+                 and ( `fps` = {FPS} )
+                 and ( `vcodec` = '{VCO}' )
+                 and ( `vbitrate` = {VBR} )
+                 and ( `acodec` = '{ACO}' )
+                 and ( `samplerate` = {ASR} )
+                 and ( `abitrate` = {ABR} )
+               order by `id` desc ;"""
+    ##########################################################################
+    QQ    = " " . join       ( QQ . split ( )                                )
+    UUIDs = DB . ObtainUuids ( QQ                                            )
+    ##########################################################################
+    if                       ( len ( UUIDs ) <= 0                          ) :
+      return False
+    ##########################################################################
+    UUID  = UUIDs            [ 0                                             ]
+    ##########################################################################
+    self . Uuid               = UUID
+    self . Details [ "Uuid" ] = self . Uuid
+    ##########################################################################
+    return                   ( self . Uuid > 0                               )
+  ############################################################################
+  def Assure             ( self , DB , VIDTAB                              ) :
+    ##########################################################################
+    if                   ( self . FileSize <= 0                            ) :
+      return False
+    ##########################################################################
+    UUID = DB . LastUuid ( VIDTAB , "uuid" , 4500000000000000000             )
+    ##########################################################################
+    FMT  = self . Format
+    DUR  = self . Duration
+    VFS  = self . FileSize
+    VW   = self . Width
+    VH   = self . Height
+    VCO  = self . vCodec
+    FPS  = self . FPS
+    FRS  = self . Frames
+    VBR  = self . vBitRate
+    ACO  = self . aCodec
+    ASR  = self . SampleRate
+    ABR  = self . aBitRate
+    ##########################################################################
+    QQ   = f"""insert into {VIDTAB}
+               ( `uuid` , `used` , `type` , `filesize` , `duration`,
+                 `width` , `height` , `frames` , `format` , `fps` ,
+                 `vcodec` , `vbitrate` , `acodec` , `samplerate` , `abitrate` )
+               values
+               ( {UUID} , 1 , 1 , {VFS} , {DUR} ,
+                 {VW} , {VH} , {FRS} , '{FMT}' , {FPS} ,
+                 '{VCO}' , {VBR} , {ACO} , {ASR} , {ABR} ) ;"""
+    ##########################################################################
+    QQ   =  " " . join   ( QQ . split ( )                                    )
+    DB   . Query         ( QQ                                                )
+    ##########################################################################
+    self . Uuid               = UUID
+    self . Details [ "Uuid" ] = self . Uuid
+    ##########################################################################
+    return               ( self . Uuid > 0                                   )
+  ############################################################################
+  ############################################################################
+  ############################################################################
   ############################################################################
 ##############################################################################

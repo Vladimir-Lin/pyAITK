@@ -827,10 +827,20 @@ class VideoAlbumsView              ( IconDock                              ) :
     ##########################################################################
     return LISTS
   ############################################################################
-  def InvestigateFilms                ( self , DB , name , path , FILEs    ) :
+  def InvestigateFilms                ( self                               , \
+                                        DB                                 , \
+                                        uuid                               , \
+                                        name                               , \
+                                        path                               , \
+                                        FILEs                              ) :
+    ##########################################################################
+    RELTAB           = self . Tables  [ "RelationVideos"                     ]
+    VIDTAB           = self . Tables  [ "Videos"                             ]
+    NAMTAB           = self . Tables  [ "NamesVideo"                         ]
     ##########################################################################
     FILMs            =                {                                      }
     CNT              = 1
+    LOC              = GetLocalityByUuid
     ##########################################################################
     for FILE in FILEs                                                        :
       ########################################################################
@@ -875,8 +885,40 @@ class VideoAlbumsView              ( IconDock                              ) :
       except                                                                 :
         pass
       ########################################################################
-      NN  = f"{name} #{CNT}"
-      FVM . Parse                     ( NN , DETAILs                         )
+      NN   = f"{name} #{CNT}"
+      FVM  . Parse                    ( NN , DETAILs                         )
+      GOT  = FVM . Locate             ( DB , VIDTAB                          )
+      OKAY = False
+      ########################################################################
+      if                              ( not GOT                            ) :
+        ######################################################################
+        DB   . LockWrites             ( [ VIDTAB                           ] )
+        OKAY = FVM . Assure           ( DB , VIDTAB                          )
+        DB   . UnlockTables           (                                      )
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        OKAY = True
+      ########################################################################
+      if                              ( OKAY                               ) :
+        ######################################################################
+        if                            ( not GOT                            ) :
+          ####################################################################
+          DB   . LockWrites           ( [ NAMTAB                           ] )
+          self . AssureUuidName       ( DB , NAMTAB , FVM . Uuid , NN        )
+          DB   . UnlockTables         (                                      )
+        ######################################################################
+        REL = Relation                (                                      )
+        REL . setT1                   ( "Album"                              )
+        REL . setT2                   ( "Video"                              )
+        REL . setRelation             ( "Subordination"                      )
+        ######################################################################
+        REL . set                     ( "first"  , uuid                      )
+        REL . set                     ( "second" , FVM . Uuid                )
+        ######################################################################
+        DB  . LockWrites              ( [ RELTAB                           ] )
+        REL . Join                    ( DB , RELTAB                          )
+        DB  . UnlockTables            (                                      )
       ########################################################################
       FILMs [ FILE ] = FVM . Details
       ########################################################################
@@ -1131,7 +1173,11 @@ class VideoAlbumsView              ( IconDock                              ) :
     COVERS  = self . ExportAlbumCovers    ( DB   , uuid , path               )
     CROWDS  = self . ExportAlbumActors    ( DB   , uuid , path               )
     JGALM   = self . ExportAlbumGalleries ( DB   , uuid , path               )
-    FILMs   = self . InvestigateFilms     ( DB   , name , path , FILEs       )
+    FILMs   = self . InvestigateFilms     ( DB                             , \
+                                            uuid                           , \
+                                            name                           , \
+                                            path                           , \
+                                            FILEs                            )
     ##########################################################################
     CONF    = f"{path}/Album.json"
     JSON    =                             { "Uuid"        : uuid           , \
