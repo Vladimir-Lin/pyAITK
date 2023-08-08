@@ -221,18 +221,18 @@ class VideoListings                ( TreeDock                              ) :
     ##########################################################################
     IT = self . PrepareUuidItem (  0 , UUID , NAME                           )
     ##########################################################################
-    IT . setText                (  1 , FORMAT                                )
-    IT . setText                (  2 , DURATION                              )
-    IT . setText                (  3 , FILESIZE                              )
-    IT . setText                (  4 , WIDTH                                 )
-    IT . setText                (  5 , HEIGHT                                )
-    IT . setText                (  6 , FPS                                   )
-    IT . setText                (  7 , FRAMES                                )
-    IT . setText                (  8 , VCODEC                                )
-    IT . setText                (  9 , VBITRATE                              )
-    IT . setText                ( 10 , ACODEC                                )
-    IT . setText                ( 11 , SAMPLERATE                            )
-    IT . setText                ( 12 , ABITRATE                              )
+    IT . setText                (  1 , str ( FORMAT                        ) )
+    IT . setText                (  2 , str ( DURATION                      ) )
+    IT . setText                (  3 , str ( FILESIZE                      ) )
+    IT . setText                (  4 , str ( WIDTH                         ) )
+    IT . setText                (  5 , str ( HEIGHT                        ) )
+    IT . setText                (  6 , str ( FPS                           ) )
+    IT . setText                (  7 , str ( FRAMES                        ) )
+    IT . setText                (  8 , str ( VCODEC                        ) )
+    IT . setText                (  9 , str ( VBITRATE                      ) )
+    IT . setText                ( 10 , str ( ACODEC                        ) )
+    IT . setText                ( 11 , str ( SAMPLERATE                    ) )
+    IT . setText                ( 12 , str ( ABITRATE                      ) )
     ##########################################################################
     IT . setTextAlignment       ( 13 , Qt . AlignRight                       )
     ##########################################################################
@@ -292,7 +292,7 @@ class VideoListings                ( TreeDock                              ) :
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
-    MSG    = FMT  . format        ( len ( UUIDs )                            )
+    MSG    = FMT  . format        ( len ( JSONs )                            )
     self   . setToolTip           ( MSG                                      )
     ##########################################################################
     self   . setEnabled           ( True                                     )
@@ -414,11 +414,11 @@ class VideoListings                ( TreeDock                              ) :
     self    . ShowStatus              ( ""                                   )
     DB      . Close                   (                                      )
     ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
+    if                                ( len ( ITEMs ) <= 0                 ) :
       self . emitNamesShow . emit     (                                      )
       return
     ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
+    self   . emitAllNames . emit      ( ITEMs                                )
     ##########################################################################
     self   . Notify                   ( 5                                    )
     ##########################################################################
