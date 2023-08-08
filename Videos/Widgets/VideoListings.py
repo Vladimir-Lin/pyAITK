@@ -202,12 +202,50 @@ class VideoListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem               ( self , UUID , NAME                       ) :
+  def PrepareItem               ( self , JSOX                              ) :
+    ##########################################################################
+    UUID       = JSOX           [ "Uuid" ]
+    NAME       = JSOX           [ "Name" ]
+    FILESIZE   = JSOX           [ "FileSize" ]
+    DURATION   = JSOX           [ "Duration" ]
+    WIDTH      = JSOX           [ "Width" ]
+    HEIGHT     = JSOX           [ "Height" ]
+    FRAMES     = JSOX           [ "Frames" ]
+    FORMAT     = JSOX           [ "Format" ]
+    FPS        = JSOX           [ "FPS" ]
+    VCODEC     = JSOX           [ "vCodec" ]
+    VBITRATE   = JSOX           [ "vBitRate" ]
+    ACODEC     = JSOX           [ "aCodec" ]
+    SAMPLERATE = JSOX           [ "SampleRate" ]
+    ABITRATE   = JSOX           [ "aBitRate" ]
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
     ##########################################################################
     IT = self . PrepareUuidItem ( 0    , UUID , NAME                         )
-    IT . setTextAlignment       ( 1    , Qt . AlignRight                     )
-    IT . setTextAlignment       ( 2    , Qt . AlignRight                     )
     ##########################################################################
+    IT . setTextAlignment       ( 1    , Qt . AlignRight                     )
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    IT . setTextAlignment       ( 13   , Qt . AlignRight                     )
+    ##########################################################################
+    "影片名稱" ,
+    "格式" ,
+    "時長" ,
+    "大小" ,
+    "寬" ,
+    "高" ,
+    "每秒幀數" ,
+    "總幀數" ,
+    "視頻解碼器" ,
+    "視頻位元率" ,
+    "音頻解碼器" ,
+    "音頻取樣頻率" ,
+    "音頻位元率" ,
+
+
     return IT
   ############################################################################
   @pyqtSlot                   (                                              )
@@ -252,18 +290,15 @@ class VideoListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                       (        dict                              )
-  def refresh                     ( self , JSON                            ) :
+  @pyqtSlot                       (        list                              )
+  def refresh                     ( self , JSONs                           ) :
     ##########################################################################
     self   . clear                (                                          )
     self   . setEnabled           ( False                                    )
     ##########################################################################
-    UUIDs  = JSON                 [ "UUIDs"                                  ]
-    NAMEs  = JSON                 [ "NAMEs"                                  ]
-    ##########################################################################
-    for U in UUIDs                                                           :
+    for J in JSONs                                                           :
       ########################################################################
-      IT   = self . PrepareItem   ( U , NAMEs [ U ]                          )
+      IT   = self . PrepareItem   ( J                                        )
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
@@ -331,9 +366,58 @@ class VideoListings                ( TreeDock                              ) :
     ##########################################################################
     ITEMs   =                         [                                      ]
     ##########################################################################
+    VIDTAB  = self . Tables           [ "Videos"                             ]
+    NAMTAB  = self . Tables           [ "Names"                              ]
+    ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      pass
+      NAME  = self . GetName          ( DB , NAMTAB , UUID , "Default"       )
+      ########################################################################
+      QQ    = f"""select `filesize` , `duration` , `width` , `height` ,
+                         `frames` , `format` , `fps` , `vcodec` ,
+                         `vbitrate` , `acodec` , `samplerate` , `abitrate`
+                  from {VIDTAB}
+                  where ( `uuid` = {UUID} ) ;"""
+      ########################################################################
+      QQ    = " " . join              ( QQ . split ( )                       )
+      DB    . Query                   ( QQ                                   )
+      RR    = DB . FetchOne           (                                      )
+      ########################################################################
+      if                              ( RR in [ False , None ]             ) :
+        continue
+      ########################################################################
+      if                              ( len ( RR ) <= 0                    ) :
+        continue
+      ########################################################################
+      FILESIZE   = int                ( RR [  0                            ] )
+      DURATION   = int                ( RR [  1                            ] )
+      WIDTH      = int                ( RR [  2                            ] )
+      HEIGHT     = int                ( RR [  3                            ] )
+      FRAMES     = int                ( RR [  4                            ] )
+      FORMAT     = self.assureString  ( RR [  5                            ] )
+      FPS        = self.assureString  ( RR [  6                            ] )
+      VCODEC     = self.assureString  ( RR [  7                            ] )
+      VBITRATE   = int                ( RR [  8                            ] )
+      ACODEC     = self.assureString  ( RR [  9                            ] )
+      SAMPLERATE = int                ( RR [ 10                            ] )
+      ABITRATE   = int                ( RR [ 11                            ] )
+      ########################################################################
+      J          =                    { "Uuid"       : UUID                  ,
+                                        "Name"       : NAME                  ,
+                                        "FileSize"   : FILESIZE              ,
+                                        "Duration"   : DURATION              ,
+                                        "Width"      : WIDTH                 ,
+                                        "Height"     : HEIGHT                ,
+                                        "Frames"     : FRAMES                ,
+                                        "Format"     : FORMAT                ,
+                                        "FPS"        : FPS                   ,
+                                        "vCodec"     : VCODEC                ,
+                                        "vBitRate"   : VBITRATE              ,
+                                        "aCodec"     : ACODEC                ,
+                                        "SampleRate" : SAMPLERATE            ,
+                                        "aBitRate"   : ABITRATE              }
+      ########################################################################
+      ITEMs . append                  ( J                                    )
     ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax . emit          (                                      )
