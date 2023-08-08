@@ -204,48 +204,38 @@ class VideoListings                ( TreeDock                              ) :
   ############################################################################
   def PrepareItem               ( self , JSOX                              ) :
     ##########################################################################
-    UUID       = JSOX           [ "Uuid" ]
-    NAME       = JSOX           [ "Name" ]
-    FILESIZE   = JSOX           [ "FileSize" ]
-    DURATION   = JSOX           [ "Duration" ]
-    WIDTH      = JSOX           [ "Width" ]
-    HEIGHT     = JSOX           [ "Height" ]
-    FRAMES     = JSOX           [ "Frames" ]
-    FORMAT     = JSOX           [ "Format" ]
-    FPS        = JSOX           [ "FPS" ]
-    VCODEC     = JSOX           [ "vCodec" ]
-    VBITRATE   = JSOX           [ "vBitRate" ]
-    ACODEC     = JSOX           [ "aCodec" ]
-    SAMPLERATE = JSOX           [ "SampleRate" ]
-    ABITRATE   = JSOX           [ "aBitRate" ]
+    UUID       = JSOX           [ "Uuid"                                     ]
+    NAME       = JSOX           [ "Name"                                     ]
+    FILESIZE   = JSOX           [ "FileSize"                                 ]
+    DURATION   = JSOX           [ "Duration"                                 ]
+    WIDTH      = JSOX           [ "Width"                                    ]
+    HEIGHT     = JSOX           [ "Height"                                   ]
+    FRAMES     = JSOX           [ "Frames"                                   ]
+    FORMAT     = JSOX           [ "Format"                                   ]
+    FPS        = JSOX           [ "FPS"                                      ]
+    VCODEC     = JSOX           [ "vCodec"                                   ]
+    VBITRATE   = JSOX           [ "vBitRate"                                 ]
+    ACODEC     = JSOX           [ "aCodec"                                   ]
+    SAMPLERATE = JSOX           [ "SampleRate"                               ]
+    ABITRATE   = JSOX           [ "aBitRate"                                 ]
     ##########################################################################
+    IT = self . PrepareUuidItem (  0 , UUID , NAME                           )
     ##########################################################################
+    IT . setText                (  1 , FORMAT                                )
+    IT . setText                (  2 , DURATION                              )
+    IT . setText                (  3 , FILESIZE                              )
+    IT . setText                (  4 , WIDTH                                 )
+    IT . setText                (  5 , HEIGHT                                )
+    IT . setText                (  6 , FPS                                   )
+    IT . setText                (  7 , FRAMES                                )
+    IT . setText                (  8 , VCODEC                                )
+    IT . setText                (  9 , VBITRATE                              )
+    IT . setText                ( 10 , ACODEC                                )
+    IT . setText                ( 11 , SAMPLERATE                            )
+    IT . setText                ( 12 , ABITRATE                              )
     ##########################################################################
+    IT . setTextAlignment       ( 13 , Qt . AlignRight                       )
     ##########################################################################
-    ##########################################################################
-    IT = self . PrepareUuidItem ( 0    , UUID , NAME                         )
-    ##########################################################################
-    IT . setTextAlignment       ( 1    , Qt . AlignRight                     )
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    IT . setTextAlignment       ( 13   , Qt . AlignRight                     )
-    ##########################################################################
-    "影片名稱" ,
-    "格式" ,
-    "時長" ,
-    "大小" ,
-    "寬" ,
-    "高" ,
-    "每秒幀數" ,
-    "總幀數" ,
-    "視頻解碼器" ,
-    "視頻位元率" ,
-    "音頻解碼器" ,
-    "音頻取樣頻率" ,
-    "音頻位元率" ,
-
-
     return IT
   ############################################################################
   @pyqtSlot                   (                                              )
