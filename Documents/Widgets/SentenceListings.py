@@ -67,21 +67,11 @@ class SentenceListings             ( TreeDock                              ) :
     ##########################################################################
     self . EditAllNames       = None
     ##########################################################################
-    self . GType              = 11
+    self . LType              = 0
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 40
     self . SortOrder          = "asc"
-    self . SearchLine         = None
-    self . SearchKey          = ""
-    self . UUIDs              = [                                            ]
-    ##########################################################################
-    self . Grouping           = "Original"
-    self . OldGrouping        = "Original"
-    ## self . Grouping           = "Subordination"
-    ## self . Grouping           = "Reverse"
-    ##########################################################################
-    self . FetchTableKey      = "VideoListings"
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -90,17 +80,8 @@ class SentenceListings             ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Video"                                 )
-    self . Relation . setRelation  ( "Subordination"                         )
-    ##########################################################################
-    self . setColumnCount          ( 14                                      )
-    self . setColumnHidden         (  8 , True                               )
-    self . setColumnHidden         (  9 , True                               )
-    self . setColumnHidden         ( 10 , True                               )
-    self . setColumnHidden         ( 11 , True                               )
-    self . setColumnHidden         ( 12 , True                               )
-    self . setColumnHidden         ( 13 , True                               )
+    self . setColumnCount          ( 2                                       )
+    self . setColumnHidden         ( 1 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -116,14 +97,14 @@ class SentenceListings             ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setAcceptDrops          ( False                                   )
+    self . setDragEnabled          ( False                                   )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 1024 , 480 )                      )
+    return self . SizeSuggestion ( QSize ( 400 , 640 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
@@ -131,7 +112,7 @@ class SentenceListings             ( TreeDock                              ) :
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/names.png" )           )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenVideoNames                    )
+    A    . triggered . connect    ( self . OpenSentenceNames                 )
     self . WindowActions . append ( A                                        )
     ##########################################################################
     return
@@ -140,10 +121,9 @@ class SentenceListings             ( TreeDock                              ) :
     ##########################################################################
     self . LinkAction ( "Refresh"    , self . startup         , Enabled      )
     ##########################################################################
-    self . LinkAction ( "Delete"     , self . DeleteItems     , Enabled      )
+    self . LinkAction ( "Insert"     , self . InsertItem      , Enabled      )
     self . LinkAction ( "Rename"     , self . RenameItem      , Enabled      )
     ##########################################################################
-    self . LinkAction ( "Search"     , self . Search          , Enabled      )
     self . LinkAction ( "Copy"       , self . CopyToClipboard , Enabled      )
     ##########################################################################
     self . LinkAction ( "Home"       , self . PageHome        , Enabled      )
@@ -198,72 +178,32 @@ class SentenceListings             ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( "VideoListings" , 13                             )
+    self . defaultPrepare ( "SentenceListings" , 1                           )
     ##########################################################################
     return
-  ############################################################################
-  def toHMS    ( self , DURATION                                           ) :
-    ##########################################################################
-    TT   = int ( DURATION / 1000000                                          )
-    MM   = int ( TT       / 60                                               )
-    SS   = int ( TT       % 60                                               )
-    HH   = int ( MM       / 60                                               )
-    MM   = int ( MM       % 60                                               )
-    ##########################################################################
-    SS   = f"{SS}"
-    MM   = f"{MM}"
-    ##########################################################################
-    if         ( len ( SS ) < 2                                            ) :
-      SS = f"0{SS}"
-    ##########################################################################
-    if         ( ( HH > 0 ) and ( len ( MM ) < 2 )                         ) :
-      MM = f"0{MM}"
-    ##########################################################################
-    return f"{HH}:{MM}:{SS}"
   ############################################################################
   def PrepareItem               ( self , JSOX                              ) :
     ##########################################################################
     UUID       = JSOX           [ "Uuid"                                     ]
     NAME       = JSOX           [ "Name"                                     ]
-    FILESIZE   = JSOX           [ "FileSize"                                 ]
-    DURATION   = JSOX           [ "Duration"                                 ]
-    WIDTH      = JSOX           [ "Width"                                    ]
-    HEIGHT     = JSOX           [ "Height"                                   ]
-    FRAMES     = JSOX           [ "Frames"                                   ]
-    FORMAT     = JSOX           [ "Format"                                   ]
-    FPS        = JSOX           [ "FPS"                                      ]
-    VCODEC     = JSOX           [ "vCodec"                                   ]
-    VBITRATE   = JSOX           [ "vBitRate"                                 ]
-    ACODEC     = JSOX           [ "aCodec"                                   ]
-    SAMPLERATE = JSOX           [ "SampleRate"                               ]
-    ABITRATE   = JSOX           [ "aBitRate"                                 ]
     ##########################################################################
-    IT = self . PrepareUuidItem (  0 , UUID , NAME                           )
+    IT = self . PrepareUuidItem ( 0 , UUID , NAME                            )
     ##########################################################################
-    IT . setText                (  1 , str ( FORMAT                        ) )
-    IT . setText                (  2 , self . toHMS ( DURATION             ) )
-    IT . setText                (  3 , str ( FILESIZE                      ) )
-    IT . setText                (  4 , str ( WIDTH                         ) )
-    IT . setText                (  5 , str ( HEIGHT                        ) )
-    IT . setText                (  6 , str ( FPS                           ) )
-    IT . setText                (  7 , str ( FRAMES                        ) )
-    IT . setText                (  8 , str ( VCODEC                        ) )
-    IT . setText                (  9 , str ( VBITRATE                      ) )
-    IT . setText                ( 10 , str ( ACODEC                        ) )
-    IT . setText                ( 11 , str ( SAMPLERATE                    ) )
-    IT . setText                ( 12 , str ( ABITRATE                      ) )
-    ##########################################################################
-    IT . setTextAlignment       ( 13 , Qt . AlignRight                       )
+    IT . setTextAlignment       ( 1 , Qt . AlignRight                        )
     ##########################################################################
     return IT
   ############################################################################
   @pyqtSlot                   (                                              )
-  def DeleteItems             ( self                                       ) :
+  def InsertItem              ( self                                       ) :
     ##########################################################################
-    if                        ( not self . isGrouping ( )                  ) :
-      return
-    ##########################################################################
-    self . defaultDeleteItems ( 0 , self . RemoveItems                       )
+    item = QTreeWidgetItem    (                                              )
+    item . setData            ( 0 , Qt . UserRole , 0                        )
+    self . addTopLevelItem    ( item                                         )
+    line = self . setLineEdit ( item                                       , \
+                                0                                          , \
+                                "editingFinished"                          , \
+                                self . nameChanged                           )
+    line . setFocus           ( Qt . TabFocusReason                          )
     ##########################################################################
     return
   ############################################################################
@@ -319,40 +259,6 @@ class SentenceListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainSubgroupUuids                    ( self , DB                   ) :
-    ##########################################################################
-    SID    = self . StartId
-    AMOUNT = self . Amount
-    ORDER  = self . getSortingOrder          (                               )
-    LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables                   [ "Relation"                    ]
-    ##########################################################################
-    if                                       ( self . isSubordination ( )  ) :
-      OPTS = f"order by `position` {ORDER}"
-      return self . Relation . Subordination ( DB , RELTAB , OPTS , LMTS     )
-    if                                       ( self . isReverse       ( )  ) :
-      OPTS = f"order by `reverse` {ORDER} , `position` {ORDER}"
-      return self . Relation . GetOwners     ( DB , RELTAB , OPTS , LMTS     )
-    ##########################################################################
-    return                                   [                               ]
-  ############################################################################
-  def ObtainsItemUuids                      ( self , DB                    ) :
-    ##########################################################################
-    if                                      ( self . isOriginal ( )        ) :
-      return self . DefaultObtainsItemUuids ( DB                             )
-    ##########################################################################
-    return self   . ObtainSubgroupUuids     ( DB                             )
-  ############################################################################
-  def ObtainsUuidNames        ( self , DB , UUIDs                          ) :
-    ##########################################################################
-    NAMEs   =                 {                                              }
-    ##########################################################################
-    if                        ( len ( UUIDs ) > 0                          ) :
-      TABLE = self . Tables   [ "Names"                                      ]
-      NAMEs = self . GetNames ( DB , TABLE , UUIDs                           )
-    ##########################################################################
-    return NAMEs
-  ############################################################################
   def loading                         ( self                               ) :
     ##########################################################################
     DB      = self . ConnectDB        (                                      )
@@ -370,61 +276,17 @@ class SentenceListings             ( TreeDock                              ) :
     ##########################################################################
     self    . ObtainsInformation      ( DB                                   )
     ##########################################################################
-    UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    NAMEs   = self . ObtainsUuidNames ( DB , UUIDs                           )
+    UUIDs   = self . DefaultObtainsItemUuids ( DB                            )
     ##########################################################################
     ITEMs   =                         [                                      ]
     ##########################################################################
-    VIDTAB  = self . Tables           [ "Videos"                             ]
     NAMTAB  = self . Tables           [ "Names"                              ]
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
       NAME  = self . GetName          ( DB , NAMTAB , UUID , "Default"       )
       ########################################################################
-      QQ    = f"""select `filesize` , `duration` , `width` , `height` ,
-                         `frames` , `format` , `fps` , `vcodec` ,
-                         `vbitrate` , `acodec` , `samplerate` , `abitrate`
-                  from {VIDTAB}
-                  where ( `uuid` = {UUID} ) ;"""
-      ########################################################################
-      QQ    = " " . join              ( QQ . split ( )                       )
-      DB    . Query                   ( QQ                                   )
-      RR    = DB . FetchOne           (                                      )
-      ########################################################################
-      if                              ( RR in [ False , None ]             ) :
-        continue
-      ########################################################################
-      if                              ( len ( RR ) <= 0                    ) :
-        continue
-      ########################################################################
-      FILESIZE   = int                ( RR [  0                            ] )
-      DURATION   = int                ( RR [  1                            ] )
-      WIDTH      = int                ( RR [  2                            ] )
-      HEIGHT     = int                ( RR [  3                            ] )
-      FRAMES     = int                ( RR [  4                            ] )
-      FORMAT     = self.assureString  ( RR [  5                            ] )
-      FPS        = self.assureString  ( RR [  6                            ] )
-      VCODEC     = self.assureString  ( RR [  7                            ] )
-      VBITRATE   = int                ( RR [  8                            ] )
-      ACODEC     = self.assureString  ( RR [  9                            ] )
-      SAMPLERATE = int                ( RR [ 10                            ] )
-      ABITRATE   = int                ( RR [ 11                            ] )
-      ########################################################################
-      J          =                    { "Uuid"       : UUID                  ,
-                                        "Name"       : NAME                  ,
-                                        "FileSize"   : FILESIZE              ,
-                                        "Duration"   : DURATION              ,
-                                        "Width"      : WIDTH                 ,
-                                        "Height"     : HEIGHT                ,
-                                        "Frames"     : FRAMES                ,
-                                        "Format"     : FORMAT                ,
-                                        "FPS"        : FPS                   ,
-                                        "vCodec"     : VCODEC                ,
-                                        "vBitRate"   : VBITRATE              ,
-                                        "aCodec"     : ACODEC                ,
-                                        "SampleRate" : SAMPLERATE            ,
-                                        "aBitRate"   : ABITRATE              }
+      J     =                         { "Uuid" : UUID , "Name" : NAME        }
       ########################################################################
       ITEMs . append                  ( J                                    )
     ##########################################################################
@@ -453,234 +315,100 @@ class SentenceListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def ObtainAllUuids                ( self , DB                            ) :
+  def FetchRegularDepotCount        ( self , DB                            ) :
     ##########################################################################
-    TABLE  = self . Tables          [ "Videos"                               ]
-    STID   = self . StartId
-    AMOUNT = self . Amount
-    ORDER  = self . getSortingOrder (                                        )
+    PHRTAB = self . GetDefaultTable (                                        )
+    QQ     = f"select count(*) from {PHRTAB} where ( `used` > 0 ) ;"
+    DB     . Query                  ( QQ                                     )
+    ONE    = DB . FetchOne          (                                        )
     ##########################################################################
-    QQ     = f"""select `uuid` from {TABLE}
-                  where ( `used` > 0 )
-                  order by `id` {ORDER}
-                  limit {STID} , {AMOUNT} ;"""
-    ##########################################################################
-    QQ     = " " . join             ( QQ . split ( )                         )
-    ##########################################################################
-    return DB . ObtainUuids         ( QQ , 0                                 )
-  ############################################################################
-  def FetchRegularDepotCount ( self , DB                                   ) :
-    ##########################################################################
-    VIDTAB = self . Tables   [ "Videos"                                      ]
-    QQ     = f"select count(*) from {VIDTAB} where ( `used` > 0 ) ;"
-    DB     . Query           ( QQ                                            )
-    ONE    = DB . FetchOne   (                                               )
-    ##########################################################################
-    if                       ( ONE == None                                 ) :
+    if                              ( ONE == None                          ) :
       return 0
     ##########################################################################
-    if                       ( len ( ONE ) <= 0                            ) :
+    if                              ( len ( ONE ) <= 0                     ) :
       return 0
     ##########################################################################
-    return ONE               [ 0                                             ]
+    return ONE                      [ 0                                      ]
   ############################################################################
-  def FetchGroupMembersCount             ( self , DB                       ) :
+  def GetDefaultTable           ( self                                     ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
+    PHRTAB = self . Tables      [ "Sentences"                                ]
     ##########################################################################
-    return self . Relation . CountSecond ( DB , RELTAB                       )
+    LOC    = self . getLocality (                                            )
+    ##########################################################################
+    if                          ( 1002 == LOC                              ) :
+      return "`appellations`.`sentences-0001`"
+    ##########################################################################
+    if                          ( 1003 == LOC                              ) :
+      return "`appellations`.`sentences-0001`"
+    ##########################################################################
+    if                          ( 1001 == LOC                              ) :
+      return "`appellations`.`sentences-0002`"
+    ##########################################################################
+    if                          ( 1006 == LOC                              ) :
+      return "`appellations`.`sentences-0006`"
+    ##########################################################################
+    if                          ( 1007 == LOC                              ) :
+      return "`appellations`.`sentences-0007`"
+    ##########################################################################
+    if                          ( 1008 == LOC                              ) :
+      return "`appellations`.`sentences-0008`"
+    ##########################################################################
+    if                          ( 1009 == LOC                              ) :
+      return "`appellations`.`sentences-0009`"
+    ##########################################################################
+    if                          ( 1010 == LOC                              ) :
+      return "`appellations`.`sentences-0010`"
+    ##########################################################################
+    return PHRTAB
   ############################################################################
-  def FetchGroupOwnersCount              ( self , DB                       ) :
+  def GetDefaultUuid            ( self                                     ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "Relation"                        ]
+    LOC    = self . getLocality (                                            )
     ##########################################################################
-    return self . Relation . CountFirst  ( DB , RELTAB                       )
+    if                          ( 1002 == LOC                              ) :
+      return 5930000000000000001
+    ##########################################################################
+    if                          ( 1003 == LOC                              ) :
+      return 5930000000000000001
+    ##########################################################################
+    if                          ( 1001 == LOC                              ) :
+      return 5930000010000000001
+    ##########################################################################
+    if                          ( 1006 == LOC                              ) :
+      return 5930000020000000001
+    ##########################################################################
+    if                          ( 1007 == LOC                              ) :
+      return 5930000030000000001
+    ##########################################################################
+    if                          ( 1008 == LOC                              ) :
+      return 5930000040000000001
+    ##########################################################################
+    if                          ( 1009 == LOC                              ) :
+      return 5930000050000000001
+    ##########################################################################
+    if                          ( 1010 == LOC                              ) :
+      return 5930000060000000001
+    ##########################################################################
+    return   5930000000000000001
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    VIDTAB = self . Tables          [ "Videos"                               ]
+    PHRTAB = self . GetDefaultTable (                                        )
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ     = f"""select `uuid` from {VIDTAB}
+    QQ     = f"""select `uuid` from {PHRTAB}
                   where ( `used` > 0 )
                   order by `id` {ORDER}
                   limit {STID} , {AMOUNT} ;"""
     ##########################################################################
     return " " . join               ( QQ . split ( )                         )
   ############################################################################
-  def ObtainsInformation              ( self , DB                          ) :
+  def ObtainsInformation                         ( self , DB               ) :
     ##########################################################################
-    if                                ( self . isOriginal      ( )         ) :
-      ########################################################################
-      self . Total = self . FetchRegularDepotCount ( DB                      )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                ( self . isSubordination ( )         ) :
-      ########################################################################
-      UUID = self . Relation . get    ( "first"                              )
-      TYPE = self . Relation . get    ( "t1"                                 )
-      ########################################################################
-      self . Total = self . FetchGroupMembersCount ( DB                      )
-      ########################################################################
-      return
-    ##########################################################################
-    if                                ( self . isReverse       ( )         ) :
-      ########################################################################
-      UUID = self . Relation . get    ( "second"                             )
-      TYPE = self . Relation . get    ( "t2"                                 )
-      ########################################################################
-      self . Total = self . FetchGroupOwnersCount  ( DB                      )
-      ########################################################################
-      return
-    ##########################################################################
-    return
-  ############################################################################
-  def dragMime                   ( self                                    ) :
-    ##########################################################################
-    mtype   = "video/uuids"
-    message = self . getMenuItem ( "TotalPicked"                             )
-    ##########################################################################
-    return self . CreateDragMime ( self , 0 , mtype , message                )
-  ############################################################################
-  def startDrag         ( self , dropActions                               ) :
-    ##########################################################################
-    self . StartingDrag (                                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "video/uuids"
-    return self . MimeType    ( mime , formats                               )
-  ############################################################################
-  def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
-    return self . dropHandler ( sourceWidget , self , mimeData               )
-  ############################################################################
-  def dropNew                        ( self                                , \
-                                       source                              , \
-                                       mimeData                            , \
-                                       mousePos                            ) :
-    ##########################################################################
-    if                               ( self == source                      ) :
-      return False
-    ##########################################################################
-    RDN    = self . RegularDropNew   ( mimeData                              )
-    if                               ( not RDN                             ) :
-      return False
-    ##########################################################################
-    mtype  = self   . DropInJSON     [ "Mime"                                ]
-    UUIDs  = self   . DropInJSON     [ "UUIDs"                               ]
-    atItem = self   . itemAt         ( mousePos                              )
-    title  = source . windowTitle    (                                       )
-    CNT    = len                     ( UUIDs                                 )
-    ##########################################################################
-    if                               ( mtype in [ "video/uuids"          ] ) :
-      self . ShowMenuItemTitleStatus ( "VideosFrom" , title , CNT            )
-    ##########################################################################
-    return RDN
-  ############################################################################
-  def dropMoving ( self , source , mimeData , mousePos                     ) :
-    ##########################################################################
-    if           ( self . droppingAction                                   ) :
-      return False
-    ##########################################################################
-    if           ( source == self                                          ) :
-      return False
-    ##########################################################################
-    return True
-  ############################################################################
-  def acceptVideoDrop ( self                                               ) :
-    return True
-  ############################################################################
-  def dropVideos  ( self , source , pos , JSOX                             ) :
-    ##########################################################################
-    if            ( "UUIDs" not in JSOX                                    ) :
-      return True
-    ##########################################################################
-    UUIDs = JSOX  [ "UUIDs"                                                  ]
-    if            ( len ( UUIDs ) <= 0                                     ) :
-      return True
-    ##########################################################################
-    self . Go     ( self . AppendingVideos , ( UUIDs , )                     )
-    ##########################################################################
-    return True
-  ############################################################################
-  def AppendingVideos           ( self , UUIDs                             ) :
-    ##########################################################################
-    COUNT  = len                ( UUIDs                                      )
-    if                          ( COUNT <= 0                               ) :
-      return
-    ##########################################################################
-    DB     = self . ConnectDB   (                                            )
-    if                          ( DB == None                               ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit     (                                            )
-    self   . setBustle          (                                            )
-    FMT    = self . getMenuItem ( "JoinVideos"                               )
-    MSG    = FMT  . format      ( COUNT                                      )
-    self   . ShowStatus         ( MSG                                        )
-    self   . TtsTalk            ( MSG , 1002                                 )
-    ##########################################################################
-    RELTAB = self . Tables      [ "RelationVideos"                           ]
-    DB     . LockWrites         ( [ RELTAB                                 ] )
-    ##########################################################################
-    if                          ( self . isSubordination ( )               ) :
-      ########################################################################
-      self . Relation . Joins   ( DB , RELTAB , UUIDs                        )
-      ########################################################################
-    elif                        ( self . isReverse       ( )               ) :
-      ########################################################################
-      for UUID in UUIDs                                                      :
-        ######################################################################
-        self . Relation . set   ( "first" , UUID                             )
-        self . Relation . Join  ( DB      , RELTAB                           )
-    ##########################################################################
-    DB     . UnlockTables       (                                            )
-    ##########################################################################
-    self   . setVacancy         (                                            )
-    self   . GoRelax . emit     (                                            )
-    DB     . Close              (                                            )
-    self   . loading            (                                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def RemoveItems                     ( self , UUIDs                       ) :
-    ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
-      return
-    ##########################################################################
-    RELTAB = self . Tables            [ "RelationEditing"                    ]
-    SQLs   =                          [                                      ]
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      ########################################################################
-      self . Relation . set           ( "second" , UUID                      )
-      QQ   = self . Relation . Delete ( RELTAB                               )
-      SQLs . append                   ( QQ                                   )
-    ##########################################################################
-    DB     = self . ConnectDB         (                                      )
-    if                                ( DB == None                         ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit           (                                      )
-    self   . setBustle                (                                      )
-    DB     . LockWrites               ( [ RELTAB                           ] )
-    ##########################################################################
-    TITLE  = "RemoveOrganizationItems"
-    self   . ExecuteSqlCommands       ( TITLE , DB , SQLs , 100              )
-    ##########################################################################
-    DB     . UnlockTables             (                                      )
-    self   . setVacancy               (                                      )
-    self   . GoRelax . emit           (                                      )
-    DB     . Close                    (                                      )
-    self   . loading                  (                                      )
+    self . Total = self . FetchRegularDepotCount (        DB                 )
     ##########################################################################
     return
   ############################################################################
@@ -690,36 +418,25 @@ class SentenceListings             ( TreeDock                              ) :
     if                        ( DB == None                                 ) :
       return
     ##########################################################################
-    VIDTAB = self . Tables    [ "Videos"                                     ]
-    RELTAB = self . Tables    [ "RelationEditing"                            ]
+    PHRTAB = self . GetDefaultTable (                                        )
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ VIDTAB , RELTAB , NAMTAB                 ] )
+    DB     . LockWrites       ( [ PHRTAB , NAMTAB                          ] )
     ##########################################################################
     uuid   = int              ( uuid                                         )
+    ##########################################################################
     if                        ( uuid <= 0                                  ) :
       ########################################################################
-      uuid = DB . LastUuid    ( VIDTAB , "uuid" , 4500000000000000000        )
-      DB   . AppendUuid       ( VIDTAB , uuid                                )
+      uuid = DB . LastUuid    ( PHRTAB , "uuid" , self . GetDefaultUuid (  ) )
+      DB   . AppendUuid       ( PHRTAB , uuid                                )
     ##########################################################################
     self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
-    ##########################################################################
-    if                        ( self . isSubordination ( )                 ) :
-      ########################################################################
-      self . Relation . set   ( "second" , uuid                              )
-      self . Relation . Join  ( DB       , RELTAB                            )
-      ########################################################################
-    elif                      ( self . isReverse       ( )                 ) :
-      ########################################################################
-      self . Relation . set   ( "first"  , uuid                              )
-      self . Relation . Join  ( DB       , RELTAB                            )
     ##########################################################################
     DB     . Close            (                                              )
     ##########################################################################
     item   . setData          ( 0 , Qt . UserRole , uuid                     )
     ##########################################################################
     return
-  ############################################################################
   ############################################################################
   def CopyToClipboard        ( self                                        ) :
     ##########################################################################
@@ -739,7 +456,7 @@ class SentenceListings             ( TreeDock                              ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
-  def OpenVideoNames            ( self                                     ) :
+  def OpenSentenceNames         ( self                                     ) :
     ##########################################################################
     atItem = self . currentItem (                                            )
     if                          ( self . NotOkay ( atItem )                ) :
@@ -749,7 +466,7 @@ class SentenceListings             ( TreeDock                              ) :
     uuid   = int                ( uuid                                       )
     head   = atItem . text      ( 0                                          )
     NAM    = self . Tables      [ "NamesEditing"                             ]
-    self   . EditAllNames       ( self , "Video" , uuid , NAM                )
+    self   . EditAllNames       ( self , "Sentence" , uuid , NAM             )
     ##########################################################################
     return
   ############################################################################
@@ -758,7 +475,7 @@ class SentenceListings             ( TreeDock                              ) :
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9013 )         :
+    if                             ( at >= 9001 ) and ( at <= 9001 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -776,7 +493,7 @@ class SentenceListings             ( TreeDock                              ) :
     msg  = self . getMenuItem   ( "GroupFunctions"                           )
     COL  = mm . addMenu         ( msg                                        )
     ##########################################################################
-    msg  = self . getMenuItem   ( "CopyVideoUuid"                            )
+    msg  = self . getMenuItem   ( "CopySentenceUuid"                         )
     mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
     ##########################################################################
     mm   . addSeparatorFromMenu ( COL                                        )
@@ -833,8 +550,8 @@ class SentenceListings             ( TreeDock                              ) :
     mm     . addSeparator          (                                         )
     ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )
+    self   . AppendInsertAction    ( mm , 1101                               )
     self   . AppendRenameAction    ( mm , 1102                               )
-    self   . AppendDeleteAction    ( mm , 1103                               )
     self   . TryAppendEditNamesAction ( atItem , mm , 1601                   )
     ##########################################################################
     mm     . addSeparator          (                                         )
@@ -885,19 +602,12 @@ class SentenceListings             ( TreeDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                             ( at == 1002                            ) :
-      ########################################################################
-      self . Grouping = self . OldGrouping
-      self . restart               (                                         )
-      ########################################################################
+    if                             ( at == 1101                            ) :
+      self . InsertItem            (                                         )
       return True
     ##########################################################################
     if                             ( at == 1102                            ) :
       self . RenameItem            (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1103                            ) :
-      self . DeleteItems           (                                         )
       return True
     ##########################################################################
     if                             ( at == 1601                            ) :
