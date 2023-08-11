@@ -202,6 +202,25 @@ class VideoListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def toHMS    ( self , DURATION                                           ) :
+    ##########################################################################
+    TT   = int ( DURATION / 1000000                                          )
+    MM   = int ( TT       / 60                                               )
+    SS   = int ( TT       % 60                                               )
+    HH   = int ( MM       / 60                                               )
+    MM   = int ( MM       % 60                                               )
+    ##########################################################################
+    SS   = f"{SS}"
+    MM   = f"{MM}"
+    ##########################################################################
+    if         ( len ( SS ) < 2                                            ) :
+      SS = f"0{SS}"
+    ##########################################################################
+    if         ( ( HH > 0 ) and ( len ( MM ) < 2 )                         ) :
+      MM = f"0{MM}"
+    ##########################################################################
+    return f"{HH}:{MM}:{SS}"
+  ############################################################################
   def PrepareItem               ( self , JSOX                              ) :
     ##########################################################################
     UUID       = JSOX           [ "Uuid"                                     ]
@@ -222,7 +241,7 @@ class VideoListings                ( TreeDock                              ) :
     IT = self . PrepareUuidItem (  0 , UUID , NAME                           )
     ##########################################################################
     IT . setText                (  1 , str ( FORMAT                        ) )
-    IT . setText                (  2 , str ( DURATION                      ) )
+    IT . setText                (  2 , self . toHMS ( DURATION             ) )
     IT . setText                (  3 , str ( FILESIZE                      ) )
     IT . setText                (  4 , str ( WIDTH                         ) )
     IT . setText                (  5 , str ( HEIGHT                        ) )
@@ -755,7 +774,7 @@ class VideoListings                ( TreeDock                              ) :
       return mm
     ##########################################################################
     msg  = self . getMenuItem   ( "GroupFunctions"                           )
-    COL  = mm . addMenu         ( MSG                                        )
+    COL  = mm . addMenu         ( msg                                        )
     ##########################################################################
     msg  = self . getMenuItem   ( "CopyVideoUuid"                            )
     mm   . addActionFromMenu    ( COL , 38521001 , msg                       )
