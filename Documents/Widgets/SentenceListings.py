@@ -419,7 +419,8 @@ class SentenceListings             ( TreeDock                              ) :
       return
     ##########################################################################
     PHRTAB = self . GetDefaultTable (                                        )
-    NAMTAB = self . Tables    [ "NamesEditing"                               ]
+    NAMTAB = self . Tables          [ "NamesEditing"                         ]
+    LOC    = self . getLocality     (                                        )
     ##########################################################################
     DB     . LockWrites       ( [ PHRTAB , NAMTAB                          ] )
     ##########################################################################
@@ -428,7 +429,13 @@ class SentenceListings             ( TreeDock                              ) :
     if                        ( uuid <= 0                                  ) :
       ########################################################################
       uuid = DB . LastUuid    ( PHRTAB , "uuid" , self . GetDefaultUuid (  ) )
-      DB   . AppendUuid       ( PHRTAB , uuid                                )
+      ########################################################################
+      QQ   = f"""insert into {PHRTAB}
+                 ( `uuid` , `used` , `type` , `locality` )
+                 values
+                 ( {uuid} , 1 , 1 , {LOC} ) ;"""
+      QQ   = " " . join       ( QQ . split ( )                               )
+      DB   . Query            ( QQ                                           )
     ##########################################################################
     self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
