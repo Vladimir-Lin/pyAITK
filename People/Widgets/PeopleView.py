@@ -70,6 +70,7 @@ class PeopleView                     ( IconDock                            ) :
   ############################################################################
   ShowPersonalGallery   = pyqtSignal ( str , int , str  ,       QIcon        )
   ShowPersonalIcons     = pyqtSignal ( str , int , str  , str , QIcon        )
+  ShowPersonalFaces     = pyqtSignal ( str , str                             )
   ShowGalleries         = pyqtSignal ( str , int , str  ,       QIcon        )
   ShowGalleriesRelation = pyqtSignal ( str , int , str  , str , QIcon        )
   ShowVideoAlbums       = pyqtSignal ( str , int , str  ,       QIcon        )
@@ -1366,11 +1367,11 @@ class PeopleView                     ( IconDock                            ) :
     if                                  ( at == 24231313                   ) :
       ########################################################################
       text = item . text                (                                    )
-      icon = item . icon                (                                    )
+      ## icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
-      relz = "Face"
+      ## relz = "Face"
       ########################################################################
-      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      self . ShowPersonalFaces . emit   ( text , xsid                        )
       ########################################################################
       return True
     ##########################################################################
