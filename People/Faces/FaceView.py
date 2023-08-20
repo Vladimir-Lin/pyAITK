@@ -112,6 +112,7 @@ class FaceView                       ( IconDock                            ) :
     ##########################################################################
     QQ     = f"""select count(*) from {TABLE}
                  where ( `used` = 1 )
+                   and ( `states` = 0 )
                  {PQ} ;"""
     QQ     = " " . join        ( QQ . split ( )                              )
     ##########################################################################
@@ -142,6 +143,7 @@ class FaceView                       ( IconDock                            ) :
     ##########################################################################
     QQ     = f"""select `uuid` from {TABLE}
                  where ( `used` = 1 )
+                   and ( `states` = 0 )
                  {PQ}
                  order by `id` {ORDER}
                  limit {SID} , {AMOUNT} ;"""
@@ -155,7 +157,7 @@ class FaceView                       ( IconDock                            ) :
     ##########################################################################
     FRRTAB     = self . Tables        [ "FaceRegions"                        ]
     QQ         = f"""select `picture`,`x`,`y`,`width`,`height`,`rotation` from {FRRTAB}
-                     where ( `uuid` = {UUID} ) ;"""
+                     where ( `uuid` = {UUID} ) and ( `states` = 0 ) ;"""
     QQ         = " " . join           ( QQ . split ( )                       )
     DB         . Query                ( QQ                                   )
     RR         = DB . FetchOne        (                                      )
@@ -260,7 +262,7 @@ class FaceView                       ( IconDock                            ) :
       for UUID in UUIDs                                                      :
         ######################################################################
         QQ  = f"""select `picture`,`x`,`y`,`width`,`height`,`rotation` from {FRRTAB}
-                  where ( `uuid` = {UUID} ) ;"""
+                  where ( `uuid` = {UUID} ) and ( `states` = 0 ) ;"""
         QQ  = " " . join      ( QQ . split ( )                               )
         DB  . Query           ( QQ                                           )
         RR  = DB . FetchOne   (                                              )
