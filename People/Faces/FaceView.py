@@ -465,7 +465,7 @@ class FaceView                       ( IconDock                            ) :
     ##########################################################################
     TRX = self . Translations
     FMT = self . getMenuItem   ( "Belongs"                                   )
-    MSG = FMT  . format        ( item . text ( )                             )
+    MSG = FMT  . format        ( str ( uuid )                                )
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
     msg = self . getMenuItem   ( "CopyFaceUuid"                              )
