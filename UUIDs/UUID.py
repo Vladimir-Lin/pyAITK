@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+##############################################################################
 """
 物件長編號表格
 
@@ -19,7 +19,7 @@ create table `uuids_template_name` (
   key `ltime` (`ltime`)
 ) Engine = MyISAM default charset = utf8mb4 ;
 """
-
+##############################################################################
 import os
 import sys
 import getopt
@@ -28,23 +28,25 @@ import datetime
 import logging
 import requests
 import threading
-
+##############################################################################
 import mysql . connector
 from   mysql . connector             import Error
-
+##############################################################################
 from   ..      Database . Query      import Query      as Query
 from   ..      Database . Connection import Connection as Connection
 from   ..      Database . Columns    import Columns    as Columns
-
+##############################################################################
+SystemUUIDs = [                                                              ]
+##############################################################################
 class UUID ( Columns ) :
-
+  ############################################################################
   def __init__ ( self ) :
     super ( Columns , self ) . __init__ ( )
     self . Clear ( )
-
+  ############################################################################
   def __del__ ( self ) :
     pass
-
+  ############################################################################
   def Clear ( self ) :
     self . Columns  = [ ]
     self . Id       = -1
@@ -54,7 +56,7 @@ class UUID ( Columns ) :
     self . Previous =  0
     self . States   =  0
     self . Update   =  0
-
+  ############################################################################
   def assign ( self , item ) :
     self . Columns  = item . Columns
     self . Id       = item . Id
@@ -64,7 +66,7 @@ class UUID ( Columns ) :
     self . Previous = item . Previous
     self . States   = item . States
     self . Update   = item . Update
-
+  ############################################################################
   def set ( self , item , value ) :
     a = item . lower ( )
     if ( "id"       == a ) :
@@ -81,7 +83,7 @@ class UUID ( Columns ) :
       self . States   = value
     if ( "ltime"    == a ) :
       self . Update   = value
-
+  ############################################################################
   def get ( self , item ) :
     a = item . lower ( )
     if ( "id"           == a ) :
@@ -117,7 +119,7 @@ class UUID ( Columns ) :
     if ( "ltime"        == a ) :
       return self . Update
     return ""
-
+  ############################################################################
   def tableItems ( self ) :
     return [ "id"       ,
              "uuid"     ,
@@ -126,17 +128,17 @@ class UUID ( Columns ) :
              "previous" ,
              "states"   ,
              "ltime"    ]
-
+  ############################################################################
   def pair ( self , item ) :
     v = self . get ( item )
     return f"`{item}` = {v}"
-
+  ############################################################################
   def valueItems ( self ) :
     return [ "type"     ,
              "used"     ,
              "previous" ,
              "states"   ]
-
+  ############################################################################
   def toJson ( self ) :
     return { "id"       : self . Id       ,
              "uuid"     : self . Uuid     ,
@@ -145,3 +147,4 @@ class UUID ( Columns ) :
              "previous" : self . Previous ,
              "states"   : self . States   ,
              "ltime"    : self . Update   }
+##############################################################################
