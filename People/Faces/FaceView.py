@@ -479,22 +479,26 @@ class FaceView                       ( IconDock                            ) :
   ############################################################################
   def RotateFaceRecognition ( self                                         ) :
     ##########################################################################
-    Host  = "http://iosdb.oriphase.com:8364"
-    UUIDs = getUuids        (                                                )
+    Host    = "http://iosdb.oriphase.com:8364"
+    UUIDs   = getUuids      (                                                )
     ##########################################################################
-    CMD        = f"{Host}/People"
-    Headers    = { "Username" : "foxman"                                     ,
-                   "Password" : "actionsfox2019"                             }
-    JSON       = { "Action"   : "DeepRotateFaces"                          , \
-                   "Faces"    : UUIDs                                        }
+    if                      ( len ( UUIDs ) <= 0                           ) :
+      return
     ##########################################################################
-    print(JSON)
-    ## try                                                                      :
-    ##   requests . post       ( CMD                                            ,
-    ##                           data    = json . dumps ( JSON )                ,
-    ##                           headers = Headers                              )
-    ## except                                                                   :
-    ##   pass
+    CMD     = f"{Host}/People"
+    Headers = { "Username" : "foxman"                                      , \
+                "Password" : "actionsfox2019"                                }
+    JSON    = { "Action"   : "DeepRotateFaces"                             , \
+                "Faces"    : UUIDs                                           }
+    ##########################################################################
+    try                                                                      :
+      requests . post       ( CMD                                            ,
+                              data    = json . dumps ( JSON )                ,
+                              headers = Headers                              )
+    except                                                                   :
+      pass
+    ##########################################################################
+    self . Notify           ( 5                                              )
     ##########################################################################
     return
   ############################################################################
