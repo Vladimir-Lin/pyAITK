@@ -177,7 +177,7 @@ class FaceView                       ( IconDock                            ) :
       return None
     ##########################################################################
     FRRTAB     = self . Tables        [ "FaceRegions"                        ]
-    QQ         = f"""select `picture`,`x`,`y`,`width`,`height`,`rotation` from {FRRTAB}
+    QQ         = f"""select `picture`,`x`,`y`,`width`,`height`,`rotation`,`states` from {FRRTAB}
                      where ( `uuid` = {UUID} ) ;"""
     QQ         = " " . join           ( QQ . split ( )                       )
     DB         . Query                ( QQ                                   )
@@ -192,6 +192,7 @@ class FaceView                       ( IconDock                            ) :
     WP         = int                  ( RR [ 3 ]                             )
     HP         = int                  ( RR [ 4 ]                             )
     ANGLE      = float                ( RR [ 5 ]                             )
+    STATES     = int                  ( RR [ 6 ]                             )
     ##########################################################################
     PICTAB     = self . Tables        [ "Information"                        ]
     DOPTAB     = self . Tables        [ "Depot"                              ]
@@ -210,29 +211,38 @@ class FaceView                       ( IconDock                            ) :
     ## HH         = INFO                 [ "Height"                             ]
     ## XP , YP , WP , HP = FF . RotateArea ( WW , HH , XP , YP , WP , HP , ANGLE )
     ##########################################################################
-    XC         = int ( float ( XP ) + ( float ( WP ) / 2 )                   )
-    YC         = int ( float ( YP ) + ( float ( HP ) / 2 )                   )
-    WP         = int ( float ( WP ) * 1.5                                    )
-    HP         = int ( float ( HP ) * 1.5                                    )
-    XP         = int ( XC - ( float ( WP ) / 2.0 )                           )
-    YP         = int ( YC - ( float ( HP ) / 2.0 )                           )
-    ##########################################################################
-    if ( XP < 0                                                            ) :
+    if                                ( STATES in [     0 ,     1 ]        ) :
       ########################################################################
-      WP = WP + XP
-      XP = 0
-    ##########################################################################
-    if ( YP < 0                                                            ) :
+      XC       = int ( float ( XP ) + ( float ( WP ) / 2 )                   )
+      YC       = int ( float ( YP ) + ( float ( HP ) / 2 )                   )
+      WP       = int ( float ( WP ) * 1.5                                    )
+      HP       = int ( float ( HP ) * 1.5                                    )
+      XP       = int ( XC - ( float ( WP ) / 2.0 )                           )
+      YP       = int ( YC - ( float ( HP ) / 2.0 )                           )
       ########################################################################
-      HP = HP + YP
-      YP = 0
-    ##########################################################################
-    PART       = PIC  . Crop          ( XP , YP , WP , HP                    )
-    ROT        = PART . Rotate        ( ANGLE                                )
-    ## PART       = PIC  . Rotate        ( ANGLE                                )
-    ## ROT        = PART  . Crop         ( XP , YP , WP , HP                    )
-    IMG        = ROT  . toQImage      (                                      )
-    TSIZE      = IMG  . size          (                                      )
+      if                              ( XP < 0                             ) :
+        ######################################################################
+        WP     = WP + XP
+        XP     = 0
+      ########################################################################
+      if                              ( YP < 0                             ) :
+        ######################################################################
+        HP     = HP + YP
+        YP     = 0
+      ########################################################################
+      PART     = PIC  . Crop          ( XP , YP , WP , HP                    )
+      ROT      = PART . Rotate        ( ANGLE                                )
+      ########################################################################
+      IMG      = ROT  . toQImage      (                                      )
+      TSIZE    = IMG  . size          (                                      )
+      ########################################################################
+    elif                              ( STATES in [ 10000 , 10001 ]        ) :
+      ########################################################################
+      PART     = PIC  . Rotate        ( ANGLE                                )
+      ROT      = PART . Crop          ( XP , YP , WP , HP                    )
+      ########################################################################
+      IMG      = ROT  . toQImage      (                                      )
+      TSIZE    = IMG  . size          (                                      )
     ##########################################################################
     ISIZE      = self . iconSize      (                                      )
     ICZ        = QImage               ( ISIZE , QImage . Format_ARGB32       )
