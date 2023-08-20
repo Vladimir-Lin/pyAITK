@@ -182,10 +182,34 @@ class FaceView                       ( IconDock                            ) :
     if                                ( not PIC . FromDB ( DB , QQ )       ) :
       return None
     ##########################################################################
+    ## FF         = Face                 (                                      )
+    ## WW         = INFO                 [ "Width"                              ]
+    ## HH         = INFO                 [ "Height"                             ]
+    ## XP , YP , WP , HP = FF . RotateArea ( WW , HH , XP , YP , WP , HP , ANGLE )
+    ##########################################################################
+    XC         = int ( float ( XP ) + ( float ( WP ) / 2 )                   )
+    YC         = int ( float ( YP ) + ( float ( HP ) / 2 )                   )
+    WP         = int ( float ( WP ) * 1.5                                    )
+    HP         = int ( float ( HP ) * 1.5                                    )
+    XP         = int ( XC - ( float ( WP ) / 2.0 )                           )
+    YP         = int ( YC - ( float ( HP ) / 2.0 )                           )
+    ##########################################################################
+    if ( XP < 0                                                            ) :
+      ########################################################################
+      WP = WP + XP
+      XP = 0
+    ##########################################################################
+    if ( YP < 0                                                            ) :
+      ########################################################################
+      HP = HP + YP
+      YP = 0
+    ##########################################################################
     PART       = PIC  . Crop          ( XP , YP , WP , HP                    )
     ROT        = PART . Rotate        ( ANGLE                                )
+    ## PART       = PIC  . Rotate        ( ANGLE                                )
+    ## ROT        = PART  . Crop         ( XP , YP , WP , HP                    )
     IMG        = ROT  . toQImage      (                                      )
-    TSIZE      = IMG . size           (                                      )
+    TSIZE      = IMG  . size          (                                      )
     ##########################################################################
     ISIZE      = self . iconSize      (                                      )
     ICZ        = QImage               ( ISIZE , QImage . Format_ARGB32       )
