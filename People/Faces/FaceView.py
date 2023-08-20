@@ -300,7 +300,7 @@ class FaceView                       ( IconDock                            ) :
       for UUID in UUIDs                                                      :
         ######################################################################
         QQ  = f"""select `picture`,`x`,`y`,`width`,`height`,`rotation` from {FRRTAB}
-                  where ( `uuid` = {UUID} ) and ( `states` = 0 ) ;"""
+                  where ( `uuid` = {UUID} ) ;"""
         QQ  = " " . join      ( QQ . split ( )                               )
         DB  . Query           ( QQ                                           )
         RR  = DB . FetchOne   (                                              )
