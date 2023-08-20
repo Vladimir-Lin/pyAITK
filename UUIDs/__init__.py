@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-
-from . UUID import UUID as UUID
-
-__all__ = [ "UUID" ]
+##############################################################################
+from . UUID         import UUID         as UUID
+from . UuidListings import UuidListings as UuidListings
+##############################################################################
+__all__ = [ "UUID"                                                         , \
+            "UuidListings"                                                   ]
+##############################################################################

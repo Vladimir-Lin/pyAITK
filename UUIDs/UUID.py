@@ -36,8 +36,6 @@ from   ..      Database . Query      import Query      as Query
 from   ..      Database . Connection import Connection as Connection
 from   ..      Database . Columns    import Columns    as Columns
 ##############################################################################
-SystemUUIDs = [                                                              ]
-##############################################################################
 class UUID ( Columns ) :
   ############################################################################
   def __init__ ( self ) :

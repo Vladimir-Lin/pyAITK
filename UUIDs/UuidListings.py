@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## SexualityListings
+## UuidListings
 ##############################################################################
 import os
 import sys
@@ -39,28 +39,50 @@ from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager   as MenuManager
-from   AITK  . Qt . MajorListings     import MajorListings as MajorListings
+from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
+from   AITK  . Qt . TreeDock          import TreeDock    as TreeDock
 ##############################################################################
-from   AITK . Calendars . StarDate    import StarDate
-from   AITK . Calendars . Periode     import Periode
+defaultUuidListings = None
+SystemUUIDs         = [                                                      ]
 ##############################################################################
-class SexualityListings  ( MajorListings                                   ) :
+def setUuidListings ( UUID                                                 ) :
   ############################################################################
-  HavingMenu          = 1371434312
+  global defaultUuidListings
   ############################################################################
-  PeopleGroup         = pyqtSignal ( str , int , str                         )
-  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
-  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
+  defaultUuidListings = UUID
   ############################################################################
-  def __init__             ( self , parent = None , plan = None            ) :
+  return
+##############################################################################
+def appendUuid                  ( UUID                                     ) :
+  ############################################################################
+  global defaultUuidListings
+  global SystemUUIDs
+  ############################################################################
+  SystemUUIDs         . append  ( UUID                                       )
+  defaultUuidListings . startup (                                            )
+  ############################################################################
+  return
+##############################################################################
+def appendUuids                 ( UUIDs                                    ) :
+  ############################################################################
+  global defaultUuidListings
+  global SystemUUIDs
+  ############################################################################
+  for UUID in UUIDs                                                          :
     ##########################################################################
-    super ( ) . __init__   (        parent        , plan                     )
+    SystemUUIDs       . append  ( UUID                                       )
+  ############################################################################
+  defaultUuidListings . startup (                                            )
+  ############################################################################
+  return
+##############################################################################
+class UuidListings         ( TreeDock                                      ) :
+  ############################################################################
+  HavingMenu = 1371434312
+  ############################################################################
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    self . IncludeUndecided = True
-    self . GType            = 77
-    self . CreatureUuid     = 5431231000000000001
-    self . UsedOptions      = [ 1 , 2 , 3 , 4 , 5                            ]
+    super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -69,105 +91,42 @@ class SexualityListings  ( MajorListings                                   ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setFunction     ( self . FunctionDocking , True                   )
-    self . setFunction     ( self . HavingMenu      , True                   )
+    self . setColumnCount          ( 2                                       )
+    self . setColumnHidden         ( 1 , True                                )
+    self . setRootIsDecorated      ( False                                   )
+    self . setAlternatingRowColors ( True                                    )
     ##########################################################################
-    self . setDragEnabled  ( False                                           )
-    self . setDragDropMode ( QAbstractItemView . DropOnly                    )
-    ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
+    self . MountClicked            ( 1                                       )
+    self . MountClicked            ( 2                                       )
+    ##########################################################################
+    self . assignSelectionMode     ( "ContiguousSelection"                   )
+    ##########################################################################
+    self . setFunction             ( self . FunctionDocking , True           )
+    self . setFunction             ( self . HavingMenu      , True           )
+    ##########################################################################
+    self . setDragEnabled          ( False                                   )
+    self . setDragDropMode         ( QAbstractItemView . DropOnly            )
     ##########################################################################
     return
   ############################################################################
-  def ObtainUuidsQuery                ( self                               ) :
+  @pyqtSlot                  (                                               )
+  def startup                ( self                                        ) :
     ##########################################################################
-    TABLE   = self . Tables           [ "Sexuality"                          ]
-    LISTs   =                         [ self . CreatureUuid                  ]
+    global SystemUUIDs
     ##########################################################################
-    if                                ( self . IncludeUndecided            ) :
-      LISTs . append                  ( 0                                    )
+    self   . clear           (                                               )
     ##########################################################################
-    LQ      = " , " . join            ( str(x) for x in LISTs                )
-    UQ      = " , " . join            ( str(x) for x in self . UsedOptions   )
-    ##########################################################################
-    QQ      = f"""select `uuid` from {TABLE}
-                  where ( `used` in ( {UQ} ) )
-                  and ( `creature` in ( {LQ} ) )
-                  order by `id` asc ;"""
-    ##########################################################################
-    return " " . join                 ( QQ . split ( )                       )
-  ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "people/uuids"
-    return self . MimeType    ( mime , formats                               )
-  ############################################################################
-  def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    ##########################################################################
-    if                        ( self == sourceWidget                       ) :
-      return False
-    ##########################################################################
-    return self . dropHandler ( sourceWidget , self , mimeData               )
-  ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
-    ##########################################################################
-    if                              ( self == sourceWidget                 ) :
-      return False
-    ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
-      return False
-    ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
-    ##########################################################################
-    if                              ( mtype in [ "people/uuids" ]          ) :
+    for UUID in SystemUUIDs                                                  :
       ########################################################################
-      title = sourceWidget . windowTitle ( )
-      CNT   = len                   ( UUIDs                                  )
-      MSG   = f"從「{title}」複製{CNT}個人物"
-      self  . ShowStatus            ( MSG                                    )
+      item = QTreeWidgetItem (                                               )
+      item . setText         ( 0 , str ( UUID )                              )
+      self . addTopLevelItem ( item                                          )
     ##########################################################################
-    return RDN
+    return
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+  def Prepare             ( self                                           ) :
     ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    if                         ( sourceWidget != self                      ) :
-      return True
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    if                         ( atItem is None                            ) :
-      return False
-    if                         ( atItem . isSelected ( )                   ) :
-      return False
-    ##########################################################################
-    ##########################################################################
-    return True
-  ############################################################################
-  def acceptPeopleDrop         ( self                                      ) :
-    return True
-  ############################################################################
-  def dropPeople               ( self , source , pos , JSOX                ) :
-    ##########################################################################
-    atItem = self . itemAt ( pos )
-    print("SexualityListings::dropPeople")
-    print(JSOX)
-    if ( atItem is not None ) :
-      UUID = atItem . data ( 0 , Qt . UserRole )
-      print("TO : " , UUID , " => " , atItem . text ( 0 ) )
-    ##########################################################################
-    return True
-  ############################################################################
-  def Prepare                 ( self                                       ) :
-    ##########################################################################
-    LABELs = [ "性別名稱" ]
-    self   . setCentralLabels ( LABELs                                       )
-    ##########################################################################
-    self   . setPrepared      ( True                                         )
+    self . defaultPrepare ( "UuidListings" , 1                               )
     ##########################################################################
     return
   ############################################################################
@@ -220,135 +179,24 @@ class SexualityListings  ( MajorListings                                   ) :
     ##########################################################################
     return
   ############################################################################
-  def OpenItemCrowd           ( self , item                                ) :
-    ##########################################################################
-    uuid = item . data        ( 0 , Qt . UserRole                            )
-    uuid = int                ( uuid                                         )
-    xsid = str                ( uuid                                         )
-    text = item . text        ( 0                                            )
-    ##########################################################################
-    self . PeopleGroup . emit ( text , self . GType , str ( uuid )           )
-    ##########################################################################
-    return
-  ############################################################################
-  def GotoItemCrowd             ( self                                     ) :
-    ##########################################################################
-    atItem = self . currentItem (                                            )
-    if                          ( self . NotOkay ( atItem )                ) :
-      return
-    ##########################################################################
-    self   . OpenItemCrowd      ( atItem                                     )
-    ##########################################################################
-    return
-  ############################################################################
-  def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 1                         )
-  ############################################################################
-  def RunColumnsMenu               ( self , at                             ) :
-    ##########################################################################
-    if                             ( at >= 9001 ) and ( at <= 9002 )         :
-      col  = at - 9000
-      hid  = self . isColumnHidden ( col                                     )
-      self . setColumnHidden       ( col , not hid                           )
-      if                           ( ( at in [ 9001 ] ) and ( hid )        ) :
-        ######################################################################
-        self . restart             (                                         )
-        ######################################################################
-      return True
-    ##########################################################################
-    return False
-  ############################################################################
-  def GroupsMenu                     ( self , mm , item                    ) :
-    ##########################################################################
-    if                               ( self . NotOkay ( item )             ) :
-      return mm
-    ##########################################################################
-    TRX  = self . Translations
-    NAME = item . text               ( 0                                     )
-    FMT  = TRX                       [ "UI::Belongs"                         ]
-    MSG  = FMT . format              ( NAME                                  )
-    COL  = mm . addMenu              ( MSG                                   )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "CopySexualityUuid"                   )
-    mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
-    ##########################################################################
-    mm   . addSeparatorFromMenu      ( COL                                   )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "Crowds"                              )
-    ICON = QIcon                     ( ":/images/viewpeople.png"             )
-    mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
-    ##########################################################################
-    msg  = self . getMenuItem        ( "Description"                         )
-    mm   . addActionFromMenu         ( COL , 38522001        , msg           )
-    ##########################################################################
-    return mm
-  ############################################################################
-  def RunGroupsMenu                 ( self , at , item                     ) :
-    ##########################################################################
-    if                              ( at == 38521001                       ) :
-      ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      qApp . clipboard ( ). setText ( f"{uuid}"                              )
-      self . Notify                 ( 5                                      )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38521002                       ) :
-      ########################################################################
-      self . OpenItemCrowd          ( item                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 38522001                       ) :
-      ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
-      head = item . text            ( 0                                      )
-      nx   = ""
-      ########################################################################
-      if                            ( "Notes" in self . Tables             ) :
-        nx = self . Tables          [ "Notes"                                ]
-      ########################################################################
-      self . OpenLogHistory . emit  ( head                                   ,
-                                      str ( uuid )                           ,
-                                      "Description"                          ,
-                                      nx                                     ,
-                                      str ( self . getLocality ( ) )         )
-      ########################################################################
-      return True
-    ##########################################################################
-    return False
-  ############################################################################
   def Menu                         ( self , pos                            ) :
     ##########################################################################
-    if                                 ( not self . isPrepared ( )         ) :
+    if                             ( not self . isPrepared ( )             ) :
       return False
     ##########################################################################
-    doMenu = self . isFunction         ( self . HavingMenu                   )
-    if                                 ( not doMenu                        ) :
+    doMenu = self . isFunction     ( self . HavingMenu                       )
+    if                             ( not doMenu                            ) :
       return False
     ##########################################################################
-    self   . Notify                    ( 0                                   )
+    self   . Notify                ( 0                                       )
     ##########################################################################
     items , atItem , uuid = self . GetMenuDetails ( 0                        )
     ##########################################################################
     mm     = MenuManager           ( self                                    )
     ##########################################################################
-    TRX    = self . Translations
-    ##########################################################################
     self   . AppendRefreshAction   ( mm , 1001                               )
     self   . AppendInsertAction    ( mm , 1101                               )
     mm     . addSeparator          (                                         )
-    if                             ( len ( items ) == 1                    ) :
-      if                           ( self . EditAllNames != None           ) :
-        mm . addAction             ( 1601 ,  TRX [ "UI::EditNames" ]         )
-        mm . addSeparator          (                                         )
-    ##########################################################################
-    self   . GroupsMenu            ( mm ,        atItem                      )
-    ## self   . ColumnsMenu           ( mm                                      )
-    self   . SortingMenu           ( mm                                      )
-    self   . LocalityMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
     ##########################################################################
     mm     . setFont               ( self    . menuFont ( )                  )
@@ -356,24 +204,6 @@ class SexualityListings  ( MajorListings                                   ) :
     at     = mm . at               ( aa                                      )
     ##########################################################################
     if                             ( self . RunDocking   ( mm , aa )       ) :
-      return True
-    ##########################################################################
-    if                             ( self . HandleLocalityMenu ( at )      ) :
-      return True
-    ##########################################################################
-    ## OKAY   = self . RunColumnsMenu ( at                                      )
-    ## if                             ( OKAY                                  ) :
-    ##   return True
-    ##########################################################################
-    OKAY   = self . RunSortingMenu ( at                                      )
-    if                             ( OKAY                                  ) :
-      ########################################################################
-      self . restart               (                                         )
-      ########################################################################
-      return True
-    ##########################################################################
-    OKAY   = self . RunGroupsMenu  ( at , atItem                             )
-    if                             ( OKAY                                  ) :
       return True
     ##########################################################################
     if                             ( at == 1001                            ) :
@@ -385,12 +215,6 @@ class SexualityListings  ( MajorListings                                   ) :
     ##########################################################################
     if                             ( at == 1101                            ) :
       self . InsertItem            (                                         )
-      return True
-    ##########################################################################
-    if                             ( at == 1601                            ) :
-      uuid = self . itemUuid       ( items [ 0 ] , 0                         )
-      NAM  = self . Tables         [ "Names"                                 ]
-      self . EditAllNames          ( self , "Sexuality" , uuid , NAM         )
       return True
     ##########################################################################
     return True
