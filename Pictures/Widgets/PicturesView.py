@@ -57,6 +57,10 @@ from   AITK  . Calendars  . Periode   import Periode     as Periode
 from   AITK  . Pictures   . Picture   import Picture     as PictureItem
 from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
 ##############################################################################
+from   AITK  . UUIDs      . UuidListings import appendUuid
+from   AITK  . UUIDs      . UuidListings import appendUuids
+from   AITK  . UUIDs      . UuidListings import getUuids
+##############################################################################
 class PicturesView                 ( IconDock                              ) :
   ############################################################################
   HavingMenu        = 1371434312
