@@ -833,6 +833,7 @@ class CelestialListings            ( TreeDock                              ) :
   emitNamesShow       = pyqtSignal (                                         )
   emitAllNames        = pyqtSignal ( list                                    )
   emitAssignAmounts   = pyqtSignal ( str , int                               )
+  StellarObjectGroup  = pyqtSignal ( str , int , str                         )
   ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
   OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
@@ -1888,6 +1889,19 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemStars                   ( self , item                        ) :
+    ##########################################################################
+    uuid  = item . data               ( 0 , Qt . UserRole                    )
+    uuid  = int                       ( uuid                                 )
+    ##########################################################################
+    if                                ( uuid <= 0                          ) :
+      return False
+    ##########################################################################
+    title = item . text               ( 1                                    )
+    self  . StellarObjectGroup . emit ( title , 1 , str ( uuid )             )
+    ##########################################################################
+    return True
+  ############################################################################
   def GroupsMenu               ( self , mm , uuid , item                   ) :
     ##########################################################################
     if                         ( uuid <= 0                                 ) :
@@ -1934,6 +1948,7 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 24231201                       ) :
       ########################################################################
+      self . OpenItemStars          ( item                                   )
       ########################################################################
       return True
     ##########################################################################
