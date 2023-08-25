@@ -1909,7 +1909,7 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     TRX = self . Translations
     FMT = self . getMenuItem   ( "Belongs"                                   )
-    MSG = FMT  . format        ( item . text ( 0 )                           )
+    MSG = FMT  . format        ( item . text ( 1 )                           )
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
     msg = self . getMenuItem   ( "CopyCelestialUuid"                         )

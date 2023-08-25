@@ -68,6 +68,7 @@ class StellarObjectListings        ( TreeDock                              ) :
     self . EditAllNames       = None
     ##########################################################################
     self . Total              = 0
+    self . GType              = 22
     self . StartId            = 0
     self . Amount             = 40
     self . SortOrder          = "asc"
