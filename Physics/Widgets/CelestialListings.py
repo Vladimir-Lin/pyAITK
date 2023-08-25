@@ -1898,7 +1898,7 @@ class CelestialListings            ( TreeDock                              ) :
       return False
     ##########################################################################
     title = item . text               ( 1                                    )
-    self  . StellarObjectGroup . emit ( title , 1 , str ( uuid )             )
+    self  . StellarObjectGroup . emit ( title , self . GType , str ( uuid )  )
     ##########################################################################
     return True
   ############################################################################
@@ -1909,7 +1909,7 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     TRX = self . Translations
     FMT = self . getMenuItem   ( "Belongs"                                   )
-    MSG = FMT  . format        ( str ( uuid )                                )
+    MSG = FMT  . format        ( item . text ( 0 )                           )
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
     msg = self . getMenuItem   ( "CopyCelestialUuid"                         )

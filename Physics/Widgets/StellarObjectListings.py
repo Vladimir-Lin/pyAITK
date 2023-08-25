@@ -52,11 +52,12 @@ from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
 class StellarObjectListings        ( TreeDock                              ) :
   ############################################################################
-  HavingMenu     = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow  = pyqtSignal      (                                         )
-  emitAllNames   = pyqtSignal      ( list                                    )
-  OpenLogHistory = pyqtSignal      ( str , str , str , str , str             )
+  emitNamesShow       = pyqtSignal (                                         )
+  emitAllNames        = pyqtSignal ( list                                    )
+  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
+  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -81,6 +82,10 @@ class StellarObjectListings        ( TreeDock                              ) :
                                 Qt . BottomDockWidgetArea                  | \
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
+    ##########################################################################
+    self . Relation = Relation     (                                         )
+    self . Relation . setT2        ( "Star"                                  )
+    self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 2                                       )
     self . setColumnHidden         ( 1 , True                                )
@@ -606,7 +611,7 @@ class StellarObjectListings        ( TreeDock                              ) :
     if                              ( at == 1601                           ) :
       uuid = self . itemUuid        ( items [ 0 ] , 0                        )
       NAM  = self . Tables          [ "NamesEditing"                         ]
-      self . EditAllNames           ( self , "Stellars" , uuid , NAM         )
+      self . EditAllNames           ( self , "Stars" , uuid , NAM            )
       return True
     ##########################################################################
     if                              ( at == 3001                           ) :
