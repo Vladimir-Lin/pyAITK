@@ -1880,7 +1880,7 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     uuid = item . data                ( 0 , Qt . UserRole                    )
     uuid = int                        ( uuid                                 )
-    text = item . text                ( 0                                    )
+    text = item . text                ( 1                                    )
     icon = self . windowIcon          (                                      )
     xsid = str                        ( uuid                                 )
     ##########################################################################
@@ -1947,7 +1947,7 @@ class CelestialListings            ( TreeDock                              ) :
       ########################################################################
       uuid = item . data            ( 0 , Qt . UserRole                      )
       uuid = int                    ( uuid                                   )
-      head = item . text            ( 0                                      )
+      head = item . text            ( 1                                      )
       nx   = ""
       ########################################################################
       if                            ( "Notes" in self . Tables             ) :
