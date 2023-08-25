@@ -58,6 +58,10 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
+from   AITK  . UUIDs      . UuidListings import appendUuid
+from   AITK  . UUIDs      . UuidListings import appendUuids
+from   AITK  . UUIDs      . UuidListings import getUuids
+##############################################################################
 from   AITK  . Physics                import AU             as AU
 from   AITK  . Physics                import J2000          as J2000
 from   AITK  . Physics                import TsiderealDay   as TsiderealDay
@@ -824,11 +828,13 @@ Midday120 = [ "2022-01-01 12:03:24"                                          ,
 ##############################################################################
 class CelestialListings            ( TreeDock                              ) :
   ############################################################################
-  HavingMenu        = 1371434312
+  HavingMenu          = 1371434312
   ############################################################################
-  emitNamesShow     = pyqtSignal   (                                         )
-  emitAllNames      = pyqtSignal   ( list                                    )
-  emitAssignAmounts = pyqtSignal   ( str , int                               )
+  emitNamesShow       = pyqtSignal (                                         )
+  emitAllNames        = pyqtSignal ( list                                    )
+  emitAssignAmounts   = pyqtSignal ( str , int                               )
+  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
+  OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -838,8 +844,9 @@ class CelestialListings            ( TreeDock                              ) :
     self . EditAllNames       = None
     ##########################################################################
     self . Total              = 0
+    self . GType              = 127
     self . StartId            = 0
-    self . Amount             = 35
+    self . Amount             = 40
     self . Active             = True
     self . Usage              = 1
     self . SortOrder          = "asc"
@@ -1007,6 +1014,9 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     IT      . setText             ( 5 , ENGLISH                              )
     IT      . setText             ( 6 , COMMENT                              )
+    ##########################################################################
+    IT      . setText             ( 7 , ""                                   )
+    IT      . setTextAlignment    ( 7 , Qt.AlignRight                        )
     ##########################################################################
     IT      . setData             ( 8 , Qt . UserRole , JSON                 )
     ##########################################################################
@@ -1866,6 +1876,93 @@ class CelestialListings            ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemGallery                 ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( 0 , Qt . UserRole                    )
+    uuid = int                        ( uuid                                 )
+    text = item . text                ( 0                                    )
+    icon = self . windowIcon          (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    self . ShowPersonalGallery . emit ( text , self . GType , xsid , icon    )
+    ##########################################################################
+    return
+  ############################################################################
+  def GroupsMenu               ( self , mm , uuid , item                   ) :
+    ##########################################################################
+    if                         ( uuid <= 0                                 ) :
+      return mm
+    ##########################################################################
+    TRX = self . Translations
+    FMT = self . getMenuItem   ( "Belongs"                                   )
+    MSG = FMT  . format        ( str ( uuid )                                )
+    LOM = mm   . addMenu       ( MSG                                         )
+    ##########################################################################
+    msg = self . getMenuItem   ( "CopyCelestialUuid"                         )
+    mm  . addActionFromMenu    ( LOM , 24231101 , msg                        )
+    ##########################################################################
+    msg = self . getMenuItem   ( "AppendCelestialUuid"                       )
+    mm  . addActionFromMenu    ( LOM , 24231102 , msg                        )
+    ##########################################################################
+    mm  . addSeparatorFromMenu ( LOM                                         )
+    ##########################################################################
+    msg = self . getMenuItem   ( "Stars"                                     )
+    mm  . addActionFromMenu    ( LOM , 24231201 , msg                        )
+    ##########################################################################
+    msg = self . getMenuItem   ( "Gallery"                                   )
+    mm  . addActionFromMenu    ( LOM , 24231202 , msg                        )
+    ##########################################################################
+    msg = self . getMenuItem   ( "Description"                               )
+    mm  . addActionFromMenu    ( LOM , 24231203 , msg                        )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunGroupsMenu                 ( self , at , uuid , item              ) :
+    ##########################################################################
+    if                              ( at == 24231101                       ) :
+      ########################################################################
+      qApp . clipboard ( ). setText ( f"{uuid}"                              )
+      ########################################################################
+      return
+    ##########################################################################
+    if                              ( at == 24231102                       ) :
+      ########################################################################
+      appendUuid                    ( uuid                                   )
+      self . Notify                 ( 5                                      )
+      ########################################################################
+      return
+    ##########################################################################
+    if                              ( at == 24231201                       ) :
+      ########################################################################
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 24231202                       ) :
+      ########################################################################
+      self . OpenItemGallery        ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 24231203                       ) :
+      ########################################################################
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      nx   = ""
+      ########################################################################
+      if                            ( "Notes" in self . Tables             ) :
+        nx = self . Tables          [ "Notes"                                ]
+      ########################################################################
+      self . OpenLogHistory . emit  ( head                                   ,
+                                      str ( uuid )                           ,
+                                      "Description"                          ,
+                                      nx                                     ,
+                                      str ( self . getLocality ( ) )         )
+      ########################################################################
+      return True
+    ##########################################################################
+    return False
+  ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
     return self . DefaultColumnsMenu (        mm , 0                         )
   ############################################################################
@@ -1976,6 +2073,7 @@ class CelestialListings            ( TreeDock                              ) :
     mm     . addAction              ( 5001 ,  "日地距離" )
     mm     . addSeparator           (                                        )
     ##########################################################################
+    self   . GroupsMenu             ( mm , uuid , atItem                     )
     self   . FiltersMenu            ( mm                                     )
     self   . ColumnsMenu            ( mm                                     )
     self   . SortingMenu            ( mm                                     )
@@ -2002,6 +2100,10 @@ class CelestialListings            ( TreeDock                              ) :
       ########################################################################
       self . restart                (                                        )
       ########################################################################
+      return True
+    ##########################################################################
+    OKAY   = self . RunGroupsMenu   ( at , uuid , atItem                     )
+    if                              ( OKAY                                 ) :
       return True
     ##########################################################################
     OKAY   = self . RunSortingMenu  ( at                                     )
