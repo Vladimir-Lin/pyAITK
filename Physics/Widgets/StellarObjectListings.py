@@ -485,12 +485,12 @@ class StellarObjectListings        ( TreeDock                              ) :
       return False
     ##########################################################################
     atItem = self . itemAt     ( mousePos                                    )
+    UUID   = 0
     ##########################################################################
-    ## if                         ( atItem in [ False , None ]                ) :
-    ##   return False
-    ##########################################################################
-    UUID   = atItem . data     ( 0 , Qt . UserRole                           )
-    UUID   = int               ( UUID                                        )
+    if                         ( atItem not in [ False , None ]            ) :
+      ########################################################################
+      UUID = atItem . data     ( 0 , Qt . UserRole                           )
+      UUID = int               ( UUID                                        )
     ##########################################################################
     ## if                         ( UUID <= 0                                 ) :
     ##   return True
