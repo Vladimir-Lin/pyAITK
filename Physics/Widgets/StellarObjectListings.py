@@ -486,19 +486,22 @@ class StellarObjectListings        ( TreeDock                              ) :
     ##########################################################################
     atItem = self . itemAt     ( mousePos                                    )
     ##########################################################################
-    if                         ( atItem in [ False , None ]                ) :
-      return False
+    ## if                         ( atItem in [ False , None ]                ) :
+    ##   return False
     ##########################################################################
     UUID   = atItem . data     ( 0 , Qt . UserRole                           )
     UUID   = int               ( UUID                                        )
     ##########################################################################
-    if                         ( UUID <= 0                                 ) :
-      return True
+    ## if                         ( UUID <= 0                                 ) :
+    ##   return True
     ##########################################################################
     mtype  = self . DropInJSON [ "Mime"                                      ]
     UUIDs  = self . DropInJSON [ "UUIDs"                                     ]
     ##########################################################################
-    return True
+    if                         ( mtype in [ "stellar/uuids"              ] ) :
+      return True
+    ##########################################################################
+    return   False
   ############################################################################
   def acceptStellarsDrop   ( self                                          ) :
     return True
