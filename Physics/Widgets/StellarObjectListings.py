@@ -56,7 +56,9 @@ class StellarObjectListings        ( TreeDock                              ) :
   ############################################################################
   emitNamesShow       = pyqtSignal (                                         )
   emitAllNames        = pyqtSignal ( list                                    )
-  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
+  StellarObjectGroup  = pyqtSignal ( str , int , str                         )
+  ShowPersonalGallery = pyqtSignal ( str , int , str       , QIcon           )
+  ShowPersonalIcons   = pyqtSignal ( str , int , str , str , QIcon           )
   OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
@@ -700,6 +702,19 @@ class StellarObjectListings        ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
+  def OpenItemStars                   ( self , item                        ) :
+    ##########################################################################
+    uuid  = item . data               ( 0 , Qt . UserRole                    )
+    uuid  = int                       ( uuid                                 )
+    ##########################################################################
+    if                                ( uuid <= 0                          ) :
+      return False
+    ##########################################################################
+    title = item . text               ( 0                                    )
+    self  . StellarObjectGroup . emit ( title , self . GType , str ( uuid )  )
+    ##########################################################################
+    return True
+  ############################################################################
   def GroupsMenu               ( self , mm , uuid , item                   ) :
     ##########################################################################
     if                         ( uuid <= 0                                 ) :
@@ -718,11 +733,17 @@ class StellarObjectListings        ( TreeDock                              ) :
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
-    msg = self . getMenuItem   ( "Gallery"                                   )
+    msg = self . getMenuItem   ( "Subgroup"                                  )
     mm  . addActionFromMenu    ( LOM , 24231201 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "Description"                               )
+    msg = self . getMenuItem   ( "Icon"                                      )
     mm  . addActionFromMenu    ( LOM , 24231202 , msg                        )
+    ##########################################################################
+    msg = self . getMenuItem   ( "Gallery"                                   )
+    mm  . addActionFromMenu    ( LOM , 24231203 , msg                        )
+    ##########################################################################
+    msg = self . getMenuItem   ( "Description"                               )
+    mm  . addActionFromMenu    ( LOM , 24231204 , msg                        )
     ##########################################################################
     return mm
   ############################################################################
@@ -743,14 +764,29 @@ class StellarObjectListings        ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 24231201                       ) :
       ########################################################################
-      self . OpenItemGallery        ( item                                   )
+      self . OpenItemStars          ( item                                   )
       ########################################################################
       return True
     ##########################################################################
     if                              ( at == 24231202                       ) :
       ########################################################################
-      uuid = item . data            ( 0 , Qt . UserRole                      )
-      uuid = int                    ( uuid                                   )
+      icon = self . windowIcon      (                                        )
+      head = item . text            ( 0                                      )
+      xsid = str                    ( uuid                                   )
+      relz = "Using"
+      ########################################################################
+      self . ShowPersonalIcons . emit ( head , 22 , relz , xsid , icon       )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 24231203                       ) :
+      ########################################################################
+      self . OpenItemGallery        ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 24231204                       ) :
+      ########################################################################
       head = item . text            ( 0                                      )
       nx   = ""
       ########################################################################
