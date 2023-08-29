@@ -594,7 +594,7 @@ class LodListings                  ( TreeDock                              ) :
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
-    msg = self . getMenuItem   ( "ClearParameters"                           )
+    msg = self . getMenuItem   ( "DeleteLodId"                               )
     mm  . addActionFromMenu    ( LOM , 24231201 , msg                        )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
