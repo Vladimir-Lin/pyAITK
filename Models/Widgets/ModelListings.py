@@ -120,7 +120,7 @@ class ModelListings                ( TreeDock                              ) :
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/names.png" )           )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenStellarNames                  )
+    A    . triggered . connect    ( self . OpenModelNames                    )
     self . WindowActions . append ( A                                        )
     ##########################################################################
     return
@@ -588,7 +588,7 @@ class ModelListings                ( TreeDock                              ) :
     return False
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 4                         )
+    return self . DefaultColumnsMenu (        mm , 1                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
