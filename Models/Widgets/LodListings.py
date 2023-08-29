@@ -73,8 +73,8 @@ class LodListings                  ( TreeDock                              ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setColumnCount          ( 8                                       )
-    self . setColumnHidden         ( 7 , True                                )
+    self . setColumnCount          ( 9                                       )
+    self . setColumnHidden         ( 8 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -174,18 +174,19 @@ class LodListings                  ( TreeDock                              ) :
     ##########################################################################
     IT    = QTreeWidgetItem (                                                )
     ##########################################################################
-    IT    . setText         ( 0 , NAME                                       )
-    IT    . setToolTip      ( 0 , UXID                                       )
+    IT    . setText         ( 0 ,       NAME                                 )
+    IT    . setToolTip      ( 0 ,       UXID                                 )
     IT    . setData         ( 0 , Qt . UserRole , UXID                       )
     ##########################################################################
-    IT    . setText         ( 1 , LEVEL                                      )
-    IT    . setText         ( 2 , USED                                       )
-    IT    . setText         ( 3 , LTYPE                                      )
-    IT    . setText         ( 4 , USAGE                                      )
-    IT    . setText         ( 5 , LPARM                                      )
-    IT    . setText         ( 6 , LBODY                                      )
+    IT    . setText         ( 1 , str ( LEVEL                              ) )
+    IT    . setText         ( 2 , str ( USED                               ) )
+    IT    . setText         ( 3 , str ( LTYPE                              ) )
+    IT    . setText         ( 4 ,       USAGE                                )
+    IT    . setText         ( 5 ,       FMT                                  )
+    IT    . setText         ( 6 , str ( LPARM                              ) )
+    IT    . setText         ( 7 , str ( LBODY                              ) )
     ##########################################################################
-    IT   . setData          ( 7 , Qt . UserRole , JSON                       )
+    IT   . setData          ( 8 , Qt . UserRole , JSON                       )
     ##########################################################################
     return IT
   ############################################################################
@@ -325,7 +326,7 @@ class LodListings                  ( TreeDock                              ) :
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . CKEY , 7                                  )
+    self . defaultPrepare ( self . CKEY , 8                                  )
     ##########################################################################
     return
   ############################################################################
@@ -450,7 +451,7 @@ class LodListings                  ( TreeDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    return False
+    return   False
   ############################################################################
   def Menu                          ( self , pos                           ) :
     ##########################################################################
