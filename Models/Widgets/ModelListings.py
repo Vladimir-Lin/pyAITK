@@ -91,6 +91,9 @@ class ModelListings                ( TreeDock                              ) :
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 5                                       )
+    self . setColumnHidden         ( 1 , True                                )
+    self . setColumnHidden         ( 2 , True                                )
+    self . setColumnHidden         ( 3 , True                                )
     self . setColumnHidden         ( 4 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
