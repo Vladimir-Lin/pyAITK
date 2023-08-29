@@ -56,7 +56,6 @@ class ModelListings                ( TreeDock                              ) :
   ############################################################################
   emitNamesShow       = pyqtSignal (                                         )
   emitAllNames        = pyqtSignal ( list                                    )
-  StellarObjectGroup  = pyqtSignal ( str , int , str                         )
   ShowPersonalGallery = pyqtSignal ( str , int , str       , QIcon           )
   ShowPersonalIcons   = pyqtSignal ( str , int , str , str , QIcon           )
   OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
@@ -65,12 +64,12 @@ class ModelListings                ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . CKEY               = "StellarObjectListings"
-    self . BaseUuid           = 4310000000000000000
+    self . CKEY               = "ModelListings"
+    self . BaseUuid           = 6720000000000000000
     self . EditAllNames       = None
     ##########################################################################
     self . Total              = 0
-    self . GType              = 22
+    self . GType              = 179
     self . StartId            = 0
     self . Amount             = 40
     self . SortOrder          = "asc"
@@ -87,11 +86,11 @@ class ModelListings                ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Star"                                  )
+    self . Relation . setT2        ( "Model"                                 )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
-    self . setColumnCount          ( 2                                       )
-    self . setColumnHidden         ( 1 , True                                )
+    self . setColumnCount          ( 5                                       )
+    self . setColumnHidden         ( 4 , True                                )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -106,14 +105,14 @@ class ModelListings                ( TreeDock                              ) :
     self . setFunction             ( self . FunctionDocking , True           )
     self . setFunction             ( self . HavingMenu      , True           )
     ##########################################################################
-    self . setAcceptDrops          ( True                                    )
-    self . setDragEnabled          ( True                                    )
-    self . setDragDropMode         ( QAbstractItemView . DragDrop            )
+    self . setAcceptDrops          ( False                                   )
+    self . setDragEnabled          ( False                                   )
+    self . setDragDropMode         ( QAbstractItemView . NoDragDrop          )
     ##########################################################################
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 320 , 600 )                       )
+    return self . SizeSuggestion ( QSize ( 640 , 600 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
@@ -241,7 +240,7 @@ class ModelListings                ( TreeDock                              ) :
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder          (                               )
     LMTS   = f"limit {SID} , {AMOUNT}"
-    RELTAB = self . Tables                   [ "RelationStars"               ]
+    RELTAB = self . Tables                   [ "Relation"                    ]
     ##########################################################################
     if                                       ( self . isSubordination ( )  ) :
       OPTS = f"order by `position` {ORDER}"
@@ -272,14 +271,6 @@ class ModelListings                ( TreeDock                              ) :
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
     MSG    = FMT  . format        ( len ( LISTS )                            )
     self   . setToolTip           ( MSG                                      )
-    ##########################################################################
-    if                            ( self . Method in [ "Searching" ]       ) :
-      ########################################################################
-      T    = self . Translations  [ self . CKEY ] [ "Title"                  ]
-      K    = self . SearchKey
-      T    = f"{T}:{K}"
-      ########################################################################
-      self . setWindowTitle       ( T                                        )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
     self   . Notify               ( 5                                        )
@@ -341,10 +332,10 @@ class ModelListings                ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids        ( self , DB                                    ) :
     ##########################################################################
-    STOTAB = self . Tables  [ "StellarObjects"                               ]
+    MDLTAB = self . Tables  [ "Models"                                       ]
     ##########################################################################
-    QQ     = f"""select `uuid` from {STOTAB}
-                 where ( `used` = 1 )
+    QQ     = f"""select `uuid` from {MDLTAB}
+                 where ( `used` > 0 )
                  order by `id` asc ;"""
     ##########################################################################
     QQ     = " " . join     ( QQ . split ( )                                 )
@@ -367,8 +358,8 @@ class ModelListings                ( TreeDock                              ) :
   ############################################################################
   def FetchRegularDepotCount ( self , DB                                   ) :
     ##########################################################################
-    STOTAB = self . Tables   [ "StellarObjects"                              ]
-    QQ     = f"select count(*) from {STOTAB} where ( `used` > 0 ) ;"
+    MDLTAB = self . Tables   [ "Models"                                      ]
+    QQ     = f"select count(*) from {MDLTAB} where ( `used` > 0 ) ;"
     DB     . Query           ( QQ                                            )
     ONE    = DB . FetchOne   (                                               )
     ##########################################################################
@@ -382,25 +373,25 @@ class ModelListings                ( TreeDock                              ) :
   ############################################################################
   def FetchGroupMembersCount             ( self , DB                       ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "RelationStars"                   ]
+    RELTAB = self . Tables               [ "Relation"                        ]
     ##########################################################################
     return self . Relation . CountSecond ( DB , RELTAB                       )
   ############################################################################
   def FetchGroupOwnersCount              ( self , DB                       ) :
     ##########################################################################
-    RELTAB = self . Tables               [ "RelationStars"                   ]
+    RELTAB = self . Tables               [ "Relation"                        ]
     ##########################################################################
     return self . Relation . CountFirst  ( DB , RELTAB                       )
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    STOTAB = self . Tables          [ "StellarObjects"                       ]
+    MDLTAB = self . Tables          [ "Models"                               ]
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    QQ     = f"""select `uuid` from {STOTAB}
-                 where ( `used` = 1 )
+    QQ     = f"""select `uuid` from {MDLTAB}
+                 where ( `used` > 0 )
                  order by `id` {ORDER}
                  limit {STID} , {AMOUNT} ;"""
     ##########################################################################
@@ -436,127 +427,9 @@ class ModelListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def dragMime                   ( self                                    ) :
-    ##########################################################################
-    mtype   = "stellar/uuids"
-    message = self . getMenuItem ( "TotalPicked"                             )
-    ##########################################################################
-    return self . CreateDragMime ( self , 0 , mtype , message                )
-  ############################################################################
-  def startDrag         ( self , dropActions                               ) :
-    ##########################################################################
-    self . StartingDrag (                                                    )
-    ##########################################################################
-    return
-  ############################################################################
-  def allowedMimeTypes        ( self , mime                                ) :
-    formats = "stellar/uuids"
-    return self . MimeType    ( mime , formats                               )
-  ############################################################################
-  def acceptDrop              ( self , sourceWidget , mimeData             ) :
-    return self . dropHandler ( sourceWidget , self , mimeData               )
-  ############################################################################
-  def dropNew                        ( self                                , \
-                                       source                              , \
-                                       mimeData                            , \
-                                       mousePos                            ) :
-    ##########################################################################
-    RDN    = self . RegularDropNew   ( mimeData                              )
-    if                               ( not RDN                             ) :
-      return False
-    ##########################################################################
-    mtype  = self   . DropInJSON     [ "Mime"                                ]
-    UUIDs  = self   . DropInJSON     [ "UUIDs"                               ]
-    atItem = self   . itemAt         ( mousePos                              )
-    title  = source . windowTitle    (                                       )
-    CNT    = len                     ( UUIDs                                 )
-    ##########################################################################
-    if                               ( mtype in [ "stellar/uuids"        ] ) :
-      ########################################################################
-      self . ShowMenuItemTitleStatus ( "StarsFrom" , title , CNT             )
-      ########################################################################
-      return RDN
-    ##########################################################################
-    return False
-  ############################################################################
-  def dropMoving               ( self , source , mimeData , mousePos       ) :
-    ##########################################################################
-    if                         ( self . droppingAction                     ) :
-      return False
-    ##########################################################################
-    atItem = self . itemAt     ( mousePos                                    )
-    UUID   = 0
-    ##########################################################################
-    if                         ( atItem not in [ False , None ]            ) :
-      ########################################################################
-      UUID = atItem . data     ( 0 , Qt . UserRole                           )
-      UUID = int               ( UUID                                        )
-    ##########################################################################
-    ## if                         ( UUID <= 0                                 ) :
-    ##   return True
-    ##########################################################################
-    mtype  = self . DropInJSON [ "Mime"                                      ]
-    UUIDs  = self . DropInJSON [ "UUIDs"                                     ]
-    ##########################################################################
-    if                         ( mtype in [ "stellar/uuids"              ] ) :
-      return True
-    ##########################################################################
-    return   False
-  ############################################################################
-  def acceptStellarsDrop   ( self                                          ) :
-    return True
-  ############################################################################
-  def dropStellars         ( self , source , pos , JSOX                    ) :
-    ##########################################################################
-    if                     ( "UUIDs" not in JSOX                           ) :
-      return True
-    ##########################################################################
-    UUIDs  = JSOX          [ "UUIDs"                                         ]
-    if                     ( len ( UUIDs ) <= 0                            ) :
-      return True
-    ##########################################################################
-    self   . Go            ( self . JoinStellars , ( UUIDs , )               )
-    ##########################################################################
-    return True
-  ############################################################################
-  def JoinStellars                   ( self , UUIDs                        ) :
-    ##########################################################################
-    COUNT  = len                     ( UUIDs                                 )
-    if                               ( COUNT <= 0                          ) :
-      return
-    ##########################################################################
-    DB     = self . ConnectDB        (                                       )
-    if                               ( DB == None                          ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit          (                                       )
-    self   . setBustle               (                                       )
-    FMT    = self . getMenuItem      ( "JoinStars"                           )
-    MSG    = FMT  . format           ( COUNT                                 )
-    self   . ShowStatus              ( MSG                                   )
-    self   . TtsTalk                 ( MSG , 1002                            )
-    ##########################################################################
-    RELTAB = self . Tables           [ "RelationStars"                       ]
-    DB     . LockWrites              ( [ RELTAB                            ] )
-    ##########################################################################
-    if                               ( self . isSubordination ( )          ) :
-      ########################################################################
-      self . Relation . Joins        ( DB , RELTAB , UUIDs                   )
-    ##########################################################################
-    DB     . UnlockTables            (                                       )
-    ##########################################################################
-    self   . setVacancy              (                                       )
-    self   . GoRelax . emit          (                                       )
-    DB     . Close                   (                                       )
-    ##########################################################################
-    self   . Notify                  ( 5                                     )
-    self   . loading                 (                                       )
-    ##########################################################################
-    return
-  ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
-    self . defaultPrepare ( self . CKEY , 1                                  )
+    self . defaultPrepare ( self . CKEY , 4                                  )
     ##########################################################################
     return
   ############################################################################
@@ -566,16 +439,16 @@ class ModelListings                ( TreeDock                              ) :
     if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
-    STOTAB = self . Tables    [ "StellarObjects"                             ]
+    MDLTAB = self . Tables    [ "Models"                                     ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
-    DB     . LockWrites       ( [ STOTAB , NAMTAB                          ] )
+    DB     . LockWrites       ( [ MDLTAB , NAMTAB                          ] )
     ##########################################################################
     uuid   = int              ( uuid                                         )
     ##########################################################################
     if                        ( uuid <= 0                                  ) :
-      uuid = DB . LastUuid    ( STOTAB , "uuid" , self . BaseUuid            )
-      DB   . AppendUuid       ( STOTAB ,  uuid                               )
+      uuid = DB . LastUuid    ( MDLTAB , "uuid" , self . BaseUuid            )
+      DB   . AppendUuid       ( MDLTAB ,  uuid                               )
     ##########################################################################
     self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
     ##########################################################################
@@ -583,79 +456,6 @@ class ModelListings                ( TreeDock                              ) :
     DB     . Close            (                                              )
     ##########################################################################
     item   . setData          ( 0 , Qt . UserRole , uuid                     )
-    ##########################################################################
-    return
-  ############################################################################
-  def AppendingStellars       ( self , NAMEs                               ) :
-    ##########################################################################
-    if                        ( len ( NAMEs ) <= 0                         ) :
-      return
-    ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    if                        ( self . NotOkay ( DB )                      ) :
-      return
-    ##########################################################################
-    STOTAB = self . Tables    [ "StellarObjects"                             ]
-    NAMTAB = self . Tables    [ "NamesEditing"                               ]
-    RELTAB = self . Tables    [ "RelationStars"                              ]
-    ##########################################################################
-    UUIDs  =                  [                                              ]
-    ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
-    ##########################################################################
-    DB     . LockWrites       ( [ STOTAB , NAMTAB , RELTAB                 ] )
-    ##########################################################################
-    for N in NAMEs                                                           :
-      ########################################################################
-      uuid = DB . LastUuid    ( STOTAB , "uuid" , self . BaseUuid            )
-      DB   . AppendUuid       ( STOTAB ,  uuid                               )
-      self . AssureUuidName   ( DB     , NAMTAB , uuid , N                   )
-      ########################################################################
-      UUIDs . append          ( uuid                                         )
-    ##########################################################################
-    if                        ( self . isSubordination ( )                 ) :
-      ########################################################################
-      self . Relation . Joins ( DB , RELTAB , UUIDs                          )
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    self   . ShowStatus       ( ""                                           )
-    DB     . Close            (                                              )
-    ##########################################################################
-    self   . loading          (                                              )
-    ##########################################################################
-    return
-  ############################################################################
-  def AppendingStellarsFromText             ( self , NAMEs                 ) :
-    ##########################################################################
-    if                                      ( len ( NAMEs ) <= 0           ) :
-      return
-    ##########################################################################
-    LISTs     = NAMEs . split               ( "\n"                           )
-    if                                      ( len ( LISTs ) <= 0           ) :
-      return
-    ##########################################################################
-    NAMEs     =                             [                                ]
-    ##########################################################################
-    for N in LISTs                                                           :
-      ########################################################################
-      K       = N
-      K       = K . replace                 ( "\r" , ""                      )
-      K       = K . replace                 ( "\n" , ""                      )
-      K       = K .  strip                  (                                )
-      K       = K . rstrip                  (                                )
-      ########################################################################
-      if                                    ( len ( K ) > 0                ) :
-        ######################################################################
-        NAMEs . append                      ( K                              )
-    ##########################################################################
-    if                                      ( len ( NAMEs ) <= 0           ) :
-      return
-    ##########################################################################
-    VAL       =                             ( NAMEs ,                        )
-    self      . Go                          ( self . AppendingStellars , VAL )
     ##########################################################################
     return
   ############################################################################
@@ -669,8 +469,6 @@ class ModelListings                ( TreeDock                              ) :
   @pyqtSlot                              (                                   )
   def PasteItems                         ( self                            ) :
     ##########################################################################
-    NAMEs = qApp  . clipboard ( ) . text (                                   )
-    self  . AppendingStellarsFromText    ( NAMEs                             )
     ##########################################################################
     return
   ############################################################################
@@ -680,7 +478,7 @@ class ModelListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def OpenStellarNames          ( self                                     ) :
+  def OpenModelNames            ( self                                     ) :
     ##########################################################################
     atItem = self . currentItem (                                            )
     if                          ( self . NotOkay ( atItem )                ) :
@@ -690,7 +488,7 @@ class ModelListings                ( TreeDock                              ) :
     uuid   = int                ( uuid                                       )
     head   = atItem . text      ( 0                                          )
     NAM    = self . Tables      [ "NamesEditing"                             ]
-    self   . EditAllNames       ( self , "Star" , uuid , NAM                 )
+    self   . EditAllNames       ( self , "Model" , uuid , NAM                )
     ##########################################################################
     return
   ############################################################################
@@ -706,19 +504,6 @@ class ModelListings                ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def OpenItemStars                   ( self , item                        ) :
-    ##########################################################################
-    uuid  = item . data               ( 0 , Qt . UserRole                    )
-    uuid  = int                       ( uuid                                 )
-    ##########################################################################
-    if                                ( uuid <= 0                          ) :
-      return False
-    ##########################################################################
-    title = item . text               ( 0                                    )
-    self  . StellarObjectGroup . emit ( title , self . GType , str ( uuid )  )
-    ##########################################################################
-    return True
-  ############################################################################
   def GroupsMenu               ( self , mm , uuid , item                   ) :
     ##########################################################################
     if                         ( uuid <= 0                                 ) :
@@ -729,25 +514,22 @@ class ModelListings                ( TreeDock                              ) :
     MSG = FMT  . format        ( item . text ( 0 )                           )
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
-    msg = self . getMenuItem   ( "CopyStellarUuid"                           )
+    msg = self . getMenuItem   ( "CopyModelUuid"                             )
     mm  . addActionFromMenu    ( LOM , 24231101 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "AppendStellarUuid"                         )
+    msg = self . getMenuItem   ( "AppendModelUuid"                           )
     mm  . addActionFromMenu    ( LOM , 24231102 , msg                        )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
-    msg = self . getMenuItem   ( "Subgroup"                                  )
+    msg = self . getMenuItem   ( "Icon"                                      )
     mm  . addActionFromMenu    ( LOM , 24231201 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "Icon"                                      )
+    msg = self . getMenuItem   ( "Gallery"                                   )
     mm  . addActionFromMenu    ( LOM , 24231202 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "Gallery"                                   )
-    mm  . addActionFromMenu    ( LOM , 24231203 , msg                        )
-    ##########################################################################
     msg = self . getMenuItem   ( "Description"                               )
-    mm  . addActionFromMenu    ( LOM , 24231204 , msg                        )
+    mm  . addActionFromMenu    ( LOM , 24231203 , msg                        )
     ##########################################################################
     return mm
   ############################################################################
@@ -768,28 +550,26 @@ class ModelListings                ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 24231201                       ) :
       ########################################################################
-      self . OpenItemStars          ( item                                   )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                              ( at == 24231202                       ) :
-      ########################################################################
       icon = self . windowIcon      (                                        )
       head = item . text            ( 0                                      )
       xsid = str                    ( uuid                                   )
       relz = "Using"
       ########################################################################
-      self . ShowPersonalIcons . emit ( head , 22 , relz , xsid , icon       )
+      self . ShowPersonalIcons . emit ( head                               , \
+                                        self . GType                       , \
+                                        relz                               , \
+                                        xsid                               , \
+                                        icon                                 )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 24231203                       ) :
+    if                              ( at == 24231202                       ) :
       ########################################################################
       self . OpenItemGallery        ( item                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 24231204                       ) :
+    if                              ( at == 24231203                       ) :
       ########################################################################
       head = item . text            ( 0                                      )
       nx   = ""
@@ -808,11 +588,11 @@ class ModelListings                ( TreeDock                              ) :
     return False
   ############################################################################
   def ColumnsMenu                    ( self , mm                           ) :
-    return self . DefaultColumnsMenu (        mm , 1                         )
+    return self . DefaultColumnsMenu (        mm , 4                         )
   ############################################################################
   def RunColumnsMenu               ( self , at                             ) :
     ##########################################################################
-    if                             ( at >= 9000 ) and ( at <= 9001 )         :
+    if                             ( at >= 9001 ) and ( at <= 9004 )         :
       ########################################################################
       col  = at - 9000
       hid  = self . isColumnHidden ( col                                     )
@@ -934,9 +714,11 @@ class ModelListings                ( TreeDock                              ) :
       return True
     ##########################################################################
     if                              ( at == 1601                           ) :
+      ########################################################################
       uuid = self . itemUuid        ( items [ 0 ] , 0                        )
       NAM  = self . Tables          [ "NamesEditing"                         ]
-      self . EditAllNames           ( self , "Stars" , uuid , NAM            )
+      self . EditAllNames           ( self , "Model" , uuid , NAM            )
+      ########################################################################
       return True
     ##########################################################################
     if                              ( at == 3001                           ) :
