@@ -66,7 +66,7 @@ class LodListings                  ( TreeDock                              ) :
     ##########################################################################
     self . Uuid               = 0
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
+    self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
@@ -96,7 +96,7 @@ class LodListings                  ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 640 , 480 )                       )
+    return self . SizeSuggestion ( QSize ( 800 , 480 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
