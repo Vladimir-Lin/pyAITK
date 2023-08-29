@@ -149,44 +149,53 @@ class LodListings                  ( TreeDock                              ) :
   ############################################################################
   def doubleClicked             ( self , item , column                     ) :
     ##########################################################################
-    if                          ( column not in [ 0 ]                      ) :
+    if                          ( column not in [ 0 , 1 , 2 , 3 , 4 , 5 ]  ) :
       return
     ##########################################################################
-    if                          ( column     in [ 0 ]                      ) :
+    if                          ( column     in [ 0 , 1 , 2 , 3 , 4 , 5 ]  ) :
       ########################################################################
+      line = self . setLineEdit ( item                                     , \
+                                  column                                   , \
+                                  "editingFinished"                        , \
+                                  self . nameChanged                         )
+      line . setFocus           ( Qt . TabFocusReason                        )
       ########################################################################
       return
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem           ( self , JSON                                  ) :
+  def PrepareItem            ( self , JSON                                 ) :
     ##########################################################################
-    UUID  = JSON            [ "Id"                                           ]
-    USED  = JSON            [ "Used"                                         ]
-    LTYPE = JSON            [ "Type"                                         ]
-    LEVEL = JSON            [ "Level"                                        ]
-    USAGE = JSON            [ "Usage"                                        ]
-    NAME  = JSON            [ "Name"                                         ]
-    FMT   = JSON            [ "Format"                                       ]
-    LPARM = JSON            [ "Parameters"                                   ]
-    LBODY = JSON            [ "Body"                                         ]
-    UXID  = str             ( UUID                                           )
+    UUID  = JSON             [ "Id"                                          ]
+    USED  = JSON             [ "Used"                                        ]
+    LTYPE = JSON             [ "Type"                                        ]
+    LEVEL = JSON             [ "Level"                                       ]
+    USAGE = JSON             [ "Usage"                                       ]
+    NAME  = JSON             [ "Name"                                        ]
+    FMT   = JSON             [ "Format"                                      ]
+    LPARM = JSON             [ "Parameters"                                  ]
+    LBODY = JSON             [ "Body"                                        ]
+    UXID  = str              ( UUID                                          )
     ##########################################################################
-    IT    = QTreeWidgetItem (                                                )
+    IT    = QTreeWidgetItem  (                                               )
     ##########################################################################
-    IT    . setText         ( 0 ,       NAME                                 )
-    IT    . setToolTip      ( 0 ,       UXID                                 )
-    IT    . setData         ( 0 , Qt . UserRole , UXID                       )
+    IT    . setText          ( 0 ,       NAME                                )
+    IT    . setToolTip       ( 0 ,       UXID                                )
+    IT    . setData          ( 0 , Qt . UserRole , UXID                      )
     ##########################################################################
-    IT    . setText         ( 1 , str ( LEVEL                              ) )
-    IT    . setText         ( 2 , str ( USED                               ) )
-    IT    . setText         ( 3 , str ( LTYPE                              ) )
-    IT    . setText         ( 4 ,       USAGE                                )
-    IT    . setText         ( 5 ,       FMT                                  )
-    IT    . setText         ( 6 , str ( LPARM                              ) )
-    IT    . setText         ( 7 , str ( LBODY                              ) )
+    IT    . setText          ( 1 , str ( LEVEL                             ) )
+    IT    . setText          ( 2 , str ( USED                              ) )
+    IT    . setText          ( 3 , str ( LTYPE                             ) )
+    IT    . setText          ( 4 ,       USAGE                               )
+    IT    . setText          ( 5 ,       FMT                                 )
     ##########################################################################
-    IT   . setData          ( 8 , Qt . UserRole , JSON                       )
+    IT    . setText          ( 6 , str ( LPARM                             ) )
+    IT    . setTextAlignment ( 6 , Qt . AlignRight                           )
+    ##########################################################################
+    IT    . setText          ( 7 , str ( LBODY                             ) )
+    IT    . setTextAlignment ( 7 , Qt . AlignRight                           )
+    ##########################################################################
+    IT    . setData          ( 8 , Qt . UserRole , JSON                      )
     ##########################################################################
     return IT
   ############################################################################
@@ -218,7 +227,7 @@ class LodListings                  ( TreeDock                              ) :
     ##########################################################################
     self   . removeParked        (                                           )
     self   . Go                  ( self . AssureUuidItem                   , \
-                                   ( item , uuid , msg , )                   )
+                                   ( item , uuid , column , msg , )          )
     ##########################################################################
     return
   ############################################################################
@@ -330,24 +339,59 @@ class LodListings                  ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def AssureUuidItem          ( self , item , uuid , name                  ) :
+  def AssureUuidItem          ( self , item , uuid , column , name         ) :
     ##########################################################################
     DB     = self . ConnectDB (                                              )
     if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
-    STOTAB = self . Tables    [ "StellarObjects"                             ]
-    NAMTAB = self . Tables    [ "NamesEditing"                               ]
+    LODTAB = self . Tables    [ "LOD"                                        ]
     ##########################################################################
-    DB     . LockWrites       ( [ STOTAB , NAMTAB                          ] )
+    DB     . LockWrites       ( [ LODTAB                                   ] )
     ##########################################################################
     uuid   = int              ( uuid                                         )
+    QQ     = ""
     ##########################################################################
-    if                        ( uuid <= 0                                  ) :
-      uuid = DB . LastUuid    ( STOTAB , "uuid" , self . BaseUuid            )
-      DB   . AppendUuid       ( STOTAB ,  uuid                               )
+    if                        ( 0 == column                                ) :
+      ########################################################################
+      QQ   = f"""update {LODTAB}
+                 set `name` = '{name}'
+                 where ( `id` = {uuid} ) ;"""
+      ########################################################################
+    elif                      ( 1 == column                                ) :
+      ########################################################################
+      QQ   = f"""update {LODTAB}
+                 set `level` = {name}
+                 where ( `id` = {uuid} ) ;"""
+      ########################################################################
+    elif                      ( 2 == column                                ) :
+      ########################################################################
+      QQ   = f"""update {LODTAB}
+                 set `used` = {name}
+                 where ( `id` = {uuid} ) ;"""
+      ########################################################################
+    elif                      ( 3 == column                                ) :
+      ########################################################################
+      QQ   = f"""update {LODTAB}
+                 set `type` = {name}
+                 where ( `id` = {uuid} ) ;"""
+      ########################################################################
+    elif                      ( 4 == column                                ) :
+      ########################################################################
+      QQ   = f"""update {LODTAB}
+                 set `usage` = '{name}'
+                 where ( `id` = {uuid} ) ;"""
+      ########################################################################
+    elif                      ( 5 == column                                ) :
+      ########################################################################
+      QQ   = f"""update {LODTAB}
+                 set `format` = '{name}'
+                 where ( `id` = {uuid} ) ;"""
     ##########################################################################
-    self   . AssureUuidName   ( DB , NAMTAB , uuid , name                    )
+    if                        ( len ( QQ ) > 0                             ) :
+      ########################################################################
+      QQ   = " " . join       ( QQ . split ( )                               )
+      DB   . Query            ( QQ                                           )
     ##########################################################################
     DB     . UnlockTables     (                                              )
     DB     . Close            (                                              )
