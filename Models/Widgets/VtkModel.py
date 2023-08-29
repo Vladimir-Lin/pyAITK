@@ -110,12 +110,26 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def startup                       ( self                                 ) :
+  def startup                        ( self                                ) :
     ##########################################################################
-    self . renderer   . ResetCamera (                                        )
+    CAT    = "D:\\AITK\\Models\\Cat\\12221_Cat_v1_l3.obj"
+    PLANE  = "D:\\AITK\\Models\\Airplane\\11803_Airplane_v1_l1.obj"
     ##########################################################################
-    self . interactor . Initialize  (                                        )
-    self . interactor . Start       (                                        )
+    reader = vtk . vtkOBJReader      (                                       )
+    reader . SetFileName             ( PLANE                                 )
+    reader . Update                  (                                       )
+    ##########################################################################
+    mapper = vtk . vtkPolyDataMapper (                                       )
+    mapper . SetInputConnection      ( reader . GetOutputPort ( )            )
+    ##########################################################################
+    actor  = vtk . vtkActor          (                                       )
+    actor  . SetMapper               ( mapper                                )
+    ##########################################################################
+    self . renderer   . AddActor     ( actor                                 )
+    self . renderer   . ResetCamera  (                                       )
+    ##########################################################################
+    self . interactor . Initialize   (                                       )
+    self . interactor . Start        (                                       )
     ##########################################################################
     return
   ############################################################################
