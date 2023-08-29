@@ -79,7 +79,7 @@ class ModelListings                ( TreeDock                              ) :
     self . SearchKey          = ""
     self . UUIDs              = [                                            ]
     ##########################################################################
-    self . dockingOrientation = Qt . Vertical
+    self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
     self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
                                 Qt . BottomDockWidgetArea                  | \
@@ -116,7 +116,7 @@ class ModelListings                ( TreeDock                              ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 640 , 600 )                       )
+    return self . SizeSuggestion ( QSize ( 320 , 600 )                       )
   ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
