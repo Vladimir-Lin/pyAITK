@@ -56,6 +56,7 @@ class ModelListings                ( TreeDock                              ) :
   ############################################################################
   emitNamesShow       = pyqtSignal (                                         )
   emitAllNames        = pyqtSignal ( list                                    )
+  ShowLodListings     = pyqtSignal ( str , str             , QIcon           )
   ShowPersonalGallery = pyqtSignal ( str , int , str       , QIcon           )
   ShowPersonalIcons   = pyqtSignal ( str , int , str , str , QIcon           )
   OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
