@@ -25,6 +25,7 @@ from   PyQt5 . QtCore                          import QPointF
 ##############################################################################
 from   PyQt5 . QtGui                           import QIcon
 from   PyQt5 . QtGui                           import QCursor
+from   PyQt5 . QtGui                           import QColor
 from   PyQt5 . QtGui                           import QKeySequence
 ##############################################################################
 from   PyQt5 . QtWidgets                       import QApplication
