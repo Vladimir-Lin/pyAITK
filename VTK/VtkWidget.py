@@ -72,7 +72,7 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
     ##########################################################################
     self . setAttribute          ( Qt . WA_InputMethodEnabled                )
     self . VoiceJSON =           {                                           }
-    self . bgColor = QColor      ( 255 , 255 , 255                           )
+    self . bgColor   = self . getSystemColor (                               )
     ##########################################################################
     self . emitBustle  . connect ( self . DoBustle                           )
     self . emitVacancy . connect ( self . DoVacancy                          )
