@@ -246,9 +246,12 @@ class VtkModel                 ( VtkWidget                                 ) :
     JSOX     =                       {                                       }
     LODTAB   = self . Tables         [ "LOD"                                 ]
     ##########################################################################
-    QQ       = f"""select `uuid` `type` , `parameters` , `body` from {LODTAB}
+    QQ       = f"""select
+                   `uuid` , `type` , `parameters` , `body`
+                   from {LODTAB}
                    where ( `id` = {LOID} ) ;"""
     QQ       = " " . join            ( QQ . split ( )                        )
+    print(QQ)
     ##########################################################################
     DB       . Query                 ( QQ                                    )
     RR       = DB . FetchOne         (                                       )
@@ -259,6 +262,7 @@ class VtkModel                 ( VtkWidget                                 ) :
       LTYPE  = int                   ( RR [ 1                              ] )
       JSOX   = self . toJSON         ( RR [ 2                              ] )
       BODY   =                         RR [ 3                                ]
+      print(UUID,LTYPE,JSOX)
       ########################################################################
       if ( ( BODY not in [ False , None ] ) and ( len ( BODY ) > 0 ) )       :
         ######################################################################
