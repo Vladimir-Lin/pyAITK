@@ -46,7 +46,10 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
   attachDock = pyqtSignal ( QWidget , str , int , int                        )
   attachMdi  = pyqtSignal ( QWidget , int                                    )
   ############################################################################
-  def __init__    ( self , parent = None , plan = None                     ) :
+  OnBusy     = pyqtSignal (                                                  )
+  GoRelax    = pyqtSignal (                                                  )
+  ############################################################################
+  def __init__ ( self , parent = None , plan = None                        ) :
     ##########################################################################
     super (                   ) . __init__ ( parent                          )
     super ( VirtualGui , self ) . __init__ (                                 )
@@ -62,13 +65,16 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setFunction      ( self . FunctionDocking , True                  )
+    self . setFunction       ( self . FunctionDocking , True                 )
     ##########################################################################
-    self . setAttribute     ( Qt . WA_InputMethodEnabled                     )
-    self . VoiceJSON =      {                                                }
-    self . bgColor = QColor ( 255 , 255 , 255                                )
+    self . setAttribute      ( Qt . WA_InputMethodEnabled                    )
+    self . VoiceJSON =       {                                               }
+    self . bgColor = QColor  ( 255 , 255 , 255                               )
     ##########################################################################
-    self . PrepareRenderer  (                                                )
+    self . OnBusy  . connect ( self . AtBusy                                 )
+    self . GoRelax . connect ( self . OnRelax                                )
+    ##########################################################################
+    self . PrepareRenderer   (                                               )
     ##########################################################################
     return
   ############################################################################
@@ -138,6 +144,18 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
   ############################################################################
   ############################################################################
   ############################################################################
+  ############################################################################
+  def AtBusy           ( self                                              ) :
+    ##########################################################################
+    self . doStartBusy (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def OnRelax          ( self                                              ) :
+    ##########################################################################
+    self . doStopBusy  (                                                     )
+    ##########################################################################
+    return
   ############################################################################
   def PrepareMessages            ( self                                    ) :
     ##########################################################################
