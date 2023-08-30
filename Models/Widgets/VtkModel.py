@@ -58,24 +58,27 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
+  ############################################################################
   def setVtkModelDefaults  ( self                                          ) :
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
-    self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
-                                Qt . BottomDockWidgetArea                  | \
-                                Qt . LeftDockWidgetArea                    | \
-                                Qt . RightDockWidgetArea
     ##########################################################################
     self . Uuid = 0
     self . LOID = 0
     ##########################################################################
-    self . setFunction     ( self . FunctionDocking , True                   )
     self . setFunction     ( self . HavingMenu      , True                   )
     ##########################################################################
     self . setAcceptDrops  ( False                                           )
-    self . setDragEnabled  ( False                                           )
-    self . setDragDropMode ( QAbstractItemView . NoDragDrop                  )
+    ## self . setDragEnabled  ( False                                           )
+    ## self . setDragDropMode ( QAbstractItemView . NoDragDrop                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareRenderer      ( self                                          ) :
+    ##########################################################################
     ##########################################################################
     return
   ############################################################################
@@ -117,25 +120,52 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def ImportWaveFront            ( self , DIR , OBJ , MTL                  ) :
+  def ImportWaveFront                ( self , DIR , OBJ , MTL              ) :
     ##########################################################################
-    CWD   = os . getcwd          (                                           )
-    os    . chdir                ( DIR                                       )
+    CWD   = os . getcwd              (                                       )
+    os    . chdir                    ( DIR                                   )
     ##########################################################################
-    wfobj = vtk . vtkOBJImporter (                                           )
-    wfobj . SetFileName          ( OBJ                                       )
-    wfobj . SetFileNameMTL       ( MTL                                       )
+    wfobj = vtk . vtkOBJImporter     (                                       )
+    wfobj . SetFileName              ( OBJ                                   )
+    wfobj . SetFileNameMTL           ( MTL                                   )
     ##########################################################################
-    wfobj . Read                 (                                           )
-    wfobj . InitializeObjectBase (                                           )
+    wfobj . Read                     (                                       )
+    wfobj . InitializeObjectBase     (                                       )
+    ##########################################################################
+    os    . chdir                    ( CWD                                   )
+    ##########################################################################
+    ## print("GetRenderer")
+    self  . renderer   = wfobj . GetRenderer             (                   )
+    self  . renderer   . SetBackground                   ( 1.0 , 1.0 , 1.0   )
+    ##########################################################################
+    print("GetRenderWindow")
+    ## self  . rWindow    = wfobj . GetRenderWindow         (                   )
+    self  . rWindow    = self . GetRenderWindow (                             )
+    wfobj . SetRenderWindow          ( self . rWindow                        )
+    ## wfobj . Update                   (                                       )
+    ##########################################################################
+    ## print("SetRenderWindow")
+    ## self . SetRenderWindow ( self  . rWindow )
+    self  . rWindow    . AddRenderer                     ( self . renderer   )
+    ## print("GetInteractor")
+    self  . interactor = self . rWindow . GetInteractor (                    )
+    ## self  . interactor = vtk . vtkRenderWindowInteractor (                   )
+    self  . interactor . SetRenderWindow                 ( self  . rWindow   )
+    ## self  . SetRenderWindow                              ( self  . rWindow   )
+    ##########################################################################
+    print("ResetCamera")
+    ## self  . renderer   . ResetCamera (                                       )
+    print("Initialize")
+    self  . interactor . Initialize  (                                       )
+    print("Start")
+    self  . interactor . Start       (                                       )
+    print("Done")
     ##########################################################################
     ## reader = vtk . vtkOBJReader      (                                       )
     ## reader . SetFileName             ( PLANE                                 )
     ## reader . Update                  (                                       )
     ##########################################################################
-    os    . chdir                ( CWD                                       )
-    ##########################################################################
-    return wfobj
+    return
   ############################################################################
   def startup                        ( self                                ) :
     ##########################################################################
@@ -146,19 +176,19 @@ class VtkModel                 ( VtkWidget                                 ) :
     ## OBJ    = "11803_Airplane_v1_l1.obj"
     ## MTL    = "11803_Airplane_v1_l1.mtl"
     ##########################################################################
-    reader = self . ImportWaveFront  ( DIR , OBJ , MTL                       )
+    self . ImportWaveFront           ( DIR , OBJ , MTL                       )
     ##########################################################################
-    mapper = vtk . vtkPolyDataMapper (                                       )
-    mapper . SetInputConnection      ( reader . GetOutputPort ( )            )
+    ## mapper = vtk . vtkPolyDataMapper (                                       )
+    ## mapper . SetInputConnection      ( reader . GetOutputPort ( )            )
     ##########################################################################
-    actor  = vtk . vtkActor          (                                       )
-    actor  . SetMapper               ( mapper                                )
+    ## actor  = vtk . vtkActor          (                                       )
+    ## actor  . SetMapper               ( mapper                                )
     ##########################################################################
-    self . renderer   . AddActor     ( actor                                 )
-    self . renderer   . ResetCamera  (                                       )
+    ## self . renderer   . AddActor     ( actor                                 )
+    ## self . renderer   . ResetCamera  (                                       )
     ##########################################################################
-    self . interactor . Initialize   (                                       )
-    self . interactor . Start        (                                       )
+    ## self . interactor . Initialize   (                                       )
+    ## self . interactor . Start        (                                       )
     ##########################################################################
     return
   ############################################################################
