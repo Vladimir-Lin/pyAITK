@@ -60,15 +60,22 @@ class VtkModel                 ( VtkWidget                                 ) :
   ############################################################################
   def setVtkModelDefaults  ( self                                          ) :
     ##########################################################################
-    ## self . dockingPlace = Qt . BottomDockWidgetArea
+    self . dockingOrientation = 0
+    self . dockingPlace       = Qt . RightDockWidgetArea
+    self . dockingPlaces      = Qt . TopDockWidgetArea                     | \
+                                Qt . BottomDockWidgetArea                  | \
+                                Qt . LeftDockWidgetArea                    | \
+                                Qt . RightDockWidgetArea
     ##########################################################################
+    self . Uuid = 0
     self . LOID = 0
-    self . setFunction     ( self . HavingMenu , True                        )
     ##########################################################################
-    self . setAcceptDrops  ( True                                            )
-    ## self . setDragEnabled  ( True                                            )
-    ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
+    self . setFunction     ( self . FunctionDocking , True                   )
+    self . setFunction     ( self . HavingMenu      , True                   )
     ##########################################################################
+    self . setAcceptDrops  ( False                                           )
+    self . setDragEnabled  ( False                                           )
+    self . setDragDropMode ( QAbstractItemView . NoDragDrop                  )
     ##########################################################################
     return
   ############################################################################
@@ -110,14 +117,36 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def ImportWaveFront            ( self , DIR , OBJ , MTL                  ) :
+    ##########################################################################
+    CWD   = os . getcwd          (                                           )
+    os    . chdir                ( DIR                                       )
+    ##########################################################################
+    wfobj = vtk . vtkOBJImporter (                                           )
+    wfobj . SetFileName          ( OBJ                                       )
+    wfobj . SetFileNameMTL       ( MTL                                       )
+    ##########################################################################
+    wfobj . Read                 (                                           )
+    wfobj . InitializeObjectBase (                                           )
+    ##########################################################################
+    ## reader = vtk . vtkOBJReader      (                                       )
+    ## reader . SetFileName             ( PLANE                                 )
+    ## reader . Update                  (                                       )
+    ##########################################################################
+    os    . chdir                ( CWD                                       )
+    ##########################################################################
+    return wfobj
+  ############################################################################
   def startup                        ( self                                ) :
     ##########################################################################
-    CAT    = "D:\\AITK\\Models\\Cat\\12221_Cat_v1_l3.obj"
-    PLANE  = "D:\\AITK\\Models\\Airplane\\11803_Airplane_v1_l1.obj"
+    DIR    = "D:\\AITK\\Models\\Cat\\"
+    OBJ    = "12221_Cat_v1_l3.obj"
+    MTL    = "12221_Cat_v1_l3.mtl"
+    ## DIR    = "D:\\AITK\\Models\\Airplane\\"
+    ## OBJ    = "11803_Airplane_v1_l1.obj"
+    ## MTL    = "11803_Airplane_v1_l1.mtl"
     ##########################################################################
-    reader = vtk . vtkOBJReader      (                                       )
-    reader . SetFileName             ( PLANE                                 )
-    reader . Update                  (                                       )
+    reader = self . ImportWaveFront  ( DIR , OBJ , MTL                       )
     ##########################################################################
     mapper = vtk . vtkPolyDataMapper (                                       )
     mapper . SetInputConnection      ( reader . GetOutputPort ( )            )

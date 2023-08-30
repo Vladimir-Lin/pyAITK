@@ -40,6 +40,7 @@ from   AITK  . Qt . MenuManager                import MenuManager as MenuManager
 class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
   ############################################################################
   HavingMenu = 1371434312
+  ############################################################################
   attachNone = pyqtSignal ( QWidget                                          )
   attachDock = pyqtSignal ( QWidget , str , int , int                        )
   attachMdi  = pyqtSignal ( QWidget , int                                    )
