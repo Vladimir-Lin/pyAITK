@@ -40,14 +40,16 @@ from   AITK  . Qt . MenuManager                import MenuManager as MenuManager
 ##############################################################################
 class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
   ############################################################################
-  HavingMenu = 1371434312
+  HavingMenu  = 1371434312
   ############################################################################
-  attachNone = pyqtSignal ( QWidget                                          )
-  attachDock = pyqtSignal ( QWidget , str , int , int                        )
-  attachMdi  = pyqtSignal ( QWidget , int                                    )
+  attachNone  = pyqtSignal ( QWidget                                         )
+  attachDock  = pyqtSignal ( QWidget , str , int , int                       )
+  attachMdi   = pyqtSignal ( QWidget , int                                   )
   ############################################################################
-  OnBusy     = pyqtSignal (                                                  )
-  GoRelax    = pyqtSignal (                                                  )
+  emitBustle  = pyqtSignal (                                                 )
+  emitVacancy = pyqtSignal (                                                 )
+  OnBusy      = pyqtSignal (                                                 )
+  GoRelax     = pyqtSignal (                                                 )
   ############################################################################
   def __init__ ( self , parent = None , plan = None                        ) :
     ##########################################################################
@@ -65,16 +67,18 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
                                 Qt . LeftDockWidgetArea                    | \
                                 Qt . RightDockWidgetArea
     ##########################################################################
-    self . setFunction       ( self . FunctionDocking , True                 )
+    self . setFunction           ( self . FunctionDocking , True             )
     ##########################################################################
-    self . setAttribute      ( Qt . WA_InputMethodEnabled                    )
-    self . VoiceJSON =       {                                               }
-    self . bgColor = QColor  ( 255 , 255 , 255                               )
+    self . setAttribute          ( Qt . WA_InputMethodEnabled                )
+    self . VoiceJSON =           {                                           }
+    self . bgColor = QColor      ( 255 , 255 , 255                           )
     ##########################################################################
-    self . OnBusy  . connect ( self . AtBusy                                 )
-    self . GoRelax . connect ( self . OnRelax                                )
+    self . emitBustle  . connect ( self . DoBustle                           )
+    self . emitVacancy . connect ( self . DoVacancy                          )
+    self . OnBusy      . connect ( self . AtBusy                             )
+    self . GoRelax     . connect ( self . OnRelax                            )
     ##########################################################################
-    self . PrepareRenderer   (                                               )
+    self . PrepareRenderer       (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -144,6 +148,24 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
   ############################################################################
   ############################################################################
   ############################################################################
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DoBustle                ( self                                       ) :
+    self . Bustle             (                                              )
+    return
+  ############################################################################
+  def setBustle               ( self                                       ) :
+    self . emitBustle  . emit (                                              )
+    return
+  ############################################################################
+  @pyqtSlot                   (                                              )
+  def DoVacancy               ( self                                       ) :
+    self . Vacancy            (                                              )
+    return
+  ############################################################################
+  def setVacancy              ( self                                       ) :
+    self . emitVacancy . emit (                                              )
+    return
   ############################################################################
   def AtBusy           ( self                                              ) :
     ##########################################################################
