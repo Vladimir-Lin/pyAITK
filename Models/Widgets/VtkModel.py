@@ -145,9 +145,55 @@ class VtkModel                 ( VtkWidget                                 ) :
     self  . rWindow    . AddRenderer         ( self . renderer               )
     self  . interactor . SetRenderWindow     ( self . rWindow                )
     ##########################################################################
-    ## reader = vtk . vtkOBJReader      (                                       )
-    ## reader . SetFileName             ( PLANE                                 )
-    ## reader . Update                  (                                       )
+    return
+  ############################################################################
+  def LoadZipWaveFront        ( self , PARAMETERs , ZipData                ) :
+    ##########################################################################
+    TMPDIR = self . Settings  [ "ModelPath"                                  ]
+    CWD    = os   . getcwd    (                                              )
+    ##########################################################################
+    WFPATH = PARAMETERs       [ "Directory"                                  ]
+    OBJ    = PARAMETERs       [ "OBJ"                                        ]
+    MTL    = PARAMETERs       [ "MTL"                                        ]
+    LOID   = self . LOID
+    LZIP   = f"{LOID}.zip"
+    TZIP   = os . path . join ( TMPDIR , LZIP                                )
+    DIR    = os . path . join ( TMPDIR , WFPATH                              )
+    ##########################################################################
+    with open                 ( TZIP , 'wb'                           ) as f :
+      f    . write            ( ZipData                                      )
+    ##########################################################################
+    os     . chdir            ( TMPDIR                                       )
+    shutil . unpack_archive   ( LZIP , TMPDIR                                )
+    os     . chdir            ( CWD                                          )
+    ##########################################################################
+    self   . ImportWaveFront  ( DIR , OBJ , MTL                              )
+    ##########################################################################
+    ## os     . remove           ( TZIP                                         )
+    ## shutil . rmtree           ( DIR                                          )
+    ##########################################################################
+    ## DIR    = "D:\\AITK\\Models\\Temp\\Cat"
+    ## OBJ    = "12221_Cat_v1_l3.obj"
+    ## MTL    = "12221_Cat_v1_l3.mtl"
+    ## DIR    = "D:\\AITK\\Models\\Airplane\\"
+    ## OBJ    = "11803_Airplane_v1_l1.obj"
+    ## MTL    = "11803_Airplane_v1_l1.mtl"
+    ##########################################################################
+    return
+  ############################################################################
+  def ImportBareWaveFront            ( self , FILENAME                     ) :
+    ##########################################################################
+    reader = vtk . vtkOBJReader      (                                       )
+    reader . SetFileName             ( FILENAME                              )
+    reader . Update                  (                                       )
+    ##########################################################################
+    mapper = vtk . vtkPolyDataMapper (                                       )
+    mapper . SetInputConnection      ( reader . GetOutputPort ( )            )
+    ##########################################################################
+    actor  = vtk . vtkActor          (                                       )
+    actor  . SetMapper               ( mapper                                )
+    ##########################################################################
+    self . renderer   . AddActor     ( actor                                 )
     ##########################################################################
     return
   ############################################################################
@@ -157,34 +203,80 @@ class VtkModel                 ( VtkWidget                                 ) :
     self . interactor . Initialize  (                                        )
     self . interactor . Start       (                                        )
     ##########################################################################
+    self . Notify                   ( 5                                      )
+    ##########################################################################
     return
   ############################################################################
-  def loading ( self                                                       ) :
+  def toJSON               ( self , TEXT                                   ) :
     ##########################################################################
-    DIR    = "D:\\AITK\\Models\\Temp\\Cat"
-    OBJ    = "12221_Cat_v1_l3.obj"
-    MTL    = "12221_Cat_v1_l3.mtl"
-    ## DIR    = "D:\\AITK\\Models\\Airplane\\"
-    ## OBJ    = "11803_Airplane_v1_l1.obj"
-    ## MTL    = "11803_Airplane_v1_l1.mtl"
+    if                     ( len ( TEXT ) <= 0                             ) :
+      return               {                                                 }
     ##########################################################################
-    TMPDIR = self . Settings         [ "ModelPath"                           ]
-    CWD    = os . getcwd             (                                       )
-    os     . chdir                   ( TMPDIR                                )
-    shutil . unpack_archive          ( "Cat.zip" , TMPDIR                    )
-    os     . chdir                   ( CWD                                   )
+    try                                                                      :
+      BODY = TEXT . decode ( "utf-8"                                         )
+    except                                                                   :
+      return               {                                                 }
     ##########################################################################
-    self . ImportWaveFront           ( DIR , OBJ , MTL                       )
+    if                     ( len ( BODY ) <= 0                             ) :
+      return               {                                                 }
     ##########################################################################
-    ## mapper = vtk . vtkPolyDataMapper (                                       )
-    ## mapper . SetInputConnection      ( reader . GetOutputPort ( )            )
+    return json . loads    ( BODY                                            )
+  ############################################################################
+  def loading                        ( self                                ) :
     ##########################################################################
-    ## actor  = vtk . vtkActor          (                                       )
-    ## actor  . SetMapper               ( mapper                                )
+    DB       = self . ConnectDB      (                                       )
+    if                               ( DB == None                          ) :
+      self   . emitStartModel . emit (                                       )
+      return
     ##########################################################################
-    ## self . renderer   . AddActor     ( actor                                 )
+    OKAY     = False
+    self     . Notify                ( 3                                     )
     ##########################################################################
-    self . emitStartModel . emit (                                           )
+    FMT      = self . Translations   [ "UI::StartLoading"                    ]
+    MSG      = FMT . format          ( self . windowTitle ( )                )
+    self     . ShowStatus            ( MSG                                   )
+    self     . OnBusy  . emit        (                                       )
+    self     . setBustle             (                                       )
+    ##########################################################################
+    LOID     = self . LOID
+    UUID     = 0
+    LTYPE    = 0
+    BODY     = None
+    JSOX     =                       {                                       }
+    LODTAB   = self . Tables         [ "LOD"                                 ]
+    ##########################################################################
+    QQ       = f"""select `uuid` `type` , `parameters` , `body` from {LODTAB}
+                   where ( `id` = {LOID} ) ;"""
+    QQ       = " " . join            ( QQ . split ( )                        )
+    ##########################################################################
+    DB       . Query                 ( QQ                                    )
+    RR       = DB . FetchOne         (                                       )
+    ##########################################################################
+    if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 4 ) )            :
+      ########################################################################
+      UUID   = int                   ( RR [ 0                              ] )
+      LTYPE  = int                   ( RR [ 1                              ] )
+      JSOX   = self . toJSON         ( RR [ 2                              ] )
+      BODY   =                         RR [ 3                                ]
+      ########################################################################
+      if ( ( BODY not in [ False , None ] ) and ( len ( BODY ) > 0 ) )       :
+        ######################################################################
+        OKAY = True
+    ##########################################################################
+    self     . setVacancy            (                                       )
+    self     . GoRelax . emit        (                                       )
+    self     . ShowStatus            ( ""                                    )
+    DB       . Close                 (                                       )
+    ##########################################################################
+    if                               ( OKAY                                ) :
+      ########################################################################
+      self   . Uuid = UUID
+      ########################################################################
+      if                             ( 112 == LTYPE                        ) :
+        ######################################################################
+        self . LoadZipWaveFront      ( self , JSOX , BODY                    )
+    ##########################################################################
+    self . emitStartModel . emit     (                                       )
     ##########################################################################
     return
   ############################################################################
