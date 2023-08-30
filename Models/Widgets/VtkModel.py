@@ -23,6 +23,7 @@ from   PyQt5 . QtCore                 import pyqtSignal
 from   PyQt5 . QtCore                 import Qt
 from   PyQt5 . QtCore                 import QPoint
 from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                 import QSize
 ##############################################################################
 from   PyQt5 . QtGui                  import QIcon
 from   PyQt5 . QtGui                  import QCursor
@@ -61,27 +62,26 @@ class VtkModel                 ( VtkWidget                                 ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
   ############################################################################
-  def setVtkModelDefaults  ( self                                          ) :
+  def setVtkModelDefaults   ( self                                         ) :
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
     ##########################################################################
-    self . Uuid = 0
-    self . LOID = 0
+    self . Uuid    = 0
+    self . LOID    = 0
     ##########################################################################
-    self . setFunction     ( self . HavingMenu      , True                   )
+    self . setFunction      ( self . HavingMenu      , True                  )
     ##########################################################################
-    self . setAcceptDrops  ( False                                           )
-    ## self . setDragEnabled  ( False                                           )
-    ## self . setDragDropMode ( QAbstractItemView . NoDragDrop                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def PrepareRenderer      ( self                                          ) :
-    ##########################################################################
+    self . setAcceptDrops   ( False                                          )
+    ## self . setDragEnabled   ( False                                          )
+    ## self . setDragDropMode  ( QAbstractItemView . NoDragDrop                 )
     ##########################################################################
     return
   ############################################################################
+  ## def PrepareRenderer      ( self                                          ) :
+  ##   ##########################################################################
+  ##   ##########################################################################
+  ##   return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -120,46 +120,28 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def ImportWaveFront                ( self , DIR , OBJ , MTL              ) :
+  def ImportWaveFront                        ( self , DIR , OBJ , MTL      ) :
     ##########################################################################
-    CWD   = os . getcwd              (                                       )
-    os    . chdir                    ( DIR                                   )
+    CWD   = os . getcwd                      (                               )
+    os    . chdir                            ( DIR                           )
     ##########################################################################
-    wfobj = vtk . vtkOBJImporter     (                                       )
-    wfobj . SetFileName              ( OBJ                                   )
-    wfobj . SetFileNameMTL           ( MTL                                   )
+    wfobj = vtk . vtkOBJImporter             (                               )
+    wfobj . SetFileName                      ( OBJ                           )
+    wfobj . SetFileNameMTL                   ( MTL                           )
     ##########################################################################
-    wfobj . Read                     (                                       )
-    wfobj . InitializeObjectBase     (                                       )
+    wfobj . Read                             (                               )
+    wfobj . InitializeObjectBase             (                               )
     ##########################################################################
-    os    . chdir                    ( CWD                                   )
+    os    . chdir                            ( CWD                           )
     ##########################################################################
-    ## print("GetRenderer")
-    self  . renderer   = wfobj . GetRenderer             (                   )
-    self  . renderer   . SetBackground                   ( 1.0 , 1.0 , 1.0   )
+    self  . ClearRenderer                    (                               )
     ##########################################################################
-    print("GetRenderWindow")
-    ## self  . rWindow    = wfobj . GetRenderWindow         (                   )
-    self  . rWindow    = self . GetRenderWindow (                             )
-    wfobj . SetRenderWindow          ( self . rWindow                        )
-    ## wfobj . Update                   (                                       )
+    self  . renderer   = wfobj . GetRenderer (                               )
+    self  . AssignBackgroundColor            (                               )
+    wfobj . SetRenderWindow                  ( self . rWindow                )
     ##########################################################################
-    ## print("SetRenderWindow")
-    ## self . SetRenderWindow ( self  . rWindow )
-    self  . rWindow    . AddRenderer                     ( self . renderer   )
-    ## print("GetInteractor")
-    self  . interactor = self . rWindow . GetInteractor (                    )
-    ## self  . interactor = vtk . vtkRenderWindowInteractor (                   )
-    self  . interactor . SetRenderWindow                 ( self  . rWindow   )
-    ## self  . SetRenderWindow                              ( self  . rWindow   )
-    ##########################################################################
-    print("ResetCamera")
-    ## self  . renderer   . ResetCamera (                                       )
-    print("Initialize")
-    self  . interactor . Initialize  (                                       )
-    print("Start")
-    self  . interactor . Start       (                                       )
-    print("Done")
+    self  . rWindow    . AddRenderer         ( self . renderer               )
+    self  . interactor . SetRenderWindow     ( self . rWindow                )
     ##########################################################################
     ## reader = vtk . vtkOBJReader      (                                       )
     ## reader . SetFileName             ( PLANE                                 )
@@ -169,12 +151,12 @@ class VtkModel                 ( VtkWidget                                 ) :
   ############################################################################
   def startup                        ( self                                ) :
     ##########################################################################
-    DIR    = "D:\\AITK\\Models\\Cat\\"
-    OBJ    = "12221_Cat_v1_l3.obj"
-    MTL    = "12221_Cat_v1_l3.mtl"
-    ## DIR    = "D:\\AITK\\Models\\Airplane\\"
-    ## OBJ    = "11803_Airplane_v1_l1.obj"
-    ## MTL    = "11803_Airplane_v1_l1.mtl"
+    ## DIR    = "D:\\AITK\\Models\\Cat\\"
+    ## OBJ    = "12221_Cat_v1_l3.obj"
+    ## MTL    = "12221_Cat_v1_l3.mtl"
+    DIR    = "D:\\AITK\\Models\\Airplane\\"
+    OBJ    = "11803_Airplane_v1_l1.obj"
+    MTL    = "11803_Airplane_v1_l1.mtl"
     ##########################################################################
     self . ImportWaveFront           ( DIR , OBJ , MTL                       )
     ##########################################################################
@@ -185,10 +167,10 @@ class VtkModel                 ( VtkWidget                                 ) :
     ## actor  . SetMapper               ( mapper                                )
     ##########################################################################
     ## self . renderer   . AddActor     ( actor                                 )
-    ## self . renderer   . ResetCamera  (                                       )
     ##########################################################################
-    ## self . interactor . Initialize   (                                       )
-    ## self . interactor . Start        (                                       )
+    self . renderer   . ResetCamera  (                                       )
+    self . interactor . Initialize   (                                       )
+    self . interactor . Start        (                                       )
     ##########################################################################
     return
   ############################################################################
@@ -291,11 +273,9 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     TRX    = self . Translations
     ##########################################################################
-    """
-    msg    = TRX                   [ "UI::Refresh"                           ]
+    msg    = "背景顏色"
     icon   = QIcon                 ( ":/images/reload.png"                   )
     mm     . addActionWithIcon     ( 1001 , icon , msg                       )
-    """
     ##########################################################################
     ## self   . ElementsMenu          ( mm                                      )
     self   . DockingMenu           ( mm                                      )
@@ -314,6 +294,7 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     if                             ( at == 1001                            ) :
       ########################################################################
+      self . ChangeBackgroundColor (                                         )
       ########################################################################
       return True
     ##########################################################################
