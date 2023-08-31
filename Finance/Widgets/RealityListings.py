@@ -735,7 +735,7 @@ class RealityListings              ( TreeDock                              ) :
     COL  = mm . addMenu              ( MSG                                   )
     ##########################################################################
     msg  = self . getMenuItem        ( "LOD"                                 )
-    mm   . addActionFromMenu         ( LOM , 38521001 , msg                  )
+    mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
     ##########################################################################
     msg  = self . getMenuItem        ( "RealityIcon"                         )
     ICON = QIcon                     ( ":/images/pictures.png"               )
