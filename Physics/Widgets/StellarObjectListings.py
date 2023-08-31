@@ -59,6 +59,7 @@ class StellarObjectListings        ( TreeDock                              ) :
   StellarObjectGroup  = pyqtSignal ( str , int , str                         )
   ShowPersonalGallery = pyqtSignal ( str , int , str       , QIcon           )
   ShowPersonalIcons   = pyqtSignal ( str , int , str , str , QIcon           )
+  ShowLodListings     = pyqtSignal ( str , str             , QIcon           )
   OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
@@ -740,14 +741,17 @@ class StellarObjectListings        ( TreeDock                              ) :
     msg = self . getMenuItem   ( "Subgroup"                                  )
     mm  . addActionFromMenu    ( LOM , 24231201 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "Icon"                                      )
+    msg = self . getMenuItem   ( "LOD"                                       )
     mm  . addActionFromMenu    ( LOM , 24231202 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "Gallery"                                   )
+    msg = self . getMenuItem   ( "Icon"                                      )
     mm  . addActionFromMenu    ( LOM , 24231203 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "Description"                               )
+    msg = self . getMenuItem   ( "Gallery"                                   )
     mm  . addActionFromMenu    ( LOM , 24231204 , msg                        )
+    ##########################################################################
+    msg = self . getMenuItem   ( "Description"                               )
+    mm  . addActionFromMenu    ( LOM , 24231205 , msg                        )
     ##########################################################################
     return mm
   ############################################################################
@@ -777,19 +781,29 @@ class StellarObjectListings        ( TreeDock                              ) :
       icon = self . windowIcon      (                                        )
       head = item . text            ( 0                                      )
       xsid = str                    ( uuid                                   )
+      ########################################################################
+      self . ShowLodListings . emit ( head , str ( uuid ) , icon             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 24231203                       ) :
+      ########################################################################
+      icon = self . windowIcon      (                                        )
+      head = item . text            ( 0                                      )
+      xsid = str                    ( uuid                                   )
       relz = "Using"
       ########################################################################
       self . ShowPersonalIcons . emit ( head , 22 , relz , xsid , icon       )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 24231203                       ) :
+    if                              ( at == 24231204                       ) :
       ########################################################################
       self . OpenItemGallery        ( item                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 24231204                       ) :
+    if                              ( at == 24231205                       ) :
       ########################################################################
       head = item . text            ( 0                                      )
       nx   = ""

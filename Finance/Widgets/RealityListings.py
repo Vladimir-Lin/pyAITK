@@ -62,6 +62,7 @@ class RealityListings              ( TreeDock                              ) :
   ShowGalleries         = pyqtSignal ( str , int , str  ,       QIcon        )
   ShowGalleriesRelation = pyqtSignal ( str , int , str  , str , QIcon        )
   ShowVideoAlbums       = pyqtSignal ( str , int , str  ,       QIcon        )
+  ShowLodListings       = pyqtSignal ( str , str              , QIcon        )
   OpenLogHistory        = pyqtSignal ( str , str , str , str , str           )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
@@ -733,17 +734,20 @@ class RealityListings              ( TreeDock                              ) :
     MSG  = FMT . format              ( NAME                                  )
     COL  = mm . addMenu              ( MSG                                   )
     ##########################################################################
+    msg  = self . getMenuItem        ( "LOD"                                 )
+    mm   . addActionFromMenu         ( LOM , 38521001 , msg                  )
+    ##########################################################################
     msg  = self . getMenuItem        ( "RealityIcon"                         )
     ICON = QIcon                     ( ":/images/pictures.png"               )
-    mm   . addActionFromMenuWithIcon ( COL , 38521001 , ICON , msg           )
+    mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "RealityGallery"                      )
     ICON = QIcon                     ( ":/images/gallery.png"                )
-    mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
+    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "RealityGalleries"                    )
     ICON = QIcon                     ( ":/images/galleries.png"              )
-    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
+    mm   . addActionFromMenuWithIcon ( COL , 38521004 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
     mm   . addActionFromMenu         ( COL , 38522001        , msg           )
@@ -754,18 +758,30 @@ class RealityListings              ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 38521001                       ) :
       ########################################################################
-      self . OpenItemIcon           ( item                                   )
-
+      icon = self . windowIcon      (                                        )
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      xsid = str                    ( uuid                                   )
+      ########################################################################
+      self . ShowLodListings . emit ( head , str ( uuid ) , icon             )
       ########################################################################
       return True
     ##########################################################################
     if                              ( at == 38521002                       ) :
       ########################################################################
-      self . OpenItemGallery        ( item                                   )
+      self . OpenItemIcon           ( item                                   )
+
       ########################################################################
       return True
     ##########################################################################
     if                              ( at == 38521003                       ) :
+      ########################################################################
+      self . OpenItemGallery        ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38521004                       ) :
       ########################################################################
       self . OpenItemGalleries      ( item                                   )
       ########################################################################
