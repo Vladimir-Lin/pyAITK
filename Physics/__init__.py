@@ -11,9 +11,11 @@ from   gmpy2 import mpfr
 ##############################################################################
 from . Length import Length          as Length
 from . Length import LengthConverter as LengthConverter
+from . Unit   import Unit            as Unit
 ##############################################################################
 __all__ = [ "Length"                                                       , \
             "LengthConverter"                                              , \
+            "Unit"                                                         , \
             "Widgets"                                                        ]
 ##############################################################################
 AU              = mpfr ( "149597870700.0"                         , 1024     )
