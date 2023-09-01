@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 ##############################################################################
-## DecisionActionListings
+## DecisionConditionListings
 ##############################################################################
 import os
 import sys
@@ -50,7 +50,7 @@ from   AITK  . Essentials . Relation  import Relation
 from   AITK  . Calendars  . StarDate  import StarDate
 from   AITK  . Calendars  . Periode   import Periode
 ##############################################################################
-class DecisionActionListings       ( TreeDock                              ) :
+class DecisionConditionListings    ( TreeDock                              ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
@@ -62,12 +62,12 @@ class DecisionActionListings       ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . CKEY               = "DecisionActionListings"
-    self . BaseUuid           = 7304000000000000000
+    self . CKEY               = "DecisionConditionListings"
+    self . BaseUuid           = 4050000000000000000
     self . EditAllNames       = None
     ##########################################################################
     self . Total              = 0
-    self . GType              = 89
+    self . GType              = 108
     self . StartId            = 0
     self . Amount             = 40
     self . SortOrder          = "asc"
@@ -84,7 +84,7 @@ class DecisionActionListings       ( TreeDock                              ) :
                                 Qt . RightDockWidgetArea
     ##########################################################################
     self . Relation = Relation     (                                         )
-    self . Relation . setT2        ( "Execution"                             )
+    self . Relation . setT2        ( "Condition"                             )
     self . Relation . setRelation  ( "Subordination"                         )
     ##########################################################################
     self . setColumnCount          ( 2                                       )
@@ -118,7 +118,7 @@ class DecisionActionListings       ( TreeDock                              ) :
     A    = QAction                (                                          )
     A    . setIcon                ( QIcon ( ":/images/names.png" )           )
     A    . setToolTip             ( msg                                      )
-    A    . triggered . connect    ( self . OpenActionNames                   )
+    A    . triggered . connect    ( self . OpenConditionNames                )
     self . WindowActions . append ( A                                        )
     ##########################################################################
     return
@@ -330,7 +330,7 @@ class DecisionActionListings       ( TreeDock                              ) :
   ############################################################################
   def ObtainAllUuids        ( self , DB                                    ) :
     ##########################################################################
-    ACTTAB = self . Tables  [ "Actions"                                      ]
+    ACTTAB = self . Tables  [ "Conditions"                                   ]
     ##########################################################################
     QQ     = f"""select `uuid` from {ACTTAB}
                  where ( `used` > 0 )
@@ -356,7 +356,7 @@ class DecisionActionListings       ( TreeDock                              ) :
   ############################################################################
   def FetchRegularDepotCount ( self , DB                                   ) :
     ##########################################################################
-    ACTTAB = self . Tables   [ "Actions"                                     ]
+    ACTTAB = self . Tables   [ "Conditions"                                  ]
     QQ     = f"select count(*) from {ACTTAB} where ( `used` > 0 ) ;"
     DB     . Query           ( QQ                                            )
     ONE    = DB . FetchOne   (                                               )
@@ -383,7 +383,7 @@ class DecisionActionListings       ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    ACTTAB = self . Tables          [ "Actions"                              ]
+    ACTTAB = self . Tables          [ "Conditions"                           ]
     STID   = self . StartId
     AMOUNT = self . Amount
     ORDER  = self . getSortingOrder (                                        )
@@ -437,7 +437,7 @@ class DecisionActionListings       ( TreeDock                              ) :
     if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
-    ACTTAB = self . Tables    [ "Actions"                                    ]
+    ACTTAB = self . Tables    [ "Conditions"                                 ]
     NAMTAB = self . Tables    [ "NamesEditing"                               ]
     ##########################################################################
     DB     . LockWrites       ( [ ACTTAB , NAMTAB                          ] )
@@ -478,7 +478,7 @@ class DecisionActionListings       ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def OpenActionNames           ( self                                     ) :
+  def OpenConditionNames        ( self                                     ) :
     ##########################################################################
     atItem = self . currentItem (                                            )
     if                          ( self . NotOkay ( atItem )                ) :
@@ -488,7 +488,7 @@ class DecisionActionListings       ( TreeDock                              ) :
     uuid   = int                ( uuid                                       )
     head   = atItem . text      ( 0                                          )
     NAM    = self . Tables      [ "NamesEditing"                             ]
-    self   . EditAllNames       ( self , "Action" , uuid , NAM               )
+    self   . EditAllNames       ( self , "Condition" , uuid , NAM            )
     ##########################################################################
     return
   ############################################################################
@@ -502,10 +502,10 @@ class DecisionActionListings       ( TreeDock                              ) :
     MSG = FMT  . format        ( item . text ( 0 )                           )
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
-    msg = self . getMenuItem   ( "CopyActionUuid"                            )
+    msg = self . getMenuItem   ( "CopyConditionUuid"                         )
     mm  . addActionFromMenu    ( LOM , 24231101 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "AppendActionUuid"                          )
+    msg = self . getMenuItem   ( "AppendConditionUuid"                       )
     mm  . addActionFromMenu    ( LOM , 24231102 , msg                        )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
