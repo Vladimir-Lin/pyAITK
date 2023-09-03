@@ -57,7 +57,8 @@ class LodListings                  ( TreeDock                              ) :
   ############################################################################
   emitNamesShow       = pyqtSignal (                                         )
   emitAllNames        = pyqtSignal ( list                                    )
-  LodModelEditor      = pyqtSignal ( str , str             , QIcon           )
+  LodModelEditor      = pyqtSignal ( str , str       , QIcon                 )
+  CustomModelEditor   = pyqtSignal ( str , str , int , QIcon                 )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -669,10 +670,19 @@ class LodListings                  ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 24231501                       ) :
       ########################################################################
-      TITLE = self . windowTitle    (                                        )
-      ICON  = self . windowIcon     (                                        )
+      LTYPE  = item . text          ( 3                                      )
+      LTYPE  = int                  ( LTYPE                                  )
       ########################################################################
-      self  . LodModelEditor . emit ( TITLE , str ( uuid ) , ICON            )
+      TITLE  = self . windowTitle   (                                        )
+      ICON   = self . windowIcon    (                                        )
+      ########################################################################
+      LTYPEs =                      [ 301                                    ]
+      ########################################################################
+      if                            ( LTYPE in LTYPEs                      ) :
+        ######################################################################
+        self . CustomModelEditor . emit ( TITLE , str (uuid) , LTYPE , ICON  )
+      ########################################################################
+      self   . LodModelEditor . emit ( TITLE , str ( uuid ) , ICON           )
       ########################################################################
       return
     ##########################################################################

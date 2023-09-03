@@ -66,6 +66,7 @@ class EyeColorListings             ( TreeDock                              ) :
   PeopleGroup         = pyqtSignal ( str , int , str                         )
   ShowPersonalGallery = pyqtSignal ( str , int , str       , QIcon           )
   ShowPersonalIcons   = pyqtSignal ( str , int , str , str , QIcon           )
+  ShowLodListings     = pyqtSignal ( str , str             , QIcon           )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
@@ -703,21 +704,25 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "EyesIcon"                            )
-    ICON = QIcon                     ( ":/images/gallery.png"                )
+    msg  = self . getMenuItem        ( "EyeModel"                            )
+    ICON = QIcon                     ( ":/images/model.png"                  )
     mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
+    ##########################################################################
+    msg  = self . getMenuItem        ( "EyesIcon"                            )
+    ICON = QIcon                     ( ":/images/oneself.png"                )
+    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "EyesGallery"                         )
     ICON = QIcon                     ( ":/images/gallery.png"                )
-    mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
+    mm   . addActionFromMenuWithIcon ( COL , 38521004 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "Crowds"                              )
     ICON = QIcon                     ( ":/images/viewpeople.png"             )
-    mm   . addActionFromMenuWithIcon ( COL , 38521004 , ICON , msg           )
+    mm   . addActionFromMenuWithIcon ( COL , 38521005 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "ColorGroup"                          )
-    mm   . addActionFromMenu         ( COL , 38521005        , msg           )
-    ##########################################################################
+    mm   . addActionFromMenu         ( COL , 38521006        , msg           )
+    #########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
     mm   . addActionFromMenu         ( COL , 38522001        , msg           )
     ##########################################################################
@@ -741,6 +746,18 @@ class EyeColorListings             ( TreeDock                              ) :
       head = item . text            ( 0                                      )
       icon = self . windowIcon      (                                        )
       xsid = str                    ( uuid                                   )
+      ########################################################################
+      self . ShowLodListings . emit ( head , str ( uuid ) , icon             )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38521003                       ) :
+      ########################################################################
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      icon = self . windowIcon      (                                        )
+      xsid = str                    ( uuid                                   )
       relz = "Using"
       ########################################################################
       self . ShowPersonalIcons . emit                                      ( \
@@ -752,19 +769,19 @@ class EyeColorListings             ( TreeDock                              ) :
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 38521003                       ) :
+    if                              ( at == 38521004                       ) :
       ########################################################################
       self . OpenItemGallery        ( item                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 38521004                       ) :
+    if                              ( at == 38521005                       ) :
       ########################################################################
       self . OpenItemCrowd          ( item                                   )
       ########################################################################
       return True
     ##########################################################################
-    if                              ( at == 38521005                       ) :
+    if                              ( at == 38521006                       ) :
       ########################################################################
       ########################################################################
       return True
