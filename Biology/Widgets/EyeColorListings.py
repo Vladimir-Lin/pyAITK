@@ -64,7 +64,8 @@ class EyeColorListings             ( TreeDock                              ) :
   emitAllNames        = pyqtSignal ( list                                    )
   emitAssignAmounts   = pyqtSignal ( str , int , int                         )
   PeopleGroup         = pyqtSignal ( str , int , str                         )
-  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
+  ShowPersonalGallery = pyqtSignal ( str , int , str       , QIcon           )
+  ShowPersonalIcons   = pyqtSignal ( str , int , str , str , QIcon           )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
   OpenLogHistory      = pyqtSignal ( str , str , str , str , str             )
   ############################################################################
@@ -702,16 +703,20 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
-    msg  = self . getMenuItem        ( "EyesGallery"                         )
+    msg  = self . getMenuItem        ( "EyesIcon"                            )
     ICON = QIcon                     ( ":/images/gallery.png"                )
     mm   . addActionFromMenuWithIcon ( COL , 38521002 , ICON , msg           )
     ##########################################################################
-    msg  = self . getMenuItem        ( "Crowds"                              )
-    ICON = QIcon                     ( ":/images/viewpeople.png"             )
+    msg  = self . getMenuItem        ( "EyesGallery"                         )
+    ICON = QIcon                     ( ":/images/gallery.png"                )
     mm   . addActionFromMenuWithIcon ( COL , 38521003 , ICON , msg           )
     ##########################################################################
+    msg  = self . getMenuItem        ( "Crowds"                              )
+    ICON = QIcon                     ( ":/images/viewpeople.png"             )
+    mm   . addActionFromMenuWithIcon ( COL , 38521004 , ICON , msg           )
+    ##########################################################################
     msg  = self . getMenuItem        ( "ColorGroup"                          )
-    mm   . addActionFromMenu         ( COL , 38521004        , msg           )
+    mm   . addActionFromMenu         ( COL , 38521005        , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
     mm   . addActionFromMenu         ( COL , 38522001        , msg           )
@@ -731,17 +736,34 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     if                              ( at == 38521002                       ) :
       ########################################################################
-      self . OpenItemGallery        ( item                                   )
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      xsid = str                    ( uuid                                   )
+      relz = "Using"
+      ########################################################################
+      self . ShowPersonalIcons . emit                                      ( \
+                                      head                                 , \
+                                      self . GType                         , \
+                                      relz                                 , \
+                                      xsid                                 , \
+                                      icon                                   )
       ########################################################################
       return True
     ##########################################################################
     if                              ( at == 38521003                       ) :
       ########################################################################
-      self . OpenItemCrowd          ( item                                   )
+      self . OpenItemGallery        ( item                                   )
       ########################################################################
       return True
     ##########################################################################
     if                              ( at == 38521004                       ) :
+      ########################################################################
+      self . OpenItemCrowd          ( item                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38521005                       ) :
       ########################################################################
       ########################################################################
       return True
