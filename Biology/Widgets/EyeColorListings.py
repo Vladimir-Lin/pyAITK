@@ -739,6 +739,7 @@ class EyeColorListings             ( TreeDock                              ) :
       uuid = item . data            ( 0 , Qt . UserRole                      )
       uuid = int                    ( uuid                                   )
       head = item . text            ( 0                                      )
+      icon = self . windowIcon      (                                        )
       xsid = str                    ( uuid                                   )
       relz = "Using"
       ########################################################################
