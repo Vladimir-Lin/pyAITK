@@ -659,13 +659,13 @@ class EyeColorListings             ( TreeDock                              ) :
     ##########################################################################
     if                                 ( at == 25351301                    ) :
       ########################################################################
-      TITLE = self . windowTitle       (                                     )
+      ## TITLE = self . windowTitle       (                                     )
       ########################################################################
-      self  . OpenVariantTables . emit ( str ( TITLE )                     , \
-                                         "0"                               , \
-                                         self . GType                      , \
-                                         self . FetchTableKey              , \
-                                         self . Tables                       )
+      ## self  . OpenVariantTables . emit ( str ( TITLE )                     , \
+      ##                                    "0"                               , \
+      ##                                    self . GType                      , \
+      ##                                    self . FetchTableKey              , \
+      ##                                    self . Tables                       )
       ########################################################################
       return True
     ##########################################################################
