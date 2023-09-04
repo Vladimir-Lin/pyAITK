@@ -97,8 +97,8 @@ class FaceView                       ( IconDock                            ) :
     self . setFunction               ( self . HavingMenu , True              )
     ##########################################################################
     self . setAcceptDrops            ( False                                 )
-    self . setDragEnabled            ( False                                 )
-    self . setDragDropMode           ( QAbstractItemView . NoDragDrop        )
+    self . setDragEnabled            ( True                                  )
+    self . setDragDropMode           ( QAbstractItemView . DragOnly          )
     ##########################################################################
     return
   ############################################################################
@@ -354,6 +354,19 @@ class FaceView                       ( IconDock                            ) :
     ##########################################################################
     self . AttachActions     ( False                                         )
     self . defaultCloseEvent ( event                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def dragMime                   ( self                                    ) :
+    ##########################################################################
+    mtype   = "face/uuids"
+    message = self . getMenuItem ( "TotalPicked"                             )
+    ##########################################################################
+    return self . CreateDragMime ( self , mtype , message                    )
+  ############################################################################
+  def startDrag         ( self , dropActions                               ) :
+    ##########################################################################
+    self . StartingDrag (                                                    )
     ##########################################################################
     return
   ############################################################################
