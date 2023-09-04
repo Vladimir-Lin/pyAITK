@@ -1254,11 +1254,14 @@ class PeopleView                     ( IconDock                            ) :
     MSG  = self . getMenuItem        ( "Pussy"                               )
     mm   . addActionFromMenu         ( LOM , 24231321 , MSG                  )
     ##########################################################################
-    MSG  = self . getMenuItem        ( "Tattoo"                              )
+    MSG  = self . getMenuItem        ( "Asshole"                             )
     mm   . addActionFromMenu         ( LOM , 24231322 , MSG                  )
     ##########################################################################
-    MSG  = self . getMenuItem        ( "Texture"                             )
+    MSG  = self . getMenuItem        ( "Tattoo"                              )
     mm   . addActionFromMenu         ( LOM , 24231323 , MSG                  )
+    ##########################################################################
+    MSG  = self . getMenuItem        ( "Texture"                             )
+    mm   . addActionFromMenu         ( LOM , 24231324 , MSG                  )
     ##########################################################################
     return mm
   ############################################################################
@@ -1471,13 +1474,24 @@ class PeopleView                     ( IconDock                            ) :
       text = item . text                (                                    )
       icon = item . icon                (                                    )
       xsid = str                        ( uuid                               )
-      relz = "Tattoo"
+      relz = "Asshole"
       ########################################################################
       self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
       ########################################################################
       return True
     ##########################################################################
     if                                  ( at == 24231323                   ) :
+      ########################################################################
+      text = item . text                (                                    )
+      icon = item . icon                (                                    )
+      xsid = str                        ( uuid                               )
+      relz = "Tattoo"
+      ########################################################################
+      self . ShowPersonalIcons . emit   ( text , 7 , relz , xsid , icon      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                                  ( at == 24231324                   ) :
       ########################################################################
       text = item . text                (                                    )
       icon = item . icon                (                                    )
