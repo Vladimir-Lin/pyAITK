@@ -126,8 +126,10 @@ class PicturesView                 ( IconDock                              ) :
     elif                ( 41 == RelateId                                   ) :
       self . FetchTableKey = "PicturesView-Pussy"
     elif                ( 42 == RelateId                                   ) :
-      self . FetchTableKey = "PicturesView-Tattoo"
+      self . FetchTableKey = "PicturesView-Asshole"
     elif                ( 43 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Tattoo"
+    elif                ( 44 == RelateId                                   ) :
       self . FetchTableKey = "PicturesView-Texture"
     ##########################################################################
     return
