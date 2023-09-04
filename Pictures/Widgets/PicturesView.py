@@ -109,27 +109,25 @@ class PicturesView                 ( IconDock                              ) :
   ############################################################################
   def PrepareRelateType ( self , RelateId                                  ) :
     ##########################################################################
-    if                  ( 34 == RelateId                                   ) :
-      self . FetchTableKey = "PicturesView-Face"
-    elif                ( 35 == RelateId                                   ) :
+    if                  ( "Mouth"     == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Mouth"
-    elif                ( 36 == RelateId                                   ) :
+    elif                ( "Eye"       == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Eye"
-    elif                ( 37 == RelateId                                   ) :
+    elif                ( "Iris"      == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Iris"
-    elif                ( 38 == RelateId                                   ) :
+    elif                ( "Nose"      == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Nose"
-    elif                ( 39 == RelateId                                   ) :
+    elif                ( "Tit"       == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Tit"
-    elif                ( 40 == RelateId                                   ) :
+    elif                ( "Umbilicus" == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Umbilicus"
-    elif                ( 41 == RelateId                                   ) :
+    elif                ( "Pussy"     == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Pussy"
-    elif                ( 42 == RelateId                                   ) :
+    elif                ( "Asshole"   == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Asshole"
-    elif                ( 43 == RelateId                                   ) :
+    elif                ( "Tattoo"    == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Tattoo"
-    elif                ( 44 == RelateId                                   ) :
+    elif                ( "Texture"   == RelateId                          ) :
       self . FetchTableKey = "PicturesView-Texture"
     ##########################################################################
     return
