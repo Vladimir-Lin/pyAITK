@@ -401,7 +401,7 @@ class PeopleView                     ( IconDock                            ) :
   def dropPictures                 ( self , source , pos , JSON            ) :
     ##########################################################################
     PUID , NAME = self . itemAtPos ( pos                                     )
-    if                             ( PUID <= 0                             ) :
+    if                             ( int ( PUID ) <= 0                     ) :
       return True
     ##########################################################################
     self . Go ( self . PicturesAppending , ( PUID , NAME , JSON , )          )
@@ -414,7 +414,7 @@ class PeopleView                     ( IconDock                            ) :
   def dropFaces                    ( self , source , pos , JSON            ) :
     ##########################################################################
     PUID , NAME = self . itemAtPos ( pos                                     )
-    if                             ( PUID <= 0                             ) :
+    if                             ( int ( PUID ) <= 0                     ) :
       return True
     ##########################################################################
     self . Go ( self . FacesAppending , ( PUID , NAME , JSON , )             )

@@ -1666,7 +1666,6 @@ class AbstractGui        (                                                 ) :
                                          JSON                              ) :
     ##########################################################################
     VARTAB = self . Tables             [ "Variables"                         ]
-    print(NAME)
     ##########################################################################
     return self . ObtainsVariantTables ( DB                                , \
                                          VARTAB                            , \
