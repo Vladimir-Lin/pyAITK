@@ -107,6 +107,31 @@ class PicturesView                 ( IconDock                              ) :
   def sizeHint                   ( self                                    ) :
     return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
   ############################################################################
+  def PrepareRelateType ( self , RelateId                                  ) :
+    ##########################################################################
+    if                  ( 34 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Face"
+    elif                ( 35 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Mouth"
+    elif                ( 36 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Eye"
+    elif                ( 37 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Iris"
+    elif                ( 38 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Nose"
+    elif                ( 39 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Tit"
+    elif                ( 40 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Umbilicus"
+    elif                ( 41 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Pussy"
+    elif                ( 42 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Tattoo"
+    elif                ( 43 == RelateId                                   ) :
+      self . FetchTableKey = "PicturesView-Texture"
+    ##########################################################################
+    return
+  ############################################################################
   def PrepareForActions           ( self                                   ) :
     ##########################################################################
     msg  = self . getMenuItem     ( "EditPicture"                            )
