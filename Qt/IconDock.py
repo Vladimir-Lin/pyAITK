@@ -1599,7 +1599,7 @@ class IconDock                      ( ListDock                             ) :
   def GenerateGroupMovingSQL              ( self , TABLE , LAST , UUIDs    ) :
     ##########################################################################
     R = self . isReverse                  (                                  )
-    return self . GenerateNormalMovingSQL ( TABLE , LAST , UUIDs , Reverse   )
+    return self . GenerateNormalMovingSQL ( TABLE , LAST , UUIDs , R         )
   ############################################################################
   def defaultDropMoving    ( self , sourceWidget , mimeData , mousePos     ) :
     ##########################################################################
