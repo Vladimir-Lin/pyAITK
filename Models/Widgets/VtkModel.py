@@ -168,11 +168,13 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     return True
   ############################################################################
-  def dealWithMouse                 ( self , mType , event                 ) :
+  def dealWithMouse                   ( self , mType , event               ) :
     ##########################################################################
-    if                              ( self . Pad                           ) :
+    if                                ( self . Pad                         ) :
       ########################################################################
-      self . PadUi . UpdateRenderer (                                        )
+      if ( self . isBitMask ( event . buttons ( ) , Qt . LeftButton )      ) :
+        ######################################################################
+        self . PadUi . UpdateRenderer (                                      )
     ##########################################################################
     return
   ############################################################################
@@ -643,11 +645,11 @@ class VtkModel                 ( VtkWidget                                 ) :
       ########################################################################
       VPAD  . Settings     = self . Settings
       VPAD  . Translations = self . Translations
-      VPAD  . Hosts        = { "ERP"      : Settings [ "ERP"      ]        , \
-                               "Database" : Settings [ "Database" ]        , \
-                               "Oriphase" : Settings [ "Oriphase" ]          }
-      VPAD  . DB           = self . Settings   [ "Database"                  ]
-      VPAD  . Tables       = self . MainTables [ "VtkModel"                  ]
+      VPAD  . Hosts        = { "ERP"      : self . Settings [ "ERP"      ] , \
+                               "Database" : self . Settings [ "Database" ] , \
+                               "Oriphase" : self . Settings [ "Oriphase" ]   }
+      VPAD  . DB           = self . Settings [ "Database"                    ]
+      VPAD  . Tables       = self . Tables
       ########################################################################
       MENUZ = self . Translations              [ "VtkModelPad" ] [ "Menus"   ]
       ########################################################################
