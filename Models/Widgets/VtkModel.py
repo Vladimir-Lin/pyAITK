@@ -167,8 +167,11 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     return True
   ############################################################################
-  def dealWithMouse ( self , mType , event                                 ) :
+  def dealWithMouse                 ( self , mType , event                 ) :
     ##########################################################################
+    if                              ( self . Pad                           ) :
+      ########################################################################
+      self . PadUi . UpdateRenderer (                                        )
     ##########################################################################
     return
   ############################################################################
@@ -599,25 +602,42 @@ class VtkModel                 ( VtkWidget                                 ) :
   ############################################################################
   ## 切換控制板
   ############################################################################
-  def SwitchPad                   ( self                                   ) :
+  def SwitchPad                      ( self                                ) :
     ##########################################################################
-    if                            ( self . Pad                             ) :
+    if                               ( self . Pad                          ) :
       ########################################################################
-      self . PadUi  . close       (                                          )
+      self . PadUi      . close      (                                       )
       ########################################################################
-      self . Pad    = False
-      self . PadUi  = None
+      self . Pad       = False
+      self . PadUi     = None
       ########################################################################
     else                                                                     :
       ########################################################################
-      VPAD  = VtkModelPad         ( None , self . PlanFunc                   )
-      TITLE = self  . getMenuItem ( "ControlPad"                             )
+      VPAD  = VtkModelPad            ( None , self . PlanFunc                )
+      TITLE = self     . getMenuItem ( "ControlPad"                          )
       ########################################################################
+      VPAD  . Settings     = self . Settings
+      VPAD  . Translations = self . Translations
+      VPAD  . Hosts        = { "ERP"      : Settings [ "ERP"      ]        , \
+                               "Database" : Settings [ "Database" ]        , \
+                               "Oriphase" : Settings [ "Oriphase" ]          }
+      VPAD  . DB           = self . Settings   [ "Database"                  ]
+      VPAD  . Tables       = self . MainTables [ "VtkModel"                  ]
       ########################################################################
-      self  . addControl          ( TITLE , VPAD , self                      )
+      MENUZ = self . Translations              [ "VtkModelPad" ] [ "Menus"   ]
       ########################################################################
-      self  . Pad   = True
-      self  . PadUi = VPAD
+      VPAD  . setLocality            ( self . getLocality ( )                )
+      VPAD  . setMenus               ( MENUZ                                 )
+      ########################################################################
+      VPAD  . rWindow  = self . rWindow
+      VPAD  . renderer = self . renderer
+      ########################################################################
+      self  . addControl             ( TITLE , VPAD , self                   )
+      ########################################################################
+      VPAD  . startup                (                                       )
+      ########################################################################
+      self  . Pad      = True
+      self  . PadUi    = VPAD
     ##########################################################################
     return
   ############################################################################
