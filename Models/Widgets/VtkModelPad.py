@@ -72,8 +72,9 @@ class VtkModelPad                 ( Widget                                ) :
     self . ui = Ui_VtkModelPadUi   (                                         )
     self . ui . setupUi            ( self                                    )
     ##########################################################################
-    self . ClassTag  = "VtkModelPad"
-    self . VoiceJSON =             {                                         }
+    self . ClassTag       = "VtkModelPad"
+    self . VoiceJSON      =        {                                         }
+    self . ContentChanged = False
     ##########################################################################
     self . emitShow     . connect  ( self . show                             )
     self . emitAskClose . connect  ( self . AskToClose                       )
@@ -93,6 +94,19 @@ class VtkModelPad                 ( Widget                                ) :
       return
     ##########################################################################
     super ( ) . closeEvent          ( event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def AskToClose                  ( self                                   ) :
+    ##########################################################################
+    MSG  = self . getMenuItem     ( "ReallyQuit"                             )
+    OKAY = QMessageBox . question ( self , self . windowTitle ( ) , MSG      )
+    ##########################################################################
+    if                            ( OKAY != QMessageBox . Yes              ) :
+      return
+    ##########################################################################
+    self . ContentChanged = False
+    self . close                  (                                          )
     ##########################################################################
     return
   ############################################################################
