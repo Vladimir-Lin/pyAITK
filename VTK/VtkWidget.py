@@ -23,6 +23,7 @@ from   PyQt5 . QtCore                          import pyqtSlot
 from   PyQt5 . QtCore                          import Qt
 from   PyQt5 . QtCore                          import QPoint
 from   PyQt5 . QtCore                          import QPointF
+from   PyQt5 . QtCore                          import QSize
 ##############################################################################
 from   PyQt5 . QtGui                           import QIcon
 from   PyQt5 . QtGui                           import QCursor
@@ -32,12 +33,20 @@ from   PyQt5 . QtGui                           import QKeySequence
 from   PyQt5 . QtWidgets                       import QApplication
 from   PyQt5 . QtWidgets                       import qApp
 from   PyQt5 . QtWidgets                       import QWidget
+from   PyQt5 . QtWidgets                       import QFileDialog
+from   PyQt5 . QtWidgets                       import QSpinBox
+from   PyQt5 . QtWidgets                       import QDoubleSpinBox
 ##############################################################################
 from   vtk   . qt . QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+##############################################################################
+from   AITK  . Documents . JSON                import Save        as SaveJson
 ##############################################################################
 from   AITK  . Qt . VirtualGui                 import VirtualGui  as VirtualGui
 from   AITK  . Qt . AttachDock                 import AttachDock  as AttachDock
 from   AITK  . Qt . MenuManager                import MenuManager as MenuManager
+from   AITK  . Qt . LineEdit                   import LineEdit    as LineEdit
+from   AITK  . Qt . ComboBox                   import ComboBox    as ComboBox
+from   AITK  . Qt . SpinBox                    import SpinBox     as SpinBox
 ##############################################################################
 class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
   ############################################################################

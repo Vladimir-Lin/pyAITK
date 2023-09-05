@@ -15,36 +15,39 @@ import shutil
 ##############################################################################
 import vtk
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                                  import QtCore
+from   PyQt5                                  import QtGui
+from   PyQt5                                  import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                         import QObject
+from   PyQt5 . QtCore                         import pyqtSignal
+from   PyQt5 . QtCore                         import pyqtSlot
+from   PyQt5 . QtCore                         import Qt
+from   PyQt5 . QtCore                         import QPoint
+from   PyQt5 . QtCore                         import QPointF
+from   PyQt5 . QtCore                         import QSize
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QColor
-from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                          import QIcon
+from   PyQt5 . QtGui                          import QCursor
+from   PyQt5 . QtGui                          import QColor
+from   PyQt5 . QtGui                          import QKeySequence
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import QFileDialog
-from   PyQt5 . QtWidgets              import QSpinBox
-from   PyQt5 . QtWidgets              import QDoubleSpinBox
+from   PyQt5 . QtWidgets                      import QApplication
+from   PyQt5 . QtWidgets                      import qApp
+from   PyQt5 . QtWidgets                      import QWidget
+from   PyQt5 . QtWidgets                      import QFileDialog
+from   PyQt5 . QtWidgets                      import QSpinBox
+from   PyQt5 . QtWidgets                      import QDoubleSpinBox
 ##############################################################################
-from   AITK  . Documents . JSON       import Save        as SaveJson
+from   AITK  . Documents . JSON               import Save         as SaveJson
 ##############################################################################
-from   AITK  . VTK . VtkWidget        import VtkWidget   as VtkWidget
-from   AITK  . VTK . Wrapper          import Wrapper     as VtkWrapper
+from   AITK  . VTK . VtkWidget                import VtkWidget    as VtkWidget
+from   AITK  . VTK . Wrapper                  import Wrapper      as VtkWrapper
 ##############################################################################
-from   AITK  . Qt  . MenuManager      import MenuManager as MenuManager
+from   AITK  . Qt  . MenuManager              import MenuManager  as MenuManager
+from   AITK  . Qt  . LineEdit                 import LineEdit     as LineEdit
+from   AITK  . Qt  . ComboBox                 import ComboBox     as ComboBox
+from   AITK  . Qt  . SpinBox                  import SpinBox      as SpinBox
 ##############################################################################
 from   AITK  . Math . Geometry . ControlPoint import ControlPoint as ControlPoint
 from   AITK  . Math . Geometry . Contour      import Contour      as Contour
@@ -90,6 +93,8 @@ class VtkModel                 ( VtkWidget                                 ) :
     ## self . setDragDropMode  ( QAbstractItemView . NoDragDrop                 )
     ##########################################################################
     self . emitStartModel . connect ( self . StartModel                      )
+    ##########################################################################
+    self . setPrepared      ( True                                           )
     ##########################################################################
     return
   ############################################################################
@@ -624,6 +629,12 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     return
   ############################################################################
+  def LodChanged ( self , LOD                                              ) :
+    ##########################################################################
+    self . LodName = LOD
+    ##########################################################################
+    return
+  ############################################################################
   def ModelMenu                ( self , mm                                 ) :
     ##########################################################################
     MSG = self . getMenuItem   ( "ModelMenu"                                 )
@@ -720,51 +731,58 @@ class VtkModel                 ( VtkWidget                                 ) :
     ##########################################################################
     return False
   ############################################################################
-  def Menu                      ( self , pos                               ) :
+  def Menu                        ( self , pos                             ) :
     ##########################################################################
-    doMenu = self . isFunction  ( self . HavingMenu                          )
-    if                          ( not doMenu                               ) :
+    doMenu = self . isFunction    ( self . HavingMenu                        )
+    if                            ( not doMenu                             ) :
       return False
     ##########################################################################
-    self   . Notify             ( 0                                          )
+    self   . Notify               ( 0                                        )
     ##########################################################################
-    mm     = MenuManager        ( self                                       )
+    mm     = MenuManager          ( self                                     )
     ##########################################################################
-    msg    = self . getMenuItem ( "ControlPad"                               )
-    mm     . addAction          ( 1101 , msg , True , self . Pad             )
+    SERL   = LineEdit             ( None , self . PlanFunc                   )
+    SERL   . setText              ( self . LodName                           )
+    SERL   . textEdited . connect ( self . LodChanged                        )
+    mm     . addWidget            ( 9999991 , SERL                           )
     ##########################################################################
-    msg    = self . getMenuItem ( "TrackMouse"                               )
-    mm     . addAction          ( 1102 , msg , True , self . Mouse           )
+    mm     . addSeparator         (                                          )
     ##########################################################################
-    mm     . addSeparator       (                                            )
+    msg    = self . getMenuItem   ( "ControlPad"                             )
+    mm     . addAction            ( 1101 , msg , True , self . Pad           )
     ##########################################################################
-    self   . ModelMenu          ( mm                                         )
-    self   . FilesMenu          ( mm                                         )
-    mm     . addSeparator       (                                            )
-    self   . DockingMenu        ( mm                                         )
+    msg    = self . getMenuItem   ( "TrackMouse"                             )
+    mm     . addAction            ( 1102 , msg , True , self . Mouse         )
     ##########################################################################
-    mm     . setFont            ( self    . menuFont ( )                     )
-    aa     = mm . exec_         ( QCursor . pos      ( )                     )
-    at     = mm . at            ( aa                                         )
+    mm     . addSeparator         (                                          )
     ##########################################################################
-    if                          ( self . RunModelMenu ( at               ) ) :
+    self   . ModelMenu            ( mm                                       )
+    self   . FilesMenu            ( mm                                       )
+    mm     . addSeparator         (                                          )
+    self   . DockingMenu          ( mm                                       )
+    ##########################################################################
+    mm     . setFont              ( self    . menuFont ( )                   )
+    aa     = mm . exec_           ( QCursor . pos      ( )                   )
+    at     = mm . at              ( aa                                       )
+    ##########################################################################
+    if                            ( self . RunModelMenu ( at             ) ) :
       return True
     ##########################################################################
-    if                          ( self . RunFilesMenu ( at               ) ) :
+    if                            ( self . RunFilesMenu ( at             ) ) :
       return True
     ##########################################################################
-    if                          ( self . RunDocking   ( mm , aa          ) ) :
+    if                            ( self . RunDocking   ( mm , aa        ) ) :
       return True
     ##########################################################################
-    if                          ( at == 1101                               ) :
+    if                            ( at == 1101                             ) :
       ########################################################################
-      self . SwitchPad          (                                            )
+      self . SwitchPad            (                                          )
       ########################################################################
       return True
     ##########################################################################
-    if                          ( at == 1102                               ) :
+    if                            ( at == 1102                             ) :
       ########################################################################
-      self . SwitchMouse        (                                            )
+      self . SwitchMouse          (                                          )
       ########################################################################
       return True
     ##########################################################################
