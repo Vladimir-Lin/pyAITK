@@ -15,14 +15,23 @@ class Ui_VtkModelPadUi(object):
     def setupUi(self, VtkModelPadUi):
         VtkModelPadUi.setObjectName("VtkModelPadUi")
         VtkModelPadUi.resize(400, 300)
-        self.label = QtWidgets.QLabel(VtkModelPadUi)
-        self.label.setGeometry(QtCore.QRect(10, 10, 380, 16))
+        self.Camera = QtWidgets.QWidget()
+        self.Camera.setObjectName("Camera")
+        self.label = QtWidgets.QLabel(self.Camera)
+        self.label.setGeometry(QtCore.QRect(10, 20, 301, 31))
         self.label.setObjectName("label")
+        VtkModelPadUi.addItem(self.Camera, "")
+        self.Actors = QtWidgets.QWidget()
+        self.Actors.setObjectName("Actors")
+        VtkModelPadUi.addItem(self.Actors, "")
 
         self.retranslateUi(VtkModelPadUi)
+        VtkModelPadUi.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(VtkModelPadUi)
 
     def retranslateUi(self, VtkModelPadUi):
         _translate = QtCore.QCoreApplication.translate
         VtkModelPadUi.setWindowTitle(_translate("VtkModelPadUi", "三維模型控制板"))
-        self.label.setText(_translate("VtkModelPadUi", "三維模型控制板"))
+        self.label.setText(_translate("VtkModelPadUi", "中心點"))
+        VtkModelPadUi.setItemText(VtkModelPadUi.indexOf(self.Camera), _translate("VtkModelPadUi", "場景相機"))
+        VtkModelPadUi.setItemText(VtkModelPadUi.indexOf(self.Actors), _translate("VtkModelPadUi", "物件列表"))
