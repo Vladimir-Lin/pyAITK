@@ -15,679 +15,96 @@ import shutil
 ##############################################################################
 import vtk
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                               import QtCore
+from   PyQt5                               import QtGui
+from   PyQt5                               import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
+from   PyQt5 . QtCore                      import QObject
+from   PyQt5 . QtCore                      import pyqtSignal
+from   PyQt5 . QtCore                      import pyqtSlot
+from   PyQt5 . QtCore                      import Qt
+from   PyQt5 . QtCore                      import QPoint
+from   PyQt5 . QtCore                      import QPointF
+from   PyQt5 . QtCore                      import QSize
+from   PyQt5 . QtCore                      import QDateTime
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QColor
-from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                       import QIcon
+from   PyQt5 . QtGui                       import QCursor
+from   PyQt5 . QtGui                       import QKeySequence
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import QFileDialog
-from   PyQt5 . QtWidgets              import QSpinBox
-from   PyQt5 . QtWidgets              import QDoubleSpinBox
+from   PyQt5 . QtWidgets                   import QApplication
+from   PyQt5 . QtWidgets                   import QWidget
+from   PyQt5 . QtWidgets                   import qApp
+from   PyQt5 . QtWidgets                   import QMenu
+from   PyQt5 . QtWidgets                   import QAction
+from   PyQt5 . QtWidgets                   import QShortcut
+from   PyQt5 . QtWidgets                   import QAbstractItemView
+from   PyQt5 . QtWidgets                   import QTreeWidget
+from   PyQt5 . QtWidgets                   import QTreeWidgetItem
+from   PyQt5 . QtWidgets                   import QLineEdit
+from   PyQt5 . QtWidgets                   import QComboBox
+from   PyQt5 . QtWidgets                   import QSpinBox
+from   PyQt5 . QtWidgets                   import QMessageBox
 ##############################################################################
-from   AITK  . VTK . VtkWidget        import VtkWidget   as VtkWidget
-from   AITK  . VTK . Wrapper          import Wrapper     as VtkWrapper
+from   AITK  . Qt . MenuManager            import MenuManager    as MenuManager
+from   AITK  . Qt . Widget                 import Widget         as Widget
 ##############################################################################
-from   AITK  . Qt  . MenuManager      import MenuManager as MenuManager
+from   AITK  . Essentials . Relation       import Relation       as Relation
+from   AITK  . Calendars  . StarDate       import StarDate       as StarDate
+from   AITK  . Calendars  . Periode        import Periode        as Periode
+from   AITK  . Documents  . Notes          import Notes          as Notes
+from   AITK  . Documents  . Variables      import Variables      as Variables
+from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
 ##############################################################################
-from   AITK  . Math . Geometry . ControlPoint import ControlPoint as ControlPoint
-from   AITK  . Math . Geometry . Contour      import Contour      as Contour
-from   AITK  . Math . Geometry . Circle       import Circle       as Circle
-from   AITK  . Math . Geometry . Cylinder     import Cylinder     as Cylinder
-from   AITK  . Math . Geometry . Plane        import Plane        as Plane
-from   AITK  . Math . Geometry . Parabola     import Parabola     as Parabola
-from   AITK  . Math . Geometry . Sphere       import Sphere       as Sphere
-from   AITK  . Math . Geometry . Polyhedron   import Polyhedron   as Polyhedron
+from   AITK  . VTK . Wrapper               import Wrapper        as VtkWrapper
 ##############################################################################
-class VtkModelPad              ( VtkWidget                                 ) :
+from         . VtkModelPadUi               import Ui_VtkModelPadUi
+##############################################################################
+class VtkModelPad                 ( Widget                                ) :
   ############################################################################
-  emitStartModel = pyqtSignal  (                                             )
+  emitShow            = pyqtSignal (                                         )
+  emitAskClose        = pyqtSignal (                                         )
   ############################################################################
-  def __init__                 ( self , parent = None , plan = None        ) :
+  def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    super ( ) . __init__       (        parent        , plan                 )
-    self . setVtkModelDefaults (                                             )
+    super ( ) . __init__           (        parent        , plan             )
+    ##########################################################################
+    self . ui = Ui_VtkModelPadUi   (                                         )
+    self . ui . setupUi            ( self                                    )
+    ##########################################################################
+    self . ClassTag  = "VtkModelPad"
+    self . VoiceJSON =             {                                         }
+    ##########################################################################
+    self . emitShow     . connect  ( self . show                             )
+    self . emitAskClose . connect  ( self . AskToClose                       )
+    ##########################################################################
+    self . rWindow   = None
+    self . renderer  = None
     ##########################################################################
     return
   ############################################################################
-  def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
-  ############################################################################
-  def setVtkModelDefaults   ( self                                         ) :
+  def closeEvent                    ( self , event                         ) :
     ##########################################################################
-    self . dockingOrientation = 0
-    self . dockingPlace       = Qt . RightDockWidgetArea
-    ##########################################################################
-    self . Uuid               = 0
-    self . LOID               = 0
-    self . Mouse              = False
-    self . Pad                = False
-    self . PadUi              = None
-    ##########################################################################
-    self . setFunction      ( self . HavingMenu      , True                  )
-    ##########################################################################
-    self . setAcceptDrops   ( False                                          )
-    ## self . setDragEnabled   ( False                                          )
-    ## self . setDragDropMode  ( QAbstractItemView . NoDragDrop                 )
-    ##########################################################################
-    self . emitStartModel . connect ( self . StartModel                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def mouseDoubleClickEvent           ( self , event                       ) :
-    ##########################################################################
-    if                                ( self . handleMouse ( 3 , event )   ) :
-      return
-    ##########################################################################
-    super ( ) . mouseDoubleClickEvent (     event                            )
-    self      . dealWithMouse         ( 3 , event                            )
-    ##########################################################################
-    return
-  ############################################################################
-  def mouseMoveEvent           ( self , event                              ) :
-    ##########################################################################
-    if                         ( self . handleMouse ( 2 , event )          ) :
-      return
-    ##########################################################################
-    super ( ) . mouseMoveEvent (     event                                   )
-    self      . dealWithMouse  ( 2 , event                                   )
-    ##########################################################################
-    return
-  ############################################################################
-  def mouseReleaseEvent           ( self , event                           ) :
-    ##########################################################################
-    if                          ( self . handleMouse ( 1 , event )         ) :
-      return
-    ##########################################################################
-    super ( ) . mouseReleaseEvent (     event                                )
-    self      . dealWithMouse     ( 1 , event                                )
-    ##########################################################################
-    return
-  ############################################################################
-  def mousePressEvent           ( self , event                             ) :
-    ##########################################################################
-    if                          ( self . handleMouse ( 0 , event )         ) :
-      return
-    ##########################################################################
-    super ( ) . mousePressEvent (     event                                  )
-    self      . dealWithMouse   ( 0 , event                                  )
-    ##########################################################################
-    return
-  ############################################################################
-  def handleMouse   ( self , mType , event                                 ) :
-    ##########################################################################
-    if              ( self . Mouse                                         ) :
-      return False
-    ##########################################################################
-    event . accept  (                                                        )
-    ##########################################################################
-    return True
-  ############################################################################
-  def dealWithMouse ( self , mType , event                                 ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  def PrepareContent       ( self                                          ) :
-    ##########################################################################
-    source = vtk.vtkSphereSource()
-    source . SetCenter(0, 0, 0)
-    source . SetRadius(10.0)
-    ##########################################################################
-    ## Create a mapper
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(source.GetOutputPort())
-    ##########################################################################
-    # Create an actor
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
-    ##########################################################################
-    self . renderer . AddActor     ( actor )
-    self . renderer . ResetCamera  ( )
-    ##########################################################################
-    self . interactor . Initialize ( )
-    self . interactor . Start      ( )
-    ##########################################################################
-    return
-  ############################################################################
-  def ImportWaveFront                        ( self , DIR , OBJ , MTL      ) :
-    ##########################################################################
-    CWD   = os . getcwd                      (                               )
-    os    . chdir                            ( DIR                           )
-    ##########################################################################
-    wfobj = vtk . vtkOBJImporter             (                               )
-    wfobj . SetFileName                      ( OBJ                           )
-    wfobj . SetFileNameMTL                   ( MTL                           )
-    ##########################################################################
-    wfobj . Read                             (                               )
-    wfobj . InitializeObjectBase             (                               )
-    ##########################################################################
-    os    . chdir                            ( CWD                           )
-    ##########################################################################
-    self  . ClearRenderer                    (                               )
-    ##########################################################################
-    self  . renderer   = wfobj . GetRenderer (                               )
-    self  . AssignBackgroundColor            (                               )
-    wfobj . SetRenderWindow                  ( self . rWindow                )
-    ##########################################################################
-    self  . rWindow    . AddRenderer         ( self . renderer               )
-    self  . interactor . SetRenderWindow     ( self . rWindow                )
-    ##########################################################################
-    return
-  ############################################################################
-  def LoadZipWaveFront        ( self , PARAMETERs , ZipData                ) :
-    ##########################################################################
-    TMPDIR = self . Settings  [ "ModelPath"                                  ]
-    CWD    = os   . getcwd    (                                              )
-    ##########################################################################
-    WFPATH = PARAMETERs       [ "Directory"                                  ]
-    OBJ    = PARAMETERs       [ "OBJ"                                        ]
-    MTL    = PARAMETERs       [ "MTL"                                        ]
-    LOID   = self . LOID
-    LZIP   = f"{LOID}.zip"
-    TZIP   = os . path . join ( TMPDIR , LZIP                                )
-    DIR    = os . path . join ( TMPDIR , WFPATH                              )
-    ##########################################################################
-    with open                 ( TZIP , 'wb'                           ) as f :
-      f    . write            ( ZipData                                      )
-    ##########################################################################
-    os     . chdir            ( TMPDIR                                       )
-    shutil . unpack_archive   ( LZIP , TMPDIR                                )
-    os     . chdir            ( CWD                                          )
-    ##########################################################################
-    self   . ImportWaveFront  ( DIR , OBJ , MTL                              )
-    ##########################################################################
-    os     . remove           ( TZIP                                         )
-    shutil . rmtree           ( DIR                                          )
-    ##########################################################################
-    return
-  ############################################################################
-  def ImportBareWaveFront            ( self , FILENAME                     ) :
-    ##########################################################################
-    reader = vtk . vtkOBJReader      (                                       )
-    reader . SetFileName             ( FILENAME                              )
-    reader . Update                  (                                       )
-    ##########################################################################
-    mapper = vtk . vtkPolyDataMapper (                                       )
-    mapper . SetInputConnection      ( reader . GetOutputPort ( )            )
-    ##########################################################################
-    actor  = vtk . vtkActor          (                                       )
-    actor  . SetMapper               ( mapper                                )
-    ##########################################################################
-    self . renderer   . AddActor     ( actor                                 )
-    ##########################################################################
-    return
-  ############################################################################
-  def LoadBareWaveFront          ( self , PARAMETERs , ZipData             ) :
-    ##########################################################################
-    TMPDIR = self . Settings     [ "ModelPath"                               ]
-    CWD    = os   . getcwd       (                                           )
-    ##########################################################################
-    WFPATH = PARAMETERs          [ "Directory"                               ]
-    OBJ    = PARAMETERs          [ "OBJ"                                     ]
-    LOID   = self . LOID
-    LZIP   = f"{LOID}.zip"
-    TZIP   = os . path . join    ( TMPDIR , LZIP                             )
-    DIR    = os . path . join    ( TMPDIR , WFPATH                           )
-    WFOBJ  = os . path . join    ( DIR    , OBJ                              )
-    ##########################################################################
-    with open                    ( TZIP , 'wb'                        ) as f :
-      f    . write               ( ZipData                                   )
-    ##########################################################################
-    os     . chdir               ( TMPDIR                                    )
-    shutil . unpack_archive      ( LZIP , TMPDIR                             )
-    os     . chdir               ( CWD                                       )
-    ##########################################################################
-    self   . ImportBareWaveFront ( WFOBJ                                     )
-    ##########################################################################
-    os     . remove              ( TZIP                                      )
-    shutil . rmtree              ( DIR                                       )
-    ##########################################################################
-    return
-  ############################################################################
-  def StartModel                    ( self                                 ) :
-    ##########################################################################
-    self . renderer   . ResetCamera (                                        )
-    self . interactor . Initialize  (                                        )
-    self . interactor . Start       (                                        )
-    ##########################################################################
-    self . Notify                   ( 5                                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def toJSON               ( self , TEXT                                   ) :
-    ##########################################################################
-    if                     ( len ( TEXT ) <= 0                             ) :
-      return               {                                                 }
-    ##########################################################################
-    try                                                                      :
-      BODY = TEXT . decode ( "utf-8"                                         )
-    except                                                                   :
-      return               {                                                 }
-    ##########################################################################
-    if                     ( len ( BODY ) <= 0                             ) :
-      return               {                                                 }
-    ##########################################################################
-    return json . loads    ( BODY                                            )
-  ############################################################################
-  def loading                        ( self                                ) :
-    ##########################################################################
-    DB       = self . ConnectDB      (                                       )
-    if                               ( DB == None                          ) :
-      self   . emitStartModel . emit (                                       )
-      return
-    ##########################################################################
-    OKAY     = False
-    self     . Notify                ( 3                                     )
-    ##########################################################################
-    FMT      = self . Translations   [ "UI::StartLoading"                    ]
-    MSG      = FMT . format          ( self . windowTitle ( )                )
-    self     . ShowStatus            ( MSG                                   )
-    self     . OnBusy  . emit        (                                       )
-    self     . setBustle             (                                       )
-    ##########################################################################
-    LOID     = self . LOID
-    UUID     = 0
-    LTYPE    = 0
-    BODY     = None
-    JSOX     =                       {                                       }
-    LODTAB   = self . Tables         [ "LOD"                                 ]
-    ##########################################################################
-    QQ       = f"""select
-                   `uuid` , `type` , `parameters` , `body`
-                   from {LODTAB}
-                   where ( `id` = {LOID} ) ;"""
-    QQ       = " " . join            ( QQ . split ( )                        )
-    ##########################################################################
-    DB       . Query                 ( QQ                                    )
-    RR       = DB . FetchOne         (                                       )
-    ##########################################################################
-    if ( ( RR not in [ False , None ] ) and ( len ( RR ) == 4 ) )            :
+    if                              ( self . ContentChanged                ) :
       ########################################################################
-      UUID   = int                   ( RR [ 0                              ] )
-      LTYPE  = int                   ( RR [ 1                              ] )
-      JSOX   = self . toJSON         ( RR [ 2                              ] )
-      BODY   =                         RR [ 3                                ]
-      ########################################################################
-      if ( ( BODY not in [ False , None ] ) and ( len ( BODY ) > 0 ) )       :
-        ######################################################################
-        OKAY = True
-    ##########################################################################
-    self     . setVacancy            (                                       )
-    self     . GoRelax . emit        (                                       )
-    self     . ShowStatus            ( ""                                    )
-    DB       . Close                 (                                       )
-    ##########################################################################
-    if                               ( OKAY                                ) :
-      ########################################################################
-      self   . Uuid = UUID
-      ########################################################################
-      if                             ( 102 == LTYPE                        ) :
-        ######################################################################
-        self . LoadBareWaveFront     ( JSOX , BODY                           )
-      ########################################################################
-      elif                           ( 112 == LTYPE                        ) :
-        ######################################################################
-        self . LoadZipWaveFront      ( JSOX , BODY                           )
-    ##########################################################################
-    self . emitStartModel . emit     (                                       )
-    ##########################################################################
-    return
-  ############################################################################
-  def startup ( self                                                       ) :
-    ##########################################################################
-    self . Go ( self . loading                                               )
-    ##########################################################################
-    return
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  def ReportIt ( self                                                      ) :
-    ##########################################################################
-    ## FN     = f"D:/Workspaces/VTK/EyeBalls.vtk"
-    ##########################################################################
-    ## writer = vtk . vtkPolyDataWriter ( )
-    ## writer . SetInputData            ( sphere.GetOutput() )
-    ## writer . SetFileName             ( FN )
-    ## writer . Update                  (    )
-    ##########################################################################
-    ## FN     = f"D:\\Workspaces\\VTK\\EyeBalls-{CNT}.json"
-    ## FN     = f"D:/Workspaces/VTK"
-    ## EXP = vtk . vtkJSONSceneExporter ( )
-    ## EXP . SetFileName       ( FN              )
-    ## EXP . SetInput          ( self . rWindow  )
-    ## EXP . SetActiveRenderer ( self . renderer )
-    ## EXP . Write             (                 )
-    CNT     = 0
-    actors  = self . renderer . GetActors (                                  )
-    ##########################################################################
-    for actor in actors                                                      :
-      ########################################################################
-      CNT   = CNT + 1
-      ########################################################################
-      ## print ( "Actor : " , CNT )
-      ########################################################################
-      vm     = actor . GetMapper (                                           )
-      vi     = vm    . GetInput  (                                           )
-      ########################################################################
-      FN     = f"D:/Workspaces/VTK/EyeBalls-{CNT}.vtk"
-      ##########################################################################
-      writer = vtk . vtkPolyDataWriter (    )
-      writer . SetInputData            ( vi )
-      writer . SetFileName             ( FN )
-      writer . Update                  (    )
-      ########################################################################
-      ## FN     = f"D:\\Workspaces\\VTK\\EyeBalls-{CNT}.json"
-      ## writer = vtk . vtkJSONDataSetWriter (                                  )
-      ## writer . SetFileName  ( FN                                             )
-      ## writer . SetInputData ( vi                                             )
-      ## writer . Write        (                                                )
-      ## writer . Update       (                                                )
-      ########################################################################
-      ## TUPS = vi . GetNumberOfPoints ( )
-      ## SAT  = 0
-      ## print ( "Points : " , TUPS )
-      ## while ( SAT < TUPS ) :
-      ##   ######################################################################
-      ##   print ( vi . GetPoint ( SAT ) )
-      ##   SAT = SAT + 1
-      ########################################################################
-      ## CELS = vi . GetNumberOfCells ( )
-      ## SAT  = 0
-      ## print ( "Cells : " , CELS )
-      ## while ( SAT < CELS ) :
-      ##   ######################################################################
-      ##   CE = vi . GetCell ( SAT )
-      ##   PX = CE . GetNumberOfPoints ( )
-      ##   ED = CE . GetNumberOfEdges  ( )
-      ##   FA = CE . GetNumberOfFaces  ( )
-      ##   FF = CE . GetFaces          ( )
-      ##   ######################################################################
-      ##   PV = CE . GetPointIds       ( )
-      ##   PC = PV . GetNumberOfIds    ( )
-      ##   AP = 0
-      ##   LL = [ ]
-      ##   while ( AP < PC ) :
-      ##     ####################################################################
-      ##     LL . append ( PV . GetId ( AP ) )
-      ##     ####################################################################
-      ##     AP = AP + 1
-      ##   ######################################################################
-      ##   print ( PX , ED , FA , FF , LL )
-      ##   ######################################################################
-      ##   SAT = SAT + 1
-      ########################################################################
-    ## actors   = [                                                             ]
-    ## na       = actors . GetNextActor (                                       )
-    ##########################################################################
-    ## while ( na not in [ False , None ] )                                     :
-    ##   ########################################################################
-    ##   actors . append ( na )
-    ##   print ( na . GetObjectName ( ) )
-      ########################################################################
-    ##   na     = actors . GetNextActor (                                       )
-    ##########################################################################
-    return
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ## 清除場景內所有的角色
-  ############################################################################
-  def ClearActors                        ( self                            ) :
-    ##########################################################################
-    actors = self . renderer . GetActors (                                   )
-    ##########################################################################
-    for actor in actors                                                      :
-      ########################################################################
-      self . renderer . RemoveActor      ( actor                             )
-    ##########################################################################
-    return
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ############################################################################
-  ### 匯出JSON目錄
-  ############################################################################
-  def ExportJSON ( self                                                    ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  ### 匯出VTK目錄
-  ############################################################################
-  def ExportVTK ( self                                                     ) :
-    ##########################################################################
-    DIR = QFileDialog . getExistingDirectory                                 (
-            self                                                             ,
-            self . getMenuItem ( "VtkDirectory" )                            ,
-            ""                                                               ,
-            QFileDialog . ShowDirsOnly                                       )
-    ##########################################################################
-    if          ( DIR in [ False , None ]                                  ) :
-      return
-    ##########################################################################
-    if          ( len ( DIR ) <= 0                                         ) :
-      return
-    ##########################################################################
-    print(DIR)
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  ### 匯出OBJ檔
-  ############################################################################
-  def ExportOBJ ( self                                                     ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  ### 匯出STL檔
-  ############################################################################
-  def ExportSTL ( self                                                     ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  ### 匯出glTL檔
-  ############################################################################
-  def ExportGLTF ( self                                                    ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  ## 切換控制板
-  ############################################################################
-  def SwitchPad ( self                                                     ) :
-    ##########################################################################
-    ##########################################################################
-    return
-  ############################################################################
-  ## 切換滑鼠追蹤控制
-  ############################################################################
-  def SwitchMouse ( self                                                   ) :
-    ##########################################################################
-    if            ( self . Mouse                                           ) :
-      ########################################################################
-      self . Mouse = False
-      ########################################################################
-    else                                                                     :
-      ########################################################################
-      self . Mouse = True
-    ##########################################################################
-    return
-  ############################################################################
-  def ModelMenu                ( self , mm                                 ) :
-    ##########################################################################
-    MSG = self . getMenuItem   ( "ModelMenu"                                 )
-    LOM = mm   . addMenu       ( MSG                                         )
-    ##########################################################################
-    msg = self . getMenuItem   ( "BackgrounColor"                            )
-    mm  . addActionFromMenu    ( LOM , 54233001 , msg                        )
-    ##########################################################################
-    msg = self . getMenuItem   ( "Report"                                    )
-    mm  . addActionFromMenu    ( LOM , 54233002 , msg                        )
-    ##########################################################################
-    mm  . addSeparatorFromMenu ( LOM                                         )
-    ##########################################################################
-    msg = self . getMenuItem   ( "ClearActors"                               )
-    mm  . addActionFromMenu    ( LOM , 54233011 , msg                        )
-    ##########################################################################
-    return mm
-  ############################################################################
-  def RunModelMenu                 ( self , at                             ) :
-    ##########################################################################
-    if                             ( at == 54233001                        ) :
-      ########################################################################
-      self . ChangeBackgroundColor (                                         )
+      event   . ignore              (                                        )
+      self    . emitAskClose . emit (                                        )
       ########################################################################
       return
     ##########################################################################
-    if                             ( at == 54233002                        ) :
-      ########################################################################
-      self . ReportIt              (                                         )
-      ########################################################################
-      return
+    super ( ) . closeEvent          ( event                                  )
     ##########################################################################
-    if                             ( at == 54233011                        ) :
-      ########################################################################
-      self . ClearActors           (                                         )
-      ########################################################################
-      return
-    ##########################################################################
-    return False
+    return
   ############################################################################
-  def FilesMenu              ( self , mm                                   ) :
+  def loading                 ( self                                       ) :
     ##########################################################################
-    MSG = self . getMenuItem ( "FilesMenu"                                   )
-    LOM = mm   . addMenu     ( MSG                                           )
     ##########################################################################
-    msg = self . getMenuItem ( "ExportJSON"                                  )
-    mm  . addActionFromMenu  ( LOM , 54233101 , msg                          )
-    ##########################################################################
-    msg = self . getMenuItem ( "ExportVTK"                                   )
-    mm  . addActionFromMenu  ( LOM , 54233102 , msg                          )
-    ##########################################################################
-    msg = self . getMenuItem ( "ExportOBJ"                                   )
-    mm  . addActionFromMenu  ( LOM , 54233103 , msg                          )
-    ##########################################################################
-    msg = self . getMenuItem ( "ExportSTL"                                   )
-    mm  . addActionFromMenu  ( LOM , 54233104 , msg                          )
-    ##########################################################################
-    msg = self . getMenuItem ( "ExportGLTF"                                  )
-    mm  . addActionFromMenu  ( LOM , 54233105 , msg                          )
-    ##########################################################################
-    return mm
+    return
   ############################################################################
-  def RunFilesMenu                ( self , at                              ) :
+  @pyqtSlot                     (                                            )
+  def startup                   ( self                                     ) :
     ##########################################################################
-    if                            ( at == 54233101                         ) :
-      ########################################################################
-      self . ExportJSON           (                                          )
-      ########################################################################
-      return
+    self . Go                   ( self . loading                             )
     ##########################################################################
-    if                            ( at == 54233102                         ) :
-      ########################################################################
-      self . ExportVTK            (                                          )
-      ########################################################################
-      return
-    ##########################################################################
-    if                            ( at == 54233103                         ) :
-      ########################################################################
-      self . ExportOBJ            (                                          )
-      ########################################################################
-      return
-    ##########################################################################
-    if                            ( at == 54233104                         ) :
-      ########################################################################
-      self . ExportSTL            (                                          )
-      ########################################################################
-      return
-    ##########################################################################
-    if                            ( at == 54233105                         ) :
-      ########################################################################
-      self . ExportGLTF           (                                          )
-      ########################################################################
-      return
-    ##########################################################################
-    return False
-  ############################################################################
-  def Menu                      ( self , pos                               ) :
-    ##########################################################################
-    doMenu = self . isFunction  ( self . HavingMenu                          )
-    if                          ( not doMenu                               ) :
-      return False
-    ##########################################################################
-    self   . Notify             ( 0                                          )
-    ##########################################################################
-    mm     = MenuManager        ( self                                       )
-    ##########################################################################
-    msg    = self . getMenuItem ( "ControlPad"                               )
-    mm     . addAction          ( 1101 , msg , True , self . Mouse           )
-    ##########################################################################
-    msg    = self . getMenuItem ( "TrackMouse"                               )
-    mm     . addAction          ( 1102 , msg , True , self . Mouse           )
-    ##########################################################################
-    mm     . addSeparator       (                                            )
-    ##########################################################################
-    self   . ModelMenu          ( mm                                         )
-    self   . FilesMenu          ( mm                                         )
-    mm     . addSeparator       (                                            )
-    self   . DockingMenu        ( mm                                         )
-    ##########################################################################
-    mm     . setFont            ( self    . menuFont ( )                     )
-    aa     = mm . exec_         ( QCursor . pos      ( )                     )
-    at     = mm . at            ( aa                                         )
-    ##########################################################################
-    if                          ( self . RunModelMenu ( at               ) ) :
-      return True
-    ##########################################################################
-    if                          ( self . RunFilesMenu ( at               ) ) :
-      return True
-    ##########################################################################
-    if                          ( self . RunDocking   ( mm , aa          ) ) :
-      return True
-    ##########################################################################
-    if                          ( at == 1101                               ) :
-      ########################################################################
-      self . SwitchPad          (                                            )
-      ########################################################################
-      return True
-    ##########################################################################
-    if                          ( at == 1102                               ) :
-      ########################################################################
-      self . SwitchMouse        (                                            )
-      ########################################################################
-      return True
-    ##########################################################################
-    return True
+    return
 ##############################################################################
