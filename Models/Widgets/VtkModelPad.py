@@ -69,7 +69,7 @@ class VtkModelPad                  ( QToolBox , VirtualGui                      
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
-    super (                   ) . __init__ ( parent        , plan            )
+    super (                   ) . __init__ ( parent                          )
     super ( VirtualGui , self ) . __init__ (                                 )
     self . Initialize              ( self                                    )
     self . setPlanFunction         ( plan                                    )
@@ -134,10 +134,13 @@ class VtkModelPad                  ( QToolBox , VirtualGui                      
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot   (                                                              )
-  def startup ( self                                                       ) :
+  @pyqtSlot             (                                                    )
+  def startup           ( self                                             ) :
     ##########################################################################
-    self . Go ( self . loading                                               )
+    self . UpdateCamera ( )
+    self . UpdateActors ( )
+    ##########################################################################
+    self . Go           ( self . loading                                     )
     ##########################################################################
     return
 ##############################################################################
