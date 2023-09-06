@@ -162,11 +162,15 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
   def UpdateCamera                           ( self                        ) :
     ##########################################################################
     c    = self . renderer . GetActiveCamera (                               )
+    v    = self . renderer . GetVTKWindow    (                               )
     p    = c    . GetPosition                (                               )
     f    = c    . GetFocalPoint              (                               )
     u    = c    . GetViewUp                  (                               )
     d    = c    . GetDistance                (                               )
     r    = c    . GetRoll                    (                               )
+    vw   = v    . GetSize                    (                               )
+    w    = vw                                [ 0                             ]
+    h    = vw                                [ 1                             ]
     ##########################################################################
     self . ui . PositionX  . blockSignals    ( True                          )
     self . ui . PositionY  . blockSignals    ( True                          )
@@ -180,8 +184,10 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . ViewUpY    . blockSignals    ( True                          )
     self . ui . ViewUpZ    . blockSignals    ( True                          )
     ##########################################################################
-    self . ui . Ditance    . blockSignals    ( True                          )
+    self . ui . Distance   . blockSignals    ( True                          )
     self . ui . Roll       . blockSignals    ( True                          )
+    self . ui . Width      . blockSignals    ( True                          )
+    self . ui . Height     . blockSignals    ( True                          )
     ##########################################################################
     self . ui . PositionX  . setValue        ( p [ 0                       ] )
     self . ui . PositionY  . setValue        ( p [ 1                       ] )
@@ -197,6 +203,8 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     ##########################################################################
     self . ui . Distance   . setValue        ( d                             )
     self . ui . Roll       . setValue        ( r                             )
+    self . ui . Width      . setValue        ( w                             )
+    self . ui . Height     . setValue        ( h                             )
     ##########################################################################
     self . ui . PositionX  . blockSignals    ( False                         )
     self . ui . PositionY  . blockSignals    ( False                         )
@@ -210,8 +218,10 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . ViewUpY    . blockSignals    ( False                         )
     self . ui . ViewUpZ    . blockSignals    ( False                         )
     ##########################################################################
-    self . ui . Ditance    . blockSignals    ( False                         )
+    self . ui . Distance   . blockSignals    ( False                         )
     self . ui . Roll       . blockSignals    ( False                         )
+    self . ui . Width      . blockSignals    ( False                         )
+    self . ui . Height     . blockSignals    ( False                         )
     ##########################################################################
     return
   ############################################################################
