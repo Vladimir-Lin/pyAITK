@@ -39,6 +39,7 @@ from   PyQt5 . QtWidgets                   import QMenu
 from   PyQt5 . QtWidgets                   import QAction
 from   PyQt5 . QtWidgets                   import QShortcut
 from   PyQt5 . QtWidgets                   import QAbstractItemView
+from   PyQt5 . QtWidgets                   import QStackedWidget
 from   PyQt5 . QtWidgets                   import QToolBox
 from   PyQt5 . QtWidgets                   import QTreeWidget
 from   PyQt5 . QtWidgets                   import QTreeWidgetItem
@@ -62,7 +63,7 @@ from   AITK  . VTK . Wrapper               import Wrapper        as VtkWrapper
 ##############################################################################
 from         . VtkModelPadUi               import Ui_VtkModelPadUi
 ##############################################################################
-class VtkModelPad                  ( QToolBox , VirtualGui                                ) :
+class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
   ############################################################################
   emitShow            = pyqtSignal (                                         )
   emitAskClose        = pyqtSignal (                                         )
@@ -78,6 +79,12 @@ class VtkModelPad                  ( QToolBox , VirtualGui                      
     ##########################################################################
     self . ui = Ui_VtkModelPadUi   (                                         )
     self . ui . setupUi            ( self                                    )
+    ##########################################################################
+    self . ui . Camera . setWidget ( self . ui . CameraTemplate              )
+    self . ui . Actors . setWidget ( self . ui . ActorsTemplate              )
+    ## self . ui . ToolBox . addItem                                            (
+    ##   self . ui . ActorsTemplate                                             ,
+    ##   self . ui . ActorsTemplate . windowTitle (                           ) )
     ##########################################################################
     self . ClassTag       = "VtkModelPad"
     self . VoiceJSON      =        {                                         }
