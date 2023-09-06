@@ -18,7 +18,7 @@ class Ui_VtkModelPadUi(object):
         self.ToolBox = QtWidgets.QToolBox()
         self.ToolBox.setObjectName("ToolBox")
         self.Camera = QtWidgets.QScrollArea()
-        self.Camera.setGeometry(QtCore.QRect(0, 0, 98, 71))
+        self.Camera.setGeometry(QtCore.QRect(0, 0, 320, 770))
         self.Camera.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.Camera.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.Camera.setWidgetResizable(True)
@@ -168,11 +168,15 @@ class Ui_VtkModelPadUi(object):
         self.ActorsBox = QtWidgets.QComboBox(self.ActorsTemplate)
         self.ActorsBox.setGeometry(QtCore.QRect(0, 0, 320, 24))
         self.ActorsBox.setObjectName("ActorsBox")
+        self.DeleteActor = QtWidgets.QPushButton(self.ActorsTemplate)
+        self.DeleteActor.setGeometry(QtCore.QRect(10, 30, 80, 28))
+        self.DeleteActor.setObjectName("DeleteActor")
         VtkModelPadUi.addWidget(self.ActorsTemplate)
 
         self.retranslateUi(VtkModelPadUi)
-        VtkModelPadUi.setCurrentIndex(1)
+        VtkModelPadUi.setCurrentIndex(0)
         self.ToolBox.setCurrentIndex(0)
+        self.DeleteActor.clicked.connect(VtkModelPadUi.DeleteActor) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(VtkModelPadUi)
 
     def retranslateUi(self, VtkModelPadUi):
@@ -201,3 +205,4 @@ class Ui_VtkModelPadUi(object):
         self.WidthLabel.setText(_translate("VtkModelPadUi", "寬度 : "))
         self.ViewAngleLabel.setText(_translate("VtkModelPadUi", "視角 : "))
         self.ActorsTemplate.setToolTip(_translate("VtkModelPadUi", "場景角色"))
+        self.DeleteActor.setText(_translate("VtkModelPadUi", "刪除角色"))
