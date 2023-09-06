@@ -81,9 +81,34 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . setupUi            ( self                                    )
     ##########################################################################
     self . ui . Camera . setWidget ( self . ui . CameraTemplate              )
+    ##########################################################################
     self . ui . ToolBox . addItem                                            (
       self . ui . ActorsTemplate                                             ,
       self . ui . ActorsTemplate . toolTip (                               ) )
+    ##########################################################################
+    self . ui . PositionX  . setMinimum ( sys . float_info . min             )
+    self . ui . PositionY  . setMinimum ( sys . float_info . min             )
+    self . ui . PositionZ  . setMinimum ( sys . float_info . min             )
+    ##########################################################################
+    self . ui . FocalX     . setMinimum ( sys . float_info . min             )
+    self . ui . FocalY     . setMinimum ( sys . float_info . min             )
+    self . ui . FocalZ     . setMinimum ( sys . float_info . min             )
+    ##########################################################################
+    self . ui . ViewUpX    . setMinimum ( sys . float_info . min             )
+    self . ui . ViewUpY    . setMinimum ( sys . float_info . min             )
+    self . ui . ViewUpZ    . setMinimum ( sys . float_info . min             )
+    ##########################################################################
+    self . ui . PositionX  . setMaximum ( sys . float_info . max             )
+    self . ui . PositionY  . setMaximum ( sys . float_info . max             )
+    self . ui . PositionZ  . setMaximum ( sys . float_info . max             )
+    ##########################################################################
+    self . ui . FocalX     . setMaximum ( sys . float_info . max             )
+    self . ui . FocalY     . setMaximum ( sys . float_info . max             )
+    self . ui . FocalZ     . setMaximum ( sys . float_info . max             )
+    ##########################################################################
+    self . ui . ViewUpX    . setMaximum ( sys . float_info . max             )
+    self . ui . ViewUpY    . setMaximum ( sys . float_info . max             )
+    self . ui . ViewUpZ    . setMaximum ( sys . float_info . max             )
     ##########################################################################
     self . ClassTag       = "VtkModelPad"
     self . VoiceJSON      =        {                                         }
