@@ -171,12 +171,17 @@ class Ui_VtkModelPadUi(object):
         self.DeleteActor = QtWidgets.QPushButton(self.ActorsTemplate)
         self.DeleteActor.setGeometry(QtCore.QRect(10, 30, 80, 28))
         self.DeleteActor.setObjectName("DeleteActor")
+        self.ActorVisibility = QtWidgets.QCheckBox(self.ActorsTemplate)
+        self.ActorVisibility.setGeometry(QtCore.QRect(10, 70, 300, 28))
+        self.ActorVisibility.setObjectName("ActorVisibility")
         VtkModelPadUi.addWidget(self.ActorsTemplate)
 
         self.retranslateUi(VtkModelPadUi)
         VtkModelPadUi.setCurrentIndex(0)
         self.ToolBox.setCurrentIndex(0)
         self.DeleteActor.clicked.connect(VtkModelPadUi.DeleteActor) # type: ignore
+        self.ActorsBox.currentIndexChanged['int'].connect(VtkModelPadUi.actorChanged) # type: ignore
+        self.ActorVisibility.toggled['bool'].connect(VtkModelPadUi.actorVisibility) # type: ignore
         QtCore.QMetaObject.connectSlotsByName(VtkModelPadUi)
 
     def retranslateUi(self, VtkModelPadUi):
@@ -206,3 +211,4 @@ class Ui_VtkModelPadUi(object):
         self.ViewAngleLabel.setText(_translate("VtkModelPadUi", "視角 : "))
         self.ActorsTemplate.setToolTip(_translate("VtkModelPadUi", "場景角色"))
         self.DeleteActor.setText(_translate("VtkModelPadUi", "刪除角色"))
+        self.ActorVisibility.setText(_translate("VtkModelPadUi", "角色可視"))
