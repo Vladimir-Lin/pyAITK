@@ -98,6 +98,9 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . ViewUpY    . setMinimum ( sys . float_info . min             )
     self . ui . ViewUpZ    . setMinimum ( sys . float_info . min             )
     ##########################################################################
+    self . ui . Distance   . setMinimum ( sys . float_info . min             )
+    self . ui . Roll       . setMinimum ( sys . float_info . min             )
+    ##########################################################################
     self . ui . PositionX  . setMaximum ( sys . float_info . max             )
     self . ui . PositionY  . setMaximum ( sys . float_info . max             )
     self . ui . PositionZ  . setMaximum ( sys . float_info . max             )
@@ -109,6 +112,9 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . ViewUpX    . setMaximum ( sys . float_info . max             )
     self . ui . ViewUpY    . setMaximum ( sys . float_info . max             )
     self . ui . ViewUpZ    . setMaximum ( sys . float_info . max             )
+    ##########################################################################
+    self . ui . Distance   . setMaximum ( sys . float_info . max             )
+    self . ui . Roll       . setMaximum ( sys . float_info . max             )
     ##########################################################################
     self . ClassTag       = "VtkModelPad"
     self . VoiceJSON      =        {                                         }
@@ -159,16 +165,23 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     p    = c    . GetPosition                (                               )
     f    = c    . GetFocalPoint              (                               )
     u    = c    . GetViewUp                  (                               )
+    d    = c    . GetDistance                (                               )
+    r    = c    . GetRoll                    (                               )
     ##########################################################################
     self . ui . PositionX  . blockSignals    ( True                          )
     self . ui . PositionY  . blockSignals    ( True                          )
     self . ui . PositionZ  . blockSignals    ( True                          )
+    ##########################################################################
     self . ui . FocalX     . blockSignals    ( True                          )
     self . ui . FocalY     . blockSignals    ( True                          )
     self . ui . FocalZ     . blockSignals    ( True                          )
+    ##########################################################################
     self . ui . ViewUpX    . blockSignals    ( True                          )
     self . ui . ViewUpY    . blockSignals    ( True                          )
     self . ui . ViewUpZ    . blockSignals    ( True                          )
+    ##########################################################################
+    self . ui . Ditance    . blockSignals    ( True                          )
+    self . ui . Roll       . blockSignals    ( True                          )
     ##########################################################################
     self . ui . PositionX  . setValue        ( p [ 0                       ] )
     self . ui . PositionY  . setValue        ( p [ 1                       ] )
@@ -182,15 +195,23 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . ViewUpY    . setValue        ( u [ 1                       ] )
     self . ui . ViewUpZ    . setValue        ( u [ 2                       ] )
     ##########################################################################
+    self . ui . Distance   . setValue        ( d                             )
+    self . ui . Roll       . setValue        ( r                             )
+    ##########################################################################
     self . ui . PositionX  . blockSignals    ( False                         )
     self . ui . PositionY  . blockSignals    ( False                         )
     self . ui . PositionZ  . blockSignals    ( False                         )
+    ##########################################################################
     self . ui . FocalX     . blockSignals    ( False                         )
     self . ui . FocalY     . blockSignals    ( False                         )
     self . ui . FocalZ     . blockSignals    ( False                         )
+    ##########################################################################
     self . ui . ViewUpX    . blockSignals    ( False                         )
     self . ui . ViewUpY    . blockSignals    ( False                         )
     self . ui . ViewUpZ    . blockSignals    ( False                         )
+    ##########################################################################
+    self . ui . Ditance    . blockSignals    ( False                         )
+    self . ui . Roll       . blockSignals    ( False                         )
     ##########################################################################
     return
   ############################################################################

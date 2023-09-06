@@ -562,10 +562,14 @@ class VtkModel                 ( VtkWidget                                 ) :
     p = c    . GetPosition                (                                  )
     f = c    . GetFocalPoint              (                                  )
     u = c    . GetViewUp                  (                                  )
+    d = c    . GetDistance                (                                  )
+    r = c    . GetRoll                    (                                  )
     ##########################################################################
     return { "Position" : self . PointToJSON ( p )                         , \
              "Focal"    : self . PointToJSON ( f )                         , \
-             "Up"       : self . PointToJSON ( u )                           }
+             "Up"       : self . PointToJSON ( u )                         , \
+             "Distance" : d                                                , \
+             "Roll"     : r                                                  }
   ############################################################################
   ## 轉換到AITK JSON
   ############################################################################
