@@ -86,35 +86,37 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
       self . ui . ActorsTemplate                                             ,
       self . ui . ActorsTemplate . toolTip (                               ) )
     ##########################################################################
-    self . ui . PositionX  . setMinimum ( sys . float_info . min             )
-    self . ui . PositionY  . setMinimum ( sys . float_info . min             )
-    self . ui . PositionZ  . setMinimum ( sys . float_info . min             )
+    self . ui . PositionX  . setMinimum ( - sys . float_info . max           )
+    self . ui . PositionY  . setMinimum ( - sys . float_info . max           )
+    self . ui . PositionZ  . setMinimum ( - sys . float_info . max           )
     ##########################################################################
-    self . ui . FocalX     . setMinimum ( sys . float_info . min             )
-    self . ui . FocalY     . setMinimum ( sys . float_info . min             )
-    self . ui . FocalZ     . setMinimum ( sys . float_info . min             )
+    self . ui . FocalX     . setMinimum ( - sys . float_info . max           )
+    self . ui . FocalY     . setMinimum ( - sys . float_info . max           )
+    self . ui . FocalZ     . setMinimum ( - sys . float_info . max           )
     ##########################################################################
-    self . ui . ViewUpX    . setMinimum ( sys . float_info . min             )
-    self . ui . ViewUpY    . setMinimum ( sys . float_info . min             )
-    self . ui . ViewUpZ    . setMinimum ( sys . float_info . min             )
+    self . ui . ViewUpX    . setMinimum ( - sys . float_info . max           )
+    self . ui . ViewUpY    . setMinimum ( - sys . float_info . max           )
+    self . ui . ViewUpZ    . setMinimum ( - sys . float_info . max           )
     ##########################################################################
-    self . ui . Distance   . setMinimum ( sys . float_info . min             )
-    self . ui . Roll       . setMinimum ( sys . float_info . min             )
+    self . ui . Distance   . setMinimum ( - sys . float_info . max           )
+    self . ui . Roll       . setMinimum ( - sys . float_info . max           )
+    self . ui . ViewAngle  . setMinimum ( - sys . float_info . max           )
     ##########################################################################
-    self . ui . PositionX  . setMaximum ( sys . float_info . max             )
-    self . ui . PositionY  . setMaximum ( sys . float_info . max             )
-    self . ui . PositionZ  . setMaximum ( sys . float_info . max             )
+    self . ui . PositionX  . setMaximum (   sys . float_info . max           )
+    self . ui . PositionY  . setMaximum (   sys . float_info . max           )
+    self . ui . PositionZ  . setMaximum (   sys . float_info . max           )
     ##########################################################################
-    self . ui . FocalX     . setMaximum ( sys . float_info . max             )
-    self . ui . FocalY     . setMaximum ( sys . float_info . max             )
-    self . ui . FocalZ     . setMaximum ( sys . float_info . max             )
+    self . ui . FocalX     . setMaximum (   sys . float_info . max           )
+    self . ui . FocalY     . setMaximum (   sys . float_info . max           )
+    self . ui . FocalZ     . setMaximum (   sys . float_info . max           )
     ##########################################################################
-    self . ui . ViewUpX    . setMaximum ( sys . float_info . max             )
-    self . ui . ViewUpY    . setMaximum ( sys . float_info . max             )
-    self . ui . ViewUpZ    . setMaximum ( sys . float_info . max             )
+    self . ui . ViewUpX    . setMaximum (   sys . float_info . max           )
+    self . ui . ViewUpY    . setMaximum (   sys . float_info . max           )
+    self . ui . ViewUpZ    . setMaximum (   sys . float_info . max           )
     ##########################################################################
-    self . ui . Distance   . setMaximum ( sys . float_info . max             )
-    self . ui . Roll       . setMaximum ( sys . float_info . max             )
+    self . ui . Distance   . setMaximum (   sys . float_info . max           )
+    self . ui . Roll       . setMaximum (   sys . float_info . max           )
+    self . ui . ViewAngle  . setMaximum (   sys . float_info . max           )
     ##########################################################################
     self . ClassTag       = "VtkModelPad"
     self . VoiceJSON      =        {                                         }
@@ -123,8 +125,9 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . emitShow     . connect  ( self . show                             )
     self . emitAskClose . connect  ( self . AskToClose                       )
     ##########################################################################
-    self . rWindow   = None
-    self . renderer  = None
+    self . rWindow  = None
+    self . renderer = None
+    self . model    = None
     ##########################################################################
     return
   ############################################################################
@@ -154,8 +157,27 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateActors ( self                                                  ) :
+  def UpdateActors                         ( self                          ) :
     ##########################################################################
+    CNT    = 0
+    actors = self . renderer . GetActors   (                                 )
+    ##########################################################################
+    self   . ui . ActorsBox . blockSignals ( True                            )
+    ##########################################################################
+    self   . ui . ActorsBox . clear        (                                 )
+    ##########################################################################
+    NAME   = self . getMenuItem            ( "EmptyActor"                    )
+    self   . ui . ActorsBox . addItem      ( NAME , -1                       )
+    ##########################################################################
+    for actor in actors                                                      :
+      ########################################################################
+      NAME = self . model . AitkJSON [ "Actors" ] [ f"{CNT}" ] [ "Name"      ]
+      ########################################################################
+      self . ui . ActorsBox . addItem      ( NAME , CNT                      )
+      ########################################################################
+      CNT  = CNT + 1
+    ##########################################################################
+    self   . ui . ActorsBox . blockSignals ( False                           )
     ##########################################################################
     return
   ############################################################################
@@ -168,6 +190,7 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     u    = c    . GetViewUp                  (                               )
     d    = c    . GetDistance                (                               )
     r    = c    . GetRoll                    (                               )
+    a    = c    . GetViewAngle               (                               )
     vw   = v    . GetSize                    (                               )
     w    = vw                                [ 0                             ]
     h    = vw                                [ 1                             ]
@@ -188,6 +211,7 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . Roll       . blockSignals    ( True                          )
     self . ui . Width      . blockSignals    ( True                          )
     self . ui . Height     . blockSignals    ( True                          )
+    self . ui . ViewAngle  . blockSignals    ( True                          )
     ##########################################################################
     self . ui . PositionX  . setValue        ( p [ 0                       ] )
     self . ui . PositionY  . setValue        ( p [ 1                       ] )
@@ -205,6 +229,7 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . Roll       . setValue        ( r                             )
     self . ui . Width      . setValue        ( w                             )
     self . ui . Height     . setValue        ( h                             )
+    self . ui . ViewAngle  . setValue        ( a                             )
     ##########################################################################
     self . ui . PositionX  . blockSignals    ( False                         )
     self . ui . PositionY  . blockSignals    ( False                         )
@@ -222,6 +247,7 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . Roll       . blockSignals    ( False                         )
     self . ui . Width      . blockSignals    ( False                         )
     self . ui . Height     . blockSignals    ( False                         )
+    self . ui . ViewAngle  . blockSignals    ( False                         )
     ##########################################################################
     return
   ############################################################################
