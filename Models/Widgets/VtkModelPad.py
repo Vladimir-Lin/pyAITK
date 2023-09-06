@@ -81,10 +81,9 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     self . ui . setupUi            ( self                                    )
     ##########################################################################
     self . ui . Camera . setWidget ( self . ui . CameraTemplate              )
-    self . ui . Actors . setWidget ( self . ui . ActorsTemplate              )
-    ## self . ui . ToolBox . addItem                                            (
-    ##   self . ui . ActorsTemplate                                             ,
-    ##   self . ui . ActorsTemplate . windowTitle (                           ) )
+    self . ui . ToolBox . addItem                                            (
+      self . ui . ActorsTemplate                                             ,
+      self . ui . ActorsTemplate . toolTip (                               ) )
     ##########################################################################
     self . ClassTag       = "VtkModelPad"
     self . VoiceJSON      =        {                                         }
@@ -129,8 +128,44 @@ class VtkModelPad                  ( QStackedWidget , VirtualGui           ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdateCamera ( self                                                  ) :
+  def UpdateCamera                           ( self                        ) :
     ##########################################################################
+    c    = self . renderer . GetActiveCamera (                               )
+    p    = c    . GetPosition                (                               )
+    f    = c    . GetFocalPoint              (                               )
+    u    = c    . GetViewUp                  (                               )
+    ##########################################################################
+    self . ui . PositionX  . blockSignals    ( True                          )
+    self . ui . PositionY  . blockSignals    ( True                          )
+    self . ui . PositionZ  . blockSignals    ( True                          )
+    self . ui . FocalX     . blockSignals    ( True                          )
+    self . ui . FocalY     . blockSignals    ( True                          )
+    self . ui . FocalZ     . blockSignals    ( True                          )
+    self . ui . ViewUpX    . blockSignals    ( True                          )
+    self . ui . ViewUpY    . blockSignals    ( True                          )
+    self . ui . ViewUpZ    . blockSignals    ( True                          )
+    ##########################################################################
+    self . ui . PositionX  . setValue        ( p [ 0                       ] )
+    self . ui . PositionY  . setValue        ( p [ 1                       ] )
+    self . ui . PositionZ  . setValue        ( p [ 2                       ] )
+    ##########################################################################
+    self . ui . FocalX     . setValue        ( f [ 0                       ] )
+    self . ui . FocalY     . setValue        ( f [ 1                       ] )
+    self . ui . FocalZ     . setValue        ( f [ 2                       ] )
+    ##########################################################################
+    self . ui . ViewUpX    . setValue        ( u [ 0                       ] )
+    self . ui . ViewUpY    . setValue        ( u [ 1                       ] )
+    self . ui . ViewUpZ    . setValue        ( u [ 2                       ] )
+    ##########################################################################
+    self . ui . PositionX  . blockSignals    ( False                         )
+    self . ui . PositionY  . blockSignals    ( False                         )
+    self . ui . PositionZ  . blockSignals    ( False                         )
+    self . ui . FocalX     . blockSignals    ( False                         )
+    self . ui . FocalY     . blockSignals    ( False                         )
+    self . ui . FocalZ     . blockSignals    ( False                         )
+    self . ui . ViewUpX    . blockSignals    ( False                         )
+    self . ui . ViewUpY    . blockSignals    ( False                         )
+    self . ui . ViewUpZ    . blockSignals    ( False                         )
     ##########################################################################
     return
   ############################################################################
