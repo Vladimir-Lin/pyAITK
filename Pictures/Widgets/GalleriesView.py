@@ -67,7 +67,8 @@ class GalleriesView                ( IconDock                              ) :
   ############################################################################
   HavingMenu          = 1371434312
   ############################################################################
-  ShowPersonalGallery = pyqtSignal ( str , int , str , QIcon                 )
+  ShowPersonalGallery = pyqtSignal ( str , int , str       , QIcon           )
+  ShowPersonalIcons   = pyqtSignal ( str , int , str , str , QIcon           )
   ViewFullGallery     = pyqtSignal ( str , int , str , int , QIcon           )
   ShowWebPages        = pyqtSignal ( str , int , str , str , QIcon           )
   OpenVariantTables   = pyqtSignal ( str , str , int , str , dict            )
@@ -690,6 +691,24 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     return True
   ############################################################################
+  def OpenItemIcons                   ( self , item                        ) :
+    ##########################################################################
+    uuid = item . data                ( Qt . UserRole                        )
+    uuid = int                        ( uuid                                 )
+    ##########################################################################
+    if                                ( uuid <= 0                          ) :
+      return False
+    ##########################################################################
+    text = item . text                (                                      )
+    icon = item . icon                (                                      )
+    xsid = str                        ( uuid                                 )
+    ##########################################################################
+    relz = "Using"
+    ##########################################################################
+    self . ShowPersonalIcons . emit   ( text , 64 , relz , xsid , icon       )
+    ##########################################################################
+    return True
+  ############################################################################
   def OpenCurrentGallery          ( self                                   ) :
     ##########################################################################
     atItem = self . currentItem   (                                          )
@@ -758,8 +777,13 @@ class GalleriesView                ( IconDock                              ) :
     ##########################################################################
     mm    . addSeparatorFromMenu ( COL                                       )
     ##########################################################################
-    MSG   = self . getMenuItem   ( "GalleryDescription"                      )
+    MSG   = self . getMenuItem   ( "Icons"                                   )
     mm    . addActionFromMenu    ( COL , 62231331 , MSG                      )
+    ##########################################################################
+    mm    . addSeparatorFromMenu ( COL                                       )
+    ##########################################################################
+    MSG   = self . getMenuItem   ( "GalleryDescription"                      )
+    mm    . addActionFromMenu    ( COL , 62231341 , MSG                      )
     ##########################################################################
     return mm
   ############################################################################
@@ -802,6 +826,12 @@ class GalleriesView                ( IconDock                              ) :
       return True
     ##########################################################################
     if                             ( at == 62231331                        ) :
+      ########################################################################
+      self . OpenItemIcons         ( item                                    )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 62231341                        ) :
       ########################################################################
       name = item . text           (                                         )
       uuid = item . data           ( Qt . UserRole                           )
