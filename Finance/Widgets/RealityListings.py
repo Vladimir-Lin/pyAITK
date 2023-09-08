@@ -767,7 +767,7 @@ class RealityListings              ( TreeDock                              ) :
     mm   . addActionFromMenuWithIcon ( COL , 38521004 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "RealityTextures"                     )
-    ICON = QIcon                     ( ":/images/pictures.png"               )
+    ICON = QIcon                     ( ":/images/viewfull.png"               )
     mm   . addActionFromMenuWithIcon ( COL , 38521005 , ICON , msg           )
     ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
