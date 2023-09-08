@@ -750,8 +750,11 @@ class StellarObjectListings        ( TreeDock                              ) :
     msg = self . getMenuItem   ( "Gallery"                                   )
     mm  . addActionFromMenu    ( LOM , 24231204 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "Description"                               )
+    msg = self . getMenuItem   ( "Textures"                                  )
     mm  . addActionFromMenu    ( LOM , 24231205 , msg                        )
+    ##########################################################################
+    msg = self . getMenuItem   ( "Description"                               )
+    mm  . addActionFromMenu    ( LOM , 24231206 , msg                        )
     ##########################################################################
     return mm
   ############################################################################
@@ -793,7 +796,12 @@ class StellarObjectListings        ( TreeDock                              ) :
       xsid = str                    ( uuid                                   )
       relz = "Using"
       ########################################################################
-      self . ShowPersonalIcons . emit ( head , 22 , relz , xsid , icon       )
+      self . ShowPersonalIcons . emit                                        (
+                                      head                                 , \
+                                      self . GType                         , \
+                                      relz                                 , \
+                                      xsid                                 , \
+                                      icon                                   )
       ########################################################################
       return True
     ##########################################################################
@@ -804,6 +812,22 @@ class StellarObjectListings        ( TreeDock                              ) :
       return True
     ##########################################################################
     if                              ( at == 24231205                       ) :
+      ########################################################################
+      icon = self . windowIcon      (                                        )
+      head = item . text            ( 0                                      )
+      xsid = str                    ( uuid                                   )
+      relz = "Texture"
+      ########################################################################
+      self . ShowPersonalIcons . emit                                        (
+                                      head                                 , \
+                                      self . GType                         , \
+                                      relz                                 , \
+                                      xsid                                 , \
+                                      icon                                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 24231206                       ) :
       ########################################################################
       head = item . text            ( 0                                      )
       nx   = ""
