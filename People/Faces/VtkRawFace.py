@@ -570,7 +570,7 @@ class VtkRawFace              ( VtkWidget                                  ) :
     self . SwitchDisplayElement     ( "Points"                               )
     self . SwitchDisplayElement     ( "Mesh"                                 )
     self . SwitchDisplayElement     ( "Face"                                 )
-    ## self . SwitchDisplayElement     ( "Plate"                                )
+    self . SwitchDisplayElement     ( "Plate"                                )
     ##########################################################################
     return
   ############################################################################
