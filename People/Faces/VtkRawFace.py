@@ -376,7 +376,7 @@ class VtkRawFace              ( VtkWidget                                  ) :
   def PreparePoints                           ( self , JSON                ) :
     ##########################################################################
     KEY     = "Points"
-    self    .        FaceObjects [ KEY ]      [ "Enabled" ] = False
+    self    .        FaceObjects [ KEY ]      [ "Enabled" ] = True
     ##########################################################################
     ACTOR   = self . FaceObjects [ KEY ]      [ "Actor"                      ]
     MAPPER  = self . FaceObjects [ KEY ]      [ "Mapper"                     ]
@@ -409,7 +409,7 @@ class VtkRawFace              ( VtkWidget                                  ) :
     FI      = FaceItem                        (                             )
     WRAPPER = VtkWrapper                      (                             )
     ##########################################################################
-    self    .        FaceObjects [ KEY ]      [ "Enabled" ] = False
+    self    .        FaceObjects [ KEY ]      [ "Enabled" ] = True
     ##########################################################################
     ACTOR   = self . FaceObjects [ KEY ]      [ "Actor"                      ]
     MAPPER  = self . FaceObjects [ KEY ]      [ "Mapper"                     ]
@@ -443,7 +443,7 @@ class VtkRawFace              ( VtkWidget                                  ) :
   def PrepareFace                           ( self , JSON                  ) :
     ##########################################################################
     KEY     = "Face"
-    self    .        FaceObjects [ KEY ]    [ "Enabled" ] = False
+    self    .        FaceObjects [ KEY ]    [ "Enabled" ] = True
     ##########################################################################
     ACTOR   = self . FaceObjects [ KEY ]    [ "Actor"                        ]
     MAPPER  = self . FaceObjects [ KEY ]    [ "Mapper"                       ]
@@ -478,7 +478,7 @@ class VtkRawFace              ( VtkWidget                                  ) :
     ##########################################################################
     TMPDIR  = self . Settings            [ "ModelPath"                       ]
     FUID    = self . FaceUuid
-    F       = f"{TMPDIR}/{FUID}.png"
+    F       = f"{TMPDIR}/Faces/{FUID}.png"
     ##########################################################################
     QI      = self . PIC . toQImage      (                                   )
     QI      . save                       ( F , "PNG"                         )
@@ -491,7 +491,7 @@ class VtkRawFace              ( VtkWidget                                  ) :
     TEXTURE . InterpolateOn              (                                   )
     ACTOR   . SetTexture                 ( TEXTURE                           )
     ##########################################################################
-    os      . remove                     ( F                                 )
+    ## os      . remove                     ( F                                 )
     ##########################################################################
     return
   ############################################################################
@@ -566,6 +566,11 @@ class VtkRawFace              ( VtkWidget                                  ) :
     self . PrepareMeshes            ( self . ModelJSON [ "Points" ] , "Mesh" )
     self . PrepareFace              ( self . ModelJSON [ "Points" ]          )
     self . PrepareTexture           (                                        )
+    ##########################################################################
+    self . SwitchDisplayElement     ( "Points"                               )
+    self . SwitchDisplayElement     ( "Mesh"                                 )
+    self . SwitchDisplayElement     ( "Face"                                 )
+    ## self . SwitchDisplayElement     ( "Plate"                                )
     ##########################################################################
     return
   ############################################################################
