@@ -296,26 +296,23 @@ class VtkRawFace              ( VtkWidget                                  ) :
     ##########################################################################
     return CR
   ############################################################################
-  def GenerateTextureMappings      ( self , StartId , JSON                 ) :
+  def GenerateTextureMappings    ( self , StartId                          ) :
     ##########################################################################
-    WW     = JSON                  [ "Points" ] [ "Width"                    ]
-    HH     = JSON                  [ "Points" ] [ "Height"                   ]
-    PIXELs = JSON                  [ "Points" ] [ "Pixels"                   ]
-    TOTALs = len                   ( PIXELs                                  )
-    AT     = StartId
+    PTS  = self . ModelJSON      [ "468" ] [ "Original"                      ]
+    AT   = StartId
     ##########################################################################
-    TC     = vtk . vtkFloatArray   (                                         )
-    TC     . SetNumberOfComponents ( 2                                       )
-    TC     . SetNumberOfTuples     ( TOTALs                                  )
-    TC     . SetName               ( "TextureCoordinates"                    )
+    TC   = vtk . vtkFloatArray   (                                           )
+    TC   . SetNumberOfComponents ( 2                                         )
+    TC   . SetNumberOfTuples     ( len ( PTS )                               )
+    TC   . SetName               ( "TextureCoordinates"                      )
     ##########################################################################
-    for P in PIXELs                                                          :
+    for P in PTS                                                             :
       ########################################################################
-      X    = float                 ( float ( P [ "X" ] ) / float ( WW )      )
-      Y    = float                 ( float ( P [ "Y" ] ) / float ( HH )      )
-      TC   . SetTuple2             ( AT , X , 1.0 - Y                        )
+      X  = float                 ( P [ "X" ]                                 )
+      Y  = float                 ( P [ "Y" ]                                 )
+      TC . SetTuple2             ( AT , X , 1.0 - Y                          )
       ########################################################################
-      AT   = AT + 1
+      AT = AT + 1
     ##########################################################################
     return TC
   ############################################################################
@@ -562,7 +559,7 @@ class VtkRawFace              ( VtkWidget                                  ) :
     self . FacePoints      = WRAPPER . GenerateFacePoints ( 0 ,       PTS    )
     self . FaceVertices    = WRAPPER . GenerateVertices   ( 0 , len ( PTS )  )
     self . FacePolygons    = WRAPPER . GeneratePolygons   ( FP               )
-    self . FaceTextureMaps = self    . GenerateTextureMappings ( 0 , self . ModelJSON )
+    self . FaceTextureMaps = self    . GenerateTextureMappings ( 0           )
     self . LoadTextureFromBlob      ( "Texture"                              )
     ##########################################################################
     self . PreparePoints            ( self . ModelJSON [ "Points" ]          )
