@@ -12,7 +12,6 @@ import gettext
 import json
 import math
 import shutil
-##############################################################################
 import vtk
 ##############################################################################
 from   PyQt5                                  import QtCore
@@ -58,6 +57,8 @@ from   AITK  . Math . Geometry . Plane        import Plane        as Plane
 from   AITK  . Math . Geometry . Parabola     import Parabola     as Parabola
 from   AITK  . Math . Geometry . Sphere       import Sphere       as Sphere
 from   AITK  . Math . Geometry . Polyhedron   import Polyhedron   as Polyhedron
+##############################################################################
+from   AITK  . Models . AitkModel             import Model        as ModelJson
 ##############################################################################
 from         . VtkModelPad                    import VtkModelPad
 ##############################################################################
@@ -109,17 +110,6 @@ class VtkModel                 ( VtkWidget                                 ) :
     self . LinkAction ( "Export" , self . ExportJSON , Enabled               )
     ##########################################################################
     return
-  ############################################################################
-  def FocusIn                ( self                                        ) :
-    ##########################################################################
-    if                       ( not self . isPrepared ( )                   ) :
-      return False
-    ##########################################################################
-    self . setActionLabel    ( "Label" , self . windowTitle ( )              )
-    self . AttachActions     ( True                                          )
-    self . attachActionsTool (                                               )
-    ##########################################################################
-    return True
   ############################################################################
   def wheelEvent              ( self , event                               ) :
     ##########################################################################
@@ -219,122 +209,7 @@ class VtkModel                 ( VtkWidget                                 ) :
   ############################################################################
   ############################################################################
   ############################################################################
-  def PrepareContent       ( self                                          ) :
-    ##########################################################################
-    source = vtk.vtkSphereSource()
-    source . SetCenter(0, 0, 0)
-    source . SetRadius(10.0)
-    ##########################################################################
-    ## Create a mapper
-    mapper = vtk.vtkPolyDataMapper()
-    mapper.SetInputConnection(source.GetOutputPort())
-    ##########################################################################
-    # Create an actor
-    actor = vtk.vtkActor()
-    actor.SetMapper(mapper)
-    ##########################################################################
-    self . renderer . AddActor     ( actor )
-    self . renderer . ResetCamera  ( )
-    ##########################################################################
-    self . interactor . Initialize ( )
-    self . interactor . Start      ( )
-    ##########################################################################
-    return
   ############################################################################
-  def ImportWaveFront                        ( self , DIR , OBJ , MTL      ) :
-    ##########################################################################
-    CWD   = os . getcwd                      (                               )
-    os    . chdir                            ( DIR                           )
-    ##########################################################################
-    wfobj = vtk . vtkOBJImporter             (                               )
-    wfobj . SetFileName                      ( OBJ                           )
-    wfobj . SetFileNameMTL                   ( MTL                           )
-    ##########################################################################
-    wfobj . Read                             (                               )
-    wfobj . InitializeObjectBase             (                               )
-    ##########################################################################
-    os    . chdir                            ( CWD                           )
-    ##########################################################################
-    self  . ClearRenderer                    (                               )
-    ##########################################################################
-    self  . renderer   = wfobj . GetRenderer (                               )
-    self  . AssignBackgroundColor            (                               )
-    wfobj . SetRenderWindow                  ( self . rWindow                )
-    ##########################################################################
-    self  . rWindow    . AddRenderer         ( self . renderer               )
-    self  . interactor . SetRenderWindow     ( self . rWindow                )
-    ##########################################################################
-    return
-  ############################################################################
-  def LoadZipWaveFront        ( self , PARAMETERs , ZipData                ) :
-    ##########################################################################
-    TMPDIR = self . Settings  [ "ModelPath"                                  ]
-    CWD    = os   . getcwd    (                                              )
-    ##########################################################################
-    WFPATH = PARAMETERs       [ "Directory"                                  ]
-    OBJ    = PARAMETERs       [ "OBJ"                                        ]
-    MTL    = PARAMETERs       [ "MTL"                                        ]
-    LOID   = self . LOID
-    LZIP   = f"{LOID}.zip"
-    TZIP   = os . path . join ( TMPDIR , LZIP                                )
-    DIR    = os . path . join ( TMPDIR , WFPATH                              )
-    ##########################################################################
-    with open                 ( TZIP , 'wb'                           ) as f :
-      f    . write            ( ZipData                                      )
-    ##########################################################################
-    os     . chdir            ( TMPDIR                                       )
-    shutil . unpack_archive   ( LZIP , TMPDIR                                )
-    os     . chdir            ( CWD                                          )
-    ##########################################################################
-    self   . ImportWaveFront  ( DIR , OBJ , MTL                              )
-    ##########################################################################
-    os     . remove           ( TZIP                                         )
-    shutil . rmtree           ( DIR                                          )
-    ##########################################################################
-    return
-  ############################################################################
-  def ImportBareWaveFront            ( self , FILENAME                     ) :
-    ##########################################################################
-    reader = vtk . vtkOBJReader      (                                       )
-    reader . SetFileName             ( FILENAME                              )
-    reader . Update                  (                                       )
-    ##########################################################################
-    mapper = vtk . vtkPolyDataMapper (                                       )
-    mapper . SetInputConnection      ( reader . GetOutputPort ( )            )
-    ##########################################################################
-    actor  = vtk . vtkActor          (                                       )
-    actor  . SetMapper               ( mapper                                )
-    ##########################################################################
-    self . renderer   . AddActor     ( actor                                 )
-    ##########################################################################
-    return
-  ############################################################################
-  def LoadBareWaveFront          ( self , PARAMETERs , ZipData             ) :
-    ##########################################################################
-    TMPDIR = self . Settings     [ "ModelPath"                               ]
-    CWD    = os   . getcwd       (                                           )
-    ##########################################################################
-    WFPATH = PARAMETERs          [ "Directory"                               ]
-    OBJ    = PARAMETERs          [ "OBJ"                                     ]
-    LOID   = self . LOID
-    LZIP   = f"{LOID}.zip"
-    TZIP   = os . path . join    ( TMPDIR , LZIP                             )
-    DIR    = os . path . join    ( TMPDIR , WFPATH                           )
-    WFOBJ  = os . path . join    ( DIR    , OBJ                              )
-    ##########################################################################
-    with open                    ( TZIP , 'wb'                        ) as f :
-      f    . write               ( ZipData                                   )
-    ##########################################################################
-    os     . chdir               ( TMPDIR                                    )
-    shutil . unpack_archive      ( LZIP , TMPDIR                             )
-    os     . chdir               ( CWD                                       )
-    ##########################################################################
-    self   . ImportBareWaveFront ( WFOBJ                                     )
-    ##########################################################################
-    os     . remove              ( TZIP                                      )
-    shutil . rmtree              ( DIR                                       )
-    ##########################################################################
-    return
   ############################################################################
   def PrepareVtkPoints       ( self , START , TOTAL , POINTs               ) :
     ##########################################################################
