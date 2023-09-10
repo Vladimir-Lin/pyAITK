@@ -133,11 +133,18 @@ class Model    (                                                           ) :
     X = actor . GetMatrix (                                                  )
     J = self  . dsToJSON  ( M . GetInput (                                 ) )
     ##########################################################################
+    Z =                   [                                                  ]
+    ##########################################################################
+    for   i in range      ( 0 , 4                                          ) :
+      for j in range      ( 0 , 4                                          ) :
+        ######################################################################
+        Z . append        ( X . GetElement ( i , j )                         )
+    ##########################################################################
     return                { "Length"      : J [ "Length"      ]            , \
                             "L2"          : J [ "L2"          ]            , \
                             "Center"      : J [ "Center"      ]            , \
                             "Boundings"   : J [ "Boundings"   ]            , \
-                            "Transform"   : X . GetData ( )                , \
+                            "Transform"   : Z                              , \
                             "TotalPoints" : J [ "TotalPoints" ]            , \
                             "TotalFaces"  : J [ "TotalFaces"  ]            , \
                             "Points"      : J [ "Points"      ]            , \
