@@ -105,25 +105,25 @@ class Model    (                                                           ) :
     ##########################################################################
     return FF
   ############################################################################
-  def dsToJSON              ( self , DS                                    ) :
+  def dsToJSON            ( self , DS                                      ) :
     ##########################################################################
-    C = DS   . GetCenter    (                                                )
-    B = DS   . GetBounds    (                                                )
+    C = DS   . GetCenter  (                                                  )
+    B = DS   . GetBounds  (                                                  )
     ##########################################################################
-    L = DS   . GetLength    (                                                )
-    R = DS   . GetLength2   (                                                )
+    L = DS   . GetLength  (                                                  )
+    R = DS   . GetLength2 (                                                  )
     ##########################################################################
-    P = self . DataToPoints ( DS                                             )
-    F = self . DataToEdges  ( DS                                             )
+    P = self . dsToPoints ( DS                                               )
+    F = self . dsToEdges  ( DS                                               )
     ##########################################################################
-    return                  { "Length"      : L                            , \
-                              "L2"          : R                            , \
-                              "Center"      : C                            , \
-                              "Boundings"   : B                            , \
-                              "TotalPoints" : len ( P )                    , \
-                              "TotalFaces"  : len ( F )                    , \
-                              "Points"      : P                            , \
-                              "Faces"       : F                              }
+    return                { "Length"      : L                              , \
+                            "L2"          : R                              , \
+                            "Center"      : C                              , \
+                            "Boundings"   : B                              , \
+                            "TotalPoints" : len ( P )                      , \
+                            "TotalFaces"  : len ( F )                      , \
+                            "Points"      : P                              , \
+                            "Faces"       : F                                }
   ############################################################################
   ## Actor轉換到JSON
   ############################################################################
