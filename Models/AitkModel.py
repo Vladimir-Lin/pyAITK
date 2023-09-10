@@ -137,7 +137,7 @@ class Model    (                                                           ) :
                             "L2"          : J [ "L2"          ]            , \
                             "Center"      : J [ "Center"      ]            , \
                             "Boundings"   : J [ "Boundings"   ]            , \
-                            "Transform"   : X                              , \
+                            "Transform"   : X . GetData ( )                , \
                             "TotalPoints" : J [ "TotalPoints" ]            , \
                             "TotalFaces"  : J [ "TotalFaces"  ]            , \
                             "Points"      : J [ "Points"      ]            , \
