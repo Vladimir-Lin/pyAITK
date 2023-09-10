@@ -562,7 +562,7 @@ class VtkRawFace              ( VtkWidget                                  ) :
     self . FacePoints      = WRAPPER . GenerateFacePoints ( 0 ,       PTS    )
     self . FaceVertices    = WRAPPER . GenerateVertices   ( 0 , len ( PTS )  )
     self . FacePolygons    = WRAPPER . GeneratePolygons   ( FP               )
-    self . FaceTextureMaps = self    . GenerateTextureMappings ( 0 , JSON    )
+    self . FaceTextureMaps = self    . GenerateTextureMappings ( 0 , self . ModelJSON )
     self . LoadTextureFromBlob      ( "Texture"                              )
     ##########################################################################
     self . PreparePoints            ( self . ModelJSON [ "Points" ]          )
