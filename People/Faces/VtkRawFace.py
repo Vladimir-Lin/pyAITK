@@ -487,7 +487,7 @@ class VtkRawFace              ( VtkWidget                                  ) :
     Reader  . SetFileName                ( F                                 )
     ## Reader  . SetMemoryBuffer            ( BLOB . getbuffer ( )              )
     ##########################################################################
-    os      . remove                     ( F                                 )
+    ## os      . remove                     ( F                                 )
     ##########################################################################
     TEXTURE . SetInputConnection         ( Reader . GetOutputPort ( )        )
     TEXTURE . InterpolateOn              (                                   )
@@ -524,10 +524,10 @@ class VtkRawFace              ( VtkWidget                                  ) :
     ##########################################################################
     FX  =   self . FaceFactor
     FY  = - self . FaceFactor
-    FZ  = - self . NoseZ
+    FZ  = - self . FaceFactor
     ##########################################################################
     BX  = - ( self . FaceFactor / 2 )
-    BY  = - ( self . FaceFactor / 2 )
+    BY  =   ( self . FaceFactor / 2 )
     BZ  =   self . BaseZ
     ##########################################################################
     WW  = self . ModelJSON           [ "468"  ] [ "Width"                    ]
@@ -620,15 +620,15 @@ class VtkRawFace              ( VtkWidget                                  ) :
     FJ         = json . loads         ( TEXT                                 )
     ##########################################################################
     PIC        = PictureItem          (                                      )
-    ##########################################################################
     INFO       = PIC . GetInformation ( DB , PICTAB , PCID                   )
     ##########################################################################
     QQ         = f"select `file` from {DOPTAB} where ( `uuid` = {PCID} ) ;"
     if                                ( not PIC . FromDB ( DB , QQ )       ) :
       return False
     ##########################################################################
-    PART       = PIC  . Rotate        ( DEGREE                               )
-    self . PIC = PART . Crop          ( XP , YP , WP , HP                    )
+    ROT        = PIC . Rotate         ( DEGREE                               )
+    PART       = ROT . Crop           ( XP , YP , WP , HP                    )
+    self . PIC . Image = PART . Image
     ##########################################################################
     self . PeopleUuid  = PUID
     self . PictureUuid = PCID
