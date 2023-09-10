@@ -469,7 +469,7 @@ class FaceView                       ( IconDock                            ) :
     self    . Notify                  ( 3                                    )
     ##########################################################################
     FMT     = self . getMenuItem      ( "AssignCorrectFace"                  )
-    MSG     = FMT . format            ( UUID                                 )
+    MSG     = FMT . format            ( len ( UUIDs )                        )
     self    . ShowStatus              ( MSG                                  )
     self    . OnBusy  . emit          (                                      )
     self    . setBustle               (                                      )
