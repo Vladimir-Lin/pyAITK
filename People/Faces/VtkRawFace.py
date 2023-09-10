@@ -14,31 +14,40 @@ import math
 ##############################################################################
 import vtk
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                                  import QtCore
+from   PyQt5                                  import QtGui
+from   PyQt5                                  import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
+from   PyQt5 . QtCore                         import QObject
+from   PyQt5 . QtCore                         import pyqtSignal
+from   PyQt5 . QtCore                         import pyqtSlot
+from   PyQt5 . QtCore                         import Qt
+from   PyQt5 . QtCore                         import QPoint
+from   PyQt5 . QtCore                         import QPointF
+from   PyQt5 . QtCore                         import QSize
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
+from   PyQt5 . QtGui                          import QIcon
+from   PyQt5 . QtGui                          import QCursor
+from   PyQt5 . QtGui                          import QColor
+from   PyQt5 . QtGui                          import QKeySequence
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import QFileDialog
-from   PyQt5 . QtWidgets              import QSpinBox
-from   PyQt5 . QtWidgets              import QDoubleSpinBox
+from   PyQt5 . QtWidgets                      import QApplication
+from   PyQt5 . QtWidgets                      import qApp
+from   PyQt5 . QtWidgets                      import QWidget
+from   PyQt5 . QtWidgets                      import QFileDialog
+from   PyQt5 . QtWidgets                      import QSpinBox
+from   PyQt5 . QtWidgets                      import QDoubleSpinBox
 ##############################################################################
-from   AITK  . VTK . VtkWidget        import VtkWidget   as VtkWidget
-from   AITK  . VTK . Wrapper          import Wrapper     as VtkWrapper
+from   AITK  . Documents . JSON               import Load         as LoadJson
+from   AITK  . Documents . JSON               import Save         as SaveJson
 ##############################################################################
-from   AITK  . Qt  . MenuManager      import MenuManager as MenuManager
+from   AITK  . VTK . VtkWidget                import VtkWidget    as VtkWidget
+from   AITK  . VTK . Wrapper                  import Wrapper      as VtkWrapper
+##############################################################################
+from   AITK  . Qt  . MenuManager              import MenuManager  as MenuManager
+from   AITK  . Qt  . LineEdit                 import LineEdit     as LineEdit
+from   AITK  . Qt  . ComboBox                 import ComboBox     as ComboBox
+from   AITK  . Qt  . SpinBox                  import SpinBox      as SpinBox
 ##############################################################################
 from   AITK  . Math . Geometry . ControlPoint import ControlPoint as ControlPoint
 from   AITK  . Math . Geometry . Contour      import Contour      as Contour
@@ -49,9 +58,18 @@ from   AITK  . Math . Geometry . Parabola     import Parabola     as Parabola
 from   AITK  . Math . Geometry . Sphere       import Sphere       as Sphere
 from   AITK  . Math . Geometry . Polyhedron   import Polyhedron   as Polyhedron
 ##############################################################################
+from   AITK  . Models     . AitkModel         import Model        as ModelJson
+from   AITK  . Essentials . Relation          import Relation     as Relation
+from   AITK  . Calendars  . StarDate          import StarDate     as StarDate
+from   AITK  . Calendars  . Periode           import Periode      as Periode
+from   AITK  . Pictures   . Picture           import Picture      as PictureItem
+from   AITK  . Pictures   . Gallery           import Gallery      as GalleryItem
+##############################################################################
 from . Face                                   import Face         as FaceItem
 ##############################################################################
 class VtkRawFace              ( VtkWidget                                  ) :
+  ############################################################################
+  emitStartModel = pyqtSignal (                                              )
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
     ##########################################################################
@@ -60,20 +78,39 @@ class VtkRawFace              ( VtkWidget                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def sizeHint                   ( self                                    ) :
+    return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
+  ############################################################################
   def setVtkFaceDefaults   ( self                                          ) :
     ##########################################################################
-    ## self . dockingPlace = Qt . BottomDockWidgetArea
+    self . dockingOrientation = 0
+    self . dockingPlace       = Qt . RightDockWidgetArea
     ##########################################################################
-    self . setFunction     ( self . HavingMenu , True                        )
+    self . FaceUuid      = 0
+    self . PeopleUuid    = 0
+    self . PictureUuid   = 0
+    self . PIC           = PictureItem (                                     )
+    self . Name          = ""
+    self . NoseZ         = 500.0
+    self . BaseZ         = 500.0
+    self . ModelJSON     = {                                                 }
+    self . Mouse         = False
+    self . Pad           = False
+    self . PadUi         = None
+    self . AitkJSON      = {                                                 }
+    self . ActorsMapper  = {                                                 }
+    self . Tables        = {                                                 }
+    self . PictureTables = {                                                 }
+    ##########################################################################
+    self . setFunction     ( self . HavingMenu      , True                   )
     ##########################################################################
     self . setAcceptDrops  ( False                                           )
-    ## self . setDragEnabled  ( True                                            )
-    ## self . setDragDropMode ( QAbstractItemView . DragDrop                    )
+    ## self . setDragEnabled  ( False                                           )
+    ## self . setDragDropMode ( QAbstractItemView . NoDragDrop                  )
     ##########################################################################
-    self . FaceUuid   = 0
-    self . NoseZ      = 500.0
-    self . BaseZ      = 500.0
-    self . ModelJSON  =    {                                                 }
+    self . emitStartModel . connect ( self . StartModel                      )
+    ##########################################################################
+    self . setPrepared     ( True                                            )
     ##########################################################################
     self . PrepareObjects  (                                                 )
     ##########################################################################
@@ -121,18 +158,229 @@ class VtkRawFace              ( VtkWidget                                  ) :
     ##########################################################################
     return
   ############################################################################
+  def AttachActions   ( self ,                         Enabled             ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def wheelEvent              ( self , event                               ) :
+    ##########################################################################
+    if                        ( self . handleMouse ( 4 , event )           ) :
+      return
+    ##########################################################################
+    super ( ) . wheelEvent    (     event                                    )
+    self      . dealWithMouse ( 4 , event                                    )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseDoubleClickEvent           ( self , event                       ) :
+    ##########################################################################
+    if                                ( self . handleMouse ( 3 , event )   ) :
+      return
+    ##########################################################################
+    super ( ) . mouseDoubleClickEvent (     event                            )
+    self      . dealWithMouse         ( 3 , event                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseMoveEvent           ( self , event                              ) :
+    ##########################################################################
+    if                         ( self . handleMouse ( 2 , event )          ) :
+      return
+    ##########################################################################
+    super ( ) . mouseMoveEvent (     event                                   )
+    self      . dealWithMouse  ( 2 , event                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def mouseReleaseEvent           ( self , event                           ) :
+    ##########################################################################
+    if                          ( self . handleMouse ( 1 , event )         ) :
+      return
+    ##########################################################################
+    super ( ) . mouseReleaseEvent (     event                                )
+    self      . dealWithMouse     ( 1 , event                                )
+    ##########################################################################
+    return
+  ############################################################################
+  def mousePressEvent           ( self , event                             ) :
+    ##########################################################################
+    if                          ( self . handleMouse ( 0 , event )         ) :
+      return
+    ##########################################################################
+    super ( ) . mousePressEvent (     event                                  )
+    self      . dealWithMouse   ( 0 , event                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def handleMouse   ( self , mType , event                                 ) :
+    ##########################################################################
+    if              ( self . Mouse                                         ) :
+      return False
+    ##########################################################################
+    event . accept  (                                                        )
+    ##########################################################################
+    return True
+  ############################################################################
+  def dealWithMouse                 ( self , mType , event                 ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
+  def Relocation                  ( self                                   ) :
+    ##########################################################################
+    ##########################################################################
+    return False
+  ############################################################################
+  def Shutdown           ( self                                            ) :
+    ##########################################################################
+    self . Leave . emit  ( self                                              )
+    ## self . AttachActions ( False                                             )
+    ##########################################################################
+    return True
   ############################################################################
   ############################################################################
   ############################################################################
   ############################################################################
   ############################################################################
   ############################################################################
-  def startup                       ( self                                 ) :
+  def StartModel                    ( self                                 ) :
     ##########################################################################
     self . renderer   . ResetCamera (                                        )
-    ##########################################################################
     self . interactor . Initialize  (                                        )
     self . interactor . Start       (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  ############################################################################
+  def RebuildFaceDetails             ( self                                ) :
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    print ( self . ModelJSON )
+    ##########################################################################
+    return
+  ############################################################################
+  def LoadFaceDetails                 ( self , DB                          ) :
+    ##########################################################################
+    FRNTAB     = self . Tables        [ "FaceRegions"                        ]
+    FPSTAB     = self . Tables        [ "FacePoints"                         ]
+    PICTAB     = self . Tables        [ "Information"                        ]
+    DOPTAB     = self . Tables        [ "Depot"                              ]
+    ##########################################################################
+    FUID       = self . FaceUuid
+    ##########################################################################
+    QQ         = f"""select `picture` , `owner` ,
+                            `x` , `y` , `width` , `height` ,
+                            `rotation` from {FRNTAB}
+                   where ( `uuid` = {FUID} ) ;"""
+    QQ         = " " . join           ( QQ . split ( )                       )
+    DB         . Query                ( QQ                                   )
+    RR         = DB . FetchOne        (                                      )
+    ##########################################################################
+    if                                ( RR in [ False , None ]             ) :
+      return False
+    ##########################################################################
+    if                                ( len ( RR ) != 7                    ) :
+      return False
+    ##########################################################################
+    PCID       = int                  ( RR [ 0                             ] )
+    PUID       = int                  ( RR [ 1                             ] )
+    XP         = int                  ( RR [ 2                             ] )
+    YP         = int                  ( RR [ 3                             ] )
+    WP         = int                  ( RR [ 4                             ] )
+    HP         = int                  ( RR [ 5                             ] )
+    DEGREE     = float                ( RR [ 6                             ] )
+    ##########################################################################
+    QQ         = f"""select `points` from {FPSTAB}
+                   where ( `uuid` = {FUID} ) ;"""
+    QQ         = " " . join           ( QQ . split ( )                       )
+    DB         . Query                ( QQ                                   )
+    RR         = DB . FetchOne        (                                      )
+    ##########################################################################
+    if                                ( RR in [ False , None ]             ) :
+      return False
+    ##########################################################################
+    if                                ( len ( RR ) != 1                    ) :
+      return False
+    ##########################################################################
+    TEXT       = self . assureString  ( RR [ 0                             ] )
+    ##########################################################################
+    if                                ( len ( TEXT ) <= 0                  ) :
+      return False
+    ##########################################################################
+    FJ         = json . loads         ( TEXT                                 )
+    ##########################################################################
+    PIC        = Picture              (                                      )
+    ##########################################################################
+    INFO       = PIC . GetInformation ( DB , PICTAB , PCID                   )
+    ##########################################################################
+    QQ         = f"select `file` from {DOPTAB} where ( `uuid` = {PCID} ) ;"
+    if                                ( not PIC . FromDB ( DB , QQ )       ) :
+      return False
+    ##########################################################################
+    PART       = PIC  . Rotate        ( DEGREE                               )
+    self . PIC = PART . Crop          ( XP , YP , WP , HP                    )
+    ##########################################################################
+    self . PeopleUuid  = PUID
+    self . PictureUuid = PCID
+    self . ModelJSON   = FJ
+    ##########################################################################
+    print(FJ)
+    ##########################################################################
+    return True
+  ############################################################################
+  def loading                       ( self                                 ) :
+    ##########################################################################
+    DB     = self . ConnectDB       (                                        )
+    if                              ( DB == None                           ) :
+      self . emitStartModel . emit  (                                        )
+      return
+    ##########################################################################
+    self   . Notify                 ( 3                                      )
+    ##########################################################################
+    FMT    = self . Translations    [ "UI::StartLoading"                     ]
+    MSG    = FMT . format           ( self . windowTitle ( )                 )
+    self   . ShowStatus             ( MSG                                    )
+    self   . OnBusy  . emit         (                                        )
+    self   . setBustle              (                                        )
+    ##########################################################################
+    OKAY   = self . LoadFaceDetails ( DB )
+    ##########################################################################
+    self   . setVacancy             (                                        )
+    self   . GoRelax . emit         (                                        )
+    self   . ShowStatus             ( ""                                     )
+    DB     . Close                  (                                        )
+    ##########################################################################
+    if                              ( OKAY                                 ) :
+      ########################################################################
+      self . RebuildFaceDetails     (                                        )
+      ########################################################################
+      self . Notify                 ( 5                                      )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . Notify                 ( 3                                      )
+    ##########################################################################
+    self   . emitStartModel . emit  (                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def startup                    ( self                                    ) :
+    ##########################################################################
+    self . emitStartModel . emit (                                           )
+    ##########################################################################
+    self . Go                    ( self . loading                            )
     ##########################################################################
     return
   ############################################################################

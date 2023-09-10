@@ -66,7 +66,6 @@ class VtkModel                 ( VtkWidget                                 ) :
   ############################################################################
   emitStartModel = pyqtSignal  (                                             )
   emitStartJson  = pyqtSignal  (                                             )
-  Leave          = pyqtSignal  ( QWidget                                     )
   ############################################################################
   def __init__                 ( self , parent = None , plan = None        ) :
     ##########################################################################
