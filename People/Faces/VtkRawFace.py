@@ -89,14 +89,20 @@ class VtkRawFace              ( VtkWidget                                  ) :
     self . FaceUuid      = 0
     self . PeopleUuid    = 0
     self . PictureUuid   = 0
-    self . PIC           = PictureItem (                                     )
+    ##########################################################################
     self . Name          = ""
-    self . NoseZ         = 500.0
-    self . BaseZ         = 500.0
+    ##########################################################################
+    self . FaceFactor    = 2500.0
+    self . NoseZ         =  500.0
+    self . BaseZ         =  500.0
+    ##########################################################################
+    self . PIC           = PictureItem (                                     )
     self . ModelJSON     = {                                                 }
-    self . Mouse         = False
+    ##########################################################################
+    self . Mouse         = True
     self . Pad           = False
     self . PadUi         = None
+    ##########################################################################
     self . AitkJSON      = {                                                 }
     self . ActorsMapper  = {                                                 }
     self . Tables        = {                                                 }
@@ -467,23 +473,28 @@ class VtkRawFace              ( VtkWidget                                  ) :
     ##########################################################################
     return
   ############################################################################
-  def LoadTextureFromBlob        ( self , KEY                              ) :
+  def LoadTextureFromBlob                ( self , KEY                      ) :
     ##########################################################################
     ACTOR   = self . FaceObjects [ KEY ] [ "Actor"                           ]
     TEXTURE = self . FaceObjects [ KEY ] [ "Texture"                         ]
-    BLOB    = self . ModelJSON           [ "Texture"                         ]
+    ## BLOB    = self . ModelJSON           [ "Texture"                         ]
     ##########################################################################
-    F       = "D:/Temp/Python/HumanFaceTexture.png"
-    with open                    ( F , 'wb' ) as B                           :
-      B     . write              ( BLOB . getbuffer ( )                      )
+    TMPDIR  = self . Settings            [ "ModelPath"                       ]
+    FUID    = self . FaceUuid
+    F       = f"{TMPDIR}/{FUID}.png"
     ##########################################################################
-    Reader  = vtk . vtkPNGReader (                                           )
-    Reader  . SetFileName        ( F                                         )
-    ## Reader  . SetMemoryBuffer    ( BLOB . getbuffer ( )                      )
+    QI      = self . PIC . toQImage      (                                   )
+    QI      . save                       ( F , "PNG"                         )
     ##########################################################################
-    TEXTURE . SetInputConnection ( Reader . GetOutputPort ( )                )
-    TEXTURE . InterpolateOn      (                                           )
-    ACTOR   . SetTexture         ( TEXTURE                                   )
+    Reader  = vtk . vtkPNGReader         (                                   )
+    Reader  . SetFileName                ( F                                 )
+    ## Reader  . SetMemoryBuffer            ( BLOB . getbuffer ( )              )
+    ##########################################################################
+    os      . remove                     ( F                                 )
+    ##########################################################################
+    TEXTURE . SetInputConnection         ( Reader . GetOutputPort ( )        )
+    TEXTURE . InterpolateOn              (                                   )
+    ACTOR   . SetTexture                 ( TEXTURE                           )
     ##########################################################################
     return
   ############################################################################
@@ -511,22 +522,24 @@ class VtkRawFace              ( VtkWidget                                  ) :
   ############################################################################
   def RebuildFaceDetails             ( self                                ) :
     ##########################################################################
+    PTS =                            [                                       ]
+    LST =                            [                                       ]
     ##########################################################################
-    ##########################################################################
-    PTS = [ ]
-    FX  =   2500.0
-    FY  = - 2500.0
+    FX  =   self . FaceFactor
+    FY  = - self . FaceFactor
     FZ  = - self . NoseZ
-    BX  = 0
-    BY  = 0
+    ##########################################################################
+    BX  = - ( self . FaceFactor / 2 )
+    BY  = - ( self . FaceFactor / 2 )
     BZ  =   self . BaseZ
-    WW  = self . ModelJSON [ "468"  ] [ "Width"    ]
-    HH  = self . ModelJSON [ "468"  ] [ "Height"   ]
-    XX  = self . ModelJSON [ "468"  ] [ "X"        ]
-    YY  = self . ModelJSON [ "468"  ] [ "Y"        ]
-    SW  = self . ModelJSON [ "468"  ] [ "SW"       ]
-    SH  = self . ModelJSON [ "468"  ] [ "SH"       ]
-    NPS = self . ModelJSON [ "468"  ] [ "Original" ]
+    ##########################################################################
+    WW  = self . ModelJSON           [ "468"  ] [ "Width"                    ]
+    HH  = self . ModelJSON           [ "468"  ] [ "Height"                   ]
+    XX  = self . ModelJSON           [ "468"  ] [ "X"                        ]
+    YY  = self . ModelJSON           [ "468"  ] [ "Y"                        ]
+    SW  = self . ModelJSON           [ "468"  ] [ "SW"                       ]
+    SH  = self . ModelJSON           [ "468"  ] [ "SH"                       ]
+    NPS = self . ModelJSON           [ "468"  ] [ "Original"                 ]
     ##########################################################################
     for P in NPS                                                             :
       ########################################################################
@@ -534,10 +547,12 @@ class VtkRawFace              ( VtkWidget                                  ) :
       YP = ( P [ "Y" ] * FY ) + BY
       ZP = ( P [ "Z" ] * FZ ) + BZ
       ########################################################################
-      PTS . append ( { "X" : XP , "Y" : YP , "Z" : ZP } )
+      PTS . append                   ( { "X" : XP  , "Y" : YP  , "Z" : ZP  } )
+      LST . append                   ( [ P [ "X" ] , P [ "Y" ] , P [ "Z" ] ] )
     ##########################################################################
     self . ModelJSON [ "Points" ] = {                                        }
-    self . ModelJSON [ "Points" ] [ "3D" ] = PTS
+    self . ModelJSON [ "Points" ] [ "3D"       ] = PTS
+    self . ModelJSON [ "Points" ] [ "Listings" ] = LST
     ##########################################################################
     FI      = FaceItem              (                                        )
     WRAPPER = VtkWrapper            (                                        )
@@ -547,21 +562,13 @@ class VtkRawFace              ( VtkWidget                                  ) :
     self . FacePoints      = WRAPPER . GenerateFacePoints ( 0 ,       PTS    )
     self . FaceVertices    = WRAPPER . GenerateVertices   ( 0 , len ( PTS )  )
     self . FacePolygons    = WRAPPER . GeneratePolygons   ( FP               )
-    ## self . FaceTextureMaps = self    . GenerateTextureMappings ( 0 , JSON    )
-    ## self . LoadTextureFromBlob      ( "Texture"                              )
+    self . FaceTextureMaps = self    . GenerateTextureMappings ( 0 , JSON    )
+    self . LoadTextureFromBlob      ( "Texture"                              )
     ##########################################################################
     self . PreparePoints            ( self . ModelJSON [ "Points" ]          )
     self . PrepareMeshes            ( self . ModelJSON [ "Points" ] , "Mesh" )
     self . PrepareFace              ( self . ModelJSON [ "Points" ]          )
-    ## self . PrepareTexture           (                                        )
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ##########################################################################
-    ## print ( self . ModelJSON )
+    self . PrepareTexture           (                                        )
     ##########################################################################
     return
   ############################################################################
@@ -629,8 +636,6 @@ class VtkRawFace              ( VtkWidget                                  ) :
     self . PeopleUuid  = PUID
     self . PictureUuid = PCID
     self . ModelJSON   = FJ
-    ##########################################################################
-    print(FJ)
     ##########################################################################
     return True
   ############################################################################
