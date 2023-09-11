@@ -82,7 +82,8 @@ class DocumentGroupView           ( IconDock                               ) :
     ## self . Grouping     = "Subgroup"
     ## self . Grouping     = "Reverse"
     ##########################################################################
-    self . FetchTableKey = "CrowdView"
+    self . CKEY          = "DocumentGroupView"
+    self . FetchTableKey = "DocumentGroupView"
     ##########################################################################
     self . Relation = Relation    (                                          )
     self . Relation . set         ( "first" , 0                              )
@@ -102,20 +103,21 @@ class DocumentGroupView           ( IconDock                               ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 840 , 800 )                       )
+    return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
-    if ( self . isSubgroup ( ) or self . isReverse ( )                     ) :
+    if                              ( self . isSubgroup (               ) or \
+                                      self . isReverse  (               )  ) :
       ########################################################################
-      msg  = self . getMenuItem     ( "Crowds"                               )
+      msg  = self . getMenuItem     ( "Documents"                            )
       A    = QAction                (                                        )
-      A    . setIcon                ( QIcon ( ":/images/buddy.png" )         )
+      A    . setIcon                ( QIcon ( ":/images/documentitems.png" ) )
       A    . setToolTip             ( msg                                    )
-      A    . triggered . connect    ( self . OpenCurrentCrowd                )
+      A    . triggered . connect    ( self . OpenCurrentGroup                )
       self . WindowActions . append ( A                                      )
     ##########################################################################
-    self . AppendToolNamingAction (                                          )
+    self   . AppendToolNamingAction (                                        )
     ##########################################################################
     return
   ############################################################################
@@ -158,9 +160,11 @@ class DocumentGroupView           ( IconDock                               ) :
   ############################################################################
   def setGrouping ( self , group                                           ) :
     ##########################################################################
+    CKEY                 = self . CKEY
+    ##########################################################################
     self . Grouping      = group
     self . OldGrouping   = group
-    self . FetchTableKey = f"CrowdView-{group}"
+    self . FetchTableKey = f"{CKEY}-{group}"
     ##########################################################################
     return self . Grouping
   ############################################################################
@@ -208,7 +212,7 @@ class DocumentGroupView           ( IconDock                               ) :
   ############################################################################
   def dragMime                   ( self                                    ) :
     ##########################################################################
-    mtype   = "crowd/uuids"
+    mtype   = "document/uuids"
     message = self . getMenuItem ( "TotalPicked"                             )
     ##########################################################################
     return self . CreateDragMime ( self , mtype , message                    )
@@ -223,11 +227,11 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     if                        ( self . isTagging ( )                       ) :
       ########################################################################
-      formats = "picture/uuids;crowd/uuids"
+      formats = "picture/uuids;document/uuids"
       ########################################################################
     else                                                                     :
       ########################################################################
-      formats = "picture/uuids;people/uuids;crowd/uuids"
+      formats = "picture/uuids;document/uuids"
     ##########################################################################
     if                        ( len ( formats ) <= 0                       ) :
       return False
@@ -256,12 +260,7 @@ class DocumentGroupView           ( IconDock                               ) :
       ########################################################################
       self  . ShowMenuItemMessage   ( "AssignTagIcon"                        )
     ##########################################################################
-    elif                            ( mtype in [ "people/uuids" ]          ) :
-      ########################################################################
-      if                            ( self . isTagging ( )                 ) :
-        return False
-    ##########################################################################
-    elif                            ( mtype in [ "crowd/uuids" ]           ) :
+    elif                            ( mtype in [ "document/uuids" ]        ) :
       ########################################################################
       if                            ( self == sourceWidget                 ) :
         self . ShowMenuItemCountStatus ( "MoveCatalogues" ,         CNT      )
@@ -270,56 +269,48 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     return RDN
   ############################################################################
-  def dropMoving               ( self , sourceWidget , mimeData , mousePos ) :
+  def dropMoving ( self , sourceWidget , mimeData , mousePos               ) :
     ##########################################################################
-    if                                ( self . droppingAction              ) :
+    if                                   ( self . droppingAction           ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON       [ "Mime"                               ]
-    UUIDs   = self . DropInJSON       [ "UUIDs"                              ]
-    atItem  = self . itemAt           ( mousePos                             )
-    CNT     = len                     ( UUIDs                                )
+    mtype   = self . DropInJSON          [ "Mime"                            ]
+    UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
+    atItem  = self . itemAt              ( mousePos                          )
+    CNT     = len                        ( UUIDs                             )
     title   = sourceWidget . windowTitle (                                   )
     ##########################################################################
-    if                                ( mtype in [ "people/uuids" ]        ) :
+    if                                   ( mtype in [ "document/uuids" ]   ) :
       ########################################################################
-      if                              ( self . isTagging ( )               ) :
+      if                                 ( self . isTagging ( )            ) :
         return False
       ########################################################################
-      if                              ( self . NotOkay ( atItem )          ) :
+      if                                 ( self . NotOkay ( atItem )       ) :
         return False
       ########################################################################
-      self  . ShowMenuItemTitleStatus ( "JoinPeople"  , title , CNT          )
+      self  . ShowMenuItemTitleStatus    ( "JoinDocument" , title , CNT      )
       ########################################################################
       return True
     ##########################################################################
-    if                                ( sourceWidget != self               ) :
+    if                                   ( sourceWidget != self            ) :
       return True
     ##########################################################################
-    if                                ( self . NotOkay      ( atItem     ) ) :
+    if                                   ( self . NotOkay      ( atItem  ) ) :
       return True
     ##########################################################################
-    if                                ( atItem . isSelected (            ) ) :
+    if                                   ( atItem . isSelected (         ) ) :
       return False
     ##########################################################################
     return True
   ############################################################################
-  def acceptCrowdsDrop  ( self                                             ) :
-    return True
-  ############################################################################
-  def acceptPeopleDrop  ( self                                             ) :
+  def acceptDocumentsDrop ( self                                           ) :
     return True
   ############################################################################
   def acceptPictureDrop ( self                                             ) :
     return True
   ############################################################################
-  def dropCrowds                    ( self , source , pos , JSON           ) :
-    MF   = self . CrowdsMoving
-    AF   = self . CrowdsAppending
-    return self . defaultDropInside (        source , pos , JSON , MF , AF   )
-  ############################################################################
-  def dropPeople                        ( self , source , pos , JSON       ) :
-    FUNC = self . PeopleAppending
+  def dropDocuments                     ( self , source , pos , JSON       ) :
+    FUNC = self . DocumentAppending
     return self . defaultDropInFunction (        source , pos , JSON , FUNC  )
   ############################################################################
   def dropPictures                      ( self , source , pos , JSON       ) :
@@ -341,83 +332,13 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     return self . GenerateNormalMovingSQL ( RELTAB , LAST , UUIDs , R        )
   ############################################################################
-  def CrowdsMoving            ( self , atUuid , NAME , JSON                ) :
-    ##########################################################################
-    UUIDs  = JSON             [ "UUIDs"                                      ]
-    if                        ( len ( UUIDs ) <= 0                         ) :
-      return
-    ##########################################################################
-    DB     = self . ConnectDB (                                              )
-    if                        ( DB == None                                 ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit   (                                              )
-    self   . setBustle        (                                              )
-    ##########################################################################
-    RELTAB = self . Tables    [ "Relation"                                   ]
-    DB     . LockWrites       ( [ RELTAB                                   ] )
-    ##########################################################################
-    OPTS   = f"order by `position` asc"
-    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
-    ##########################################################################
-    LUID   = PUIDs            [ -1                                           ]
-    LAST   = self . GetLastestPosition ( DB     , LUID                       )
-    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
-    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
-    ##########################################################################
-    DB     . UnlockTables     (                                              )
-    ##########################################################################
-    self   . setVacancy       (                                              )
-    self   . GoRelax . emit   (                                              )
-    DB     . Close            (                                              )
-    ##########################################################################
-    self   . loading          (                                              )
-    ##########################################################################
-    return
-  ############################################################################
-  def CrowdsAppending         ( self , atUuid , NAME , JSON               ) :
-    ##########################################################################
-    UUIDs  = JSON              [ "UUIDs"                                     ]
-    if                         ( len ( UUIDs ) <= 0                        ) :
-      return
-    ##########################################################################
-    DB     = self . ConnectDB  (                                             )
-    if                         ( DB == None                                ) :
-      return
-    ##########################################################################
-    self   . OnBusy  . emit    (                                             )
-    self   . setBustle         (                                             )
-    ##########################################################################
-    RELTAB = self . Tables     [ "Relation"                                  ]
-    ##########################################################################
-    DB     . LockWrites        ( [ RELTAB                                  ] )
-    self   . Relation  . Joins ( DB , RELTAB , UUIDs                         )
-    OPTS   = f"order by `position` asc"
-    PUIDs  = self . Relation . Subordination ( DB , RELTAB , OPTS            )
-    ##########################################################################
-    LUID   = PUIDs             [ -1                                          ]
-    LAST   = self . GetLastestPosition ( DB     , LUID                       )
-    PUIDs  = self . OrderingPUIDs      ( atUuid , UUIDs , PUIDs              )
-    SQLs   = self . GenerateMovingSQL  ( LAST   , PUIDs                      )
-    self   . ExecuteSqlCommands ( "OrganizePositions" , DB , SQLs , 100      )
-    ##########################################################################
-    DB     . UnlockTables      (                                             )
-    self   . setVacancy        (                                             )
-    self   . GoRelax . emit    (                                             )
-    DB     . Close             (                                             )
-    ##########################################################################
-    self   . loading           (                                             )
-    ##########################################################################
-    return
-  ############################################################################
-  def PeopleAppending                  ( self , atUuid , NAME , JSON       ) :
+  def DocumentAppending                  ( self , atUuid , NAME , JSON     ) :
     ##########################################################################
     T1  = "Subgroup"
-    TAB = "RelationPeople"
+    TAB = "RelationGroup"
     ##########################################################################
-    OK  = self . AppendingPeopleIntoT1 ( atUuid , NAME , JSON , TAB , T1     )
-    if                                 ( not OK                            ) :
+    OK  = self . AppendingDocumentIntoT1 ( atUuid , NAME , JSON , TAB , T1   )
+    if                                   ( not OK                          ) :
       return
     ##########################################################################
     self   . loading                   (                                     )
@@ -558,7 +479,7 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     FMT        = self . getMenuItem    ( "LoadExtras"                        )
     SFMT       = self . getMenuItem    ( "SubgroupCount"                     )
-    GFMT       = self . getMenuItem    ( "PeopleCount"                       )
+    GFMT       = self . getMenuItem    ( "DocumentCount"                     )
     ##########################################################################
     DBA        = self . ConnectDB      (                  True               )
     ##########################################################################
@@ -573,7 +494,7 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     self       . OnBusy  . emit        (                                     )
     ##########################################################################
-    RELTAB     = self . Tables         [ "Relation"                          ]
+    RELTAB     = self . Tables         [ "RelationGroup"                     ]
     REL        = Relation              (                                     )
     REL        . setRelation           ( "Subordination"                     )
     T2         = self . Relation . get ( "t2"                                )
@@ -634,17 +555,17 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     return OKAY
   ############################################################################
-  def OpenItemSubgroup            ( self , item                            ) :
+  def OpenItemSubgroup              ( self , item                          ) :
     ##########################################################################
-    uuid  = item . data           ( Qt . UserRole                            )
-    uuid  = int                   ( uuid                                     )
+    uuid  = item . data             ( Qt . UserRole                          )
+    uuid  = int                     ( uuid                                   )
     ##########################################################################
-    if                            ( uuid <= 0                              ) :
+    if                              ( uuid <= 0                            ) :
       return False
     ##########################################################################
-    title = item . text           (                                          )
-    tid   = self . Relation . get ( "t2"                                     )
-    self  . DocumentSubgroup . emit  ( title , tid , str ( uuid )               )
+    title = item . text             (                                        )
+    tid   = self . Relation  . get  ( "t2"                                   )
+    self  . DocumentSubgroup . emit ( title , tid , str ( uuid )             )
     ##########################################################################
     return True
   ############################################################################
@@ -657,32 +578,32 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     return self . OpenItemSubgroup ( atItem                                  )
   ############################################################################
-  def OpenItemCrowd               ( self , item                            ) :
+  def OpenItemDocument             ( self , item                           ) :
     ##########################################################################
-    uuid  = item . data           ( Qt . UserRole                            )
-    uuid  = int                   ( uuid                                     )
+    uuid  = item . data            ( Qt . UserRole                           )
+    uuid  = int                    ( uuid                                    )
     ##########################################################################
-    if                            ( uuid <= 0                              ) :
+    if                             ( uuid <= 0                             ) :
       return False
     ##########################################################################
-    title = item . text           (                                          )
-    tid   = self . Relation . get ( "t2"                                     )
-    self  . DocumentGroup . emit    ( title , tid , str ( uuid )               )
+    title = item . text            (                                         )
+    tid   = self . Relation . get  ( "t2"                                    )
+    self  . DocumentGroup   . emit ( title , tid , str ( uuid )              )
     ##########################################################################
     return True
   ############################################################################
-  def OpenCurrentCrowd          ( self                                     ) :
+  def OpenCurrentGroup             ( self                                  ) :
     ##########################################################################
-    atItem = self . currentItem (                                            )
+    atItem = self . currentItem    (                                         )
     ##########################################################################
-    if                          ( atItem == None                           ) :
+    if                             ( atItem == None                        ) :
       return False
     ##########################################################################
-    return self . OpenItemCrowd ( atItem                                     )
+    return self . OpenItemDocument ( atItem                                  )
   ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
-    self . defaultOpenItemNamesEditor ( item , "Crowds" , "NamesEditing"     )
+    self . defaultOpenItemNamesEditor ( item , "Documents" , "NamesEditing"  )
     ##########################################################################
     return
   ############################################################################
@@ -703,7 +624,7 @@ class DocumentGroupView           ( IconDock                               ) :
         return      { "Match" : True                                         }
     ##########################################################################
     if ( self . WithinCommand ( language , "UI::OpenAlbums"   , message )  ) :
-      if            ( self . OpenCurrentCrowd ( )                          ) :
+      if            ( self . OpenCurrentGroup ( )                          ) :
         return      { "Match" : True , "Message" : TRX [ "UI::Processed" ]   }
       else                                                                   :
         return      { "Match" : True                                         }
@@ -798,8 +719,8 @@ class DocumentGroupView           ( IconDock                               ) :
       mm   . addAction                  ( 2001      , mg                     )
       ########################################################################
       if                                ( self . isSubgroup ( )            ) :
-        mg = self . getMenuItem         ( "Crowds"                           )
-        ic = QIcon                      ( ":/images/buddy.png"               )
+        mg = self . getMenuItem         ( "Documents"                        )
+        ic = QIcon                      ( ":/images/documents.png"           )
         mm . addActionWithIcon          ( 2002 , ic , mg                     )
       ########################################################################
       mg   = self . getMenuItem         ( "CopyGroupUuid"                    )
