@@ -59,7 +59,7 @@ class DocumentListings             ( TreeDock                              ) :
   HavingMenu    = 1371434312
   ############################################################################
   emitNamesShow = pyqtSignal       (                                         )
-  emitAllNames  = pyqtSignal       ( dict                                    )
+  emitAllNames  = pyqtSignal       ( list                                    )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -204,14 +204,35 @@ class DocumentListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def PrepareItem                ( self , UUID , NAME                      ) :
+  def PrepareItem              ( self , JSOX                               ) :
     ##########################################################################
-    UXID = str                   ( UUID                                      )
-    IT   = QTreeWidgetItem       (                                           )
-    IT   . setText               ( 0 , NAME                                  )
-    IT   . setToolTip            ( 0 , UXID                                  )
-    IT   . setData               ( 0 , Qt . UserRole , UUID                  )
-    IT   . setTextAlignment      ( 1 , Qt.AlignRight                         )
+    UUID    = JSOX             [ "Uuid"                                      ]
+    UUID    = int              ( UUID                                        )
+    UXID    = str              ( UUID                                        )
+    ##########################################################################
+    NAME    = JSOX             [ "Name"                                      ]
+    USED    = JSOX             [ "Used"                                      ]
+    DTYPE   = JSOX             [ "Type"                                      ]
+    SIZE    = JSOX             [ "Size"                                      ]
+    FORMAT  = JSOX             [ "Format"                                    ]
+    HANDLER = JSOX             [ "Handler"                                   ]
+    ##########################################################################
+    IT      = QTreeWidgetItem  (                                             )
+    ##########################################################################
+    IT      . setText          ( 0 , NAME                                    )
+    IT      . setToolTip       ( 0 , UXID                                    )
+    IT      . setData          ( 0 , Qt . UserRole , UUID                    )
+    ##########################################################################
+    IT      . setText          ( 1 , USED                                    )
+    ##########################################################################
+    IT      . setText          ( 2 , DTYPE                                   )
+    ##########################################################################
+    IT      . setText          ( 3 , SIZE                                    )
+    IT      . setTextAlignment ( 3 , Qt.AlignRight                           )
+    ##########################################################################
+    IT      . setText          ( 4 , FORMAT                                  )
+    ##########################################################################
+    IT      . setText          ( 5 , HANDLER                                 )
     ##########################################################################
     return IT
   ############################################################################
@@ -281,32 +302,21 @@ class DocumentListings             ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  @pyqtSlot                        (        dict                             )
-  def refresh                      ( self , JSON                           ) :
+  @pyqtSlot                       (        list                              )
+  def refresh                     ( self , ITEMs                           ) :
     ##########################################################################
-    self    . clear                (                                         )
+    self   . clear                (                                          )
     ##########################################################################
-    UUIDs   = JSON                 [ "UUIDs"                                 ]
-    NAMEs   = JSON                 [ "NAMEs"                                 ]
-    ##########################################################################
-    for U in UUIDs                                                           :
+    for J in ITEMs                                                           :
       ########################################################################
-      IT    = self . PrepareItem   ( U , NAMEs [ U ]                         )
-      self  . addTopLevelItem      ( IT                                      )
+      IT   = self . PrepareItem   ( J                                        )
+      self . addTopLevelItem      ( IT                                       )
     ##########################################################################
-    FMT     = self . getMenuItem   ( "DisplayTotal"                          )
-    MSG     = FMT  . format        ( len ( UUIDs )                           )
-    self    . setToolTip           ( MSG                                     )
+    FMT    = self . getMenuItem   ( "DisplayTotal"                           )
+    MSG    = FMT  . format        ( len ( ITEMs )                            )
+    self   . setToolTip           ( MSG                                      )
     ##########################################################################
-    if                             ( self . Grouping in [ "Searching" ]    ) :
-      ########################################################################
-      T     = self . Translations  [ "PlaceListings" ] [ "Title"             ]
-      K     = self . SearchKey
-      T     = f"{T}:{K}"
-      ########################################################################
-      self  . setWindowTitle       ( T                                       )
-    ##########################################################################
-    self    . emitNamesShow . emit (                                         )
+    self   . emitNamesShow . emit (                                          )
     ##########################################################################
     return
   ############################################################################
@@ -327,98 +337,76 @@ class DocumentListings             ( TreeDock                              ) :
     ##########################################################################
     return NAMEs
   ############################################################################
-  def looking                         ( self , name                        ) :
+  def loading                          ( self                              ) :
     ##########################################################################
-    if                                ( len ( name ) <= 0                  ) :
+    DB       = self . ConnectDB        (                                     )
+    ##########################################################################
+    if                                 ( DB == None                        ) :
+      self   . emitNamesShow . emit    (                                     )
       return
     ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      return
+    self     . OnBusy  . emit          (                                     )
+    self     . setBustle               (                                     )
     ##########################################################################
-    self    . OnBusy  . emit          (                                      )
-    self    . setBustle               (                                      )
+    FMT      = self . Translations     [ "UI::StartLoading"                  ]
+    MSG      = FMT . format            ( self . windowTitle ( )              )
+    self     . ShowStatus              ( MSG                                 )
     ##########################################################################
-    PLSTAB  = self . Tables           [ "Places"                             ]
-    NAMTAB  = self . Tables           [ "NamesPlaces"                        ]
-    LIKE    = f"%{name}%"
-    ORDER   = self . getSortingOrder  (                                      )
-    UUIDs   =                         [                                      ]
+    self     . ObtainsInformation      ( DB                                  )
     ##########################################################################
-    PQ      = f"select `uuid` from {PLSTAB} where ( `used` = 1 )"
-    QQ      = f"""select `uuid` from {NAMTAB}
-                  where ( `name` like %s )
-                  and ( `uuid` in ( {PQ} ) )
-                  group by `uuid` {ORDER} ;"""
-    DB      . QueryValues             ( QQ , ( LIKE , )                      )
-    ALL     = DB . FetchAll           (                                      )
+    ITEMs    =                         [                                     ]
+    UUIDs    = self . ObtainsItemUuids ( DB                                  )
     ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . GoRelax . emit          (                                      )
-    DB      . Close                   (                                      )
-    ##########################################################################
-    if ( ( ALL in [ False , None ] ) or ( len ( ALL ) <= 0 ) )               :
+    if                                 ( len ( UUIDs ) > 0                 ) :
       ########################################################################
-      self  . Notify                  ( 1                                    )
+      NAMEs  = self . ObtainsUuidNames ( DB , UUIDs                          )
       ########################################################################
-      return
-    ##########################################################################
-    for U in ALL                                                             :
-      UUIDs . append                  ( U [ 0 ]                              )
-    ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
+      DOCTAB = self . Tables           [ "Documents"                         ]
       ########################################################################
-      self  . Notify                  ( 1                                    )
-      ########################################################################
+      for UUID in UUIDs                                                      :
+        ######################################################################
+        QQ   = f"""select `used` , `type` , `size` , `format` , `handler`
+                   from {DOCTAB}
+                   where ( `uuid` = {UUID} )
+                   order by `id` desc
+                   limit 0 , 1 ;"""
+        ######################################################################
+        QQ   = " " . join              ( QQ . split ( )                      )
+        DB   . Query                   ( QQ                                  )
+        RR   = DB . FetchOne           (                                     )
+        ######################################################################
+        if                             ( RR in [ False , None ]            ) :
+          continue
+        ######################################################################
+        if                             ( len ( RR ) != 5                   ) :
+          continue
+        ######################################################################
+        NAME = NAMEs                   [ UUID                                ]
+        USED = int                     ( RR [ 0                            ] )
+        DTYP = int                     ( RR [ 1                            ] )
+        SIZE = int                     ( RR [ 2                            ] )
+        FMT  = self . assureString     ( RR [ 3                            ] )
+        DEAL = self . assureString     ( RR [ 4                            ] )
+        ######################################################################
+        ITEMs . append                 ( { "Uuid"    : UUID                , \
+                                           "Name"    : NAME                , \
+                                           "Used"    : USED                , \
+                                           "Type"    : DTYP                , \
+                                           "Size"    : SIZE                , \
+                                           "Format"  : FMT                 , \
+                                           "Handler" : DEAL                } )
+    ##########################################################################
+    self     . setVacancy              (                                     )
+    self     . GoRelax . emit          (                                     )
+    self     . ShowStatus              ( ""                                  )
+    DB       . Close                   (                                     )
+    ##########################################################################
+    if                                 ( len ( ITEMs ) <= 0                ) :
+      self   . emitNamesShow . emit    (                                     )
       return
     ##########################################################################
-    self . SearchKey   = name
-    self . UUIDs       = UUIDs
-    self . OldGrouping = self . Grouping
-    self . setGrouping                ( "Searching"                          )
-    ##########################################################################
-    self . loading                    (                                      )
-    ##########################################################################
-    return
-  ############################################################################
-  def loading                         ( self                               ) :
-    ##########################################################################
-    DB      = self . ConnectDB        (                                      )
-    if                                ( DB == None                         ) :
-      self . emitNamesShow . emit     (                                      )
-      return
-    ##########################################################################
-    self    . OnBusy  . emit          (                                      )
-    self    . setBustle               (                                      )
-    ##########################################################################
-    FMT     = self . Translations     [ "UI::StartLoading"                   ]
-    MSG     = FMT . format            ( self . windowTitle ( )               )
-    self    . ShowStatus              ( MSG                                  )
-    ##########################################################################
-    self    . ObtainsInformation      ( DB                                   )
-    ##########################################################################
-    if                                ( self . Grouping in [ "Searching" ] ) :
-      UUIDs = self . UUIDs
-    else                                                                     :
-      UUIDs = self . ObtainsItemUuids ( DB                                   )
-    if                                ( len ( UUIDs ) > 0                  ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
-    ##########################################################################
-    self    . setVacancy              (                                      )
-    self    . GoRelax . emit          (                                      )
-    self    . ShowStatus              ( ""                                   )
-    DB      . Close                   (                                      )
-    ##########################################################################
-    if                                ( len ( UUIDs ) <= 0                 ) :
-      self . emitNamesShow . emit     (                                      )
-      return
-    ##########################################################################
-    JSON             =                {                                      }
-    JSON [ "UUIDs" ] = UUIDs
-    JSON [ "NAMEs" ] = NAMEs
-    ##########################################################################
-    self   . emitAllNames . emit      ( JSON                                 )
-    self   . Notify                   ( 5                                    )
+    self     . emitAllNames . emit     ( ITEMs                               )
+    self     . Notify                  ( 5                                   )
     ##########################################################################
     return
   ############################################################################
@@ -539,29 +527,29 @@ class DocumentListings             ( TreeDock                              ) :
     ##########################################################################
     return self . dropHandler ( sourceWidget , self , mimeData               )
   ############################################################################
-  def dropNew                       ( self                                 , \
-                                      sourceWidget                         , \
-                                      mimeData                             , \
-                                      mousePos                             ) :
+  def dropNew                            ( self                            , \
+                                           sourceWidget                    , \
+                                           mimeData                        , \
+                                           mousePos                        ) :
     ##########################################################################
-    if                              ( self == sourceWidget                 ) :
+    if                                   ( self == sourceWidget            ) :
       return False
     ##########################################################################
-    RDN     = self . RegularDropNew ( mimeData                               )
-    if                              ( not RDN                              ) :
+    RDN     = self . RegularDropNew      ( mimeData                          )
+    if                                   ( not RDN                         ) :
       return False
     ##########################################################################
-    mtype   = self . DropInJSON     [ "Mime"                                 ]
-    UUIDs   = self . DropInJSON     [ "UUIDs"                                ]
+    mtype   = self . DropInJSON          [ "Mime"                            ]
+    UUIDs   = self . DropInJSON          [ "UUIDs"                           ]
     ##########################################################################
-    if                              ( mtype in [ "document/uuids" ]        ) :
+    if                                   ( mtype in [ "document/uuids" ]   ) :
       ########################################################################
       title = sourceWidget . windowTitle (                                   )
       ########################################################################
-      CNT   = len                   ( UUIDs                                  )
-      FMT   = self . getMenuItem    ( "Copying"                              )
-      MSG   = FMT  . format         ( title , CNT                            )
-      self  . ShowStatus            ( MSG                                    )
+      CNT   = len                        ( UUIDs                             )
+      FMT   = self . getMenuItem         ( "Copying"                         )
+      MSG   = FMT  . format              ( title , CNT                       )
+      self  . ShowStatus                 ( MSG                               )
     ##########################################################################
     return RDN
   ############################################################################
@@ -571,75 +559,82 @@ class DocumentListings             ( TreeDock                              ) :
   def acceptDocumentsDrop ( self                                           ) :
     return True
   ############################################################################
-  def dropDocuments                    ( self , source , pos , JSON        ) :
-    return self . defaultDropInObjects ( source                            , \
-                                         pos                               , \
-                                         JSON                              , \
-                                         0                                 , \
-                                         self . DocumentJoinFolder           )
+  def dropDocuments                 ( self , source , pos , JSON           ) :
+    ##########################################################################
+    return self . defaultDropInside ( source                               , \
+                                      JSON                                 , \
+                                      self . DocumentJoinFolder              )
   ############################################################################
-  def DocumentJoinFolder            ( self , UUID , UUIDs                  ) :
+  def DocumentJoinFolder           ( self , UUIDs                          ) :
     ##########################################################################
-    if                              ( UUID <= 0                            ) :
+    COUNT  = len                   ( UUIDs                                   )
+    ##########################################################################
+    if                             ( COUNT <= 0                            ) :
       return
     ##########################################################################
-    COUNT   = len                   ( UUIDs                                  )
-    if                              ( COUNT <= 0                           ) :
+    DB     = self . ConnectDB      (                                         )
+    if                             ( DB == None                            ) :
       return
     ##########################################################################
-    Hide    = self . isColumnHidden ( 1                                      )
+    self   . setDroppingAction     ( True                                    )
+    self   . OnBusy  . emit        (                                         )
+    self   . setBustle             (                                         )
     ##########################################################################
-    DB      = self . ConnectDB      (                                        )
-    if                              ( DB == None                           ) :
-      return
+    FMT    = self . getMenuItem    ( "Joining"                               )
+    MSG    = FMT  . format         ( COUNT                                   )
+    self   . ShowStatus            ( MSG                                     )
+    self   . TtsTalk               ( MSG , 1002                              )
     ##########################################################################
-    self    . setDroppingAction     ( True                                   )
-    self    . OnBusy  . emit        (                                        )
-    self    . setBustle             (                                        )
+    RELTAB = self . Tables         [ "RelationDocuments"                     ]
+    DB     . LockWrites            ( [ RELTAB                              ] )
+    self   . Relation . Joins      ( DB , RELTAB , UUIDs                     )
+    DB     . UnlockTables          (                                         )
     ##########################################################################
-    FMT     = self . getMenuItem    ( "Joining"                              )
-    MSG     = FMT  . format         ( COUNT                                  )
-    self    . ShowStatus            ( MSG                                    )
-    self    . TtsTalk               ( MSG , 1002                             )
+    self   . setVacancy            (                                         )
+    self   . GoRelax . emit        (                                         )
+    self   . setDroppingAction     ( False                                   )
+    self   . ShowStatus            ( ""                                      )
+    DB     . Close                 (                                         )
     ##########################################################################
-    RELTAB  = self . Tables         [ "RelationPeople"                       ]
-    REL     = Relation              (                                        )
-    REL     . set                   ( "first" , UUID                         )
-    REL     . setT1                 ( "Place"                                )
-    REL     . setT2                 ( "People"                               )
-    REL     . setRelation           ( "Subordination"                        )
-    DB      . LockWrites            ( [ RELTAB ]                             )
-    REL     . Joins                 ( DB , RELTAB , UUIDs                    )
-    DB      . UnlockTables          (                                        )
-    ##########################################################################
-    if                              ( not Hide                             ) :
-      TOTAL = REL . CountSecond     ( DB , RELTAB                            )
-    ##########################################################################
-    self    . setVacancy            (                                        )
-    self    . GoRelax . emit        (                                        )
-    self    . setDroppingAction     ( False                                  )
-    self    . ShowStatus            ( ""                                     )
-    DB      . Close                 (                                        )
-    ##########################################################################
-    if                              ( Hide                                 ) :
-      return
-    ##########################################################################
-    IT      = self . uuidAtItem     ( UUID , 0                               )
-    if                              ( IT is None                           ) :
-      return
-    ##########################################################################
-    IT      . setText               ( 1 , str ( TOTAL )                      )
-    self    . DoUpdate              (                                        )
+    self   . restart               (                                         )
     ##########################################################################
     return
   ############################################################################
-  def ImportCurrentFile ( self                                             ) :
+  def ImportCurrentFile       ( self                                       ) :
     ##########################################################################
+    item = self . currentItem (                                              )
+    ##########################################################################
+    if                        ( item in [ False , None ]                   ) :
+      return
+    ##########################################################################
+    uuid = atItem . data      ( 0 , Qt . UserRole                            )
+    uuid = int                ( uuid                                         )
+    ##########################################################################
+    self . ImportFile         ( uuid                                         )
     ##########################################################################
     return
   ############################################################################
-  def ImportFile ( self , UUID                                             ) :
+  def ImportFile                   ( self , UUID                           ) :
     ##########################################################################
+    MSG       = self . getMenuItem ( "ImportDocument"                        )
+    FILTERS   = self . getMenuItem ( "OpenDocumentFilters"                   )
+    ##########################################################################
+    FNAME , _ = QFileDialog . getOpenFileName                                (
+                                     self                                    ,
+                                     MSG                                     ,
+                                     ""                                      ,
+                                     FILTERS                                 )
+    ##########################################################################
+    if                             ( len ( FNAME ) <= 0                    ) :
+      return
+    ##########################################################################
+    self      . Go                 ( self . GoImporting , ( UUID , FNAME , ) )
+    ##########################################################################
+    return
+  ############################################################################
+  def GoImporting ( self , UUID , FILENAME                                 ) :
+    ##########################################################################
+    print ( UUID , FILENAME )
     ##########################################################################
     return
   ############################################################################
@@ -679,22 +674,10 @@ class DocumentListings             ( TreeDock                              ) :
       self . Relation . set   ( "first"  , uuid                              )
       self . Relation . Join  ( DB , RELTAB                                  )
     ##########################################################################
-    DB     . UnlockTables     (                                         )
-    DB     . Close            (                                         )
+    DB     . UnlockTables     (                                              )
+    DB     . Close            (                                              )
     ##########################################################################
-    item    . setData         ( 0 , Qt . UserRole , uuid                )
-    ##########################################################################
-    return
-  ############################################################################
-  def UselessUUIDs         ( self , DB , UUIDs                             ) :
-    ##########################################################################
-    PLSTAB = self . Tables [ "Places"                                        ]
-    DB     . LockWrites    ( [ PLSTAB                                      ] )
-    ##########################################################################
-    for UUID in UUIDs                                                        :
-      self . UselessUuid   ( PLSTAB , UUID                                   )
-    ##########################################################################
-    DB     . UnlockTables  (                                                 )
+    item    . setData         ( 0 , Qt . UserRole , uuid                     )
     ##########################################################################
     return
   ############################################################################
@@ -758,10 +741,10 @@ class DocumentListings             ( TreeDock                              ) :
     MSG = FMT  . format        ( item . text ( 0 )                           )
     LOM = mm   . addMenu       ( MSG                                         )
     ##########################################################################
-    msg = self . getMenuItem   ( "CopyStellarUuid"                           )
+    msg = self . getMenuItem   ( "CopyDocumentUuid"                          )
     mm  . addActionFromMenu    ( LOM , 24231101 , msg                        )
     ##########################################################################
-    msg = self . getMenuItem   ( "AppendStellarUuid"                         )
+    msg = self . getMenuItem   ( "AppendDocumentUuid"                        )
     mm  . addActionFromMenu    ( LOM , 24231102 , msg                        )
     ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
@@ -826,7 +809,8 @@ class DocumentListings             ( TreeDock                              ) :
     atItem = self . currentItem     (                                        )
     uuid   = 0
     ##########################################################################
-    if                              ( atItem != None                       ) :
+    if                              ( atItem not in [ False , None ]       ) :
+      ########################################################################
       uuid = atItem . data          ( 0 , Qt . UserRole                      )
       uuid = int                    ( uuid                                   )
     ##########################################################################
