@@ -470,6 +470,8 @@ class DocumentGroupView           ( IconDock                               ) :
     self     . PrepareItemContent        ( item , uuid , name                )
     self     . assignToolTip             ( item , str ( uuid )               )
     ##########################################################################
+    self     . Notify                    ( 5                                 )
+    ##########################################################################
     return
   ############################################################################
   def FetchExtraInformations           ( self , UUIDs                      ) :
