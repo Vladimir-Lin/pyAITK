@@ -60,8 +60,8 @@ class DocumentGroupView           ( IconDock                               ) :
   ############################################################################
   HavingMenu        = 1371434312
   ############################################################################
-  CrowdSubgroup     = pyqtSignal  ( str , int , str                          )
-  PeopleGroup       = pyqtSignal  ( str , int , str                          )
+  DocumentSubgroup  = pyqtSignal  ( str , int , str                          )
+  DocumentGroup     = pyqtSignal  ( str , int , str                          )
   OpenVariantTables = pyqtSignal  ( str , str , int , str , dict             )
   OpenLogHistory    = pyqtSignal  ( str , str , str , str , str              )
   ############################################################################
@@ -69,7 +69,7 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     super ( ) . __init__          (        parent        , plan              )
     ##########################################################################
-    self . GTYPE        = 7
+    self . GTYPE        = 48
     self . SortOrder    = "asc"
     self . PrivateIcon  = True
     self . PrivateGroup = True
@@ -644,7 +644,7 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     title = item . text           (                                          )
     tid   = self . Relation . get ( "t2"                                     )
-    self  . CrowdSubgroup . emit  ( title , tid , str ( uuid )               )
+    self  . DocumentSubgroup . emit  ( title , tid , str ( uuid )               )
     ##########################################################################
     return True
   ############################################################################
@@ -667,7 +667,7 @@ class DocumentGroupView           ( IconDock                               ) :
     ##########################################################################
     title = item . text           (                                          )
     tid   = self . Relation . get ( "t2"                                     )
-    self  . PeopleGroup . emit    ( title , tid , str ( uuid )               )
+    self  . DocumentGroup . emit    ( title , tid , str ( uuid )               )
     ##########################################################################
     return True
   ############################################################################
@@ -871,7 +871,7 @@ class DocumentGroupView           ( IconDock                               ) :
       ########################################################################
       head = atItem . text              (                                    )
       tid  = self . Relation . get      ( "t2"                               )
-      self . CrowdSubgroup . emit       ( head , tid , str ( uuid )          )
+      self . DocumentSubgroup . emit    ( head , tid , str ( uuid )          )
       ########################################################################
       return True
     ##########################################################################
@@ -879,7 +879,7 @@ class DocumentGroupView           ( IconDock                               ) :
       ########################################################################
       head = atItem . text              (                                    )
       tid  = self . Relation . get      ( "t2"                               )
-      self . PeopleGroup   . emit       ( head , tid , str ( uuid )          )
+      self . DocumentGroup   . emit     ( head , tid , str ( uuid )          )
       ########################################################################
       return True
     ##########################################################################
