@@ -420,10 +420,6 @@ class DocumentListings             ( TreeDock                              ) :
     self   . emitAllNames . emit      ( JSON                                 )
     self   . Notify                   ( 5                                    )
     ##########################################################################
-    if                                ( not self . isColumnHidden ( 1 )    ) :
-      self . Go                       ( self . ReportBelongings            , \
-                                        ( UUIDs , )                          )
-    ##########################################################################
     return
   ############################################################################
   @pyqtSlot          (                                                       )
