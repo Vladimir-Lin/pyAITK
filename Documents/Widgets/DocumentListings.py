@@ -34,6 +34,7 @@ from   PyQt5 . QtWidgets                 import QAction
 from   PyQt5 . QtWidgets                 import QShortcut
 from   PyQt5 . QtWidgets                 import QMenu
 from   PyQt5 . QtWidgets                 import QAbstractItemView
+from   PyQt5 . QtWidgets                 import QFileDialog
 from   PyQt5 . QtWidgets                 import QTreeWidget
 from   PyQt5 . QtWidgets                 import QTreeWidgetItem
 from   PyQt5 . QtWidgets                 import QLineEdit
@@ -223,11 +224,11 @@ class DocumentListings             ( TreeDock                              ) :
     IT      . setToolTip       ( 0 , UXID                                    )
     IT      . setData          ( 0 , Qt . UserRole , UUID                    )
     ##########################################################################
-    IT      . setText          ( 1 , USED                                    )
+    IT      . setText          ( 1 , str ( USED  )                           )
     ##########################################################################
-    IT      . setText          ( 2 , DTYPE                                   )
+    IT      . setText          ( 2 , str ( DTYPE )                           )
     ##########################################################################
-    IT      . setText          ( 3 , SIZE                                    )
+    IT      . setText          ( 3 , str ( SIZE  )                           )
     IT      . setTextAlignment ( 3 , Qt.AlignRight                           )
     ##########################################################################
     IT      . setText          ( 4 , FORMAT                                  )
