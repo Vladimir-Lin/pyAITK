@@ -103,7 +103,7 @@ class DocumentGroupView           ( IconDock                               ) :
     return
   ############################################################################
   def sizeHint                   ( self                                    ) :
-    return self . SizeSuggestion ( QSize ( 640 , 640 )                       )
+    return self . SizeSuggestion ( QSize ( 640 , 480 )                       )
   ############################################################################
   def PrepareForActions             ( self                                 ) :
     ##########################################################################
