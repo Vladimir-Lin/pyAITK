@@ -670,6 +670,7 @@ class DocumentListings             ( TreeDock                              ) :
     ##########################################################################
     SUFFIX = pathlib . Path      ( FILENAME ) . suffix
     EXT    = SUFFIX  . lower     (                                           )
+    EXT    = EXT     . replace   ( "." , ""                                  )
     DEAL   = ""
     ##########################################################################
     if                           ( "txt" == EXT                            ) :
