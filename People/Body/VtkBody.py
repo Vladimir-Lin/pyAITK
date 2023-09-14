@@ -10,6 +10,7 @@ import requests
 import threading
 import gettext
 import json
+import pathlib
 ##############################################################################
 import vtk
 ##############################################################################
@@ -53,6 +54,8 @@ from   AITK  . Math . Geometry . Polyhedron   import Polyhedron   as Polyhedron
 ##############################################################################
 from   AITK  . People . Faces  . Face         import Face         as FaceItem
 ##############################################################################
+BODYDIR = os . path . dirname ( os . path . realpath ( __file__ )            )
+##############################################################################
 class VtkBody                 ( VtkWidget                                  ) :
   ############################################################################
   def __init__                ( self , parent = None , plan = None         ) :
@@ -85,8 +88,13 @@ class VtkBody                 ( VtkWidget                                  ) :
   ############################################################################
   def startup                       ( self                                 ) :
     ##########################################################################
-    self . renderer   . ResetCamera (                                        )
+    global BODYDIR
     ##########################################################################
+    MALE   = os . path . join       ( BODYDIR , "Male.json"                  )
+    FEMALE = os . path . join       ( BODYDIR , "Female.json"                )
+    print ( MALE , FEMALE )
+    ##########################################################################
+    self . renderer   . ResetCamera (                                        )
     self . interactor . Initialize  (                                        )
     self . interactor . Start       (                                        )
     ##########################################################################
