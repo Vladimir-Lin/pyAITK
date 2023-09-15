@@ -488,7 +488,7 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
     actor  = vtk . vtkActor          (                                       )
     actor  . SetMapper               ( mapper                                )
     ##########################################################################
-    self . renderer   . AddActor     ( actor                                 )
+    self   . renderer . AddActor     ( actor                                 )
     ##########################################################################
     return
   ############################################################################
