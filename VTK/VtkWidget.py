@@ -406,31 +406,35 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
     ##########################################################################
     return
   ############################################################################
-  def LoadZipWaveFront        ( self , PARAMETERs , ZipData                ) :
+  def LoadZipWaveFront          ( self , PARAMETERs , ZipData              ) :
     ##########################################################################
-    TMPDIR = self . Settings  [ "ModelPath"                                  ]
-    CWD    = os   . getcwd    (                                              )
+    TMPDIR   = self . Settings  [ "ModelPath"                                ]
+    CWD      = os   . getcwd    (                                            )
     ##########################################################################
-    WFPATH = PARAMETERs       [ "Directory"                                  ]
-    OBJ    = PARAMETERs       [ "OBJ"                                        ]
-    MTL    = PARAMETERs       [ "MTL"                                        ]
-    LOID   = self . LOID
-    LZIP   = f"{LOID}.zip"
-    TZIP   = os . path . join ( TMPDIR , LZIP                                )
-    DIR    = os . path . join ( TMPDIR , WFPATH                              )
+    WFPATH   = PARAMETERs       [ "Directory"                                ]
+    OBJ      = PARAMETERs       [ "OBJ"                                      ]
+    MTL      = PARAMETERs       [ "MTL"                                      ]
+    LOID     = self . LOID
+    LZIP     = f"{LOID}.zip"
+    TZIP     = os . path . join ( TMPDIR , LZIP                              )
+    DIR      = os . path . join ( TMPDIR , WFPATH                            )
     ##########################################################################
-    with open                 ( TZIP , 'wb'                           ) as f :
-      f    . write            ( ZipData                                      )
+    with open                   ( TZIP , 'wb'                         ) as f :
+      f      . write            ( ZipData                                    )
     ##########################################################################
-    os     . chdir            ( TMPDIR                                       )
-    shutil . rmtree           ( DIR                                          )
-    shutil . unpack_archive   ( LZIP , TMPDIR                                )
-    os     . chdir            ( CWD                                          )
+    os       . chdir            ( TMPDIR                                     )
     ##########################################################################
-    self   . ImportWaveFront  ( DIR , OBJ , MTL                              )
+    if                          ( os . path . exists ( DIR )               ) :
+      shutil . rmtree           ( DIR                                        )
     ##########################################################################
-    os     . remove           ( TZIP                                         )
-    shutil . rmtree           ( DIR                                          )
+    shutil   . unpack_archive   ( LZIP , TMPDIR                              )
+    ##########################################################################
+    os       . chdir            ( CWD                                        )
+    ##########################################################################
+    self     . ImportWaveFront  ( DIR , OBJ , MTL                            )
+    ##########################################################################
+    os       . remove           ( TZIP                                       )
+    shutil   . rmtree           ( DIR                                        )
     ##########################################################################
     return
   ############################################################################
@@ -531,30 +535,34 @@ class VtkWidget   ( QVTKRenderWindowInteractor , VirtualGui , AttachDock   ) :
     ##########################################################################
     return
   ############################################################################
-  def LoadZipSTL              ( self , PARAMETERs , ZipData                ) :
+  def LoadZipSTL                ( self , PARAMETERs , ZipData              ) :
     ##########################################################################
-    TMPDIR = self . Settings  [ "ModelPath"                                  ]
-    CWD    = os   . getcwd    (                                              )
+    TMPDIR   = self . Settings  [ "ModelPath"                                ]
+    CWD      = os   . getcwd    (                                            )
     ##########################################################################
-    WFPATH = PARAMETERs       [ "Directory"                                  ]
-    STLs   = PARAMETERs       [ "STL"                                        ]
-    LOID   = self . LOID
-    LZIP   = f"{LOID}.zip"
-    TZIP   = os . path . join ( TMPDIR , LZIP                                )
-    DIR    = os . path . join ( TMPDIR , WFPATH                              )
+    WFPATH   = PARAMETERs       [ "Directory"                                ]
+    STLs     = PARAMETERs       [ "STL"                                      ]
+    LOID     = self . LOID
+    LZIP     = f"{LOID}.zip"
+    TZIP     = os . path . join ( TMPDIR , LZIP                              )
+    DIR      = os . path . join ( TMPDIR , WFPATH                            )
     ##########################################################################
-    with open                 ( TZIP , 'wb'                           ) as f :
-      f    . write            ( ZipData                                      )
+    with open                   ( TZIP , 'wb'                         ) as f :
+      f      . write            ( ZipData                                    )
     ##########################################################################
-    os     . chdir            ( TMPDIR                                       )
-    shutil . rmtree           ( DIR                                          )
-    shutil . unpack_archive   ( LZIP , TMPDIR                                )
-    os     . chdir            ( CWD                                          )
+    os       . chdir            ( TMPDIR                                     )
     ##########################################################################
-    self   . ImportSTLs       ( DIR , STLs                                   )
+    if                          ( os . path . exists ( DIR )               ) :
+      shutil . rmtree           ( DIR                                        )
     ##########################################################################
-    os     . remove           ( TZIP                                         )
-    shutil . rmtree           ( DIR                                          )
+    shutil   . unpack_archive   ( LZIP , TMPDIR                              )
+    ##########################################################################
+    os       . chdir            ( CWD                                        )
+    ##########################################################################
+    self     . ImportSTLs       ( DIR , STLs                                 )
+    ##########################################################################
+    os       . remove           ( TZIP                                       )
+    shutil   . rmtree           ( DIR                                        )
     ##########################################################################
     return
   ############################################################################
