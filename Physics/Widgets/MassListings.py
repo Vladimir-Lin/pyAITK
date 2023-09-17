@@ -62,11 +62,11 @@ class MassListings                 ( TreeDock                              ) :
     ##########################################################################
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
-    self . ClassTag           = "LengthListings"
+    self . ClassTag           = "MassListings"
     self . EditAllNames       = None
     self . SortOrder          = "asc"
-    self . LengthUuids        =    [                                         ]
-    self . LengthJson         =    {                                         }
+    self . MassUuids          =    [                                         ]
+    self . MassJson           =    {                                         }
     ##########################################################################
     self . dockingOrientation = 0
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -183,7 +183,7 @@ class MassListings                 ( TreeDock                              ) :
     ##########################################################################
     RNAME      = ""
     if                             ( REFERENCE > 0                         ) :
-      RNAME    = self . LengthJson [ REFERENCE ] [ "Name"                    ]
+      RNAME    = self . MassJson   [ REFERENCE ] [ "Name"                    ]
     ##########################################################################
     IT         = QTreeWidgetItem   (                                         )
     ##########################################################################
@@ -245,13 +245,13 @@ class MassListings                 ( TreeDock                              ) :
     ##########################################################################
     self   . clear                (                                          )
     ##########################################################################
-    for UUID in self . LengthUuids                                           :
+    for UUID in self . MassUuids                                             :
       ########################################################################
-      IT   = self . PrepareItem   ( self . LengthJson [ UUID ]               )
+      IT   = self . PrepareItem   ( self . MassJson [ UUID ]                 )
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
-    MSG    = FMT  . format        ( len ( self . LengthUuids )               )
+    MSG    = FMT  . format        ( len ( self . MassUuids )                 )
     self   . setToolTip           ( MSG                                      )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
@@ -260,8 +260,8 @@ class MassListings                 ( TreeDock                              ) :
   ############################################################################
   def ObtainLengths                    ( self , DB                         ) :
     ##########################################################################
-    self     . LengthUuids =           [                                     ]
-    self     . LengthJson  =           {                                     }
+    self     . MassUuids =             [                                     ]
+    self     . MassJson  =             {                                     }
     ##########################################################################
     LISTs    =                         [                                     ]
     UUIDs    = self . ObtainsItemUuids ( DB                                  )
@@ -269,17 +269,17 @@ class MassListings                 ( TreeDock                              ) :
     if                                 ( len ( UUIDs ) > 0                 ) :
       NAMEs  = self . ObtainsUuidNames ( DB , UUIDs                          )
     ##########################################################################
-    PLLTAB   = self . Tables           [ "Lengths"                           ]
+    MASTAB   = self . Tables           [ "Mass"                              ]
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      if                               ( UUID in self . LengthUuids        ) :
+      if                               ( UUID in self . MassUuids          ) :
         continue
       ########################################################################
       QQ     = f"""select
                    `id`,`used`,`catalog`,`name`,
                    `reference`,`conversion`,`comment`
-                   from {PLLTAB}
+                   from {MASTAB}
                    where ( `uuid` = {UUID} ) ;"""
       QQ     = " " . join              ( QQ . split ( )                      )
       DB     . Query                   ( QQ                                  )
@@ -291,7 +291,7 @@ class MassListings                 ( TreeDock                              ) :
       if                               ( len ( RR ) != 7                   ) :
         continue
       ########################################################################
-      self   . LengthUuids . append    ( UUID                                )
+      self   . MassUuids . append      ( UUID                                )
       ########################################################################
       NAME   = ""
       if                               ( UUID in NAMEs                     ) :
@@ -308,8 +308,8 @@ class MassListings                 ( TreeDock                              ) :
       J [ "Comment"    ] = self . assureString ( RR [ 6 ]                    )
       J [ "Name"       ] = NAME
       ########################################################################
-      self   . LengthJson [ UUID       ] = J
-      self   . LengthJson [ J [ "Id" ] ] = J
+      self   . MassJson [ UUID       ] = J
+      self   . MassJson [ J [ "Id" ] ] = J
     ##########################################################################
     return
   ############################################################################
@@ -336,7 +336,7 @@ class MassListings                 ( TreeDock                              ) :
     self   . ShowStatus           ( ""                                       )
     DB     . Close                (                                          )
     ##########################################################################
-    if                            ( len ( self . LengthUuids ) <= 0        ) :
+    if                            ( len ( self . MassUuids ) <= 0        ) :
       self . emitNamesShow . emit (                                          )
       return
     ##########################################################################
@@ -361,10 +361,10 @@ class MassListings                 ( TreeDock                              ) :
   ############################################################################
   def ObtainUuidsQuery              ( self                                 ) :
     ##########################################################################
-    PLLTAB = self . Tables          [ "Lengths"                              ]
+    MASTAB = self . Tables          [ "Mass"                                 ]
     ORDER  = self . getSortingOrder (                                        )
     ##########################################################################
-    return f"select `uuid` from {PLLTAB} order by `id` {ORDER} ;"
+    return f"select `uuid` from {MASTAB} order by `id` {ORDER} ;"
   ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
@@ -388,11 +388,11 @@ class MassListings                 ( TreeDock                              ) :
     if                        ( self . NotOkay ( DB )                      ) :
       return
     ##########################################################################
-    PLLTAB = self . Tables    [ "Lengths"                                    ]
+    MASTAB = self . Tables    [ "Mass"                                       ]
     ##########################################################################
     DB     . LockWrites       ( [ PLLTAB                                   ] )
     ##########################################################################
-    QQ     = f"""update {PLLTAB}
+    QQ     = f"""update {MASTAB}
                set `{ITEM}` = %s
                where ( `uuid` = {uuid} ) ;"""
     QQ     = " " . join       ( QQ . split ( )                               )
@@ -406,7 +406,7 @@ class MassListings                 ( TreeDock                              ) :
   ############################################################################
   def OpenItemNamesEditor             ( self , item                        ) :
     ##########################################################################
-    self . defaultOpenItemNamesEditor ( item , 0 , "Length" , "NamesEditing" )
+    self . defaultOpenItemNamesEditor ( item , 0 , "Mass" , "NamesEditing"   )
     ##########################################################################
     return
   ############################################################################
@@ -461,7 +461,7 @@ class MassListings                 ( TreeDock                              ) :
     ##########################################################################
     if                                 ( self . IsOkay ( atItem )          ) :
       ########################################################################
-      msg  = self . getMenuItem        ( "CopyLengthUuid"                    )
+      msg  = self . getMenuItem        ( "CopyMassUuid"                      )
       mm   . addAction                 ( 1201 , msg                          )
       ########################################################################
       msg  = self . getMenuItem        ( "Description"                       )
