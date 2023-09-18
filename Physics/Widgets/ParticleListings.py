@@ -247,7 +247,7 @@ class ParticleListings             ( TreeDock                              ) :
       self . addTopLevelItem      ( IT                                       )
     ##########################################################################
     FMT    = self . getMenuItem   ( "DisplayTotal"                           )
-    MSG    = FMT  . format        ( len ( self . MassUuids )                 )
+    MSG    = FMT  . format        ( len ( LISTs )                            )
     self   . setToolTip           ( MSG                                      )
     ##########################################################################
     self   . emitNamesShow . emit (                                          )
@@ -356,7 +356,7 @@ class ParticleListings             ( TreeDock                              ) :
   def Prepare             ( self                                           ) :
     ##########################################################################
     self . defaultPrepare ( self . ClassTag , 7                              )
-    ## self . setColumnWidth ( 0 , 80                                           )
+    self . setColumnWidth ( 0 , 80                                           )
     ##########################################################################
     return
   ############################################################################
