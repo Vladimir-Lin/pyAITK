@@ -85,7 +85,7 @@ class Base                       (                                         ) :
     ##########################################################################
     self . Stardate         = 0
     self . TzShift          = 0
-    self . TimeZone         = ""
+    self . TimeZone         = "UTC"
     self . Format           = ""
     self . Signature        = ""
     self . defaultFormatter = None
@@ -259,6 +259,9 @@ class Base                       (                                         ) :
     return int    ( int ( int ( STARDATE % 604800 ) / 86400 ) + 1            )
   ############################################################################
   def valueChanged            ( self                                       ) :
+    raise NotImplementedError (                                              )
+  ############################################################################
+  def Configure               ( self , JSOX                                ) :
     raise NotImplementedError (                                              )
   ############################################################################
   def toJson                  ( self                                       ) :
