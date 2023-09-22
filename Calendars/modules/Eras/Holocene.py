@@ -37,6 +37,7 @@ class HoloceneFormatter  ( Formatter                                       ) :
                  "%(m)"                                                    , \
                  "%(ss)"                                                   , \
                  "%(s)"                                                    , \
+                 "%(SD)"                                                   , \
                  "%(TZ)"                                                     ]
   ############################################################################
   def heToEra            ( self , Calendar , Format                        ) :
@@ -639,7 +640,7 @@ class Holocene                   ( Base                                    ) :
   def heLeap4Rule2    ( self , CDT  , YEAR , BASE                          ) :
     ##########################################################################
     DT          = int ( CDT  - BASE                                          )
-    NY          = int ( NY   / 31536000                                      )
+    NY          = int ( DT   / 31536000                                      )
     NT          = int ( NY   * 31536000                                      )
     BASE        = int ( BASE + NT                                            )
     YEAR        = int ( YEAR + NY                                            )
