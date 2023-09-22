@@ -972,7 +972,7 @@ class Holocene                   ( Base                                    ) :
     QD    = int                    ( DY    * 365                             )
     QT    = int                    ( QD    * 86400                           )
     ##########################################################################
-    BYEAR = int                    ( BYEAR + QY                              )
+    BYEAR = int                    ( BYEAR + DY                              )
     BASE  = int                    ( BASE  + QT                              )
     ##########################################################################
     return self . heToSdNoLeapYear ( YEARS , MONTHS , DAY , BYEAR , BASE     )
