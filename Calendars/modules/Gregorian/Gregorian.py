@@ -4,13 +4,13 @@
 ##############################################################################
 import  json
 ##############################################################################
-from .. Base                     import Base              as Base
-from .. Formatter                import Formatter         as Formatter
-from .. Parser                   import Parser            as Parser
+from .. Base            import Base              as Base
+from .. Formatter       import Formatter         as Formatter
+from .. Parser          import Parser            as Parser
 ##############################################################################
-from .. Eras . HoloceneFormatter import HoloceneFormatter as HoloceneFormatter
-from .. Eras . HoloceneParser    import HoloceneParser    as HoloceneParser
-from .. Eras . Holocene          import Holocene          as Holocene
+from .. Eras . Holocene import HoloceneFormatter as HoloceneFormatter
+from .. Eras . Holocene import HoloceneParser    as HoloceneParser
+from .. Eras . Holocene import Holocene          as Holocene
 ##############################################################################
 class GregorianFormatter ( HoloceneFormatter                               ) :
   ############################################################################
