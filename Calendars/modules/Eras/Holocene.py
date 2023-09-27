@@ -118,108 +118,84 @@ class HoloceneFormatter  ( Formatter                                       ) :
     ##########################################################################
     return self . ReplacePairs ( KV , Format                                 )
   ############################################################################
-  def heToDays        ( self , Calendar , Format                           ) :
+  def heToDays                 ( self , Calendar , Format                  ) :
     ##########################################################################
-    V   = Format
-    D   = Calendar . DAY
+    D  = Calendar . DAY
     ##########################################################################
-    if                ( "%(DD)" in V                                       ) :
-      ########################################################################
-      V = V . replace ( "%(DD)" , self . toTwoDigit ( D )                    )
+    KV =                       { "%(DD)" : self . toTwoDigit   ( D )       , \
+                                 "%(DT)" : self . numberToText ( D )       , \
+                                 "%(D)"  : f"{D}"                            }
     ##########################################################################
-    if                ( "%(D)"  in V                                       ) :
-      ########################################################################
-      V = V . replace ( "%(D)"  , f"{D}"                                     )
-    ##########################################################################
-    return V
+    return self . ReplacePairs ( KV , Format                                 )
   ############################################################################
-  def heToHours       ( self , Calendar , Format                           ) :
+  def heToHours                ( self , Calendar , Format                  ) :
     ##########################################################################
-    V   = Format
-    H   = Calendar . HOUR
+    V     = Format
+    H     = Calendar . HOUR
     ##########################################################################
-    if                ( "%(hh)" in V                                       ) :
+    if                         ( "%(hm)" in V                              ) :
       ########################################################################
-      V = V . replace ( "%(hh)" , self . toTwoDigit ( H )                    )
-    ##########################################################################
-    if                ( "%(hm)" in V                                       ) :
-      ########################################################################
-      M = int         ( H % 12                                               )
-      if              ( 0 == M                                             ) :
+      M   = int                ( H % 12                                      )
+      if                       ( 0 == M                                    ) :
         M = 12
       ########################################################################
-      V = V . replace ( "%(hm)" , self . toTwoDigit ( M )                    )
+      V   = V . replace        ( "%(hm)" , self . toTwoDigit ( M )           )
     ##########################################################################
-    if                ( "%(h)"  in V                                       ) :
+    if                         ( "%(hz)" in V                              ) :
       ########################################################################
-      V = V . replace ( "%(h)"  , f"{H}"                                     )
-    ##########################################################################
-    if                ( "%(hz)" in V                                       ) :
-      ########################################################################
-      M = int         ( H % 12                                               )
-      if              ( 0 == M                                             ) :
+      M   = int                ( H % 12                                      )
+      if                       ( 0 == M                                    ) :
         M = 12
       ########################################################################
-      V = V . replace ( "%(hz)" , f"{M}"                                     )
+      V   = V . replace        ( "%(hz)" , f"{M}"                            )
     ##########################################################################
-    return V
+    KV    =                    { "%(hh)" : self . toTwoDigit   ( H )       , \
+                                 "%(ht)" : self . numberToText ( H )       , \
+                                 "%(h)"  : f"{H}"                            }
+    ##########################################################################
+    return self . ReplacePairs ( KV , V                                      )
   ############################################################################
-  def heToMinutes     ( self , Calendar , Format                           ) :
+  def heToMinutes              ( self , Calendar , Format                  ) :
     ##########################################################################
-    V   = Format
-    M   = Calendar . MINUTE
+    M  = Calendar . MINUTE
     ##########################################################################
-    if                ( "%(mm)" in V                                       ) :
-      ########################################################################
-      V = V . replace ( "%(mm)" , self . toTwoDigit ( M )                    )
+    KV =                       { "%(mm)" : self . toTwoDigit   ( M )       , \
+                                 "%(mt)" : self . numberToText ( M )       , \
+                                 "%(m)"  : f"{M}"                            }
     ##########################################################################
-    if                ( "%(m)"  in V                                       ) :
-      ########################################################################
-      V = V . replace ( "%(m)"  , f"{M}"                                     )
-    ##########################################################################
-    return V
+    return self . ReplacePairs ( KV , Format                                 )
   ############################################################################
-  def heToSeconds     ( self , Calendar , Format                           ) :
+  def heToSeconds              ( self , Calendar , Format                  ) :
     ##########################################################################
-    V   = Format
-    S   = Calendar . SECOND
+    S  = Calendar . SECOND
     ##########################################################################
-    if                ( "%(ss)" in V                                       ) :
-      ########################################################################
-      V = V . replace ( "%(ss)" , self . toTwoDigit ( S )                    )
+    KV =                       { "%(ss)" : self . toTwoDigit   ( S )       , \
+                                 "%(st)" : self . numberToText ( S )       , \
+                                 "%(s)"  : f"{S}"                            }
     ##########################################################################
-    if                ( "%(s)"  in V                                       ) :
-      ########################################################################
-      V = V . replace ( "%(s)"  , f"{S}"                                     )
-    ##########################################################################
-    return V
+    return self . ReplacePairs ( KV , Format                                 )
   ############################################################################
-  def heToStardate    ( self , Calendar , Format                           ) :
+  def heToStardate              ( self , Calendar , Format                 ) :
     ##########################################################################
-    V   = Format
-    S   = Calendar . Stardate
+    S = Calendar . Stardate
     ##########################################################################
-    if                ( "%(SD)" in V                                       ) :
-      ########################################################################
-      V = V . replace ( "%(SD)" , f"{S}"                                     )
-    ##########################################################################
-    return V
+    return self . ReplaceString ( "%(SD)" , f"{S}" , Format                  )
   ############################################################################
-  def toString                ( self , Calendar , Format                   ) :
+  def toString              ( self , Calendar , Format                     ) :
     ##########################################################################
-    S   = Format
+    S = Format
     ##########################################################################
-    S   = self . heToYears    ( Calendar , S                                 )
-    S   = self . heToMonths   ( Calendar , S                                 )
-    S   = self . heToDays     ( Calendar , S                                 )
-    S   = self . heToHours    ( Calendar , S                                 )
-    S   = self . heToMinutes  ( Calendar , S                                 )
-    S   = self . heToSeconds  ( Calendar , S                                 )
-    S   = self . heToStardate ( Calendar , S                                 )
-    S   = self . heToTimeZone ( Calendar , S                                 )
-    S   = self . heToWeekdays ( Calendar , S                                 )
-    S   = self . heToAMPM     ( Calendar , S                                 )
-    S   = self . heToEra      ( Calendar , S                                 )
+    S = self . heToYears    ( Calendar , S                                   )
+    S = self . heToMonths   ( Calendar , S                                   )
+    S = self . heToDays     ( Calendar , S                                   )
+    S = self . heToHours    ( Calendar , S                                   )
+    S = self . heToMinutes  ( Calendar , S                                   )
+    S = self . heToSeconds  ( Calendar , S                                   )
+    S = self . heToStardate ( Calendar , S                                   )
+    S = self . heToTimeZone ( Calendar , S                                   )
+    S = self . heToWeekdays ( Calendar , S                                   )
+    S = self . heToAMPM     ( Calendar , S                                   )
+    S = self . heToEra      ( Calendar , S                                   )
     ##########################################################################
     return S
 ##############################################################################

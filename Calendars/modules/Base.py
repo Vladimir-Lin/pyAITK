@@ -246,17 +246,19 @@ class Base                       (                                         ) :
     ##########################################################################
     return self . defaultFormatter
   ############################################################################
-  def InstallParser    ( self , parser                                     ) :
+  def InstallParser ( self , parser                                        ) :
     ##########################################################################
     self . defaultParser = parser
     ##########################################################################
     return self . defaultParser
   ############################################################################
   def toSecondsOfDay ( self , HOURS , MINUTES , SECONDS                    ) :
-    return int       ( ( HOURS * 3600 ) + ( MINUTES * 60 ) + SECONDS         )
+    return int       ( ( int ( HOURS   ) * 3600 )                          + \
+                       ( int ( MINUTES ) *   60 )                          + \
+                         int ( SECONDS          )                            )
   ############################################################################
   def toWeekOfDay ( self , STARDATE                                        ) :
-    return int    ( int ( int ( STARDATE % 604800 ) / 86400 ) + 1            )
+    return int    ( int ( int ( int ( STARDATE ) % 604800 ) / 86400 ) + 1    )
   ############################################################################
   def valueChanged            ( self                                       ) :
     raise NotImplementedError (                                              )
