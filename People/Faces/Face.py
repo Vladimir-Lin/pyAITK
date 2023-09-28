@@ -904,7 +904,7 @@ class Face        (                                                        ) :
     self . Weights    = 0.0
     self . NoseBridge = 0.0
     self . Quality    = 0
-    self . Features   = [ ]
+    self . Features   =   [                                                  ]
     self . EmptyLandmarks (                                                  )
     ##########################################################################
     self . Classifier    = None
