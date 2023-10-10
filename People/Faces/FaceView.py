@@ -80,6 +80,7 @@ class FaceView                       ( IconDock                            ) :
   ############################################################################
   OpenPictureEditor = pyqtSignal     ( str , dict                            )
   ShowRawFace       = pyqtSignal     ( str , str , QIcon                     )
+  SearchFaces       = pyqtSignal     ( str                                   )
   ############################################################################
   def __init__                       ( self , parent = None , plan = None  ) :
     ##########################################################################
@@ -89,7 +90,10 @@ class FaceView                       ( IconDock                            ) :
     self . StartId            = 0
     self . Amount             = 60
     self . SortOrder          = "desc"
+    self . Method             = ""
     self . PeopleUuid         = 0
+    self . FaceUuid           = 0
+    self . Sigma              = 0.001
     self . PictureTables      = {                                            }
     self . STATEs             = [ "0" , "10000" , "20000"                    ]
     ##########################################################################
@@ -688,6 +692,9 @@ class FaceView                       ( IconDock                            ) :
     msg = self . getMenuItem   ( "DetectFaceControlPoints"                   )
     mm  . addActionFromMenu    ( LOM , 24231402 , msg                        )
     ##########################################################################
+    msg = self . getMenuItem   ( "SearchThisFace"                            )
+    mm  . addActionFromMenu    ( LOM , 24231403 , msg                        )
+    ##########################################################################
     mm  . addSeparatorFromMenu ( LOM                                         )
     ##########################################################################
     msg = self . getMenuItem   ( "VtkRawFace"                                )
@@ -765,6 +772,12 @@ class FaceView                       ( IconDock                            ) :
     if                              ( at == 24231402                       ) :
       ########################################################################
       self . Go                     ( self . DetectFaceControlPoints         )
+      ########################################################################
+      return
+    ##########################################################################
+    if                              ( at == 24231403                       ) :
+      ########################################################################
+      self . SearchFaces . emit     ( str ( uuid )                           )
       ########################################################################
       return
     ##########################################################################
