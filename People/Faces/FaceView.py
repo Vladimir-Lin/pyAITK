@@ -94,7 +94,7 @@ class FaceView                       ( IconDock                            ) :
     self . Method             = ""
     self . PeopleUuid         = 0
     self . FaceUuid           = 0
-    self . Sigma              = 0.01
+    self . Sigma              = 0.001
     self . SigmaSpin          = None
     self . PictureTables      = {                                            }
     self . STATEs             = [ "0" , "10000" , "20000"                    ]
@@ -203,6 +203,7 @@ class FaceView                       ( IconDock                            ) :
     ##########################################################################
     FUID    = self . FaceUuid
     SIGMA   = self . Sigma
+    SIGMA2  = float            ( SIGMA * SIGMA * 128.0                       )
     ##########################################################################
     if                         ( FUID <= 0                                 ) :
       return UUIDs
@@ -247,13 +248,13 @@ class FaceView                       ( IconDock                            ) :
       MULs  . append           ( Z                                           )
     ##########################################################################
     MULX    = " + " . join     ( MULs                                        )
-    SQRZ    = f"sqrt ( ( {MULX} ) div 128.0 )"
     ##########################################################################
     QQ      = f"""select `face` from {TABLE}
-                  where ( {SQRZ} < {SIGMA} ) ;"""
+                  where ( ( {MULX} ) < {SIGMA2} ) ;"""
     print ( QQ )
     ##########################################################################
     UUIDs   = DB . ObtainUuids ( QQ                                          )
+    print ( UUIDs )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
