@@ -53,6 +53,7 @@ from   PyQt5 . QtWidgets              import QTreeWidgetItem
 from   PyQt5 . QtWidgets              import QLineEdit
 from   PyQt5 . QtWidgets              import QComboBox
 from   PyQt5 . QtWidgets              import QSpinBox
+from   PyQt5 . QtWidgets              import QDoubleSpinBox
 from   PyQt5 . QtWidgets              import QFileDialog
 ##############################################################################
 from   AITK  . Qt . IconDock          import IconDock    as IconDock
@@ -250,6 +251,7 @@ class FaceView                       ( IconDock                            ) :
     ##########################################################################
     QQ      = f"""select `face` from {TABLE}
                   where ( {SQRZ} < {SIGMA} ) ;"""
+    print ( QQ )
     ##########################################################################
     UUIDs   = DB . ObtainUuids ( QQ                                          )
     ##########################################################################
@@ -887,6 +889,8 @@ class FaceView                       ( IconDock                            ) :
     self . SigmaSpin . setRange       ( 0 , 100                              )
     self . SigmaSpin . setValue       ( self . Sigma                         )
     self . SigmaSpin . setSingleStep  ( 0.0001                               )
+    self . SigmaSpin . setSingleStep  ( 0.0001                               )
+    self . SigmaSpin . setDecimals    ( 6                                    )
     self . SigmaSpin . setAlignment   ( Qt . AlignRight                      )
     ##########################################################################
     mm   . addWidget                  ( 9999912 , self . SigmaSpin           )
