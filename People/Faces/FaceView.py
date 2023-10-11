@@ -94,7 +94,7 @@ class FaceView                       ( IconDock                            ) :
     self . Method             = ""
     self . PeopleUuid         = 0
     self . FaceUuid           = 0
-    self . Sigma              = 0.03
+    self . Sigma              = 0.06
     self . SigmaSpin          = None
     self . PictureTables      = {                                            }
     self . STATEs             = [ "0" , "10000" , "20000"                    ]
@@ -251,10 +251,8 @@ class FaceView                       ( IconDock                            ) :
     ##########################################################################
     QQ      = f"""select `face` from {TABLE}
                   where ( ( {MULX} ) < {SIGMA2} ) ;"""
-    print ( QQ )
     ##########################################################################
     UUIDs   = DB . ObtainUuids ( QQ                                          )
-    print ( UUIDs )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
