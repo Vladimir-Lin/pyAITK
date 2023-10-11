@@ -94,7 +94,7 @@ class FaceView                       ( IconDock                            ) :
     self . Method             = ""
     self . PeopleUuid         = 0
     self . FaceUuid           = 0
-    self . Sigma              = 0.06
+    self . Sigma              = 0.04
     self . SigmaSpin          = None
     self . PictureTables      = {                                            }
     self . STATEs             = [ "0" , "10000" , "20000"                    ]
