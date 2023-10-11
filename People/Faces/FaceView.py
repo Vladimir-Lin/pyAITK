@@ -247,7 +247,7 @@ class FaceView                       ( IconDock                            ) :
       MULs  . append           ( Z                                           )
     ##########################################################################
     MULX    = " + " . join     ( MULs                                        )
-    SQRZ    = f"sqrt ( {MULX} )"
+    SQRZ    = f"sqrt ( ( {MULX} ) div 128.0 )"
     ##########################################################################
     QQ      = f"""select `face` from {TABLE}
                   where ( {SQRZ} < {SIGMA} ) ;"""
@@ -882,7 +882,7 @@ class FaceView                       ( IconDock                            ) :
   ############################################################################
   def SigmaMenu                       ( self , mm                          ) :
     ##########################################################################
-    MSG  = self . getMenuItem         ( "FaceSigma"                          )
+    MSG  = self . getMenuItem         ( "FaceSigma:"                         )
     ##########################################################################
     self . SigmaSpin = QDoubleSpinBox (                                      )
     self . SigmaSpin . setPrefix      ( MSG                                  )
@@ -894,6 +894,8 @@ class FaceView                       ( IconDock                            ) :
     self . SigmaSpin . setAlignment   ( Qt . AlignRight                      )
     ##########################################################################
     mm   . addWidget                  ( 9999912 , self . SigmaSpin           )
+    ##########################################################################
+    mm   . addSeparator               (                                      )
     ##########################################################################
     return mm
   ############################################################################
