@@ -94,7 +94,7 @@ class FaceView                       ( IconDock                            ) :
     self . Method             = ""
     self . PeopleUuid         = 0
     self . FaceUuid           = 0
-    self . Sigma              = 0.001
+    self . Sigma              = 0.03
     self . SigmaSpin          = None
     self . PictureTables      = {                                            }
     self . STATEs             = [ "0" , "10000" , "20000"                    ]
@@ -889,7 +889,6 @@ class FaceView                       ( IconDock                            ) :
     self . SigmaSpin . setPrefix      ( MSG                                  )
     self . SigmaSpin . setRange       ( 0 , 100                              )
     self . SigmaSpin . setValue       ( self . Sigma                         )
-    self . SigmaSpin . setSingleStep  ( 0.0001                               )
     self . SigmaSpin . setSingleStep  ( 0.0001                               )
     self . SigmaSpin . setDecimals    ( 6                                    )
     self . SigmaSpin . setAlignment   ( Qt . AlignRight                      )
