@@ -57,6 +57,7 @@ class PaletteListings              ( TreeDock                              ) :
   ############################################################################
   emitNamesShow     = pyqtSignal   (                                         )
   emitAllNames      = pyqtSignal   ( list                                    )
+  OpenLogHistory    = pyqtSignal   ( str , str , str , str , str             )
   PaletteEditor     = pyqtSignal   ( str , str                               )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
@@ -473,7 +474,10 @@ class PaletteListings              ( TreeDock                              ) :
     COL  = mm . addMenu       ( MSG                                          )
     ##########################################################################
     msg  = self . getMenuItem ( "EditPalette"                                )
-    mm   . addActionFromMenu  ( COL , 1201 , msg                             )
+    mm   . addActionFromMenu  ( COL , 1201     , msg                         )
+    ##########################################################################
+    msg  = self . getMenuItem ( "Description"                                )
+    mm   . addActionFromMenu  ( COL , 38522001 , msg                         )
     ##########################################################################
     return mm
   ############################################################################
@@ -486,6 +490,24 @@ class PaletteListings              ( TreeDock                              ) :
       head = item . text          ( 0                                        )
       ########################################################################
       self . PaletteEditor . emit ( head , str ( uuid )                      )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                             ( at == 38522001                        ) :
+      ########################################################################
+      uuid = item . data           ( 0 , Qt . UserRole                       )
+      uuid = int                   ( uuid                                    )
+      head = item . text           ( 0                                       )
+      nx   = ""
+      ########################################################################
+      if                           ( "Notes" in self . Tables              ) :
+        nx = self . Tables         [ "Notes"                                 ]
+      ########################################################################
+      self . OpenLogHistory . emit ( head                                    ,
+                                     str ( uuid )                            ,
+                                     "Description"                           ,
+                                     nx                                      ,
+                                     str ( self . getLocality ( ) )          )
       ########################################################################
       return True
     ##########################################################################
