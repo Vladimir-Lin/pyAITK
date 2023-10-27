@@ -459,7 +459,7 @@ class PicturesView                 ( IconDock                              ) :
     ##########################################################################
     OPTS           =                                                         {
       "Base"       : BaseUuid                                                ,
-      "Prefer"     : -1                                                      ,
+      "Prefer"     : 0                                                       ,
       "Master"     : PICTAB                                                  ,
       "Depot"      : DOPTAB                                                  ,
       "Thumb"      : THUTAB                                                  ,

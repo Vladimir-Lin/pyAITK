@@ -425,106 +425,109 @@ class Picture     (                                                        ) :
     ##########################################################################
     return
   ############################################################################
-  def ImportDB       ( self , DB , Options                                 ) :
+  def ImportDB        ( self , DB , Options                                ) :
     ##########################################################################
-    BASE   = Options [ "Base"                                                ]
-    PREFER = Options [ "Prefer"                                              ]
-    MASTER = Options [ "Master"                                              ]
-    DEPOT  = Options [ "Depot"                                               ]
-    THUMB  = Options [ "Thumb"                                               ]
-    TDEPOT = Options [ "ThumbDepot"                                          ]
-    HASH   = Options [ "Hash"                                                ]
-    HIST   = Options [ "Histogram"                                           ]
+    BASE    = Options [ "Base"                                               ]
+    PREFER  = Options [ "Prefer"                                             ]
+    MASTER  = Options [ "Master"                                             ]
+    DEPOT   = Options [ "Depot"                                              ]
+    THUMB   = Options [ "Thumb"                                              ]
+    TDEPOT  = Options [ "ThumbDepot"                                         ]
+    HASH    = Options [ "Hash"                                               ]
+    HIST    = Options [ "Histogram"                                          ]
     ##########################################################################
-    UUIX   = 0
-    MIMEM  = "mimeexts"
-    EXTMX  = "extensions"
-    PRETAB = "pictureorders"
-    FMT    = self . Image . format
-    FMT    = FMT  . lower ( )
-    SW     = self . Image . width
-    SH     = self . Image . height
-    SIZE   = len ( self . Data )
-    TW     = self . Icon  . width
-    TH     = self . Icon  . height
-    TSIZE  = self . IconData . getbuffer ( ) . nbytes
-    CRC32  = self . CRC32
+    UUIX    = 0
+    MIMEM   = "mimeexts"
+    EXTMX   = "extensions"
+    PRETAB  = "pictureorders"
+    FMT     = self . Image . format
+    FMT     = FMT  . lower ( )
+    SW      = self . Image . width
+    SH      = self . Image . height
+    SIZE    = len ( self . Data )
+    TW      = self . Icon  . width
+    TH      = self . Icon  . height
+    TSIZE   = self . IconData . getbuffer ( ) . nbytes
+    CRC32   = self . CRC32
     ##########################################################################
-    DB     . LockWrites   ( [ MASTER                                       , \
-                              DEPOT                                        , \
-                              THUMB                                        , \
-                              TDEPOT                                       , \
-                              HASH                                         , \
-                              HIST                                         , \
-                              PRETAB                                       , \
-                              MIMEM                                        , \
-                              EXTMX                                        ] )
+    DB      . LockWrites   ( [ MASTER                                      , \
+                               DEPOT                                       , \
+                               THUMB                                       , \
+                               TDEPOT                                      , \
+                               HASH                                        , \
+                               HIST                                        , \
+                               PRETAB                                      , \
+                               MIMEM                                       , \
+                               EXTMX                                       ] )
     ##########################################################################
-    QQ     = f"select `uuid` from {MASTER} where ( `filesize` = {SIZE} ) and ( `checksum` = {CRC32} ) and ( `width` = {SW} ) and ( `height` = {SH} ) ;"
-    DB     . Query ( QQ )
-    LL     = DB . FetchAll ( )
+    QQ      = f"select `uuid` from {MASTER} where ( `filesize` = {SIZE} ) and ( `checksum` = {CRC32} ) and ( `width` = {SW} ) and ( `height` = {SH} ) ;"
+    DB      . Query        ( QQ                                              )
+    LL      = DB . FetchAll (                                                )
     ##########################################################################
     if ( ( LL == None ) or ( len ( LL ) <= 0 ) )                             :
       ########################################################################
-      UUIX = BASE
+      UUIX  = BASE
       ########################################################################
-      QQ   = f"select `uuid` from {MASTER} order by `uuid` desc limit 0,1 ;"
-      DB   . Query ( QQ )
-      LX   = DB . FetchOne ( )
+      QQ    = f"select `uuid` from {MASTER} order by `uuid` desc limit 0,1 ;"
+      DB    . Query ( QQ )
+      LX    = DB . FetchOne (                                                )
       ########################################################################
       if ( not ( ( LX == None ) or ( len ( LX ) <= 0 ) ) )                   :
-        UUIX = LX [ 0 ]
+        UUIX = LX          [ 0                                               ]
       ########################################################################
-      UUIX = UUIX + 1
+      UUIX  = UUIX + 1
       MIMEID = 0
-      QQ   = f"select `mime` from `mimeexts` where ( `extension` = ( select `id` from `extensions` where ( `extension` = '{FMT}' ) ) ) ;"
-      DB   . Query ( QQ )
-      FX   = DB . FetchAll ( )
+      QQ    = f"select `mime` from `mimeexts` where ( `extension` = ( select `id` from `extensions` where ( `extension` = '{FMT}' ) ) ) ;"
+      DB    . Query         ( QQ                                             )
+      FX    = DB . FetchAll (                                                )
       ########################################################################
       if ( not ( ( FX == None ) or ( len ( FX ) <= 0 ) ) )                   :
-        MIMEID = FX [ 0 ] [ 0 ]
+        MIMEID = FX         [ 0 ] [ 0                                        ]
       ########################################################################
-      VAL = ( UUIX , MIMEID , FMT , SIZE , CRC32 , SW , SH , )
-      QQ  = f"insert into {MASTER} (`uuid`,`mimeid`,`suffix`,`filesize`,`checksum`,`width`,`height`) values (%s,%s,%s,%s,%s,%s,%s) ;"
-      DB  . QueryValues ( QQ , VAL )
+      VAL   = ( UUIX , MIMEID , FMT , SIZE , CRC32 , SW , SH , )
+      QQ    = f"insert into {MASTER} (`uuid`,`mimeid`,`suffix`,`filesize`,`checksum`,`width`,`height`) values (%s,%s,%s,%s,%s,%s,%s) ;"
+      DB    . QueryValues   ( QQ , VAL                                       )
       ########################################################################
-      VAL = ( UUIX , self . Data , )
-      QQ  = f"insert into {DEPOT} (`uuid`,`file`) values (%s,%s) ;"
-      DB  . QueryValues ( QQ , VAL )
+      VAL   =               ( UUIX , self . Data ,                           )
+      QQ    = f"insert into {DEPOT} (`uuid`,`file`) values (%s,%s) ;"
+      DB    . QueryValues   ( QQ , VAL                                       )
       ########################################################################
-      VAL = ( UUIX , SIZE , TSIZE , SW , SH , TW , TH , )
-      QQ  = f"insert into {THUMB} (`uuid`,`usage`,`filesize`,`iconsize`,`format`,`width`,`height`,`iconwidth`,`iconheight`) values (%s,'ICON',%s,%s,'png',%s,%s,%s,%s) ;"
-      DB  . QueryValues ( QQ , VAL )
+      VAL   =               ( UUIX , SIZE , TSIZE , SW , SH , TW , TH ,      )
+      QQ    = f"insert into {THUMB} (`uuid`,`usage`,`filesize`,`iconsize`,`format`,`width`,`height`,`iconwidth`,`iconheight`) values (%s,'ICON',%s,%s,'png',%s,%s,%s,%s) ;"
+      DB    . QueryValues   ( QQ , VAL                                       )
       ########################################################################
-      VAL = ( UUIX , self . IconData . getvalue ( ) , )
-      QQ  = f"insert into {TDEPOT} (`uuid`,`usage`,`thumb`) values (%s,'ICON',%s) ;"
-      DB  . QueryValues ( QQ , VAL )
+      VAL   =               ( UUIX , self . IconData . getvalue ( ) ,        )
+      QQ    = f"insert into {TDEPOT} (`uuid`,`usage`,`thumb`) values (%s,'ICON',%s) ;"
+      DB    . QueryValues   ( QQ , VAL                                       )
       ########################################################################
-      VAL = ( UUIX , len ( self . MD5 ) , self . MD5 , )
-      QQ  = f"insert into {HASH} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,1,'Hash','MD5',%s,%s) ;"
-      DB  . QueryValues ( QQ , VAL )
+      VAL   =               ( UUIX , len ( self . MD5 ) , self . MD5 ,       )
+      QQ    = f"insert into {HASH} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,1,'Hash','MD5',%s,%s) ;"
+      DB    . QueryValues   ( QQ , VAL                                       )
       ########################################################################
-      VAL = ( UUIX , len ( self . SHA256 ) , self . SHA256 , )
-      QQ  = f"insert into {HASH} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,1,'Hash','SHA256',%s,%s) ;"
-      DB  . QueryValues ( QQ , VAL )
+      VAL   =               ( UUIX , len ( self . SHA256 ) , self . SHA256 , )
+      QQ    = f"insert into {HASH} (`uuid`,`type`,`scope`,`name`,`length`,`value`) values (%s,1,'Hash','SHA256',%s,%s) ;"
+      DB    . QueryValues   ( QQ , VAL                                       )
       ########################################################################
-      self . StoreHistogram   ( DB , HIST , UUIX , "R" , self . R            )
-      self . StoreHistogram   ( DB , HIST , UUIX , "G" , self . G            )
-      self . StoreHistogram   ( DB , HIST , UUIX , "B" , self . B            )
-      self . StoreHistogram   ( DB , HIST , UUIX , "A" , self . A            )
+      self  . StoreHistogram ( DB , HIST , UUIX , "R" , self . R             )
+      self  . StoreHistogram ( DB , HIST , UUIX , "G" , self . G             )
+      self  . StoreHistogram ( DB , HIST , UUIX , "B" , self . B             )
+      self  . StoreHistogram ( DB , HIST , UUIX , "A" , self . A             )
       ########################################################################
-      QQ  = f"insert into {PRETAB} ( `uuid` ) values ( {UUIX} ) ;"
-      DB  . Query             ( QQ                                           )
+      QQ    = f"insert into {PRETAB} ( `uuid` ) values ( {UUIX} ) ;"
+      DB    . Query         ( QQ                                             )
       ########################################################################
     else                                                                     :
       ########################################################################
-      if ( PREFER >= 0 )                                                     :
-        UUIX = LL [ 0 ] [ 0 ]
+      if                    ( PREFER >= 0                                  ) :
+        ######################################################################
+        UUIX = LL           [ 0 ] [ 0                                        ]
+        ######################################################################
         QQ  = f"update {PRETAB} set `position` = {PREFER} where ( `uuid` = {UUIX} ) ;"
-        DB  . Query ( QQ )
+        DB  . Query         ( QQ                                             )
       ########################################################################
-    DB     . UnlockTables (     )
-    self . UUID = UUIX
+    DB      . UnlockTables  (                                                )
+    ##########################################################################
+    self    . UUID = UUIX
     ##########################################################################
     return True
 ##############################################################################
