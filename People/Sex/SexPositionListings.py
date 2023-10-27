@@ -995,7 +995,8 @@ class SexPositionListings          ( TreeDock                              ) :
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Icons"                               )
-    mm   . addActionFromMenu         ( COL , 38522001 , MSG                  )
+    icon = QIcon                     ( ":/images/pictures.png"               )
+    mm   . addActionFromMenuWithIcon ( COL , 38522001 , icon , MSG           )
     ##########################################################################
     MSG  = self . getMenuItem        ( "PersonalGallery"                     )
     icon = QIcon                     ( ":/images/gallery.png"                )

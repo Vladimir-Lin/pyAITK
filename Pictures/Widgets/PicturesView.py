@@ -471,9 +471,11 @@ class PicturesView                 ( IconDock                              ) :
     PIC            . PrepareForDB    (                                       )
     PIC            . ImportDB        ( DB , OPTS                             )
     PUID           = int             ( PIC . UUID                            )
+    print ( PUID )
     ##########################################################################
     if                               ( PUID <= 0                           ) :
       return False
+    print ( self . Grouping )
     ##########################################################################
     if                               ( self . isSubordination ( )          ) :
       ########################################################################
