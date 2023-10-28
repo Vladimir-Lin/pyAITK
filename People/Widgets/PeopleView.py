@@ -351,17 +351,18 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     self    . FetchSessionInformation ( DB                                   )
     UUIDs   = self . ObtainsItemUuids ( DB                                   )
-    if                                ( self . UsingName                   ) :
-      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     PAMTAB  = self . Tables           [ "Parameters"                         ]
     PQ      = ParameterQuery          ( 7 , 113 , "Features" , PAMTAB        )
     ##########################################################################
     for UUID in UUIDs                                                        :
       ########################################################################
-      favor = PQ . Value              ( DB , self . Uuid , "Favourite"       )
+      favor = PQ . Value              ( DB , UUID , "Favourite"              )
       ########################################################################
       self . Favourites [ UUID ] = favor
+    ##########################################################################
+    if                                ( self . UsingName                   ) :
+      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
     ##########################################################################
     self    . setVacancy              (                                      )
     self    . GoRelax . emit          (                                      )
