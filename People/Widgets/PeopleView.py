@@ -1121,8 +1121,8 @@ class PeopleView                     ( IconDock                            ) :
     self   . setBustle          (                                            )
     ##########################################################################
     PAMTAB = self . Tables      [ "Parameters"                               ]
-    PQ     = ParameterQuery     ( 7 , 113 , "Features" , PAMTAB              )
-    PQ     . assureValue        ( DB , self . Uuid , "Favourite" , favor     )
+    PQ     = ParameterQuery     ( 7  , 113  , "Features"  , PAMTAB           )
+    PQ     . assureValue        ( DB , uuid , "Favourite" , favor            )
     ##########################################################################
     self   . setVacancy         (                                            )
     self   . GoRelax . emit     (                                            )
