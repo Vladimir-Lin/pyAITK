@@ -11,58 +11,61 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   PyQt5                          import QtCore
-from   PyQt5                          import QtGui
-from   PyQt5                          import QtWidgets
+from   PyQt5                               import QtCore
+from   PyQt5                               import QtGui
+from   PyQt5                               import QtWidgets
 ##############################################################################
-from   PyQt5 . QtCore                 import QObject
-from   PyQt5 . QtCore                 import pyqtSignal
-from   PyQt5 . QtCore                 import pyqtSlot
-from   PyQt5 . QtCore                 import Qt
-from   PyQt5 . QtCore                 import QPoint
-from   PyQt5 . QtCore                 import QPointF
-from   PyQt5 . QtCore                 import QSize
-from   PyQt5 . QtCore                 import QMimeData
-from   PyQt5 . QtCore                 import QByteArray
+from   PyQt5 . QtCore                      import QObject
+from   PyQt5 . QtCore                      import pyqtSignal
+from   PyQt5 . QtCore                      import pyqtSlot
+from   PyQt5 . QtCore                      import Qt
+from   PyQt5 . QtCore                      import QPoint
+from   PyQt5 . QtCore                      import QPointF
+from   PyQt5 . QtCore                      import QSize
+from   PyQt5 . QtCore                      import QMimeData
+from   PyQt5 . QtCore                      import QByteArray
 ##############################################################################
-from   PyQt5 . QtGui                  import QIcon
-from   PyQt5 . QtGui                  import QPixmap
-from   PyQt5 . QtGui                  import QImage
-from   PyQt5 . QtGui                  import QCursor
-from   PyQt5 . QtGui                  import QKeySequence
-from   PyQt5 . QtGui                  import QMouseEvent
-from   PyQt5 . QtGui                  import QDrag
+from   PyQt5 . QtGui                       import QIcon
+from   PyQt5 . QtGui                       import QPixmap
+from   PyQt5 . QtGui                       import QImage
+from   PyQt5 . QtGui                       import QCursor
+from   PyQt5 . QtGui                       import QKeySequence
+from   PyQt5 . QtGui                       import QMouseEvent
+from   PyQt5 . QtGui                       import QDrag
 ##############################################################################
-from   PyQt5 . QtWidgets              import QApplication
-from   PyQt5 . QtWidgets              import QWidget
-from   PyQt5 . QtWidgets              import qApp
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAction
-from   PyQt5 . QtWidgets              import QShortcut
-from   PyQt5 . QtWidgets              import QToolTip
-from   PyQt5 . QtWidgets              import QMenu
-from   PyQt5 . QtWidgets              import QAbstractItemView
-from   PyQt5 . QtWidgets              import QListWidget
-from   PyQt5 . QtWidgets              import QListWidgetItem
-from   PyQt5 . QtWidgets              import QTreeWidget
-from   PyQt5 . QtWidgets              import QTreeWidgetItem
-from   PyQt5 . QtWidgets              import QLineEdit
-from   PyQt5 . QtWidgets              import QComboBox
-from   PyQt5 . QtWidgets              import QSpinBox
-from   PyQt5 . QtWidgets              import QFileDialog
+from   PyQt5 . QtWidgets                   import QApplication
+from   PyQt5 . QtWidgets                   import QWidget
+from   PyQt5 . QtWidgets                   import qApp
+from   PyQt5 . QtWidgets                   import QMenu
+from   PyQt5 . QtWidgets                   import QAction
+from   PyQt5 . QtWidgets                   import QShortcut
+from   PyQt5 . QtWidgets                   import QToolTip
+from   PyQt5 . QtWidgets                   import QMenu
+from   PyQt5 . QtWidgets                   import QAbstractItemView
+from   PyQt5 . QtWidgets                   import QListWidget
+from   PyQt5 . QtWidgets                   import QListWidgetItem
+from   PyQt5 . QtWidgets                   import QTreeWidget
+from   PyQt5 . QtWidgets                   import QTreeWidgetItem
+from   PyQt5 . QtWidgets                   import QLineEdit
+from   PyQt5 . QtWidgets                   import QComboBox
+from   PyQt5 . QtWidgets                   import QSpinBox
+from   PyQt5 . QtWidgets                   import QFileDialog
 ##############################################################################
-from   AITK  . Qt . IconDock          import IconDock    as IconDock
+from   AITK  . Qt . IconDock               import IconDock       as IconDock
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
-from   AITK  . Qt . LineEdit          import LineEdit    as LineEdit
-from   AITK  . Qt . ComboBox          import ComboBox    as ComboBox
-from   AITK  . Qt . SpinBox           import SpinBox     as SpinBox
+from   AITK  . Qt . MenuManager            import MenuManager    as MenuManager
+from   AITK  . Qt . LineEdit               import LineEdit       as LineEdit
+from   AITK  . Qt . ComboBox               import ComboBox       as ComboBox
+from   AITK  . Qt . SpinBox                import SpinBox        as SpinBox
 ##############################################################################
-from   AITK  . Essentials . Relation  import Relation    as Relation
-from   AITK  . Calendars  . StarDate  import StarDate    as StarDate
-from   AITK  . Calendars  . Periode   import Periode     as Periode
-from   AITK  . Pictures   . Gallery   import Gallery     as GalleryItem
-from   AITK  . People     . People    import People      as PeopleItem
+from   AITK  . Essentials . Relation       import Relation       as Relation
+from   AITK  . Calendars  . StarDate       import StarDate       as StarDate
+from   AITK  . Calendars  . Periode        import Periode        as Periode
+from   AITK  . Documents  . Variables      import Variables      as VariableItem
+from   AITK  . Documents  . ParameterQuery import ParameterQuery as ParameterQuery
+##############################################################################
+from   AITK  . Pictures   . Gallery        import Gallery        as GalleryItem
+from   AITK  . People     . People         import People         as PeopleItem
 ##############################################################################
 class PeopleView                     ( IconDock                            ) :
   ############################################################################
@@ -89,6 +92,8 @@ class PeopleView                     ( IconDock                            ) :
     self . Total              = 0
     self . StartId            = 0
     self . Amount             = 60
+    self . Favourite          = 0
+    self . Favourites         = {                                            }
     self . SortOrder          = "asc"
     self . SearchLine         = None
     self . SearchKey          = ""
@@ -295,6 +300,86 @@ class PeopleView                     ( IconDock                            ) :
     self . AttachActions     ( False                                         )
     self . LinkVoice         ( None                                          )
     self . defaultCloseEvent ( event                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def PrepareItemContent       ( self , item , UUID , NAME                 ) :
+    ##########################################################################
+    favor  = self . Favourites [ UUID                                        ]
+    UXID   = str               ( UUID                                        )
+    FAV    = str               ( favor                                       )
+    ##########################################################################
+    FT     = self . iconFont   (                                             )
+    ##########################################################################
+    if                         ( self . UsingName                          ) :
+      item . setText           ( NAME                                        )
+    ##########################################################################
+    item   . setToolTip        ( str ( UUID )                                )
+    item   . setTextAlignment  ( Qt   . AlignCenter                          )
+    item   . setData           ( Qt   . UserRole        , UXID               )
+    item   . setData           ( Qt   . UserRole + 1001 , FAV                )
+    item   . setIcon           ( self . defaultIcon (                      ) )
+    item   . setFont           ( FT                                          )
+    ##########################################################################
+    JSOX   = self . itemJson   ( item                                        )
+    ##########################################################################
+    JSOX [ "Uuid"      ] = UUID
+    JSOX [ "Name"      ] = NAME
+    JSOX [ "Favourite" ] = favor
+    ##########################################################################
+    self . setItemJson         ( item , JSOX                                 )
+    ##########################################################################
+    return item
+  ############################################################################
+  def loading                         ( self                               ) :
+    ##########################################################################
+    self    . LoopRunning = False
+    ##########################################################################
+    DB      = self . ConnectDB        (                                      )
+    if                                ( DB == None                         ) :
+      self  . emitIconsShow . emit    (                                      )
+      self  . LoopRunning = True
+      return
+    ##########################################################################
+    self    . Notify                  ( 3                                    )
+    ##########################################################################
+    FMT     = self . Translations     [ "UI::StartLoading"                   ]
+    MSG     = FMT . format            ( self . windowTitle ( )               )
+    self    . ShowStatus              ( MSG                                  )
+    self    . OnBusy  . emit          (                                      )
+    self    . setBustle               (                                      )
+    ##########################################################################
+    self    . FetchSessionInformation ( DB                                   )
+    UUIDs   = self . ObtainsItemUuids ( DB                                   )
+    if                                ( self . UsingName                   ) :
+      NAMEs = self . ObtainsUuidNames ( DB , UUIDs                           )
+    ##########################################################################
+    PAMTAB  = self . Tables           [ "Parameters"                         ]
+    PQ      = ParameterQuery          ( 7 , 113 , "Features" , PAMTAB        )
+    ##########################################################################
+    for UUID in UUIDs                                                        :
+      ########################################################################
+      favor = PQ . Value              ( DB , self . Uuid , "Favourite"       )
+      ########################################################################
+      self . Favourites [ UUID ] = favor
+    ##########################################################################
+    self    . setVacancy              (                                      )
+    self    . GoRelax . emit          (                                      )
+    self    . ShowStatus              ( ""                                   )
+    DB      . Close                   (                                      )
+    ##########################################################################
+    self    . LoopRunning = True
+    ##########################################################################
+    if                                ( len ( UUIDs ) <= 0                 ) :
+      self  . emitIconsShow . emit    (                                      )
+    ##########################################################################
+    JSON               =              {                                      }
+    JSON   [ "UUIDs" ] = UUIDs
+    if                                ( self . UsingName                   ) :
+      JSON [ "NAMEs" ] = NAMEs
+    ##########################################################################
+    self    . emitAllIcons . emit     ( JSON                                 )
+    self    . Notify                  ( 5                                    )
     ##########################################################################
     return
   ############################################################################
@@ -1010,6 +1095,35 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return          { "Match" : False                                        }
   ############################################################################
+  def UpdateFavourite           ( self , uuid , favor                      ) :
+    ##########################################################################
+    self   . LoopRunning = False
+    ##########################################################################
+    DB     = self . ConnectDB   (                                            )
+    if                          ( DB == None                               ) :
+      self . LoopRunning = True
+      return
+    ##########################################################################
+    self   . Notify             ( 3                                          )
+    ##########################################################################
+    msg    = self . getMenuItem ( "UpdateFavourite..."                       )
+    self   . ShowStatus         ( msg                                        )
+    self   . OnBusy  . emit     (                                            )
+    self   . setBustle          (                                            )
+    ##########################################################################
+    PAMTAB = self . Tables      [ "Parameters"                               ]
+    PQ     = ParameterQuery     ( 7 , 113 , "Features" , PAMTAB              )
+    PQ     . assureValue        ( DB , self . Uuid , "Favourite" , favor     )
+    ##########################################################################
+    self   . setVacancy         (                                            )
+    self   . GoRelax . emit     (                                            )
+    self   . ShowStatus         ( ""                                         )
+    DB     . Close              (                                            )
+    self   . Notify             ( 5                                          )
+    ##########################################################################
+    self   . LoopRunning = True
+    ##########################################################################
+    return
   ############################################################################
   ############################################################################
   ############################################################################
@@ -1606,6 +1720,44 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     return False
   ############################################################################
+  def PeopleFavourite                 ( self , mm , uuid , item            ) :
+    ##########################################################################
+    favr = item . data                ( Qt   . UserRole + 1001               )
+    self . Favourite = int            ( favr                                 )
+    ##########################################################################
+    msg  = self . getMenuItem         ( "Favourite:"                         )
+    ##########################################################################
+    self . FavouriteId = SpinBox      ( None , self . PlanFunc               )
+    self . FavouriteId . setPrefix    ( msg                                  )
+    self . FavouriteId . setRange     ( 0 , 10000                            )
+    self . FavouriteId . setValue     ( self . Favourite                     )
+    self . FavouriteId . setAlignment ( Qt . AlignRight                      )
+    mm   . addWidget                  ( 9999191 , self . FavouriteId         )
+    ##########################################################################
+    mm   . addSeparator               (                                      )
+    ##########################################################################
+    return mm
+  ############################################################################
+  def RunPeopleFavourite                ( self , uuid , item               ) :
+    ##########################################################################
+    if                                  ( self . FavouriteId == None       ) :
+      return False
+    ##########################################################################
+    SID    = self . FavouriteId . value (                                    )
+    ##########################################################################
+    self   . FavouriteId = None
+    ##########################################################################
+    if                                  ( SID != self . Favourite          ) :
+      ########################################################################
+      self . Favourite = SID
+      item . setData                    ( Qt . UserRole + 1001 , SID         )
+      self . Go                         ( self . UpdateFavourite           , \
+                                          ( uuid , SID , )                   )
+      ########################################################################
+      return True
+    ##########################################################################
+    return   False
+  ############################################################################
   def Menu                             ( self , pos                        ) :
     ##########################################################################
     doMenu = self . isFunction         ( self . HavingMenu                   )
@@ -1626,6 +1778,11 @@ class PeopleView                     ( IconDock                            ) :
     ##########################################################################
     self   . StopIconMenu              ( mm                                  )
     self   . AmountIndexMenu           ( mm                                  )
+    ##########################################################################
+    if                                 ( uuid > 0                          ) :
+      ########################################################################
+      self . PeopleFavourite           ( mm , uuid , atItem                  )
+    ##########################################################################
     self   . AppendRefreshAction       ( mm , 1001                           )
     self   . AppendInsertAction        ( mm , 1101                           )
     self   . AppendSearchAction        ( mm , 1102                           )
@@ -1650,11 +1807,20 @@ class PeopleView                     ( IconDock                            ) :
     at     = mm . at                   ( aa                                  )
     ##########################################################################
     OKAY   = self . RunAmountIndexMenu (                                     )
+    ##########################################################################
     if                                 ( OKAY                              ) :
       ########################################################################
       self . restart                   (                                     )
       ########################################################################
       return True
+    ##########################################################################
+    if                                 ( uuid > 0                          ) :
+      ########################################################################
+      OKAY = self . RunPeopleFavourite ( uuid , item                         )
+      ########################################################################
+      if                               ( OKAY                              ) :
+        ######################################################################
+        return True
     ##########################################################################
     OKAY   = self . RunDocking         ( mm , aa                             )
     if                                 ( OKAY                              ) :
