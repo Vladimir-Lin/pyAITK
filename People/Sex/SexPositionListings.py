@@ -74,7 +74,7 @@ class SexPositionListings          ( TreeDock                              ) :
     self . GType              = 210
     self . Total              = 0
     self . StartId            = 0
-    self . Amount             = 40
+    self . Amount             = 45
     self . SortOrder          = "asc"
     self . SearchLine         = None
     self . SearchKey          = ""
@@ -1034,6 +1034,9 @@ class SexPositionListings          ( TreeDock                              ) :
       uuid = int                      ( uuid                                 )
       text = item . text              ( 0                                    )
       icon = self . windowIcon        (                                      )
+      ########################################################################
+      tail = self . getMenuItem       ( "(Icons)"                            )
+      text = f"{text}{tail}"
       ########################################################################
       self . ShowPersonalIcons . emit ( text                                 ,
                                         self . GType                         ,
