@@ -986,11 +986,13 @@ class SexPositionListings          ( TreeDock                              ) :
     TRX  = self . Translations
     NAME = item . text               ( 0                                     )
     FMT  = TRX                       [ "UI::Belongs"                         ]
-    MSG  = FMT . format              ( NAME                                  )
-    COL  = mm . addMenu              ( MSG                                   )
+    msg  = FMT . format              ( NAME                                  )
+    icon = QIcon                     ( ":/images/graphics.png"               )
+    COL  = mm . addMenuWithIcon      ( icon , msg                            )
     ##########################################################################
     msg  = self . getMenuItem        ( "CopySexPositionUuid"                 )
-    mm   . addActionFromMenu         ( COL , 38521001 , msg                  )
+    icon = QIcon                     ( ":/images/copy.png"                   )
+    mm   . addActionFromMenuWithIcon ( COL , 38521001 , icon , msg           )
     ##########################################################################
     mm   . addSeparatorFromMenu      ( COL                                   )
     ##########################################################################
@@ -1003,15 +1005,16 @@ class SexPositionListings          ( TreeDock                              ) :
     mm   . addActionFromMenuWithIcon ( COL , 38522002 , icon , MSG           )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Galleries"                           )
-    ICO  = QIcon                     ( ":/images/galleries.png"              )
-    mm   . addActionFromMenuWithIcon ( COL , 38522003 , ICO , MSG            )
+    icon = QIcon                     ( ":/images/galleries.png"              )
+    mm   . addActionFromMenuWithIcon ( COL , 38522003 , icon , MSG           )
     ##########################################################################
     MSG  = self . getMenuItem        ( "Videos"                              )
-    ICO  = QIcon                     ( ":/images/video.png"                  )
-    mm   . addActionFromMenuWithIcon ( COL , 38522004 , ICO , MSG            )
+    icon = QIcon                     ( ":/images/video.png"                  )
+    mm   . addActionFromMenuWithIcon ( COL , 38522004 , icon , MSG           )
     ##########################################################################
     msg  = self . getMenuItem        ( "Description"                         )
-    mm   . addActionFromMenu         ( COL , 38523001 , msg                  )
+    icon = QIcon                     ( ":/images/documents.png"              )
+    mm   . addActionFromMenuWithIcon ( COL , 38523001 , icon , msg           )
     ##########################################################################
     return mm
   ############################################################################
