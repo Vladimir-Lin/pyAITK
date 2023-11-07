@@ -59,6 +59,7 @@ class OccupationListings           ( TreeDock                              ) :
   emitAllNames      = pyqtSignal   ( dict                                    )
   emitAssignAmounts = pyqtSignal   ( str , int                               )
   PeopleGroup       = pyqtSignal   ( str , int , str                         )
+  OpenLogHistory    = pyqtSignal   ( str , str , str , str , str           )
   ############################################################################
   def __init__                     ( self , parent = None , plan = None    ) :
     ##########################################################################
@@ -73,7 +74,7 @@ class OccupationListings           ( TreeDock                              ) :
     self . Method             = "Original"
     self . SearchLine         = None
     self . SearchKey          = ""
-    self . UUIDs              = [                                            ]
+    self . UUIDs              =    [                                         ]
     ##########################################################################
     self . Grouping = "Original"
     ## self . Grouping = "Subordination"
@@ -787,16 +788,37 @@ class OccupationListings           ( TreeDock                              ) :
     msg  = self . getMenuItem ( "Crowds"                                     )
     mm   . addActionFromMenu  ( COL , 1201 , msg                             )
     ##########################################################################
+    msg  = self . getMenuItem ( "Description"                                )
+    mm   . addActionFromMenu  ( COL , 38522001        , msg                  )
+    ##########################################################################
     return mm
   ############################################################################
-  def RunGroupsMenu             ( self , at , item                         ) :
+  def RunGroupsMenu                 ( self , at , item                     ) :
     ##########################################################################
-    if                          ( at == 1201                               ) :
+    if                              ( at == 1201                           ) :
       ########################################################################
-      uuid = item . data        ( 0 , Qt . UserRole                          )
-      uuid = int                ( uuid                                       )
-      head = item . text        ( 0                                          )
-      self . PeopleGroup . emit ( head , 40 , str ( uuid )                   )
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      self . PeopleGroup . emit     ( head , 40 , str ( uuid )               )
+      ########################################################################
+      return True
+    ##########################################################################
+    if                              ( at == 38522001                       ) :
+      ########################################################################
+      uuid = item . data            ( 0 , Qt . UserRole                      )
+      uuid = int                    ( uuid                                   )
+      head = item . text            ( 0                                      )
+      nx   = ""
+      ########################################################################
+      if                            ( "Notes" in self . Tables             ) :
+        nx = self . Tables          [ "Notes"                                ]
+      ########################################################################
+      self . OpenLogHistory . emit  ( head                                   ,
+                                      str ( uuid )                           ,
+                                      "Description"                          ,
+                                      nx                                     ,
+                                      str ( self . getLocality ( ) )         )
       ########################################################################
       return True
     ##########################################################################
