@@ -28,7 +28,7 @@ from   PyQt5 . QtWidgets              import QAction
 from   PyQt5 . QtWidgets              import QShortcut
 from   PyQt5 . QtWidgets              import QSystemTrayIcon
 ##############################################################################
-from   AITK  . Qt . MenuManager       import MenuManager as MenuManager
+from   AITK  . MenuManager            import MenuManager as MenuManager
 ##############################################################################
 class ExpressTrayIcon                ( QSystemTrayIcon                     ) :
   ############################################################################
