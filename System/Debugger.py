@@ -42,7 +42,7 @@ def ChangeDebuggerLevel        ( DBG                                       ) :
 def ConfigureDebugger          ( settings = { }                            ) :
   ############################################################################
   DBG          = "NOTSET"
-  LOG          = ""
+  LOX          = ""
   isConsole    = False
   LEVEL        = logging . NOTSET
   ############################################################################
