@@ -29,6 +29,7 @@ from . ListWidget      import ListWidget      as ListWidget
 from . ListDock        import ListDock        as ListDock
 from . IconDock        import IconDock        as IconDock
 from . TableWidget     import TableWidget     as TableWidget
+from . TableDock       import TableDock       as TableDock
 from . GraphicsView    import GraphicsView    as GraphicsView
 from . OpenGLWidget    import OpenGLWidget    as OpenGLWidget
 from . TextEdit        import TextEdit        as TextEdit
@@ -55,6 +56,7 @@ __all__ = [ "Font"                                                           ,
             "MdiArea"                                                        ,
             "SplitterHandle"                                                 ,
             "Splitter"                                                       ,
+            "ControlPad"                                                     ,
             "LineEdit"                                                       ,
             "ComboBox"                                                       ,
             "SpinBox"                                                        ,
@@ -65,6 +67,7 @@ __all__ = [ "Font"                                                           ,
             "ListDock"                                                       ,
             "IconDock"                                                       ,
             "TableWidget"                                                    ,
+            "TableDock"                                                      ,
             "GraphicsView"                                                   ,
             "OpenGLWidget"                                                   ,
             "TextEdit"                                                       ,
