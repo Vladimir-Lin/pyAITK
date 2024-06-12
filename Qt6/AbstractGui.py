@@ -11,20 +11,20 @@ import threading
 import gettext
 import json
 ##############################################################################
-from   opencc                         import OpenCC
-from   googletrans                    import Translator
+from   opencc                            import OpenCC
+from   googletrans                       import Translator
 ##############################################################################
 import PySide6
-from   PySide6                        import QtCore
-from   PySide6                        import QtGui
-from   PySide6                        import QtWidgets
+from   PySide6                           import QtCore
+from   PySide6                           import QtGui
+from   PySide6                           import QtWidgets
 ##############################################################################
-from   PySide6 . QtCore               import *
-from   PySide6 . QtGui                import *
-from   PySide6 . QtWidgets            import *
+from   PySide6 . QtCore                  import *
+from   PySide6 . QtGui                   import *
+from   PySide6 . QtWidgets               import *
 ##############################################################################
 import mysql . connector
-from   mysql . connector              import Error
+from   mysql . connector                 import Error
 ##############################################################################
 import AITK
 from   AITK . Database  . Query          import Query
