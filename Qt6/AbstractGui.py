@@ -39,12 +39,12 @@ from   AITK . Documents . Variables      import Variables      as VariableItem
 ##############################################################################
 from   AITK . Calendars . StarDate       import StarDate
 ##############################################################################
-class AbstractGui        (                                                 ) :
+class AbstractGui            (                                             ) :
   ############################################################################
-  def __init__           ( self                                            ) :
+  def __init__               ( self                                        ) :
     ##########################################################################
-    NOW                 = StarDate (                                         )
-    NOW  . Now           (                                                   )
+    NOW  = StarDate          (                                               )
+    NOW  . Now               (                                               )
     ##########################################################################
     self . Locality        = 1002
     self . Prepared        = False

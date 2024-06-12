@@ -37,12 +37,12 @@ class MdiArea         ( QMdiArea , VirtualGui                              ) :
   def __init__                      ( self , parent = None , plan = None   ) :
     ##########################################################################
     super ( ) . __init__            ( parent                                 )
-    super ( VirtualGui, self ) . __init__ (                                  )
+    ## super ( VirtualGui, self ) . __init__ (                                  )
     self . Initialize                     ( self                             )
     self . setPlanFunction                ( plan                             )
     self . setAttribute                   ( Qt . WA_InputMethodEnabled       )
     ##########################################################################
-    self . setViewMode                    ( self . SubWindowView             )
+    self . setViewMode                    ( QMdiArea . SubWindowView         )
     self . setHorizontalScrollBarPolicy   ( Qt . ScrollBarAlwaysOff          )
     self . setVerticalScrollBarPolicy     ( Qt . ScrollBarAlwaysOff          )
     self . setAcceptDrops                 ( True                             )
