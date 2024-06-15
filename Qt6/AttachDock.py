@@ -12,16 +12,16 @@ import gettext
 import json
 ##############################################################################
 import PySide6
-from   PySide6                       import QtCore
-from   PySide6                       import QtGui
-from   PySide6                       import QtWidgets
+from   PySide6                          import QtCore
+from   PySide6                          import QtGui
+from   PySide6                          import QtWidgets
 ##############################################################################
-from   PySide6 . QtCore              import *
-from   PySide6 . QtGui               import *
-from   PySide6 . QtWidgets           import *
+from   PySide6 . QtCore                 import *
+from   PySide6 . QtGui                  import *
+from   PySide6 . QtWidgets              import *
 ##############################################################################
-from   AITK . Calendars . StarDate   import StarDate
-from   AITK . Qt        . DockWidget import DockWidget
+from   AITK    . Calendars . StarDate   import StarDate
+from   AITK    . Qt6       . DockWidget import DockWidget
 ##############################################################################
 class AttachDock         (                                                 ) :
   ############################################################################
@@ -104,16 +104,16 @@ class AttachDock         (                                                 ) :
     ##########################################################################
     return
   ############################################################################
-  def getAllowArea   ( self , AREAS , areas , area                         ) :
+  def getAllowArea ( self , AREAS , areas , area                           ) :
     ##########################################################################
-    if               ( ( areas & area ) == area                            ) :
+    if             ( ( areas & area ) == area                              ) :
       AREAS = AREAS | area
     ##########################################################################
     return AREAS
   ############################################################################
   def assignAllowAreas            ( self , areas                           ) :
     ##########################################################################
-    A = 0
+    A = Qt   . NoDockWidgetArea
     A = self . getAllowArea       ( A , areas , Qt . LeftDockWidgetArea      )
     A = self . getAllowArea       ( A , areas , Qt . RightDockWidgetArea     )
     A = self . getAllowArea       ( A , areas , Qt . TopDockWidgetArea       )

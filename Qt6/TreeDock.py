@@ -80,7 +80,7 @@ class TreeDock         ( TreeWidget , AttachDock                           ) :
     ##########################################################################
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
-    self . MountClicked            ( 2                                       )
+    ## self . MountClicked            ( 2                                       )
     ##########################################################################
     return
   ############################################################################

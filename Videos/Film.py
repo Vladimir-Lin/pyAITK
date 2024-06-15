@@ -269,7 +269,18 @@ class Film               ( Columns                                         ) :
                           "aCodec"     : self . aCodec                     , \
                           "SampleRate" : self . SampleRate                 , \
                           "aBitRate"   : self . aBitRate                   , \
+                          "Signature"  : self . toSignature ( )            , \
                           "Details"    : self . Details                      }
+  ############################################################################
+  def toSignature ( self                                                   ) :
+    ##########################################################################
+    LN = self . Duration
+    FS = self . FileSize
+    FP = self . FPS
+    WW = self . Width
+    HH = self . Height
+    ##########################################################################
+    return f"{LN}:{FS}:{FP}:{WW}:{HH}"
   ############################################################################
   def Probe                 ( self , Filename                              ) :
     ##########################################################################

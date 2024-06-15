@@ -36,10 +36,11 @@ class DockWidget                ( QDockWidget , VirtualGui                 ) :
     ##########################################################################
     global dockStyleSheet
     ##########################################################################
-    super ( QDockWidget , self ) . __init__ ( parent                         )
-    super ( VirtualGui  , self ) . __init__ (                                )
-    self . Initialize                       ( self                           )
-    self . setPlanFunction                  ( plan                           )
+    super ( ) . __init__        ( parent                                     )
+    ## super ( QDockWidget , self ) . __init__ ( parent                         )
+    ## super ( VirtualGui  , self ) . __init__ (                                )
+    self . Initialize           ( self                                       )
+    self . setPlanFunction      ( plan                                       )
     ##########################################################################
     self . Regular      = True
     self . DockGeometry = QRect (                                            )
