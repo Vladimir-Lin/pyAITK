@@ -13,19 +13,23 @@ import gettext
 import json
 import vlc
 ##############################################################################
-from   PySide6                     import QtCore
-from   PySide6                     import QtGui
-from   PySide6                     import QtWidgets
-from   PySide6 . QtCore            import *
-from   PySide6 . QtGui             import *
-from   PySide6 . QtWidgets         import *
-from   AITK    . Qt6               import *
+import AITK
 ##############################################################################
-from   AITK    . Qt6 . MenuManager import MenuManager as MenuManager
-from   AITK    . Qt6 . AttachDock  import AttachDock  as AttachDock
-from   AITK    . Qt6 . Widget      import Widget      as Widget
+from   AITK    . Calendars . StarDate import StarDate          as StarDate
 ##############################################################################
-from                 . Panel       import Panel       as Panel
+from   PySide6                        import QtCore
+from   PySide6                        import QtGui
+from   PySide6                        import QtWidgets
+from   PySide6 . QtCore               import *
+from   PySide6 . QtGui                import *
+from   PySide6 . QtWidgets            import *
+from   AITK    . Qt6                  import *
+##############################################################################
+from   AITK    . Qt6 . MenuManager    import MenuManager as MenuManager
+from   AITK    . Qt6 . AttachDock     import AttachDock  as AttachDock
+from   AITK    . Qt6 . Widget         import Widget      as Widget
+##############################################################################
+from                 . Panel          import Panel       as Panel
 ##############################################################################
 class PlayInternalLayer          ( QWidget                                 ) :
   ############################################################################
@@ -51,16 +55,19 @@ class PlayInternalLayer          ( QWidget                                 ) :
     ##########################################################################
     return
 ##############################################################################
-class Player                       ( Widget , AttachDock                   ) :
+class Player               ( Widget , AttachDock                           ) :
   ############################################################################
-  HavingMenu  = 1371434312
+  HavingMenu      = 1371434312
   ############################################################################
-  attachNone  = Signal ( QWidget                                             )
-  attachDock  = Signal ( QWidget , str , int , int                           )
-  attachMdi   = Signal ( QWidget , int                                       )
-  Clicked     = Signal ( int                                                 )
+  Leave           = Signal ( QWidget                                         )
+  attachNone      = Signal ( QWidget                                         )
+  attachDock      = Signal ( QWidget , str , int , int                       )
+  attachMdi       = Signal ( QWidget , int                                   )
+  Clicked         = Signal ( int                                             )
+  PlayerCompleted = Signal ( int                                             )
+  NormalWindow    = Signal (                                                 )
   ############################################################################
-  def __init__         ( self , parent = None , plan = None                ) :
+  def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
     super (                   ) . __init__ ( parent , plan                   )
     super ( AttachDock , self ) . __init__ (                                 )
@@ -73,6 +80,8 @@ class Player                       ( Widget , AttachDock                   ) :
     ##########################################################################
     self . setMouseTracking ( True                                           )
     ##########################################################################
+    self . PID        = -1
+    self . Method     = 0
     self . INSTANCE   = vlc . Instance (                                     )
     self . MEDIA      = None
     self . PLAYER     = self . INSTANCE . media_player_new (                 )
@@ -87,6 +96,7 @@ class Player                       ( Widget , AttachDock                   ) :
     self . VHeight    = 480
     self . ShowPanel  = False
     self . isPause    = False
+    self . FilmJSON   = None
     ##########################################################################
     self . PANEL      = Panel ( self , self . PlanFunc                       )
     self . PANEL      . hide  (                                              )
@@ -94,6 +104,7 @@ class Player                       ( Widget , AttachDock                   ) :
     self . PANEL . Play   . clicked . connect ( self . DoPlay                )
     self . PANEL . Stop   . clicked . connect ( self . DoStop                )
     self . PANEL . Pause  . clicked . connect ( self . DoPause               )
+    self . PANEL . BWin   . clicked . connect ( self . BackToNormal          )
     ##########################################################################
     self . PANEL . Clock  . sliderMoved   . connect ( self . setPosition     )
     self . PANEL . Clock  . sliderPressed . connect ( self . setPosition     )
@@ -146,11 +157,26 @@ class Player                       ( Widget , AttachDock                   ) :
     ##########################################################################
     return
   ############################################################################
+  def defaultCloseEvent ( self , event                                     ) :
+    ##########################################################################
+    if                  ( self . Shutdown ( )                              ) :
+      event . accept    (                                                    )
+    else                                                                     :
+      event . ignore    (                                                    )
+    ##########################################################################
+    return
+  ############################################################################
   def closeEvent             ( self , e                                    ) :
     ##########################################################################
     self . defaultCloseEvent (        e                                      )
     ##########################################################################
     return
+  ############################################################################
+  def Shutdown          ( self                                             ) :
+    ##########################################################################
+    self . Leave . emit ( self                                               )
+    ##########################################################################
+    return True
   ############################################################################
   def MoveCallback              ( self , e                                 ) :
     ##########################################################################
@@ -206,6 +232,26 @@ class Player                       ( Widget , AttachDock                   ) :
     self . LAYER . setGeometry ( 0 , 0 , W , H                               )
     self . PANEL . setGeometry ( X , Y , W , T                               )
     ##########################################################################
+    self . PANEL . WinSize . setText ( f"{W} x {H}"                          )
+    ##########################################################################
+    return
+  ############################################################################
+  def SwitchFullScreen ( self , isFull                                     ) :
+    ##########################################################################
+    if                 (        isFull                                     ) :
+      ########################################################################
+      self . PANEL . BWin . show (                                           )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . PANEL . BWin . hide (                                           )
+    ##########################################################################
+    return
+  ############################################################################
+  def BackToNormal             ( self                                      ) :
+    ##########################################################################
+    self . NormalWindow . emit (                                             )
+    ##########################################################################
     return
   ############################################################################
   def DoPlay             ( self                                            ) :
@@ -215,7 +261,6 @@ class Player                       ( Widget , AttachDock                   ) :
     ##########################################################################
     self . isPause = False
     ##########################################################################
-    ## self . LAYER  . hide (                                                   )
     self . PLAYER . play (                                                   )
     ##########################################################################
     self . PANEL . Play  . setEnabled ( True                                 )
@@ -225,8 +270,6 @@ class Player                       ( Widget , AttachDock                   ) :
     self . PANEL . Pause . show       (                                      )
     ##########################################################################
     self . CLOCK         . start      (                                      )
-    ##########################################################################
-    self . setMouseTracking ( True                                           )
     ##########################################################################
     return
   ############################################################################
@@ -275,9 +318,11 @@ class Player                       ( Widget , AttachDock                   ) :
     ##########################################################################
     DD   = ""
     V    = R
-    for i in range ( 0 , 3 )                                                 :
+    ##########################################################################
+    for i in range ( 0 , 3                                                 ) :
       ########################################################################
-      Z  = V % 10
+      Z  = int     ( V % 10                                                  )
+      V  = int     ( V / 10                                                  )
       ########################################################################
       DD = f"{Z}{DD}"
     ##########################################################################
@@ -321,6 +366,11 @@ class Player                       ( Widget , AttachDock                   ) :
       if         ( not self . isPause                                      ) :
         ######################################################################
         self . DoStop (                                                      )
+        self . PANEL . Clock . setValue ( 0                                  )
+        ######################################################################
+        if            ( self . Method == 1                                 ) :
+          ####################################################################
+          self . TryAnotherPlaylist (                                        )
     ##########################################################################
     return
   ############################################################################
@@ -341,6 +391,19 @@ class Player                       ( Widget , AttachDock                   ) :
     ##########################################################################
     return
   ############################################################################
+  def isStopped ( self                                                     ) :
+    ##########################################################################
+    if          ( self . MEDIA in [ False , None                         ] ) :
+      return True
+    ##########################################################################
+    if          ( self . isPause                                           ) :
+      return False
+    ##########################################################################
+    if          ( self . PLAYER . is_playing (                           ) ) :
+      return False
+    ##########################################################################
+    return   True
+  ############################################################################
   def Prepare             ( self                                           ) :
     ##########################################################################
     ##########################################################################
@@ -357,6 +420,22 @@ class Player                       ( Widget , AttachDock                   ) :
     ##   self . Prepare (                                                       )
     ##########################################################################
     ## self   . Go      ( self . loading                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def SnapShot      ( self                                                 ) :
+    ##########################################################################
+    if              ( self . MEDIA in [ False , None                     ] ) :
+      return
+    ##########################################################################
+    NOW  = StarDate (                                                        )
+    NOW  . Now      (                                                        )
+    SDT  = NOW . Stardate
+    ##########################################################################
+    TEMP = self . Settings [ "Temp"                                          ]
+    F    = f"{TEMP}\\{SDT}.png"
+    ##########################################################################
+    self . PLAYER . video_take_snapshot ( 0 , F , 0 , 0                      )
     ##########################################################################
     return
   ############################################################################
@@ -384,10 +463,13 @@ class Player                       ( Widget , AttachDock                   ) :
     self . VWidth  = W
     self . VHeight = H
     ##########################################################################
+    self . PANEL . FilmSize . setText ( f"{W} x {H}"                         )
+    ##########################################################################
     return
   ############################################################################
   def Play ( self , Filename                                               ) :
     ##########################################################################
+    self . Method = 0
     self . MEDIA  = self . INSTANCE . media_new ( Filename                   )
     self . PLAYER . set_media                   ( self . MEDIA               )
     self . MEDIA  . parse                       (                            )
@@ -401,6 +483,7 @@ class Player                       ( Widget , AttachDock                   ) :
     ##########################################################################
     self . Duration = -1
     self . Range    = 1000
+    self . isPause  = False
     self . PANEL . Clock . setMaximum     ( 1000                             )
     self . PANEL . Clock . setValue       ( 0                                )
     ##########################################################################
@@ -417,6 +500,61 @@ class Player                       ( Widget , AttachDock                   ) :
     self . PANEL . raise_ (                                                  )
     ##########################################################################
     QTimer . singleShot   ( 100 , self , self . ShowFirstOnly                )
+    ##########################################################################
+    return
+  ############################################################################
+  def TryAnotherPlaylist          ( self                                   ) :
+    ##########################################################################
+    self . PlayerCompleted . emit ( self . PID                               )
+    ##########################################################################
+    return
+  ############################################################################
+  def FromPlaylist ( self , FILM                                           ) :
+    ##########################################################################
+    self . FilmJSON = FILM
+    ##########################################################################
+    Filename = FILM [ "Path"                                                 ]
+    TITLE    = FILM [ "Name"                                                 ]
+    ##########################################################################
+    self          . setWindowTitle              ( TITLE                      )
+    ##########################################################################
+    self . Method = 1
+    self . MEDIA  = self . INSTANCE . media_new ( Filename                   )
+    self . PLAYER . set_media                   ( self . MEDIA               )
+    self . MEDIA  . parse                       (                            )
+    ##########################################################################
+    self          . PLAYER . set_hwnd ( int ( self . LAYER . winId (     ) ) )
+    self          . PLAYER . video_set_mouse_input ( False                   )
+    self          . PLAYER . video_set_key_input   ( False                   )
+    ##########################################################################
+    DURATION        = FILM [ "Duration"                                      ]
+    DURATION        = int  ( DURATION / 1000                                 )
+    self . Duration = DURATION
+    self . Range    = int  ( float ( DURATION + 999 ) / 1000.0               )
+    self . isPause  = False
+    S               = self . toClock   ( DURATION                            )
+    self . PANEL . FLabel . setText    ( S                                   )
+    self . PANEL . Clock  . setMaximum ( self . Range                        )
+    self . PANEL . Clock  . setValue   ( 0                                   )
+    ##########################################################################
+    self . VWidth  = FILM [ "Width"                                          ]
+    self . VHeight = FILM [ "Height"                                         ]
+    ##########################################################################
+    self . PANEL . FilmSize . setText ( f"{self.VWidth} x {self.VHeight}"    )
+    ##########################################################################
+    self         . PLAYER . play          (                                  )
+    ##########################################################################
+    self . PANEL . Volume . setValue ( self . PLAYER . audio_get_volume ( )  )
+    ##########################################################################
+    self . PANEL . Play   . setEnabled ( True                                )
+    self . PANEL . Play   . hide       (                                     )
+    self . PANEL . Stop   . setEnabled ( True                                )
+    self . PANEL . Pause  . setEnabled ( True                                )
+    self . PANEL . Pause  . show       (                                     )
+    ##########################################################################
+    self . PANEL . raise_ (                                                  )
+    ##########################################################################
+    self . CLOCK . start  (                                                  )
     ##########################################################################
     return
   ############################################################################
