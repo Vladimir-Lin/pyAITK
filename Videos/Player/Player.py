@@ -661,7 +661,7 @@ class Player               ( Widget , AttachDock                           ) :
                 "Items"      : ITEMs                                         }
     self    . ATJ . append ( J                                               )
     ##########################################################################
-    print ( T , " : " , json . dumps ( NAMEs ) )
+    ## print ( T , " : " , json . dumps ( NAMEs ) )
     ##########################################################################
     if                 ( REMOVE                                            ) :
       os . remove      ( FILENAME                                            )
