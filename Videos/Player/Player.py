@@ -13,9 +13,14 @@ import gettext
 import json
 import vlc
 ##############################################################################
+import pathlib
+from   pathlib                        import Path
+##############################################################################
 import AITK
 ##############################################################################
 from   AITK    . Calendars . StarDate import StarDate          as StarDate
+from   AITK    . Documents . JSON     import Load              as LoadJson
+from   AITK    . Documents . JSON     import Save              as SaveJson
 ##############################################################################
 from   PySide6                        import QtCore
 from   PySide6                        import QtGui
@@ -29,6 +34,8 @@ from   AITK    . Qt6 . MenuManager    import MenuManager as MenuManager
 from   AITK    . Qt6 . AttachDock     import AttachDock  as AttachDock
 from   AITK    . Qt6 . Widget         import Widget      as Widget
 ##############################################################################
+from   AITK    . AI  . Pictures . Vision import Vision as AiVision
+##############################################################################
 from                 . Panel          import Panel       as Panel
 ##############################################################################
 class PlayInternalLayer          ( QWidget                                 ) :
@@ -39,9 +46,7 @@ class PlayInternalLayer          ( QWidget                                 ) :
     self . setMouseTracking      ( True                                      )
     self . MoveCallback = None
     ##########################################################################
-    ## self . setAttribute   ( Qt . WA_TranslucentBackground )
     PAL  = self   . palette      (                                           )
-    ## BKC  = QColor                (   0 ,   0 ,   0 ,   0                     )
     PAL  . setColor              ( QPalette . Window , Qt . black            )
     self . setAutoFillBackground ( True                                      )
     self . setPalette            ( PAL                                       )
@@ -69,6 +74,7 @@ class Player               ( Widget , AttachDock                           ) :
   GoMdi           = Signal ( int                                             )
   GoStack         = Signal ( int                                             )
   ClosePlayer     = Signal ( int                                             )
+  NextAnalysis    = Signal (                                                 )
   ############################################################################
   def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
@@ -91,29 +97,35 @@ class Player               ( Widget , AttachDock                           ) :
     self . PLAYER     = self . INSTANCE . media_player_new (                 )
     ##########################################################################
     self . LAYER      = PlayInternalLayer ( self                             )
-    self . LAYER . MoveCallback = self . MoveCallback
+    self . LAYER      . MoveCallback = self . MoveCallback
     ##########################################################################
-    self . ToolHeight = 64
-    self . Duration   = -1
-    self . Range      = 1000
-    self . VWidth     = 640
-    self . VHeight    = 480
-    self . ShowPanel  = False
-    self . isPause    = False
-    self . FilmJSON   = None
+    self . AIV        = AiVision (                                           )
+    ##########################################################################
+    self . ToolHeight  = 64
+    self . Duration    = -1
+    self . Range       = 1000
+    self . VWidth      = 640
+    self . VHeight     = 480
+    self . ShowPanel   = False
+    self . isPause     = False
+    self . isAnalyzing = False
+    self . FilmJSON    = None
+    self . ATS         =      [                                              ]
+    self . ATJ         =      [                                              ]
     ##########################################################################
     self . PANEL      = Panel ( self , self . PlanFunc                       )
     self . PANEL      . hide  (                                              )
     ##########################################################################
-    self . PANEL . Play   . clicked . connect ( self . DoPlay                )
-    self . PANEL . Stop   . clicked . connect ( self . DoStop                )
-    self . PANEL . Pause  . clicked . connect ( self . DoPause               )
-    self . PANEL . BWin   . clicked . connect ( self . BackToNormal          )
-    self . PANEL . SWin   . clicked . connect ( self . DockStack             )
-    self . PANEL . MWin   . clicked . connect ( self . DockMdi               )
+    self . PANEL . Play     . clicked . connect ( self . DoPlay              )
+    self . PANEL . Stop     . clicked . connect ( self . DoStop              )
+    self . PANEL . Pause    . clicked . connect ( self . DoPause             )
+    self . PANEL . BWin     . clicked . connect ( self . BackToNormal        )
+    self . PANEL . SWin     . clicked . connect ( self . DockStack           )
+    self . PANEL . MWin     . clicked . connect ( self . DockMdi             )
+    self . PANEL . Analysis . clicked . connect ( self . RunAnalysis         )
     ##########################################################################
-    self . PANEL . Clock  . sliderMoved   . connect ( self . setPosition     )
-    self . PANEL . Clock  . sliderPressed . connect ( self . setPosition     )
+    self . PANEL . Clock    . sliderMoved   . connect ( self . setPosition   )
+    self . PANEL . Clock    . sliderPressed . connect ( self . setPosition   )
     ##########################################################################
     AVL  = self  . PLAYER . audio_get_volume (                               )
     self . PANEL . Volume . setValue         ( AVL                           )
@@ -126,13 +138,18 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . setWindowIcon      ( QIcon ( ":/images/videogroup.png"          ) )
     ##########################################################################
+    self . NextAnalysis . connect ( self . DoAnalysis                        )
+    ##########################################################################
     return
   ############################################################################
-  def UpdatePanel              ( self                                      ) :
+  def UpdatePanel                    ( self                                ) :
     ##########################################################################
     self . PANEL . Settings     = self . Settings
     self . PANEL . Translations = self . Translations
-    self . PANEL . UpdatePanel (                                             )
+    self . PANEL . UpdatePanel       (                                       )
+    ##########################################################################
+    CONF = self  . Settings          [ "Classifier" ] [ "File"               ]
+    self . AIV   . setClassifierPath ( CONF                                  )
     ##########################################################################
     return
   ############################################################################
@@ -296,17 +313,22 @@ class Player               ( Widget , AttachDock                           ) :
     if                   ( self . MEDIA in [ False , None                ] ) :
       return
     ##########################################################################
+    if                   ( self . isAnalyzing                              ) :
+      self . StoreAnalysis (                                                 )
+    ##########################################################################
     self . isPause = False
+    self . isAnalyzing = False
     ##########################################################################
     self . PLAYER . play (                                                   )
     ##########################################################################
-    self . PANEL . Play  . setEnabled ( True                                 )
-    self . PANEL . Play  . hide       (                                      )
-    self . PANEL . Stop  . setEnabled ( True                                 )
-    self . PANEL . Pause . setEnabled ( True                                 )
-    self . PANEL . Pause . show       (                                      )
+    self . PANEL . Play     . setEnabled ( True                              )
+    self . PANEL . Play     . hide       (                                   )
+    self . PANEL . Stop     . setEnabled ( True                              )
+    self . PANEL . Pause    . setEnabled ( True                              )
+    self . PANEL . Pause    . show       (                                   )
+    self . PANEL . Analysis . hide       (                                   )
     ##########################################################################
-    self . CLOCK         . start      (                                      )
+    self . CLOCK            . start      (                                   )
     ##########################################################################
     return
   ############################################################################
@@ -315,17 +337,22 @@ class Player               ( Widget , AttachDock                           ) :
     if                   ( self . MEDIA in [ False , None                ] ) :
       return
     ##########################################################################
+    if                   ( self . isAnalyzing                              ) :
+      self . StoreAnalysis (                                                 )
+    ##########################################################################
     self . isPause = False
+    self . isAnalyzing = False
     ##########################################################################
     self . PLAYER . stop (                                                   )
     ##########################################################################
-    self . PANEL . Play  . setEnabled ( True                                 )
-    self . PANEL . Play  . show       (                                      )
-    self . PANEL . Stop  . setEnabled ( False                                )
-    self . PANEL . Pause . setEnabled ( True                                 )
-    self . PANEL . Pause . hide       (                                      )
+    self . PANEL . Play     . setEnabled ( True                              )
+    self . PANEL . Play     . show       (                                   )
+    self . PANEL . Stop     . setEnabled ( False                             )
+    self . PANEL . Pause    . setEnabled ( True                              )
+    self . PANEL . Pause    . hide       (                                   )
+    self . PANEL . Analysis . hide       (                                   )
     ##########################################################################
-    self . CLOCK         . stop       (                                      )
+    self . CLOCK            . stop       (                                   )
     ##########################################################################
     return
   ############################################################################
@@ -336,15 +363,16 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . isPause = True
     ##########################################################################
-    self . PLAYER . pause (                                                   )
+    self . PLAYER . pause (                                                  )
     ##########################################################################
-    self . PANEL . Play  . setEnabled ( True                                 )
-    self . PANEL . Play  . show       (                                      )
-    self . PANEL . Stop  . setEnabled ( True                                 )
-    self . PANEL . Pause . setEnabled ( True                                 )
-    self . PANEL . Pause . hide       (                                      )
+    self . PANEL . Play     . setEnabled ( True                              )
+    self . PANEL . Play     . show       (                                   )
+    self . PANEL . Stop     . setEnabled ( True                              )
+    self . PANEL . Pause    . setEnabled ( True                              )
+    self . PANEL . Pause    . hide       (                                   )
+    self . PANEL . Analysis . show       (                                   )
     ##########################################################################
-    self . CLOCK         . stop       (                                      )
+    self . CLOCK            . stop       (                                   )
     ##########################################################################
     return
   ############################################################################
@@ -592,6 +620,121 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL . raise_ (                                                  )
     ##########################################################################
     self . CLOCK . start  (                                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def StoreAnalysis ( self                                                 ) :
+    ##########################################################################
+    OFILE = self . Settings [ "Classifier" ] [ "Output"                      ]
+    SaveJson        ( OFILE , self . ATJ                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def HandleAnalysis ( self , T , FILENAME                                 ) :
+    ##########################################################################
+    FE    = Path     ( FILENAME                                              )
+    ##########################################################################
+    if               ( not FE . exists (                                 ) ) :
+      ########################################################################
+      self . NextAnalysis . emit (                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    if               ( not FE . is_file (                                ) ) :
+      ########################################################################
+      self . NextAnalysis . emit (                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    self  . ATS  . append ( T                                                )
+    ##########################################################################
+    MAXI    = self . Settings [ "Classifier" ] [ "Max"                       ]
+    TRIGGER = self . Settings [ "Classifier" ] [ "Probability"               ]
+    REMOVE  = self . Settings [ "Classifier" ] [ "Remove"                    ]
+    ##########################################################################
+    IMG     = self . AIV . Image          ( FILENAME                         )
+    ITEMs   = self . AIV . Classification ( IMG , MAXI , TRIGGER             )
+    NAMEs   = self . AIV . toCategories   ( ITEMs                            )
+    ##########################################################################
+    J       = { "Time"       : T                                             ,
+                "Categories" : NAMEs                                         ,
+                "Items"      : ITEMs                                         }
+    self    . ATJ . append ( J                                               )
+    ##########################################################################
+    print ( T , " : " , json . dumps ( NAMEs ) )
+    ##########################################################################
+    if                 ( REMOVE                                            ) :
+      os . remove      ( FILENAME                                            )
+    ##########################################################################
+    self . NextAnalysis . emit (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def DoAnalysis    ( self                                                 ) :
+    ##########################################################################
+    if              ( not self . isAnalyzing                               ) :
+      return
+    ##########################################################################
+    L    = self . PLAYER . get_length (                                      )
+    T    = self . PLAYER . get_time   (                                      )
+    ##########################################################################
+    if              ( T in self . ATS                                      ) :
+      ########################################################################
+      self . PLAYER . set_time   ( T + 100                                   )
+      self . NextAnalysis . emit (                                           )
+      ########################################################################
+      return
+    ##########################################################################
+    if              ( ( L - T ) < 300                                      ) :
+      ########################################################################
+      self . isAnalyzing = False
+      self . PANEL . Analysis . show (                                       )
+      self . StoreAnalysis (                                                 )
+      ########################################################################
+      return
+    ##########################################################################
+    VPOS  = self . PLAYER . get_position (                                   )
+    POS   = int  ( VPOS * float ( self . Range    )                          )
+    KT    = int  ( VPOS * float ( self . Duration )                          )
+    S     = self . toClock ( KT                                              )
+    ##########################################################################
+    self  . PANEL . Clock  . setValue   ( POS                                )
+    self  . PANEL . Clock  . setToolTip ( S                                  )
+    self  . PANEL . CLabel . setText    ( S                                  )
+    ##########################################################################
+    NOW  = StarDate (                                                        )
+    NOW  . Now      (                                                        )
+    SDT  = NOW . Stardate
+    ##########################################################################
+    K    = f"{T}"
+    while           ( len ( K ) < 9                                        ) :
+      K  = f"0{K}"
+    ##########################################################################
+    TEMP = self . Settings [ "Temp"                                          ]
+    F    = f"{TEMP}\\{K}-{SDT}.png"
+    ##########################################################################
+    self . PLAYER . video_take_snapshot ( 0 , F , 0 , 0                      )
+    ##########################################################################
+    threading   . Thread ( target = self . HandleAnalysis              ,     \
+                           args   = ( T , F                            , ) ) \
+                . start  (                                                   )
+    ##########################################################################
+    self . PLAYER . next_frame (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def RunAnalysis ( self                                                   ) :
+    ##########################################################################
+    if            ( self . isAnalyzing                                     ) :
+      return
+    ##########################################################################
+    self . isAnalyzing = True
+    self . ATS         =       [                                             ]
+    self . ATJ         =       [                                             ]
+    ##########################################################################
+    self . PANEL . Analysis . hide (                                         )
+    ##########################################################################
+    self . NextAnalysis . emit (                                             )
     ##########################################################################
     return
   ############################################################################

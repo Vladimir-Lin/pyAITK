@@ -90,6 +90,13 @@ class Panel                        ( Widget                                ) :
     self . MWin     . setEnabled  ( True                                     )
     self . MWin     . hide        (                                          )
     ##########################################################################
+    AICO            = QIcon       ( ":/images/galleries.png"                 )
+    self . Analysis = QPushButton ( AICO , "" , self                         )
+    self . Analysis . setIconSize ( QSize ( 48 , 48                        ) )
+    self . Analysis . setFlat     ( True                                     )
+    self . Analysis . setEnabled  ( True                                     )
+    self . Analysis . hide        (                                          )
+    ##########################################################################
     self . CLabel   = QLabel      ( self                                     )
     self . CLabel   . show        (                                          )
     ##########################################################################
@@ -104,25 +111,28 @@ class Panel                        ( Widget                                ) :
     ##########################################################################
     return
   ############################################################################
-  def UpdatePanel               ( self                                     ) :
+  def UpdatePanel                  ( self                                  ) :
     ##########################################################################
-    MSG  = self  . Translations [ "Player" ] [ "Play"                        ]
-    self . Play  . setToolTip   ( MSG                                        )
+    MSG  = self     . Translations [ "Player" ] [ "Play"                     ]
+    self . Play     . setToolTip   ( MSG                                     )
     ##########################################################################
-    MSG  = self  . Translations [ "Player" ] [ "Stop"                        ]
-    self . Stop  . setToolTip   ( MSG                                        )
+    MSG  = self     . Translations [ "Player" ] [ "Stop"                     ]
+    self . Stop     . setToolTip   ( MSG                                     )
     ##########################################################################
-    MSG  = self  . Translations [ "Player" ] [ "Pause"                       ]
-    self . Pause . setToolTip   ( MSG                                        )
+    MSG  = self     . Translations [ "Player" ] [ "Pause"                    ]
+    self . Pause    . setToolTip   ( MSG                                     )
     ##########################################################################
-    MSG  = self  . Translations [ "Player" ] [ "NormalWindow"                ]
-    self . BWin  . setToolTip   ( MSG                                        )
+    MSG  = self     . Translations [ "Player" ] [ "NormalWindow"             ]
+    self . BWin     . setToolTip   ( MSG                                     )
     ##########################################################################
-    MSG  = self  . Translations [ "Player" ] [ "Stacked"                     ]
-    self . SWin  . setToolTip   ( MSG                                        )
+    MSG  = self     . Translations [ "Player" ] [ "Stacked"                  ]
+    self . SWin     . setToolTip   ( MSG                                     )
     ##########################################################################
-    MSG  = self  . Translations [ "Player" ] [ "MDI"                         ]
-    self . MWin  . setToolTip   ( MSG                                        )
+    MSG  = self     . Translations [ "Player" ] [ "MDI"                      ]
+    self . MWin     . setToolTip   ( MSG                                     )
+    ##########################################################################
+    MSG  = self     . Translations [ "Player" ] [ "Analysis"                 ]
+    self . Analysis . setToolTip   ( MSG                                     )
     ##########################################################################
     return
   ############################################################################
@@ -173,6 +183,7 @@ class Panel                        ( Widget                                ) :
     self . BWin     . setGeometry (      96 , 16 ,  48 , 48                  )
     self . SWin     . setGeometry (     144 , 16 ,  48 , 48                  )
     self . MWin     . setGeometry (     144 , 16 ,  48 , 48                  )
+    self . Analysis . setGeometry (     192 , 16 ,  48 , 48                  )
     ##########################################################################
     return
   ############################################################################
