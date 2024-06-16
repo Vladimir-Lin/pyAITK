@@ -76,6 +76,20 @@ class Panel                        ( Widget                                ) :
     self . BWin     . setEnabled  ( True                                     )
     self . BWin     . hide        (                                          )
     ##########################################################################
+    CICO            = QIcon       ( ":/images/computer.png"                  )
+    self . SWin     = QPushButton ( CICO , "" , self                         )
+    self . SWin     . setIconSize ( QSize ( 48 , 48                        ) )
+    self . SWin     . setFlat     ( True                                     )
+    self . SWin     . setEnabled  ( True                                     )
+    self . SWin     . show        (                                          )
+    ##########################################################################
+    MICO            = QIcon       ( ":/images/hidespeech.png"                )
+    self . MWin     = QPushButton ( MICO , "" , self                         )
+    self . MWin     . setIconSize ( QSize ( 48 , 48                        ) )
+    self . MWin     . setFlat     ( True                                     )
+    self . MWin     . setEnabled  ( True                                     )
+    self . MWin     . hide        (                                          )
+    ##########################################################################
     self . CLabel   = QLabel      ( self                                     )
     self . CLabel   . show        (                                          )
     ##########################################################################
@@ -135,6 +149,8 @@ class Panel                        ( Widget                                ) :
     self . Pause    . setGeometry (       0 , 16 ,  48 , 48                  )
     self . Stop     . setGeometry (      48 , 16 ,  48 , 48                  )
     self . BWin     . setGeometry (      96 , 16 ,  48 , 48                  )
+    self . SWin     . setGeometry (     144 , 16 ,  48 , 48                  )
+    self . MWin     . setGeometry (     144 , 16 ,  48 , 48                  )
     ##########################################################################
     return
   ############################################################################

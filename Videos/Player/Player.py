@@ -66,6 +66,8 @@ class Player               ( Widget , AttachDock                           ) :
   Clicked         = Signal ( int                                             )
   PlayerCompleted = Signal ( int                                             )
   NormalWindow    = Signal (                                                 )
+  GoMdi           = Signal ( int                                             )
+  GoStack         = Signal ( int                                             )
   ############################################################################
   def __init__             ( self , parent = None , plan = None            ) :
     ##########################################################################
@@ -82,6 +84,7 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . PID        = -1
     self . Method     = 0
+    self . DockAt     = 0
     self . INSTANCE   = vlc . Instance (                                     )
     self . MEDIA      = None
     self . PLAYER     = self . INSTANCE . media_player_new (                 )
@@ -105,6 +108,8 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL . Stop   . clicked . connect ( self . DoStop                )
     self . PANEL . Pause  . clicked . connect ( self . DoPause               )
     self . PANEL . BWin   . clicked . connect ( self . BackToNormal          )
+    self . PANEL . SWin   . clicked . connect ( self . DockStack             )
+    self . PANEL . MWin   . clicked . connect ( self . DockMdi               )
     ##########################################################################
     self . PANEL . Clock  . sliderMoved   . connect ( self . setPosition     )
     self . PANEL . Clock  . sliderPressed . connect ( self . setPosition     )
@@ -251,6 +256,28 @@ class Player               ( Widget , AttachDock                           ) :
   def BackToNormal             ( self                                      ) :
     ##########################################################################
     self . NormalWindow . emit (                                             )
+    ##########################################################################
+    return
+  ############################################################################
+  def DockMdi                  ( self                                      ) :
+    ##########################################################################
+    self . DockAt = 0
+    ##########################################################################
+    self . PANEL . SWin . show (                                             )
+    self . PANEL . MWin . hide (                                             )
+    ##########################################################################
+    self . GoMdi . emit        ( self . PID                                  )
+    ##########################################################################
+    return
+  ############################################################################
+  def DockStack                ( self                                      ) :
+    ##########################################################################
+    self . DockAt = 1
+    ##########################################################################
+    self . PANEL . SWin . hide (                                             )
+    self . PANEL . MWin . show (                                             )
+    ##########################################################################
+    self . GoStack . emit      ( self . PID                                  )
     ##########################################################################
     return
   ############################################################################
