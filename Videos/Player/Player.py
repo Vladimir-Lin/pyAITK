@@ -12,31 +12,38 @@ import threading
 import gettext
 import json
 import vlc
+import math
+import cv2
 ##############################################################################
 import pathlib
-from   pathlib                        import Path
+from   pathlib                           import Path
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK    . Calendars . StarDate import StarDate          as StarDate
-from   AITK    . Documents . JSON     import Load              as LoadJson
-from   AITK    . Documents . JSON     import Save              as SaveJson
+from   AITK    . Calendars . StarDate    import StarDate    as StarDate
+from   AITK    . Documents . JSON        import Load        as LoadJson
+from   AITK    . Documents . JSON        import Save        as SaveJson
 ##############################################################################
-from   PySide6                        import QtCore
-from   PySide6                        import QtGui
-from   PySide6                        import QtWidgets
-from   PySide6 . QtCore               import *
-from   PySide6 . QtGui                import *
-from   PySide6 . QtWidgets            import *
-from   AITK    . Qt6                  import *
+from   PySide6                           import QtCore
+from   PySide6                           import QtGui
+from   PySide6                           import QtWidgets
+from   PySide6 . QtCore                  import *
+from   PySide6 . QtGui                   import *
+from   PySide6 . QtWidgets               import *
+from   AITK    . Qt6                     import *
 ##############################################################################
-from   AITK    . Qt6 . MenuManager    import MenuManager as MenuManager
-from   AITK    . Qt6 . AttachDock     import AttachDock  as AttachDock
-from   AITK    . Qt6 . Widget         import Widget      as Widget
+from   AITK    . Qt6 . MenuManager       import MenuManager as MenuManager
+from   AITK    . Qt6 . AttachDock        import AttachDock  as AttachDock
+from   AITK    . Qt6 . Widget            import Widget      as Widget
 ##############################################################################
-from   AITK    . AI  . Pictures . Vision import Vision as AiVision
+from   AITK    . AI  . Pictures . Vision import Vision      as AiVision
 ##############################################################################
-from                 . Panel          import Panel       as Panel
+from   AITK    . Pictures . Picture      import Picture     as PictureItem
+from   AITK    . People . Faces . Face   import Face        as FaceItem
+from   AITK    . People . Body  . Tit    import Tit         as TitItem
+from   AITK    . People . Body  . Body   import Body        as BodyItem
+##############################################################################
+from                 . Panel             import Panel       as Panel
 ##############################################################################
 class PlayInternalLayer          ( QWidget                                 ) :
   ############################################################################
@@ -100,6 +107,7 @@ class Player               ( Widget , AttachDock                           ) :
     self . LAYER      . MoveCallback = self . MoveCallback
     ##########################################################################
     self . AIV        = AiVision (                                           )
+    self . BDI        = None
     ##########################################################################
     self . ToolHeight  = 64
     self . Duration    = -1
@@ -149,7 +157,11 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL . UpdatePanel       (                                       )
     ##########################################################################
     CONF = self  . Settings          [ "Classifier" ] [ "File"               ]
-    self . AIV   . setClassifierPath ( CONF                                  )
+    MAXI = self . Settings           [ "Classifier" ] [ "Max"                ]
+    self . AIV   . setClassifierPath ( CONF , MAXI                           )
+    ##########################################################################
+    self . BDI        = BodyItem (                                           )
+    self . BOOB       = TitItem  (                                           )
     ##########################################################################
     return
   ############################################################################
@@ -648,20 +660,33 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self  . ATS  . append ( T                                                )
     ##########################################################################
-    MAXI    = self . Settings [ "Classifier" ] [ "Max"                       ]
     TRIGGER = self . Settings [ "Classifier" ] [ "Probability"               ]
     REMOVE  = self . Settings [ "Classifier" ] [ "Remove"                    ]
     ##########################################################################
-    IMG     = self . AIV . Image          ( FILENAME                         )
-    ITEMs   = self . AIV . Classification ( IMG , MAXI , TRIGGER             )
-    NAMEs   = self . AIV . toCategories   ( ITEMs                            )
+    IMG   = self . AIV . Image          ( FILENAME                           )
+    ITEMs = self . AIV . Classification ( IMG , TRIGGER                      )
+    NAMEs = self . AIV . toCategories   ( ITEMs                              )
     ##########################################################################
-    J       = { "Time"       : T                                             ,
-                "Categories" : NAMEs                                         ,
-                "Items"      : ITEMs                                         }
-    self    . ATJ . append ( J                                               )
+    J     = { "Time"       : T                                               ,
+              "Categories" : NAMEs                                           ,
+              "Items"      : ITEMs                                           }
+    self  . ATJ . append ( J                                                 )
     ##########################################################################
     ## print ( T , " : " , json . dumps ( NAMEs ) )
+    ##########################################################################
+    PIC = PictureItem  (                                                     )
+    OK  = PIC . Load   ( FILENAME                                            )
+    ##########################################################################
+    if                 ( OK                                                ) :
+      ########################################################################
+      IMX = PIC . toOpenCV (                                                 )
+      RGB = cv2 . cvtColor ( IMX , cv2 . COLOR_BGR2RGB                       )
+      WW  = PIC . Width    (                                                 )
+      HH  = PIC . Height   (                                                 )
+      ########################################################################
+      KPS = self . BDI . GetBodyKeyPoints ( RGB , WW , HH                    )
+      ########################################################################
+      ## print ( json . dumps ( KPS ) )
     ##########################################################################
     if                 ( REMOVE                                            ) :
       os . remove      ( FILENAME                                            )

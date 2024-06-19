@@ -23,10 +23,22 @@ class Vision   (                                                           ) :
     ##########################################################################
     return
   ############################################################################
-  def setClassifierPath ( self , classifier                                ) :
+  def setClassifierPath ( self , classifier , MAXITEMS = 5000              ) :
     ##########################################################################
+    ImageClassifier        = mediapipe . tasks . vision . ImageClassifier
+    ImageClassifierOptions = mediapipe . tasks . vision . ImageClassifierOptions
+    VisionRunningMode      = mediapipe . tasks . vision . RunningMode
+    ##########################################################################
+    self . Catalog    = None
     self . Classifier = classifier
     self . BaseOpts   = mediapipe . tasks . BaseOptions ( model_asset_path = classifier )
+    ##########################################################################
+    OPTS              = ImageClassifierOptions                             ( \
+                          base_options = self . BaseOpts                   , \
+                          max_results  = MAXITEMS                          , \
+                          running_mode = VisionRunningMode . IMAGE           )
+    ##########################################################################
+    self . Catalog = ImageClassifier . create_from_options ( OPTS )
     ##########################################################################
     return
   ############################################################################
@@ -35,37 +47,28 @@ class Vision   (                                                           ) :
   ############################################################################
   def Classification ( self                                                , \
                        IMAGE                                               , \
-                       MAXITEMS    = 5000                                  , \
                        Probability = 0.00001                               ) :
     ##########################################################################
-    ImageClassifier        = mediapipe . tasks . vision . ImageClassifier
-    ImageClassifierOptions = mediapipe . tasks . vision . ImageClassifierOptions
-    VisionRunningMode      = mediapipe . tasks . vision . RunningMode
+    if               ( self . Catalog in [ False , None                  ] ) :
+      return         [                                                       ]
     ##########################################################################
     ITEMs                  = [                                               ]
     ##########################################################################
-    OPTS                   = ImageClassifierOptions                        ( \
-                               base_options = self . BaseOpts              , \
-                               max_results  = MAXITEMS                     , \
-                               running_mode = VisionRunningMode . IMAGE      )
+    RESULT = self . Catalog . classify ( IMAGE                               )
     ##########################################################################
-    with ImageClassifier . create_from_options ( OPTS ) as classifier        :
+    for Scope in RESULT . classifications                                    :
       ########################################################################
-      RESULT = classifier . classify ( IMAGE                                 )
-      ########################################################################
-      for Scope in RESULT . classifications                                  :
+      for item in Scope . categories                                         :
         ######################################################################
-        for item in Scope . categories                                       :
-          ####################################################################
-          if ( item . score < Probability                                  ) :
-            continue
-          ####################################################################
-          J = { "Id"          : item . index                                 ,
-                "Name"        : item . display_name                          ,
-                "Probability" : item . score                                 ,
-                "Category"    : item . category_name                         }
-          ####################################################################
-          ITEMs . append ( J                                                 )
+        if ( item . score < Probability                                    ) :
+          continue
+        ######################################################################
+        J = { "Id"          : item . index                                   ,
+              "Name"        : item . display_name                            ,
+              "Probability" : item . score                                   ,
+              "Category"    : item . category_name                           }
+        ######################################################################
+        ITEMs . append ( J                                                   )
     ##########################################################################
     return ITEMs
   ############################################################################

@@ -84,13 +84,17 @@ class Body        (                                                        ) :
   ############################################################################
   def GetBodyKeyPoints              ( self , Image , W , H                 ) :
     ##########################################################################
-    J     =                         { "Nose"  : { }                        , \
+    J     =                         { "Body"  : { "Exists" : False       } , \
+                                      "Nose"  : { }                        , \
                                       "Left"  : { }                        , \
                                       "Right" : { }                          }
     ##########################################################################
     MPX   = self . mpPose . PoseLandmark
     KPS   = self . Pose   . process (        Image                           )
     KPL   = KPS  . pose_landmarks
+    ##########################################################################
+    if                              ( KPL in [ False , None              ] ) :
+      return J
     ##########################################################################
     J [ "Nose"                  ] = self . ParseCoordinate ( KPL , MPX . NOSE             , W , H )
     ##########################################################################
@@ -127,6 +131,8 @@ class Body        (                                                        ) :
     J [ "Right" ] [ "Shoulder"  ] = self . ParseCoordinate ( KPL , MPX . RIGHT_SHOULDER   , W , H )
     J [ "Right" ] [ "Thumb"     ] = self . ParseCoordinate ( KPL , MPX . RIGHT_THUMB      , W , H )
     J [ "Right" ] [ "Wrist"     ] = self . ParseCoordinate ( KPL , MPX . RIGHT_WRIST      , W , H )
+    ##########################################################################
+    J [ "Body"  ] [ "Exists"    ] = True
     ##########################################################################
     return J
 ##############################################################################
