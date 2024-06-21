@@ -682,8 +682,6 @@ class Player               ( Widget , AttachDock                           ) :
     ITEMs = self . AIV . Classification ( IMG , TRIGGER                      )
     NAMEs = self . AIV . toCategories   ( ITEMs                              )
     ##########################################################################
-    print ( T , " : " , json . dumps ( NAMEs ) )
-    ##########################################################################
     TRIGGER = self . Settings [ "Objectron" ] [ "Probability"                ]
     OBJs    = self  . AIV . ObjectDetection ( IMG , TRIGGER                  )
     ##########################################################################
@@ -697,7 +695,6 @@ class Player               ( Widget , AttachDock                           ) :
           ####################################################################
           NAMEs . append ( N                                                 )
     ##########################################################################
-    print ( "OBJs : " , json . dumps ( OBJs ) )
     ##########################################################################
     BODYs   =          [                                                     ]
     PIC = PictureItem  (                                                     )
@@ -715,8 +712,6 @@ class Player               ( Widget , AttachDock                           ) :
       if                   ( KPS [ "Body" ] [ "Exists" ]                   ) :
         ######################################################################
         BODYs . append     ( KPS                                             )
-      ########################################################################
-      print ( json . dumps ( KPS ) )
     ##########################################################################
     J     = { "Time"       : T                                             , \
               "Categories" : NAMEs                                         , \
@@ -724,6 +719,7 @@ class Player               ( Widget , AttachDock                           ) :
               "Objects"    : OBJs                                          , \
               "Bodies"     : BODYs                                           }
     self  . ATJ . append ( J                                                 )
+    print ( json . dumps ( J ) )
     ##########################################################################
     if                 ( REMOVE                                            ) :
       os . remove      ( FILENAME                                            )
