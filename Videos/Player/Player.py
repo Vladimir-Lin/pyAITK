@@ -791,7 +791,7 @@ class Player               ( Widget , AttachDock                           ) :
               "Faces"      : FACEs                                         , \
               "Meshes"     : MESHs                                           }
     self  . ATJ . append ( J                                                 )
-    print ( json . dumps ( J ) )
+    ## print ( json . dumps ( J ) )
     ##########################################################################
     if                 ( REMOVE                                            ) :
       os . remove      ( FILENAME                                            )
