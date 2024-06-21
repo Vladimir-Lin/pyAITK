@@ -14,6 +14,7 @@ import json
 import vlc
 import math
 import cv2
+import dlib
 ##############################################################################
 import pathlib
 from   pathlib                           import Path
@@ -165,8 +166,43 @@ class Player               ( Widget , AttachDock                           ) :
     THRS = self  . Settings          [ "Objectron"  ] [ "Threshold"          ]
     self . AIV   . setObjectronPath  ( CONF , MAXI , THRS                    )
     ##########################################################################
-    self . BDI        = BodyItem (                                           )
-    self . BOOB       = TitItem  (                                           )
+    self . BDI   = BodyItem          (                                       )
+    self . BOOB  = TitItem           (                                       )
+    ##########################################################################
+    AI           = self . Settings   [ "AiData"                              ]
+    DIR          = self . Settings   [ "Data"                                ]
+    ##########################################################################
+    SVM          = AI                [ "Boobs-SVM"                           ]
+    SVM          = f"{DIR}/{SVM}"
+    ##########################################################################
+    CASCADE      = AI                [ "Boobs-Cascade"                       ]
+    CASCADE      = f"{DIR}/{CASCADE}"
+    ##########################################################################
+    self . BOOB  . LoadClassifier    ( CASCADE                               )
+    self . BOOB  . LoadDetector      ( SVM                                   )
+    ##########################################################################
+    HAAR         = AI                [ "HAAR"                                ]
+    HAAR         = f"{DIR}/{HAAR}"
+    ##########################################################################
+    EYES         = AI                [ "Eyes"                                ]
+    EYES         = f"{DIR}/{EYES}"
+    ##########################################################################
+    MOUTH        = AI                [ "Mouth"                               ]
+    MOUTH        = f"{DIR}/{MOUTH}"
+    ##########################################################################
+    FIVEMARKS    = AI                [ "Fivemarks"                           ]
+    FIVEMARKS    = f"{DIR}/{FIVEMARKS}"
+    ##########################################################################
+    LANDMARKS    = AI                [ "Landmarks"                           ]
+    LANDMARKS    = f"{DIR}/{LANDMARKS}"
+    ##########################################################################
+    RESNET       = AI                [ "Resnet"                              ]
+    RESNET       = f"{DIR}/{RESNET}"
+    ##########################################################################
+    self . FC        = cv2  . CascadeClassifier         ( HAAR               )
+    self . FIVE      = dlib . shape_predictor           ( FIVEMARKS          )
+    self . PREDICTOR = dlib . shape_predictor           ( LANDMARKS          )
+    self . FACIAL    = dlib . face_recognition_model_v1 ( RESNET             )
     ##########################################################################
     return
   ############################################################################
@@ -695,28 +731,65 @@ class Player               ( Widget , AttachDock                           ) :
           ####################################################################
           NAMEs . append ( N                                                 )
     ##########################################################################
-    BODYs   =          [                                                     ]
-    PIC = PictureItem  (                                                     )
-    OK  = PIC . Load   ( FILENAME                                            )
+    BODYs   =               [                                                ]
+    BOOBs   =               [                                                ]
+    FACEs   =               [                                                ]
+    MESHs   =               [                                                ]
+    PIC     = PictureItem   (                                                )
+    OK      = PIC . Load    ( FILENAME                                       )
     ##########################################################################
-    if                 ( OK                                                ) :
+    if                      ( OK                                           ) :
       ########################################################################
-      IMX = PIC . toOpenCV (                                                 )
-      RGB = cv2 . cvtColor ( IMX , cv2 . COLOR_BGR2RGB                       )
-      WW  = PIC . Width    (                                                 )
-      HH  = PIC . Height   (                                                 )
+      IMX  = PIC . toOpenCV (                                                )
+      GRAY = cv2 . cvtColor ( IMX , cv2 . COLOR_BGR2GRAY                     )
+      RGB  = cv2 . cvtColor ( IMX , cv2 . COLOR_BGR2RGB                      )
+      WW   = PIC . Width    (                                                )
+      HH   = PIC . Height   (                                                )
       ########################################################################
       KPS = self . BDI . GetBodyKeyPoints ( RGB , WW , HH                    )
       ########################################################################
       if                   ( KPS [ "Body" ] [ "Exists" ]                   ) :
         ######################################################################
         BODYs . append     ( KPS                                             )
+      ########################################################################
+      BOOBz   = self . BOOB . ToBoobs         ( GRAY                         )
+      DLIBs   = self . BOOB . ToDlibBoobs     ( RGB                          )
+      BOOBs   = self . BOOB . BoobsToJson     ( BOOBz , BOOBs                )
+      BOOBs   = self . BOOB . DlibBoobsToJson ( DLIBs , BOOBs                )
+      ########################################################################
+      FACE    = FaceItem                      (                              )
+      FACE    . Classifier = self . FC
+      FACE    . Fivemarks  = self . FIVE
+      FACE    . Predictor  = self . PREDICTOR
+      FACE    . Facial     = self . FACIAL
+      ########################################################################
+      FACEz   = FACE . ToFaces                ( GRAY                         )
+      ########################################################################
+      for F in FACEz                                                         :
+        ######################################################################
+        FACE . setFull                        ( WW , HH                      )
+        SRQ  = FACE . RectangleFromOpenCV     ( F                            )
+        KRQ  = FACE . ScaleRectangle          ( SRQ , 1.4                    )
+        KQQ  = FACE . ToSquareRectangle       ( KRQ                          )
+        SSK  = FACE . RestraintRectangle      ( FACE . Full , KQQ            )
+        ######################################################################
+        ## try                                                                  :
+          ####################################################################
+        ##   DJS = json . dumps                  ( SSK                          )
+        ##   if                                  ( len ( DJS ) > 0            ) :
+        FACEs . append                        ( SSK                          )
+          ####################################################################
+        ## except                                                               :
+        ##   pass
     ##########################################################################
     J     = { "Time"       : T                                             , \
               "Categories" : NAMEs                                         , \
               "Items"      : ITEMs                                         , \
               "Objects"    : OBJs                                          , \
-              "Bodies"     : BODYs                                           }
+              "Bodies"     : BODYs                                         , \
+              "Boobs"      : BOOBs                                         , \
+              "Faces"      : FACEs                                         , \
+              "Meshes"     : MESHs                                           }
     self  . ATJ . append ( J                                                 )
     print ( json . dumps ( J ) )
     ##########################################################################

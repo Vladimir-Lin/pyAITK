@@ -73,10 +73,10 @@ class Vision   (                                                           ) :
       J = { "Box"        : { }                                             , \
             "Categories" : [ ]                                               }
       ########################################################################
-      J [ "Box" ] [ "X" ] = OBJ . bounding_box . origin_x
-      J [ "Box" ] [ "Y" ] = OBJ . bounding_box . origin_y
-      J [ "Box" ] [ "W" ] = OBJ . bounding_box . width
-      J [ "Box" ] [ "H" ] = OBJ . bounding_box . height
+      J [ "Box" ] [ "X" ] = int ( OBJ . bounding_box . origin_x              )
+      J [ "Box" ] [ "Y" ] = int ( OBJ . bounding_box . origin_y              )
+      J [ "Box" ] [ "W" ] = int ( OBJ . bounding_box . width                 )
+      J [ "Box" ] [ "H" ] = int ( OBJ . bounding_box . height                )
       ########################################################################
       for item in OBJ . categories                                           :
         ######################################################################
@@ -87,7 +87,7 @@ class Vision   (                                                           ) :
         ######################################################################
         if ( item . index         not in [ False , None                  ] ) :
           ####################################################################
-          IDX = item . index
+          IDX = int ( item . index )
         ######################################################################
         if ( item . display_name  not in [ False , None                  ] ) :
           ####################################################################
@@ -95,7 +95,7 @@ class Vision   (                                                           ) :
         ######################################################################
         if ( item . score         not in [ False , None                  ] ) :
           ####################################################################
-          PRT = item . score
+          PRT = float ( item . score )
         ######################################################################
         if ( item . category_name not in [ False , None                  ] ) :
           ####################################################################
@@ -159,9 +159,9 @@ class Vision   (                                                           ) :
         if ( item . score < Probability                                    ) :
           continue
         ######################################################################
-        J = { "Id"          : item . index                                   ,
-              "Name"        : item . display_name                            ,
-              "Probability" : item . score                                   ,
+        J = { "Id"          : int   ( item . index )                       , \
+              "Name"        : item . display_name                          , \
+              "Probability" : float ( item . score )                       , \
               "Category"    : item . category_name                           }
         ######################################################################
         ITEMs . append ( J                                                   )
