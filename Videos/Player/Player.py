@@ -157,8 +157,13 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL . UpdatePanel       (                                       )
     ##########################################################################
     CONF = self  . Settings          [ "Classifier" ] [ "File"               ]
-    MAXI = self . Settings           [ "Classifier" ] [ "Max"                ]
+    MAXI = self  . Settings          [ "Classifier" ] [ "Max"                ]
     self . AIV   . setClassifierPath ( CONF , MAXI                           )
+    ##########################################################################
+    CONF = self  . Settings          [ "Objectron"  ] [ "File"               ]
+    MAXI = self  . Settings          [ "Objectron"  ] [ "Max"                ]
+    THRS = self  . Settings          [ "Objectron"  ] [ "Threshold"          ]
+    self . AIV   . setObjectronPath  ( CONF , MAXI , THRS                    )
     ##########################################################################
     self . BDI        = BodyItem (                                           )
     self . BOOB       = TitItem  (                                           )
@@ -590,6 +595,14 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . FilmJSON = FILM
     ##########################################################################
+    self . PANEL . Play   . setEnabled ( False                               )
+    self . PANEL . Play   . show       (                                     )
+    self . PANEL . Stop   . setEnabled ( False                               )
+    self . PANEL . Pause  . setEnabled ( False                               )
+    self . PANEL . Pause  . hide       (                                     )
+    ##########################################################################
+    qApp . processEvents               (                                     )
+    ##########################################################################
     Filename = FILM [ "Path"                                                 ]
     TITLE    = FILM [ "Name"                                                 ]
     ##########################################################################
@@ -620,6 +633,7 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL . FilmSize . setText ( f"{self.VWidth} x {self.VHeight}"    )
     ##########################################################################
     self         . PLAYER . play          (                                  )
+    qApp . processEvents               (                                     )
     ##########################################################################
     self . PANEL . Volume . setValue ( self . PLAYER . audio_get_volume ( )  )
     ##########################################################################
@@ -629,9 +643,10 @@ class Player               ( Widget , AttachDock                           ) :
     self . PANEL . Pause  . setEnabled ( True                                )
     self . PANEL . Pause  . show       (                                     )
     ##########################################################################
-    self . PANEL . raise_ (                                                  )
+    self . PANEL . raise_              (                                     )
     ##########################################################################
-    self . CLOCK . start  (                                                  )
+    self . CLOCK . start               (                                     )
+    qApp . processEvents               (                                     )
     ##########################################################################
     return
   ############################################################################
@@ -667,13 +682,24 @@ class Player               ( Widget , AttachDock                           ) :
     ITEMs = self . AIV . Classification ( IMG , TRIGGER                      )
     NAMEs = self . AIV . toCategories   ( ITEMs                              )
     ##########################################################################
-    J     = { "Time"       : T                                               ,
-              "Categories" : NAMEs                                           ,
-              "Items"      : ITEMs                                           }
-    self  . ATJ . append ( J                                                 )
+    print ( T , " : " , json . dumps ( NAMEs ) )
     ##########################################################################
-    ## print ( T , " : " , json . dumps ( NAMEs ) )
+    TRIGGER = self . Settings [ "Objectron" ] [ "Probability"                ]
+    OBJs    = self  . AIV . ObjectDetection ( IMG , TRIGGER                  )
     ##########################################################################
+    for OBJI in OBJs                                                         :
+      ########################################################################
+      ONAMEs = self . AIV . toCategories ( OBJI [ "Categories" ]             )
+      ########################################################################
+      for N in ONAMEs                                                        :
+        ######################################################################
+        if               ( N not in NAMEs                                  ) :
+          ####################################################################
+          NAMEs . append ( N                                                 )
+    ##########################################################################
+    print ( "OBJs : " , json . dumps ( OBJs ) )
+    ##########################################################################
+    BODYs   =          [                                                     ]
     PIC = PictureItem  (                                                     )
     OK  = PIC . Load   ( FILENAME                                            )
     ##########################################################################
@@ -686,7 +712,18 @@ class Player               ( Widget , AttachDock                           ) :
       ########################################################################
       KPS = self . BDI . GetBodyKeyPoints ( RGB , WW , HH                    )
       ########################################################################
-      ## print ( json . dumps ( KPS ) )
+      if                   ( KPS [ "Body" ] [ "Exists" ]                   ) :
+        ######################################################################
+        BODYs . append     ( KPS                                             )
+      ########################################################################
+      print ( json . dumps ( KPS ) )
+    ##########################################################################
+    J     = { "Time"       : T                                             , \
+              "Categories" : NAMEs                                         , \
+              "Items"      : ITEMs                                         , \
+              "Objects"    : OBJs                                          , \
+              "Bodies"     : BODYs                                           }
+    self  . ATJ . append ( J                                                 )
     ##########################################################################
     if                 ( REMOVE                                            ) :
       os . remove      ( FILENAME                                            )
