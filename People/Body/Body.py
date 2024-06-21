@@ -82,12 +82,16 @@ class Body        (                                                        ) :
     ##########################################################################
     return            { "X" : X , "Y" : Y                                    }
   ############################################################################
-  def GetBodyKeyPoints              ( self , Image , W , H                 ) :
+  def GetBodyKeyPoints ( self , Image , W , H                              ) :
     ##########################################################################
-    J     =                         { "Body"  : { "Exists" : False       } , \
-                                      "Nose"  : { }                        , \
-                                      "Left"  : { }                        , \
-                                      "Right" : { }                          }
+    J     =            { "Body"  : { "Exists" : False                    } , \
+                         "Box"   : { "X" : 0                               , \
+                                     "Y" : 0                               , \
+                                     "W" : W                               , \
+                                     "H" : H                             } , \
+                         "Nose"  : { }                                     , \
+                         "Left"  : { }                                     , \
+                         "Right" : { }                                       }
     ##########################################################################
     MPX   = self . mpPose . PoseLandmark
     KPS   = self . Pose   . process (        Image                           )
