@@ -894,18 +894,18 @@ FaceLandmarks468Polygons =                                                   [
   ############################################################################
 ]
 ##############################################################################
-class Face        (                                                        ) :
+class Face                  (                                              ) :
   ############################################################################
-  def __init__    ( self                                                   ) :
+  def __init__              ( self                                         ) :
     ##########################################################################
-    self . Full       = self . CreateRectangle ( 0 , 0 , 0 , 0               )
-    self . Rectangle  = self . CreateRectangle ( 0 , 0 , 0 , 0               )
-    self . Degree     = 0.0
-    self . Weights    = 0.0
-    self . NoseBridge = 0.0
-    self . Quality    = 0
-    self . Features   =   [                                                  ]
-    self . EmptyLandmarks (                                                  )
+    self . Full          = self . CreateRectangle ( 0 , 0 , 0 , 0            )
+    self . Rectangle     = self . CreateRectangle ( 0 , 0 , 0 , 0            )
+    self . Degree        = 0.0
+    self . Weights       = 0.0
+    self . NoseBridge    = 0.0
+    self . Quality       = 0
+    self . Features      =  [                                                ]
+    self . EmptyLandmarks   (                                                )
     ##########################################################################
     self . Classifier    = None
     self . EyesDetector  = None

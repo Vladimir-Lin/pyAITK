@@ -166,6 +166,9 @@ class Player               ( Widget , AttachDock                           ) :
     THRS = self  . Settings          [ "Objectron"  ] [ "Threshold"          ]
     self . AIV   . setObjectronPath  ( CONF , MAXI , THRS                    )
     ##########################################################################
+    CONF = self  . Settings          [ "Stylizers"  ] [ "Sketch"             ]
+    self . AIV   . setStylizerPath   ( CONF                                  )
+    ##########################################################################
     self . BDI   = BodyItem          (                                       )
     self . BOOB  = TitItem           (                                       )
     ##########################################################################
@@ -731,6 +734,15 @@ class Player               ( Widget , AttachDock                           ) :
           ####################################################################
           NAMEs . append ( N                                                 )
     ##########################################################################
+    SIMG    = self . AIV . Stylization ( IMG                                 )
+    ## SPIC    = PictureItem   (                                                )
+    if ( SIMG not in [ False , None ] ) :
+      SFILE   = f"D:/AITK/Download/Video/{T}-Stylization.jpg"
+      CVX     = cv2 . cvtColor ( SIMG . numpy_view ( ) , cv2 . COLOR_BGR2RGB  )
+      cv2     . imwrite ( SFILE , CVX )
+    ## SPIC    . FromMediapipe ( SIMG                                           )
+    ## SPIC    . Save          ( SFILE                                          )
+    ##########################################################################
     BODYs   =               [                                                ]
     BOOBs   =               [                                                ]
     FACEs   =               [                                                ]
@@ -773,14 +785,7 @@ class Player               ( Widget , AttachDock                           ) :
         KQQ  = FACE . ToSquareRectangle       ( KRQ                          )
         SSK  = FACE . RestraintRectangle      ( FACE . Full , KQQ            )
         ######################################################################
-        ## try                                                                  :
-          ####################################################################
-        ##   DJS = json . dumps                  ( SSK                          )
-        ##   if                                  ( len ( DJS ) > 0            ) :
         FACEs . append                        ( SSK                          )
-          ####################################################################
-        ## except                                                               :
-        ##   pass
     ##########################################################################
     J     = { "Time"       : T                                             , \
               "Categories" : NAMEs                                         , \
