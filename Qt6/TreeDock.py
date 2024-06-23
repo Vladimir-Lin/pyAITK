@@ -186,7 +186,7 @@ class TreeDock         ( TreeWidget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked       ( self , item , column                           ) :
+  def twiceClicked        ( self , item , column                           ) :
     ##########################################################################
     uuid      = int       ( item . data ( column , Qt . UserRole )           )
     self . Clicked . emit ( uuid                                             )

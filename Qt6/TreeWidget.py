@@ -599,34 +599,40 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return True
   ############################################################################
-  def MountClicked            ( self , clicks                              ) :
+  def MountClicked                   ( self , clicks                       ) :
     ##########################################################################
-    if                        ( clicks == 1                                ) :
+    if                               ( clicks == 1                         ) :
       ########################################################################
-      try                                                                    :
+      ics = QMetaMethod . fromSignal ( self . itemClicked                    )
+      ########################################################################
+      if                             ( self . isSignalConnected ( ics )    ) :
+        ######################################################################
         self . itemClicked       . disconnect (                              )
-      except                                                                 :
-        pass
+      ########################################################################
       self   . itemClicked       .    connect ( self . singleClicked         )
       ########################################################################
       return
     ##########################################################################
-    if                        ( clicks == 2                                ) :
+    if                               ( clicks == 2                         ) :
       ########################################################################
-      try                                                                    :
+      ics = QMetaMethod . fromSignal ( self . itemDoubleClicked              )
+      ########################################################################
+      if                             ( self . isSignalConnected ( ics )    ) :
+        ######################################################################
         self . itemDoubleClicked . disconnect (                              )
-      except                                                                 :
-        pass
-      self   . itemDoubleClicked .    connect ( self . doubleClicked         )
+      ########################################################################
+      self   . itemDoubleClicked .    connect ( self . twiceClicked          )
       ########################################################################
       return
     ##########################################################################
-    if                        ( clicks == 9                                ) :
+    if                               ( clicks == 9                         ) :
       ########################################################################
-      try                                                                    :
+      ics = QMetaMethod . fromSignal ( self . itemChanged                    )
+      ########################################################################
+      if                             ( self . isSignalConnected ( ics )    ) :
+        ######################################################################
         self . itemChanged       . disconnect (                              )
-      except                                                                 :
-        pass
+      ########################################################################
       self   . itemChanged       .    connect ( self . stateChanged          )
       ########################################################################
       return
@@ -873,7 +879,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     ##########################################################################
     return
   ############################################################################
-  def doubleClicked           ( self , item , column                       ) :
+  def twiceClicked            ( self , item , column                       ) :
     raise NotImplementedError (                                              )
   ############################################################################
   def stateChanged            ( self , item , column                       ) :
@@ -934,7 +940,8 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     column = self . currentColumn (                                          )
     if                            ( column not in columns                  ) :
       return
-    self   . doubleClicked        ( item , column                            )
+    ##########################################################################
+    self   . twiceClicked         ( item , column                            )
     ##########################################################################
     return
   ############################################################################
@@ -944,7 +951,7 @@ class TreeWidget              ( QTreeWidget , VirtualGui                   ) :
     if                        ( item in [ False , None ]                   ) :
       return
     ##########################################################################
-    self . doubleClicked      ( item , columnAt                              )
+    self . twiceClicked       ( item , columnAt                              )
     ##########################################################################
     return
   ############################################################################
