@@ -16,21 +16,22 @@ import ffmpeg
 ##############################################################################
 import AITK
 ##############################################################################
-from   AITK    . Documents . JSON  import Load        as LoadJson
-from   AITK    . Documents . JSON  import Save        as SaveJson
+from   AITK    . Calendars . StarDate import StarDate    as StarDate
+from   AITK    . Documents . JSON     import Load        as LoadJson
+from   AITK    . Documents . JSON     import Save        as SaveJson
 ##############################################################################
-from   PySide6                     import QtCore
-from   PySide6                     import QtGui
-from   PySide6                     import QtWidgets
-from   PySide6 . QtCore            import *
-from   PySide6 . QtGui             import *
-from   PySide6 . QtWidgets         import *
-from   AITK    . Qt6               import *
+from   PySide6                        import QtCore
+from   PySide6                        import QtGui
+from   PySide6                        import QtWidgets
+from   PySide6 . QtCore               import *
+from   PySide6 . QtGui                import *
+from   PySide6 . QtWidgets            import *
+from   AITK    . Qt6                  import *
 ##############################################################################
-from   AITK    . Qt6 . MenuManager import MenuManager as MenuManager
-from   AITK    . Qt6 . TreeDock    import TreeDock    as TreeDock
+from   AITK    . Qt6 . MenuManager    import MenuManager as MenuManager
+from   AITK    . Qt6 . TreeDock       import TreeDock    as TreeDock
 ##############################################################################
-from   AITK    . Videos . Film     import Film        as FilmItem
+from   AITK    . Videos . Film        import Film        as FilmItem
 ##############################################################################
 class PlayList                     ( TreeDock                              ) :
   ############################################################################
@@ -47,6 +48,8 @@ class PlayList                     ( TreeDock                              ) :
     super ( ) . __init__           (        parent        , plan             )
     ##########################################################################
     self . FID                = 0
+    self . Awaiting           = False
+    self . AwaitTS            = 0
     ##########################################################################
     self . dockingOrientation = Qt . Vertical
     self . dockingPlace       = Qt . RightDockWidgetArea
@@ -59,7 +62,7 @@ class PlayList                     ( TreeDock                              ) :
     self . setMinimumHeight        ( 400                                     )
     self . setColumnCount          ( 3                                       )
     self . setColumnHidden         ( 2 , True                                )
-    self . setColumnWidth          ( 0 , 60                                  )
+    self . setColumnWidth          ( 0 , 50                                  )
     self . setRootIsDecorated      ( False                                   )
     self . setAlternatingRowColors ( True                                    )
     ##########################################################################
@@ -109,6 +112,9 @@ class PlayList                     ( TreeDock                              ) :
     self . LinkAction ( "Select"     , self . SelectOne       , ENABLED      )
     self . LinkAction ( "SelectAll"  , self . SelectAll       , ENABLED      )
     self . LinkAction ( "SelectNone" , self . SelectNone      , ENABLED      )
+    ##########################################################################
+    self . LinkAction ( "GoUp"       , self . GoUp            , False        )
+    self . LinkAction ( "GoDown"     , self . GoDown          , False        )
     ##########################################################################
     return
   ############################################################################
@@ -174,14 +180,50 @@ class PlayList                     ( TreeDock                              ) :
     ##########################################################################
     return
   ############################################################################
-  def singleClicked             ( self , item , column                     ) :
+  def GoUpDownActions                          ( self                      ) :
     ##########################################################################
-    self . defaultSingleClicked (        item , column                       )
+    WPLAN   = self . GetPlan                   (                             )
+    ##########################################################################
+    if                                         ( WPLAN in [ False , None ] ) :
+      return
+    ##########################################################################
+    CITM    = self . currentItem               (                             )
+    ##########################################################################
+    if                                         ( CITM  in [ False , None ] ) :
+      ########################################################################
+      return
+    ##########################################################################
+    CNT     = self . topLevelItemCount         (                             )
+    IDX     = self . indexOfTopLevelItem       ( CITM                        )
+    ##########################################################################
+    if                                         ( IDX     > 0               ) :
+      ########################################################################
+      WPLAN . Action ( "GoUp"   ) . setEnabled ( True                        )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      WPLAN . Action ( "GoUp"   ) . setEnabled ( False                       )
+    ##########################################################################
+    if                                         ( IDX + 1 < CNT             ) :
+      ########################################################################
+      WPLAN . Action ( "GoDown" ) . setEnabled ( True                        )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      WPLAN . Action ( "GoDown" ) . setEnabled ( False                       )
     ##########################################################################
     return
   ############################################################################
-  def twiceClicked ( self , item , column                                  ) :
+  def singleClicked             ( self , item , column                     ) :
     ##########################################################################
+    self . defaultSingleClicked (        item , column                       )
+    self . GoUpDownActions      (                                            )
+    ##########################################################################
+    return
+  ############################################################################
+  def twiceClicked  ( self , item , column                                 ) :
+    ##########################################################################
+    self . PlayItem (        item                                            )
     ##########################################################################
     return
   ############################################################################
@@ -312,7 +354,80 @@ class PlayList                     ( TreeDock                              ) :
     ##########################################################################
     qApp      . processEvents              (                                 )
     ##########################################################################
-    threading . Thread ( target = self . RefreshListings                   ) \
+    threading . Thread ( target = self . AwaitRefreshListings              ) \
+              . start  (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def GoUp                            ( self                               ) :
+    ##########################################################################
+    CITM = self . currentItem         (                                      )
+    ##########################################################################
+    if                                ( CITM  in [ False , None          ] ) :
+      ########################################################################
+      return
+    ##########################################################################
+    IDX  = self . indexOfTopLevelItem ( CITM                                 )
+    ##########################################################################
+    if                                ( IDX <= 0                           ) :
+      return
+    ##########################################################################
+    NDX  = int                        ( IDX - 1                              )
+    NITM = self . topLevelItem        ( NDX                                  )
+    ##########################################################################
+    self . takeTopLevelItem           ( IDX                                  )
+    qApp . processEvents              (                                      )
+    self . insertTopLevelItem         ( NDX , CITM                           )
+    ##########################################################################
+    NDX  = int                        ( NDX + 1                              )
+    IDX  = int                        ( IDX + 1                              )
+    ##########################################################################
+    CITM . setText                    ( 0 , f"{NDX}"                         )
+    CITM . setData                    ( 0 , Qt . UserRole , NDX              )
+    ##########################################################################
+    NITM . setText                    ( 0 , f"{IDX}"                         )
+    NITM . setData                    ( 0 , Qt . UserRole , IDX              )
+    ##########################################################################
+    qApp . processEvents              (                                      )
+    ##########################################################################
+    threading . Thread ( target = self . AwaitRefreshListings              ) \
+              . start  (                                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def GoDown                          ( self                               ) :
+    ##########################################################################
+    CITM = self . currentItem         (                                      )
+    ##########################################################################
+    if                                ( CITM  in [ False , None          ] ) :
+      ########################################################################
+      return
+    ##########################################################################
+    CNT  = self . topLevelItemCount   (                                      )
+    IDX  = self . indexOfTopLevelItem ( CITM                                 )
+    ##########################################################################
+    if                                ( int ( IDX + 1 ) >= CNT             ) :
+      return
+    ##########################################################################
+    NDX  = int                        ( IDX + 1                              )
+    NITM = self . topLevelItem        ( NDX                                  )
+    ##########################################################################
+    self . takeTopLevelItem           ( IDX                                  )
+    qApp . processEvents              (                                      )
+    self . insertTopLevelItem         ( NDX , CITM                           )
+    ##########################################################################
+    NDX  = int                        ( NDX + 1                              )
+    IDX  = int                        ( IDX + 1                              )
+    ##########################################################################
+    CITM . setText                    ( 0 , f"{NDX}"                         )
+    CITM . setData                    ( 0 , Qt . UserRole , NDX              )
+    ##########################################################################
+    NITM . setText                    ( 0 , f"{IDX}"                         )
+    NITM . setData                    ( 0 , Qt . UserRole , IDX              )
+    ##########################################################################
+    qApp . processEvents              (                                      )
+    ##########################################################################
+    threading . Thread ( target = self . AwaitRefreshListings              ) \
               . start  (                                                     )
     ##########################################################################
     return
@@ -452,6 +567,31 @@ class PlayList                     ( TreeDock                              ) :
       self . FilmsAppended . emit      (                                     )
       ########################################################################
       self . StoreListings             (                                     )
+    ##########################################################################
+    return
+  ############################################################################
+  def AwaitRefreshListings   ( self                                        ) :
+    ##########################################################################
+    NOW    = StarDate        (                                               )
+    NOW    . Now             (                                               )
+    ##########################################################################
+    self   . AwaitTS  = NOW . Stardate + 5
+    ##########################################################################
+    if                       ( self . Awaiting                             ) :
+      return
+    ##########################################################################
+    self   . Awaiting = True
+    ##########################################################################
+    NOW    . Now             (                                               )
+    ##########################################################################
+    while                    ( NOW . Stardate < self . AwaitTS             ) :
+      ########################################################################
+      time . sleep           ( 0.1                                           )
+      NOW  . Now             (                                               )
+    ##########################################################################
+    self   . RefreshListings (                                               )
+    ##########################################################################
+    self   . Awaiting = False
     ##########################################################################
     return
   ############################################################################
