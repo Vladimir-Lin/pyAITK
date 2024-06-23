@@ -816,21 +816,28 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def FinishFilmBar                      ( self                            ) :
+  def FinishFilmBar                         ( self                         ) :
     ##########################################################################
-    CTS  = self   . PLAYER . get_time    (                                   )
+    CTS    = self   . PLAYER . get_time     (                                )
     ##########################################################################
-    self . FvRange [ "Finish" ]         = CTS
+    if                                      ( CTS >= 0                     ) :
+      ########################################################################
+      self . FvRange [ "Finish" ]         = CTS
+    ##########################################################################
     VAT                                 = self . Viewed [ "At"               ]
-    self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
+    self   . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
     ##########################################################################
-    self . FvRange [ "Start"  ]         = CTS
-    self . FvRange [ "Finish" ]         = CTS
+    SKT    = self . FvRange                 [ "Start"                        ]
+    FKT    = self . FvRange                 [ "Finish"                       ]
     ##########################################################################
-    self . Viewed  [ "Bars"   ] . append ( self . FvRange                    )
-    self . Viewed  [ "At"     ]         = VAT + 1
+    if                                      ( CTS >= 0 ) and ( SKT != FKT )  :
+      ########################################################################
+      self . FvRange                      = { "Start" : CTS , "Finish" : CTS }
+      ########################################################################
+      self . Viewed  [ "Bars"   ] . append  ( self . FvRange                 )
+      self . Viewed  [ "At"     ]         = VAT + 1
     ##########################################################################
-    self . CalculateFilmBar              (                                   )
+    self   . CalculateFilmBar               (                                )
     ##########################################################################
     return
   ############################################################################
@@ -847,16 +854,16 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def setPosition                          ( self                          ) :
+  def setPosition                           ( self                         ) :
     ##########################################################################
-    self . CLOCK  . stop                   (                                 )
-    CTS  = self   . PLAYER . get_time      (                                 )
-    POS  = self   . PANEL  . Clock . value (                                 )
-    RATE = self   . toTimestamp            ( POS                             )
-    self . PLAYER . set_time               ( RATE                            )
-    self . CLOCK  . start                  (                                 )
+    self . CLOCK  . stop                    (                                )
+    CTS  = self   . PLAYER . get_time       (                                )
+    POS  = self   . PANEL  . Clock . value  (                                )
+    RATE = self   . toTimestamp             ( POS                            )
+    self . PLAYER . set_time                ( RATE                           )
+    self . CLOCK  . start                   (                                )
     ##########################################################################
-    if                                     ( self . isPause                ) :
+    if                                      ( self . isPause               ) :
       ########################################################################
       VAT                                 = self . Viewed [ "At"             ]
       self . FvRange [ "Start"  ]         = RATE
@@ -865,17 +872,33 @@ class Player               ( Widget , AttachDock                           ) :
       ########################################################################
       return
     ##########################################################################
-    self . FvRange [ "Finish" ]         = CTS
+    if                                      ( CTS >= 0                     ) :
+      ########################################################################
+      self . FvRange [ "Finish" ]         = CTS
+    ##########################################################################
     VAT                                 = self . Viewed [ "At"               ]
-    self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
+    self   . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
     ##########################################################################
-    self . FvRange [ "Start"  ]         = RATE
-    self . FvRange [ "Finish" ]         = RATE
+    SKT    = self . FvRange                 [ "Start"                        ]
+    FKT    = self . FvRange                 [ "Finish"                       ]
     ##########################################################################
-    self . Viewed  [ "Bars"   ] . append  ( self . FvRange                  )
-    self . Viewed  [ "At"     ]         = VAT + 1
+    if                                      ( SKT != FKT                   ) :
+      ########################################################################
+      self . FvRange                      = { "Start"  : RATE              , \
+                                              "Finish" : RATE                }
+      ########################################################################
+      self . Viewed  [ "Bars"   ] . append  ( self . FvRange                 )
+      self . Viewed  [ "At"     ]         = VAT + 1
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . FvRange [ "Start"  ]         = RATE
+      self . FvRange [ "Finish" ]         = RATE
+      ########################################################################
+      VAT                                 = self . Viewed [ "At"             ]
+      self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
     ##########################################################################
-    self . CalculateFilmBar                (                                 )
+    self   . CalculateFilmBar               (                                )
     ##########################################################################
     return
   ############################################################################
