@@ -86,6 +86,7 @@ class Player               ( Widget , AttachDock                           ) :
   attachMdi       = Signal ( QWidget , int                                   )
   Clicked         = Signal ( int                                             )
   PlayerCompleted = Signal ( int                                             )
+  FilmViewed      = Signal ( dict                                            )
   NormalWindow    = Signal (                                                 )
   GoMdi           = Signal ( int                                             )
   GoStack         = Signal ( int                                             )
@@ -133,6 +134,12 @@ class Player               ( Widget , AttachDock                           ) :
     self . FilmJSON    = None
     self . ATS         =      [                                              ]
     self . ATJ         =      [                                              ]
+    self . Viewed      =      { "Exists"   : False                         , \
+                                "Duration" : 0                             , \
+                                "At"       : -1                            , \
+                                "Bars"     : [                             ] }
+    self . FvRange     =      { "Start"    : 0                             , \
+                                "Finish"   : 0                               }
     ##########################################################################
     self . setFunction        ( self . HavingMenu , True                     )
     ##########################################################################
@@ -166,6 +173,7 @@ class Player               ( Widget , AttachDock                           ) :
     self . setWindowIcon      ( QIcon ( ":/images/videogroup.png"          ) )
     ##########################################################################
     self . NextAnalysis . connect ( self . DoAnalysis                        )
+    self . FilmViewed   . connect ( self . PANEL . Bar . AcceptFilm          )
     ##########################################################################
     return
   ############################################################################
@@ -596,6 +604,7 @@ class Player               ( Widget , AttachDock                           ) :
     WPLAN  . Action ( "PlayNext"     ) . setEnabled ( True                   )
     ##########################################################################
     self   . CLOCK             . stop       (                                )
+    self   . FinishFilmBar                  (                                )
     self   . AUDIO             . stop       (                                )
     ##########################################################################
     return
@@ -629,6 +638,7 @@ class Player               ( Widget , AttachDock                           ) :
     WPLAN . Action ( "PlayPrevious" ) . setEnabled ( True                    )
     WPLAN . Action ( "PlayNext"     ) . setEnabled ( True                    )
     ##########################################################################
+    self  . FinishFilmBar                  (                                 )
     self  . CLOCK             . stop       (                                 )
     ##########################################################################
     return
@@ -641,13 +651,25 @@ class Player               ( Widget , AttachDock                           ) :
     if                                ( self . isStopped (               ) ) :
       return
     ##########################################################################
-    T    = self . PLAYER . get_time   (                                      )
-    T    = int                        ( T + self . Delta                     )
+    K    = self . PLAYER . get_time   (                                      )
+    T    = int                        ( K + self . Delta                     )
     ##########################################################################
     if                                ( T >= self . Duration               ) :
       T  = self . Duration
     ##########################################################################
     self . PLAYER . set_time          ( T                                    )
+    ##########################################################################
+    self . FvRange [ "Finish" ]         = K
+    VAT                                 = self . Viewed [ "At"               ]
+    self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
+    ##########################################################################
+    self . FvRange [ "Start"  ]         = T
+    self . FvRange [ "Finish" ]         = T
+    ##########################################################################
+    self . Viewed  [ "Bars"   ] . append ( self . FvRange                    )
+    self . Viewed  [ "At"     ]         = VAT + 1
+    ##########################################################################
+    self . CalculateFilmBar              (                                   )
     ##########################################################################
     return
   ############################################################################
@@ -659,13 +681,25 @@ class Player               ( Widget , AttachDock                           ) :
     if                              ( self . isStopped (                 ) ) :
       return
     ##########################################################################
-    T    = self . PLAYER . get_time (                                        )
-    T    = int                      ( T - self . Delta                       )
+    K    = self . PLAYER . get_time (                                        )
+    T    = int                      ( K - self . Delta                       )
     ##########################################################################
     if                              ( T < 0                                ) :
       T  = 0
     ##########################################################################
     self . PLAYER . set_time        ( T                                      )
+    ##########################################################################
+    self . FvRange [ "Finish" ]         = K
+    VAT                                 = self . Viewed [ "At"               ]
+    self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
+    ##########################################################################
+    self . FvRange [ "Start"  ]         = T
+    self . FvRange [ "Finish" ]         = T
+    ##########################################################################
+    self . Viewed  [ "Bars"   ] . append ( self . FvRange                    )
+    self . Viewed  [ "At"     ]         = VAT + 1
+    ##########################################################################
+    self . CalculateFilmBar              (                                   )
     ##########################################################################
     return
   ############################################################################
@@ -765,6 +799,12 @@ class Player               ( Widget , AttachDock                           ) :
           ####################################################################
           self . TryAnotherPlaylist (                                        )
     ##########################################################################
+    VAT                                  = self . Viewed [ "At"              ]
+    self  . FvRange [ "Finish" ]         = VPOS
+    self  . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
+    ##########################################################################
+    self  . CalculateFilmBar            (                                    )
+    ##########################################################################
     return
   ############################################################################
   def UpdateAudio                            ( self                        ) :
@@ -776,13 +816,66 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def setPosition                         ( self                           ) :
+  def FinishFilmBar                      ( self                            ) :
     ##########################################################################
-    self . CLOCK  . stop                  (                                  )
-    POS  = self   . PANEL . Clock . value (                                  )
-    RATE = self   . toTimestamp           ( POS                              )
-    self . PLAYER . set_time              ( RATE                             )
-    self . CLOCK  . start                 (                                  )
+    CTS  = self   . PLAYER . get_time    (                                   )
+    ##########################################################################
+    self . FvRange [ "Finish" ]         = CTS
+    VAT                                 = self . Viewed [ "At"               ]
+    self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
+    ##########################################################################
+    self . FvRange [ "Start"  ]         = CTS
+    self . FvRange [ "Finish" ]         = CTS
+    ##########################################################################
+    self . Viewed  [ "Bars"   ] . append ( self . FvRange                    )
+    self . Viewed  [ "At"     ]         = VAT + 1
+    ##########################################################################
+    self . CalculateFilmBar              (                                   )
+    ##########################################################################
+    return
+  ############################################################################
+  def CalculateFilmBar       ( self                                        ) :
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    ##########################################################################
+    self . FilmViewed . emit ( self . Viewed                                 )
+    ##########################################################################
+    return
+  ############################################################################
+  def setPosition                          ( self                          ) :
+    ##########################################################################
+    self . CLOCK  . stop                   (                                 )
+    CTS  = self   . PLAYER . get_time      (                                 )
+    POS  = self   . PANEL  . Clock . value (                                 )
+    RATE = self   . toTimestamp            ( POS                             )
+    self . PLAYER . set_time               ( RATE                            )
+    self . CLOCK  . start                  (                                 )
+    ##########################################################################
+    if                                     ( self . isPause                ) :
+      ########################################################################
+      VAT                                 = self . Viewed [ "At"             ]
+      self . FvRange [ "Start"  ]         = RATE
+      self . FvRange [ "Finish" ]         = RATE
+      self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
+      ########################################################################
+      return
+    ##########################################################################
+    self . FvRange [ "Finish" ]         = CTS
+    VAT                                 = self . Viewed [ "At"               ]
+    self . Viewed  [ "Bars"   ] [ VAT ] = self . FvRange
+    ##########################################################################
+    self . FvRange [ "Start"  ]         = RATE
+    self . FvRange [ "Finish" ]         = RATE
+    ##########################################################################
+    self . Viewed  [ "Bars"   ] . append  ( self . FvRange                  )
+    self . Viewed  [ "At"     ]         = VAT + 1
+    ##########################################################################
+    self . CalculateFilmBar                (                                 )
     ##########################################################################
     return
   ############################################################################
@@ -954,6 +1047,15 @@ class Player               ( Widget , AttachDock                           ) :
     self  . PANEL . Clock  . setMaximum ( self . Range                       )
     self  . PANEL . Clock  . setValue   ( 0                                  )
     ##########################################################################
+    self  . Viewed  =       { "Exists"   : True                            , \
+                              "Duration" : DURATION                        , \
+                              "At"       : 0                               , \
+                              "Bars"     : [                               ] }
+    self  . FvRange =       { "Start"    : 0                               , \
+                              "Finish"   : 0                                 }
+    ##########################################################################
+    self  . Viewed [ "Bars" ] . append ( self  . FvRange                     )
+    ##########################################################################
     self  . VWidth  = FILM [ "Width"                                         ]
     self  . VHeight = FILM [ "Height"                                        ]
     ##########################################################################
@@ -1124,10 +1226,9 @@ class Player               ( Widget , AttachDock                           ) :
       ########################################################################
       return
     ##########################################################################
-    VPOS  = self . PLAYER . get_position (                                   )
-    POS   = int  ( VPOS * float ( self . Range    )                          )
-    KT    = int  ( VPOS * float ( self . Duration )                          )
-    S     = self . toClock ( KT                                              )
+    T     = self  . PLAYER . get_time   (                                    )
+    POS   = self  . toTick              ( T                                  )
+    S     = self  . toClock             ( T                                  )
     ##########################################################################
     self  . PANEL . Clock  . setValue   ( POS                                )
     self  . PANEL . Clock  . setToolTip ( S                                  )
