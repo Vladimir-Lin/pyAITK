@@ -75,7 +75,6 @@ class PlayInternalLayer          ( QWidget                                 ) :
     self      . WheelCallback (        e                                     )
     ##########################################################################
     return
-  ############################################################################
 ##############################################################################
 class Player               ( Widget , AttachDock                           ) :
   ############################################################################
@@ -105,6 +104,7 @@ class Player               ( Widget , AttachDock                           ) :
   def Configure ( self                                                     ) :
     ##########################################################################
     self . setMouseTracking ( True                                           )
+    self . setFocusPolicy   ( Qt . WheelFocus                                )
     ##########################################################################
     self . PID        = -1
     self . Delta      = 3000
@@ -124,6 +124,7 @@ class Player               ( Widget , AttachDock                           ) :
     self . ToolHeight  = 64
     self . Duration    = -1
     self . Range       = 1000
+    self . Step        = 250
     self . VWidth      = 640
     self . VHeight     = 480
     self . ShowPanel   = False
@@ -132,6 +133,8 @@ class Player               ( Widget , AttachDock                           ) :
     self . FilmJSON    = None
     self . ATS         =      [                                              ]
     self . ATJ         =      [                                              ]
+    ##########################################################################
+    self . setFunction        ( self . HavingMenu , True                     )
     ##########################################################################
     self . PANEL      = Panel ( self , self . PlanFunc                       )
     self . PANEL      . hide  (                                              )
@@ -155,6 +158,10 @@ class Player               ( Widget , AttachDock                           ) :
     self . CLOCK      = QTimer ( self                                        )
     self . CLOCK      . setInterval ( 25                                     )
     self . CLOCK      . timeout . connect ( self . UpdateINFO                )
+    ##########################################################################
+    self . AUDIO      = QTimer ( self                                        )
+    self . AUDIO      . setInterval ( 1000                                   )
+    self . AUDIO      . timeout . connect ( self . UpdateAudio               )
     ##########################################################################
     self . setWindowIcon      ( QIcon ( ":/images/videogroup.png"          ) )
     ##########################################################################
@@ -228,15 +235,68 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
-  def AttachActions   ( self           ,                       Enabled     ) :
+  def AttachActions     ( self , Enabled                                   ) :
     ##########################################################################
-    self . LinkAction ( "Play"         , self . DoPlay       , False         )
-    self . LinkAction ( "Pause"        , self . DoPause      , False         )
-    self . LinkAction ( "Stop"         , self . DoStop       , False         )
-    self . LinkAction ( "Forward"      , self . PlayForward  , False         )
-    self . LinkAction ( "Backward"     , self . PlayBackward , False         )
-    self . LinkAction ( "PlayPrevious" , self . PlayPrevious , False         )
-    self . LinkAction ( "PlayNext"     , self . PlayNext     , False         )
+    if                  ( not self . isPrepared (                        ) ) :
+      return False
+    ##########################################################################
+    isStop     = True
+    isPlay     = False
+    ##########################################################################
+    if                  ( self . MEDIA  in [ False , None                ] ) :
+      ########################################################################
+      isStop   = False
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      if                ( self . PLAYER in [ False , None                ] ) :
+        ######################################################################
+        isStop = False
+        ######################################################################
+      else                                                                   :
+        ######################################################################
+        isPlay = self . PLAYER . is_playing (                                )
+    ##########################################################################
+    if                  ( self . isPause                                   ) :
+      isStop   = False
+    ##########################################################################
+    if                  (        isPlay                                    ) :
+      isStop   = False
+    ##########################################################################
+    if                  (        isPlay                                    ) :
+      ########################################################################
+      self . LinkAction ( "Play"         , self . DoPlay       , False       )
+      self . LinkAction ( "Pause"        , self . DoPause      , True        )
+      self . LinkAction ( "Stop"         , self . DoStop       , True        )
+      self . LinkAction ( "Forward"      , self . PlayForward  , True        )
+      self . LinkAction ( "Backward"     , self . PlayBackward , True        )
+      ########################################################################
+    elif                ( self . isPause                                   ) :
+      ########################################################################
+      self . LinkAction ( "Play"         , self . DoPlay       , True        )
+      self . LinkAction ( "Pause"        , self . DoPause      , False       )
+      self . LinkAction ( "Stop"         , self . DoStop       , True        )
+      self . LinkAction ( "Forward"      , self . PlayForward  , True        )
+      self . LinkAction ( "Backward"     , self . PlayBackward , True        )
+      ########################################################################
+    elif                (        isStop                                    ) :
+      ########################################################################
+      self . LinkAction ( "Play"         , self . DoPlay       , True        )
+      self . LinkAction ( "Pause"        , self . DoPause      , False       )
+      self . LinkAction ( "Stop"         , self . DoStop       , False       )
+      self . LinkAction ( "Forward"      , self . PlayForward  , False       )
+      self . LinkAction ( "Backward"     , self . PlayBackward , False       )
+      ########################################################################
+    else                                                                     :
+      ########################################################################
+      self . LinkAction ( "Play"         , self . DoPlay       , False       )
+      self . LinkAction ( "Pause"        , self . DoPause      , False       )
+      self . LinkAction ( "Stop"         , self . DoStop       , False       )
+      self . LinkAction ( "Forward"      , self . PlayForward  , False       )
+      self . LinkAction ( "Backward"     , self . PlayBackward , False       )
+    ##########################################################################
+    self   . LinkAction ( "PlayPrevious" , self . PlayPrevious , False       )
+    self   . LinkAction ( "PlayNext"     , self . PlayNext     , False       )
     ##########################################################################
     return
   ############################################################################
@@ -249,6 +309,60 @@ class Player               ( Widget , AttachDock                           ) :
     self . AttachActions  ( True                                             )
     ##########################################################################
     return True
+  ############################################################################
+  def focusInEvent           ( self , event                                ) :
+    ##########################################################################
+    if                       ( self . focusIn ( event )                    ) :
+      return
+    ##########################################################################
+    super ( ) . focusInEvent ( event                                         )
+    ##########################################################################
+    return
+  ############################################################################
+  def FocusOut             ( self                                          ) :
+    ##########################################################################
+    if                     ( not self . isPrepared       (               ) ) :
+      return False
+    ##########################################################################
+    if                     (     self . PANEL . hasFocus (               ) ) :
+      return False
+    ##########################################################################
+    if                     (     self . LAYER . hasFocus (               ) ) :
+      return False
+    ##########################################################################
+    WPLAN = self . GetPlan (                                                 )
+    ##########################################################################
+    if                     ( WPLAN in [ False , None ]                     ) :
+      return False
+    ##########################################################################
+    WPLAN . Action ( "Play"         ) . setEnabled ( False                   )
+    WPLAN . Action ( "Pause"        ) . setEnabled ( False                   )
+    WPLAN . Action ( "Stop"         ) . setEnabled ( False                   )
+    WPLAN . Action ( "Forward"      ) . setEnabled ( False                   )
+    WPLAN . Action ( "Backward"     ) . setEnabled ( False                   )
+    WPLAN . Action ( "PlayPrevious" ) . setEnabled ( False                   )
+    WPLAN . Action ( "PlayNext"     ) . setEnabled ( False                   )
+    ##########################################################################
+    return True
+  ############################################################################
+  def focusOutEvent           ( self , event                               ) :
+    ##########################################################################
+    if                        ( self . focusOut ( event )                  ) :
+      return
+    ##########################################################################
+    super ( ) . focusOutEvent ( event                                        )
+    ##########################################################################
+    return
+  ############################################################################
+  def contextMenuEvent           ( self , event                            ) :
+    ##########################################################################
+    if                           ( self . Menu ( event . pos ( ) )         ) :
+      event . accept             (                                           )
+      return
+    ##########################################################################
+    super ( ) . contextMenuEvent ( event                                     )
+    ##########################################################################
+    return
   ############################################################################
   def showEvent            ( self , e                                      ) :
     ##########################################################################
@@ -482,6 +596,7 @@ class Player               ( Widget , AttachDock                           ) :
     WPLAN  . Action ( "PlayNext"     ) . setEnabled ( True                   )
     ##########################################################################
     self   . CLOCK             . stop       (                                )
+    self   . AUDIO             . stop       (                                )
     ##########################################################################
     return
   ############################################################################
@@ -627,6 +742,11 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return
   ############################################################################
+  def UpdateAudio ( self ) :
+    ##########################################################################
+    ##########################################################################
+    return
+  ############################################################################
   def setPosition                         ( self                           ) :
     ##########################################################################
     self . CLOCK  . stop                  (                                  )
@@ -657,8 +777,9 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     return   True
   ############################################################################
-  def Prepare             ( self                                           ) :
+  def Prepare          ( self                                              ) :
     ##########################################################################
+    self . setPrepared ( True                                                )
     ##########################################################################
     return
   ############################################################################
@@ -669,10 +790,10 @@ class Player               ( Widget , AttachDock                           ) :
   ############################################################################
   def startup        ( self                                                ) :
     ##########################################################################
-    ## if               ( not self . isPrepared ( )                           ) :
-    ##   self . Prepare (                                                       )
+    if               ( not self . isPrepared ( )                           ) :
+      self . Prepare (                                                       )
     ##########################################################################
-    ## self   . Go      ( self . loading                                        )
+    self   . Go      ( self . loading                                        )
     ##########################################################################
     return
   ############################################################################
@@ -782,7 +903,8 @@ class Player               ( Widget , AttachDock                           ) :
     Filename = FILM [ "Path"                                                 ]
     TITLE    = FILM [ "Name"                                                 ]
     ##########################################################################
-    self          . setWindowTitle               ( TITLE                     )
+    self  . setWindowTitle              (           TITLE                    )
+    self  . setActionLabel              ( "Label" , TITLE                    )
     ##########################################################################
     self  . Method = 1
     self  . MEDIA  = self . INSTANCE . media_new ( Filename                  )
@@ -995,9 +1117,7 @@ class Player               ( Widget , AttachDock                           ) :
     ##########################################################################
     self . PLAYER . video_take_snapshot ( 0 , F , 0 , 0                      )
     ##########################################################################
-    threading   . Thread ( target = self . HandleAnalysis              ,     \
-                           args   = ( T , F                            , ) ) \
-                . start  (                                                   )
+    self . Go       ( self . HandleAnalysis , ( T , F ,                    ) )
     ##########################################################################
     self . PLAYER . next_frame (                                             )
     ##########################################################################
